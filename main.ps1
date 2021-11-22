@@ -1,6 +1,6 @@
 function Write-GHActionDebug {
 	param (
-		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Message
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
 	)
 	foreach ($Line in ($Message -split "`n")) {
 		Write-Output -InputObject "::debug::$Line"
@@ -8,7 +8,7 @@ function Write-GHActionDebug {
 }
 function Write-GHActionLog {
 	param (
-		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Message
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
 	)
 	foreach ($Line in ($Message -split "`n")) {
 		Write-Output -InputObject $Line
