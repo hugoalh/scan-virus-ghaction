@@ -1,3 +1,19 @@
+function Write-GHActionDebug {
+	param (
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Message
+	)
+	foreach ($Line in ($Message -split "`n")) {
+		Write-Output -InputObject "::debug::$Line"
+	}
+}
+function Write-GHActionLog {
+	param (
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Message
+	)
+	foreach ($Line in ($Message -split "`n")) {
+		Write-Output -InputObject $Line
+	}
+}
 Write-Output -InputObject "::group::Update ClamAV via FreshClam."
 $FreshClamResult = $null
 try {
@@ -25,10 +41,11 @@ if ($LASTEXITCODE -ne 0) {
 		61 { $FreshClamErrorMessage = ": Cannot drop privileges" }
 		62 { $FreshClamErrorMessage = ": Cannot initialize logger" }
 	}
-	Write-Output -InputObject "::error::Unexpected FreshClam result {$($FreshClamErrorCode)$($FreshClamErrorMessage)}:`n$FreshClamResult"
+	Write-Output -InputObject "::error::Unexpected FreshClam result {$($FreshClamErrorCode)$($FreshClamErrorMessage)}!"
+	Write-GHActionLog -Message $FreshClamResult
 	Exit 1
 }
-Write-Output -InputObject "::debug::$FreshClamResult"
+Write-GHActionDebug -Message $FreshClamResult
 Write-Output -InputObject "::endgroup::"
 Write-Output -InputObject "::group::Start ClamAV daemon."
 $ClamDStartResult = $null
@@ -39,10 +56,11 @@ try {
 	Exit 1
 }
 if ($LASTEXITCODE -ne 0) {
-	Write-Output -InputObject "::error::Unexpected ClamD result {$LASTEXITCODE}:`n$ClamDStartResult"
+	Write-Output -InputObject "::error::Unexpected ClamD result {$LASTEXITCODE}!"
+	Write-GHActionLog -Message $ClamDStartResult
 	Exit 1
 }
-Write-Output -InputObject "::debug::$ClamDStartResult"
+Write-GHActionDebug -Message $ClamDStartResult
 Write-Output -InputObject "::endgroup::"
 $GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
 $SetFail = $false
@@ -55,7 +73,7 @@ function Execute-Scan {
 	Write-Output -InputObject "::group::Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsLength = $Elements.Longlength
-	Write-Output -InputObject "::debug::Elements list ($Session - $ElementsLength):`n$($Elements -join "`n")"
+	Write-GHActionDebug -Message "Elements list ($Session - $ElementsLength):`n$($Elements -join "`n")"
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
@@ -71,14 +89,15 @@ function Execute-Scan {
 		Exit 1
 	}
 	if (($LASTEXITCODE -eq 0) -and ($ClamDScanResult -notmatch "found")) {
-		Write-Output -InputObject "::debug::$ClamDScanResult"
+		Write-GHActionDebug -Message $ClamDScanResult
 	} else {
 		$script:SetFail = $true
 		if (($LASTEXITCODE -eq 1) -or ($ClamDScanResult -match "found")) {
-			Write-Output -InputObject "::error::Found virus in $Session from ClamAV:`n$ClamDScanResult"
+			Write-Output -InputObject "::error::Found virus in $Session from ClamAV!"
 		} else {
-			Write-Output -InputObject "::error::Unexpected ClamDScan result ($Session){$LASTEXITCODE}:`n$ClamDScanResult"
+			Write-Output -InputObject "::error::Unexpected ClamDScan result ($Session){$LASTEXITCODE}!"
 		}
+		Write-GHActionLog -Message $ClamDScanResult
 	}
 	Write-Output -InputObject "::endgroup::"
 }
@@ -111,11 +130,13 @@ if ($GitDepth -eq $true) {
 				if ($LASTEXITCODE -eq 0) {
 					Execute-Scan -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
 				} else {
-					Write-Output -InputObject "::error::Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)){$LASTEXITCODE}:`n$($GitCheckoutResult -join "`n")"
+					Write-Output -InputObject "::error::Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)){$LASTEXITCODE}!"
+					Write-GHActionLog -Message $($GitCheckoutResult -join "`n")
 				}
 			}
 		} else {
-			Write-Output -InputObject "::error::Unexpected Git-Log result {$LASTEXITCODE}:`n$GitCommitsRaw"
+			Write-Output -InputObject "::error::Unexpected Git-Log result {$LASTEXITCODE}!"
+			Write-GHActionLog -Message $GitCommitsRaw
 		}
 	} else {
 		Write-Output -InputObject "::warning::Current workspace is not a Git repository!"
