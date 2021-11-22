@@ -1,0 +1,28 @@
+# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: "Analyze Code - GitHub Super Linter"
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+    types:
+      - "opened"
+      - "edited"
+      - "reopened"
+      - "synchronize"
+  workflow_dispatch:
+jobs:
+  analyze-code-ghsl:
+    name: "Analyze Code - GitHub Super Linter"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v2.4.0"
+        with:
+          fetch-depth: 0
+      - name: "Analyze Repository"
+        uses: "github/super-linter@v4.8.4"
+        env:
+          DISABLE_ERRORS: "true"

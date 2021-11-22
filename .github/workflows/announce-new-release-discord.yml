@@ -1,0 +1,41 @@
+# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: "Announce New Release - Discord"
+on:
+  release:
+    types:
+      - "published"
+jobs:
+  announce-new-release-discord:
+    name: "Announce New Release - Discord"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "hugoalh/send-discord-webhook-ghaction@v4.0.0-beta.4"
+        with:
+          key: "${{secrets.DISCORDWEBHOOK_HUGOALHSTUDIO_STUDIOANNOUNCEMENT_PROJECTNEWRELEASEANNOUNCER}}"
+          payload: |
+            {
+              "embeds": [
+                {
+                  "title": "Scan Virus (GitHub Action)",
+                  "description": "Version ${{github.event.release.name}} (${{github.event.release.tag_name}}) is released and available on:",
+                  "color": "16,116,231",
+                  "thumbnail": {
+                    "url": "https://i.imgur.com/knmLbFg.png"
+                  },
+                  "fields": [
+                    {
+                      "name": "GitHub (& Changelog)",
+                      "value": "${{github.event.release.html_url}}"
+                    },
+                    {
+                      "name": "GitHub Marketplace",
+                      "value": "https://github.com/marketplace/actions/scan-virus"
+                    },
+                    {
+                      "name": "Repository",
+                      "value": "${{github.event.repository.html_url}}"
+                    }
+                  ]
+                }
+              ]
+            }

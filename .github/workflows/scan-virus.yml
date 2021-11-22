@@ -1,0 +1,43 @@
+# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: "Scan Virus"
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+    types:
+      - "opened"
+      - "edited"
+      - "reopened"
+      - "synchronize"
+  workflow_dispatch:
+    inputs:
+      gitdepth:
+        description: "{boolean} Also scan Git commits."
+        required: false
+        default: "true"
+jobs:
+  depth:
+    name: "Depth Scan"
+    runs-on: "ubuntu-latest"
+    if: "${{github.event.inputs.gitdepth == 'true'}}"
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v2.4.0"
+        with:
+          fetch-depth: 0
+      - name: "Depth Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction@main"
+        with:
+          gitdepth: "true"
+  flat:
+    name: "Flat Scan"
+    runs-on: "ubuntu-latest"
+    if: "${{github.event.inputs.gitdepth != 'true'}}"
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v2.4.0"
+      - name: "Flat Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction@main"

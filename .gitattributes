@@ -1,0 +1,652 @@
+* text=auto
+
+*.*ignore text
+*.*rc text
+*.3dm binary
+*.3ds binary
+*.3g2 binary
+*.3gp binary
+*.3gpp binary
+*.7z binary
+*.8svx binary
+*.a binary
+*.aa binary
+*.aac binary
+*.aax binary
+*.ac3 binary
+*.ace binary
+*.act binary
+*.ada text diff=ada
+*.adb text diff=ada
+*.adoc text
+*.ads text diff=ada
+*.afa binary
+*.ai binary
+*.aif binary
+*.aifc binary
+*.aiff binary
+*.alac binary
+*.alz binary
+*.amr binary
+*.amv binary
+*.ani binary
+*.anim text eol=lf
+*.ape binary
+*.apk binary
+*.apng binary
+*.app binary
+*.ar binary
+*.arc binary
+*.arj binary
+*.ark binary
+*.art binary
+*.as text
+*.asc text
+*.asf binary
+*.asset text eol=lf
+*.asx binary
+*.au binary
+*.avi binary
+*.awb binary
+*.b1 binary
+*.b6z binary
+*.ba binary
+*.bak binary
+*.bal text
+*.balx binary
+*.bash text diff=bash eol=lf
+*.bat text eol=crlf
+*.bh binary
+*.bibtex text diff=bibtex
+*.bl binary
+*.blake2b384 text
+*.blake2b512 text
+*.blake2s224 text
+*.blake2s256 text
+*.blake2sp text
+*.blake224 text
+*.blake256 text
+*.blake384 text
+*.blake512 text
+*.blend binary
+*.bmp binary
+*.bowerrc text
+*.bp binary
+*.bpg binary
+*.bsave binary
+*.bz2 binary
+*.bzip binary
+*.c text diff=c
+*.c++ text diff=cpp
+*.c4d binary
+*.cab binary
+*.cal binary
+*.car binary
+*.cc text diff=cpp
+*.cdf binary
+*.cdr binary
+*.cdx binary
+*.cfg text
+*.cginc text
+*.cgm binary
+*.chm binary
+*.ciff binary
+*.cin binary
+*.cjs text
+*.class binary
+*.cmd text eol=crlf
+*.cnf text
+*.coffee text
+*.collada binary
+*.compiled text
+*.conf text
+*.config text
+*.controller text eol=lf
+*.cpc binary
+*.cpio binary
+*.cpp text diff=cpp
+*.cpt binary
+*.crc32 text
+*.crc64 text
+*.cs text diff=csharp
+*.cshtml text diff=html
+*.cso binary
+*.csproj text eol=crlf
+*.css text diff=css
+*.csv text
+*.csx text diff=csharp
+*.ct binary
+*.cubemap binary
+*.cur binary
+*.cxx text diff=cpp
+*.dae binary
+*.dart text
+*.db binary
+*.dbf binary
+*.dbi binary
+*.dbproj text eol=crlf
+*.dct binary
+*.dds binary
+*.deb binary
+*.df text
+*.dfm text
+*.dib binary
+*.dist text eol=lf
+*.djvu binary
+*.dll binary
+*.dmg binary
+*.dng binary
+*.doc text diff=word
+*.dockerignore text
+*.docx text diff=word
+*.dof text
+*.dot text diff=astextplain
+*.dpx binary
+*.drc binary
+*.dsk binary
+*.dss binary
+*.dtd text
+*.dvf binary
+*.dxf binary
+*.dylib binary
+*.ear binary
+*.ecw binary
+*.egg binary
+*.ejs text
+*.emf binary
+*.engine text diff=php eol=lf
+*.eot binary
+*.eps binary
+*.eva binary
+*.ex text diff=elixir
+*.exe binary
+*.exif binary
+*.exr binary
+*.exs text diff=elixir
+*.f text diff=fortran
+*.f03 text diff=fortran
+*.f4a binary
+*.f4b binary
+*.f4p binary
+*.f4v binary
+*.f90 text diff=fortran
+*.f95 text diff=fortran
+*.fbx binary
+*.fdx text diff=fountain
+*.fig binary
+*.filters text eol=crlf
+*.fish text eol=lf
+*.fits binary
+*.fla text
+*.flac binary
+*.flic binary
+*.flif binary
+*.flv binary
+*.for text diff=fortran
+*.fountain text diff=fountain
+*.fp binary
+*.fpx binary
+*.frm binary
+*.fs text diff=fsharp
+*.fsproj text eol=crlf
+*.fsx text diff=fsharp
+*.gch binary
+*.gem binary
+*.gerber binary
+*.gho binary
+*.gif binary
+*.gifv binary
+*.gitattributes text
+*.gitignore text
+*.go text diff=golang
+*.gradle text diff=java
+*.gradle.kts text diff=java
+*.groovy text diff=java
+*.gsm binary
+*.gz binary
+*.h text diff=c
+*.h++ text diff=cpp
+*.haml text
+*.handlebars text
+*.hbs text
+*.hbt text
+*.hc binary
+*.hdp binary
+*.hdr binary
+*.hdri binary
+*.heic binary
+*.hevc binary
+*.hh text diff=cpp
+*.hlp binary
+*.hpp text diff=cpp
+*.htm text diff=html
+*.html text diff=html
+*.hvif binary
+*.icer binary
+*.icns binary
+*.ico binary
+*.ics binary
+*.iff binary
+*.iges binary
+*.iklax binary
+*.ilbm binary
+*.inc text diff=php eol=lf
+*.ini text
+*.install text diff=php eol=lf
+*.ipynb text
+*.iso binary
+*.it binary
+*.ivs binary
+*.j2k binary
+*.jade text
+*.jar binary
+*.jas binary
+*.java text diff=java
+*.jbig binary
+*.jbig2 binary
+*.jfi binary
+*.jfif binary
+*.jif binary
+*.jks binary
+*.jng binary
+*.jp2 binary
+*.jpe binary
+*.jpeg binary
+*.jpf binary
+*.jpg binary
+*.jpm binary
+*.jpx binary
+*.js text
+*.jsfl text
+*.jsm text
+*.json text
+*.jsp text
+*.jspf text
+*.jspx text
+*.jsx text
+*.jxr binary
+*.kar binary
+*.kra binary
+*.kt text diff=java
+*.la binary
+*.lai binary
+*.latte text
+*.lbr binary
+*.less text
+*.lfm text
+*.lib binary
+*.lnk binary
+*.lo binary
+*.lock text
+*.log text
+*.lpi text
+*.lpk text
+*.lpr text
+*.lps text
+*.lrs text
+*.lrt text
+*.ls text
+*.lsproj text eol=crlf
+*.lua text
+*.lw binary
+*.lws binary
+*.lxo binary
+*.lz binary
+*.lzma binary
+*.lzo binary
+*.m text diff=matlab
+*.m2ts binary
+*.m2v binary
+*.m4a binary
+*.m4b binary
+*.m4r binary
+*.m4v binary
+*.ma binary
+*.map text eol=lf
+*.mar binary
+*.markdown text diff=markdown
+*.mat text eol=lf
+*.max binary
+*.mb binary
+*.mcfunction text
+*.mcmeta text
+*.mcscript text
+*.md text diff=markdown
+*.md2 text
+*.md4 text
+*.md5 text
+*.md6 text
+*.mdl binary
+*.mdlp binary
+*.mdown text diff=markdown
+*.mdtext text
+*.mdtxt text
+*.mdwn text diff=markdown
+*.mdx binary
+*.meta text eol=lf
+*.mex* binary
+*.mid binary
+*.midi binary
+*.miff binary
+*.mj2 binary
+*.mjs text
+*.mkd text diff=markdown
+*.mkdn text diff=markdown
+*.mkv binary
+*.mlappinstall binary
+*.mlpkginstall binary
+*.mltbx binary
+*.mmf binary
+*.mn binary
+*.mng binary
+*.mod binary
+*.modelproj text eol=crlf
+*.module text diff=php eol=lf
+*.mogg binary
+*.mov binary
+*.mp binary
+*.mp2 binary
+*.mp3 binary
+*.mp4 binary
+*.mpc binary
+*.mpe binary
+*.mpeg binary
+*.mpg binary
+*.mpv binary
+*.msi binary
+*.msm binary
+*.msp binary
+*.msv binary
+*.mt text diff=mathematica
+*.mts binary
+*.mu text diff=matlab
+*.mustache text
+*.mx binary
+*.mxf binary
+*.nb text diff=mathematica
+*.njk text
+*.nmf binary
+*.nrrd binary
+*.nsf binary
+*.nsv binary
+*.o binary
+*.obj binary
+*.od text
+*.ods binary
+*.odt text diff=odt
+*.oga binary
+*.ogg binary
+*.ogv binary
+*.onlydata text
+*.opus binary
+*.or text
+*.ori binary
+*.orig binary
+*.otf binary
+*.out binary
+*.p text diff=pascal
+*.pam binary
+*.pas text diff=pascal
+*.patch binary
+*.pbm binary
+*.pbxproj text
+*.pch binary
+*.pcx binary
+*.pdb binary
+*.pdf text diff=astextplain
+*.pgf binary
+*.pgm binary
+*.pgml binary
+*.phar binary
+*.php text diff=php eol=lf
+*.phtml text
+*.physicmaterial text eol=lf
+*.physicmaterial2d text eol=lf
+*.physicsmaterial text eol=lf
+*.physicsmaterial2d text eol=lf
+*.pickle binary
+*.pict binary
+*.pictor binary
+*.pkl binary
+*.pl text diff=perl
+*.ply binary
+*.pm text diff=perl
+*.png binary
+*.pnm binary
+*.po text eol=lf
+*.pp text diff=pascal
+*.ppm binary
+*.ppt binary
+*.pptx binary
+*.ppu binary
+*.prefab text eol=lf
+*.profile text diff=php eol=lf
+*.properties text
+*.props text eol=crlf
+*.props.tmpl text eol=crlf
+*.ps text
+*.ps1 text eol=crlf
+*.psb binary
+*.psd binary
+*.psp binary
+*.pxd text diff=python
+*.py text diff=python
+*.py3 text diff=python
+*.pyc text diff=python
+*.pyd text diff=python
+*.pyi text diff=python
+*.pyo text diff=python
+*.pyw text diff=python
+*.pyx text diff=python
+*.pyz text diff=python
+*.qt binary
+*.qtvr binary
+*.r text
+*.ra binary
+*.ram binary
+*.rar binary
+*.ras binary
+*.raw binary
+*.rb text diff=ruby
+*.rc text eol=crlf
+*.rd text
+*.rda binary
+*.rdata text
+*.rdb binary
+*.rds binary
+*.rdx binary
+*.reason binary
+*.rel binary
+*.res text 
+*.rgbe binary
+*.rm binary
+*.rmd text
+*.rmvb binary
+*.rns binary
+*.roq binary
+*.rpm binary
+*.rproj text
+*.rs text diff=rust
+*.rsj text
+*.rst text
+*.rtf text diff=astextplain
+*.rz binary
+*.s3m binary
+*.s7z binary
+*.sass text
+*.sbx binary
+*.scala text diff=java
+*.scm text
+*.script text
+*.scs binary
+*.scss text diff=css
+*.sd binary
+*.sec binary
+*.sfark binary
+*.sfnt binary
+*.sfx binary
+*.sgi binary
+*.sh text diff=bash eol=lf
+*.sha1 text
+*.sha224 text
+*.sha256 text
+*.sha384 text
+*.sha512 text
+*.shader text
+*.shar binary
+*.skel.bytes binary
+*.skp binary
+*.sldd binary
+*.sln text eol=crlf
+*.sln.tmpl text eol=crlf
+*.slo binary
+*.slx binary
+*.slxp binary
+*.so binary
+*.sql text eol=lf
+*.sqlproj text eol=crlf
+*.stl binary
+*.styl text
+*.svelte text
+*.svg text
+*.svgz binary
+*.svi binary
+*.swc binary
+*.swf binary
+*.swift text diff=swift
+*.sz binary
+*.tab text
+*.tag text
+*.tagx text
+*.tar binary
+*.tar.* binary
+*.tbl binary
+*.tex text diff=tex
+*.textile text
+*.tga binary
+*.tgz binary
+*.theme text diff=php eol=lf
+*.tif binary
+*.tiff binary
+*.tld text
+*.tmp binary
+*.tmpl text
+*.toml text
+*.tpl text
+*.ts text
+*.tsv text
+*.tsx text
+*.tta binary
+*.ttf binary
+*.twig text eol=lf
+*.txt text
+*.ufo binary
+*.ufp binary
+*.unity text eol=lf
+*.unitypackage binary
+*.val binary
+*.vbproj text eol=crlf
+*.vcproj text eol=crlf
+*.vcxitems text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.vcxproj.tmpl text eol=crlf
+*.vim text eol=lf
+*.vml binary
+*.vob binary
+*.voc binary
+*.vox binary
+*.vue text
+*.war binary
+*.wav binary
+*.wbmp binary
+*.wdp binary
+*.webm binary
+*.webp binary
+*.wixproj text eol=crlf
+*.wl text diff=mathematica
+*.wls text diff=mathematica
+*.wlt text diff=mathematica
+*.wma binary
+*.wmaproj text eol=crlf
+*.wmf binary
+*.wmv binary
+*.woff binary
+*.woff2 binary
+*.wv binary
+*.wwaproj text eol=crlf
+*.xaml binary
+*.xar binary
+*.xbm binary
+*.xcf binary
+*.xhtml text diff=html
+*.xlk binary
+*.xls binary
+*.xlsx binary
+*.xm binary
+*.xml text
+*.xmp binary
+*.xpi binary
+*.xpm binary
+*.xproj text eol=crlf
+*.xps binary
+*.xsd text
+*.xsl text
+*.xwd binary
+*.xz binary
+*.yaml text
+*.yml text
+*.yuv binary
+*.z binary
+*.zip binary
+*.zipx binary
+*.zsh text eol=lf
+*.ztl binary
+*.zz binary
+
+.babelrc text
+.browserslistrc text
+.buildlog text
+.csslintrc text
+.editorconfig text
+.env text
+.eslintrc text
+.gitattributes text
+.gitconfig text
+.gitignore text
+.gvimrc text eol=lf
+.htaccess text
+.htmlhintrc text
+.jscsrc text
+.jshintignore text
+.jshintrc text
+.npmignore text
+.npmrc text
+.prettierrc text
+.recommenders binary
+.slugignore text
+.stylelintrc text
+.vimrc text eol=lf
+AUTHORS text
+browserslist text
+CHANGELOG text
+CHANGES text
+CONTRIBUTING text
+COPYING text
+copyright text
+Dockerfile text
+DockerFile text
+INSTALL text
+license text
+LICENSE text
+makefile text
+Makefile text
+NEWS text
+package-lock.json text
+package.json text
+pnpm-lock.yaml text
+Procfile text
+ProcFile text
+schema.rb text diff=ruby
+TODO text
+yarn.lock text
