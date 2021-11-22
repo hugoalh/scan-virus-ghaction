@@ -31,7 +31,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ### 🌟 Feature
 
-- Faster (compare between `clamdscan` (ClamDScan) and `clamscan` (ClamScan))
+- Faster (compare between `clamdscan` (ClamDScan) and `clamscan` (ClamScan)).
 
 ## 📚 Documentation
 
