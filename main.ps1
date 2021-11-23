@@ -65,13 +65,19 @@ function Execute-Scan {
 	Write-Output -InputObject "::group::Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsLength = $Elements.Longlength
-	Write-GHActionLog -Message "Elements ($Session - $ElementsLength):"
+	Write-GHActionLog -Message "Elements list ($Session - $ElementsLength):"
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
+		Write-Output -InputObject "::group::$Element"
+		foreach ($Algorithm in @("SHA1", "SHA256", "SHA384", "SHA512", "MD5")) {
+			Write-Output -InputObject "$($Algorithm): $(Get-FileHash -Algorithm $Algorithm -Path $Element)"
+		}
+		Write-Output -InputObject "::endgroup::"
 	}
 	Set-Content -Encoding utf8NoBOM -NoNewLine -Path $TemporaryFile -Value $ElementsRaw.Trim()
 	$script:TotalScanElements += $ElementsLength
+	Write-GHActionLog -Message "ClamDScan Result ($Session):"
 	$ClamDScanResult = $null
 	try {
 		$ClamDScanResult = $(clamdscan --fdpass --file-list $TemporaryFile --multiscan) -join "`n"
@@ -85,7 +91,7 @@ function Execute-Scan {
 	} else {
 		$script:SetFail = $true
 		if (($LASTEXITCODE -eq 1) -or ($ClamDScanResult -match "found")) {
-			Write-Output -InputObject "::error::Found virus in $Session from ClamAV!"
+			Write-Output -InputObject "::error::Found virus in $Session via ClamAV!"
 		} else {
 			Write-Output -InputObject "::error::Unexpected ClamDScan result ($Session){$LASTEXITCODE}!"
 		}
