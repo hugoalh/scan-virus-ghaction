@@ -9,8 +9,6 @@
 [![GitHub Forks](https://img.shields.io/github/forks/hugoalh/scan-virus-ghaction?label=Forks&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/network/members)
 ![GitHub Languages](https://img.shields.io/github/languages/count/hugoalh/scan-virus-ghaction?label=Languages&logo=github&logoColor=ffffff&style=flat-square)
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square)](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
-[![LGTM Alerts](https://img.shields.io/lgtm/alerts/g/hugoalh/scan-virus-ghaction?label=Alerts&logo=lgtm&logoColor=ffffff&style=flat-square)
-![LGTM Grade](https://img.shields.io/lgtm/grade/javascript/g/hugoalh/scan-virus-ghaction?label=Grade&logo=lgtm&logoColor=ffffff&style=flat-square)](https://lgtm.com/projects/g/hugoalh/scan-virus-ghaction)
 [![License](https://img.shields.io/static/v1?label=License&message=MIT&color=brightgreen&style=flat-square)](./LICENSE.md)
 
 | **Release** | **Latest** (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) | **Pre** (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) |
@@ -31,7 +29,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ### 🌟 Feature
 
-- Faster (compare between `clamdscan` (ClamDScan) and `clamscan` (ClamScan)).
+- Faster than other GitHub Actions with the same purpose (between 5% to 95%).
 
 ## 📚 Documentation
 
