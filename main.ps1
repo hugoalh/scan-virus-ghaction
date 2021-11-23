@@ -69,11 +69,12 @@ function Execute-Scan {
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
-		Write-Output -InputObject "::group::$Element"
-		foreach ($Algorithm in @("SHA1", "SHA256", "SHA384", "SHA512", "MD5")) {
-			Write-Output -InputObject "$($Algorithm): $(Get-FileHash -Algorithm $Algorithm -Path $Element)"
+		Write-Output -InputObject $Element
+		if ($(Test-Path -Path $Element -PathType Leaf) -eq $true) {
+			foreach ($Algorithm in @("SHA1", "SHA256", "SHA384", "SHA512", "MD5")) {
+				Write-Output -InputObject "  $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+			}
 		}
-		Write-Output -InputObject "::endgroup::"
 	}
 	Set-Content -Encoding utf8NoBOM -NoNewLine -Path $TemporaryFile -Value $ElementsRaw.Trim()
 	$script:TotalScanElements += $ElementsLength
@@ -101,7 +102,7 @@ function Execute-Scan {
 }
 Execute-Scan -Session "current workspace"
 if ($GitDepth -eq $true) {
-	if ($(Test-Path -Path $(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath ".git")) -eq $true) {
+	if ($(Test-Path -Path .\.git) -eq $true) {
 		$GitCommitsRaw = $null
 		try {
 			$GitCommitsRaw = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
