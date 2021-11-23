@@ -65,7 +65,7 @@ function Execute-Scan {
 	Write-Output -InputObject "::group::Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsLength = $Elements.Longlength
-	Write-GHActionLog -Message "Elements list ($Session - $ElementsLength):"
+	Write-GHActionLog -Message "Elements ($Session - $ElementsLength):"
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
@@ -78,6 +78,7 @@ function Execute-Scan {
 	}
 	Set-Content -Encoding utf8NoBOM -NoNewLine -Path $TemporaryFile -Value $ElementsRaw.Trim()
 	$script:TotalScanElements += $ElementsLength
+	Write-GHActionLog -Message ""
 	Write-GHActionLog -Message "ClamDScan Result ($Session):"
 	$ClamDScanResult = $null
 	try {
