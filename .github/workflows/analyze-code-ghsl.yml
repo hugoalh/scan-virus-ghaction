@@ -26,3 +26,4 @@ jobs:
         uses: "github/super-linter@v4.8.4"
         env:
           DISABLE_ERRORS: "true"
+          GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
