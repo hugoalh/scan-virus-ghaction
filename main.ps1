@@ -1,11 +1,3 @@
-function Write-GHActionDebug {
-	param (
-		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
-	)
-	foreach ($Line in ($Message.Trim() -split "`n")) {
-		Write-Output -InputObject "::debug::$Line"
-	}
-}
 function Write-GHActionLog {
 	param (
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
@@ -45,7 +37,7 @@ if ($LASTEXITCODE -ne 0) {
 	Write-GHActionLog -Message $FreshClamResult
 	Exit 1
 }
-Write-GHActionDebug -Message $FreshClamResult
+Write-GHActionLog -Message $FreshClamResult
 Write-Output -InputObject "::endgroup::"
 Write-Output -InputObject "::group::Start ClamAV daemon."
 $ClamDStartResult = $null
@@ -60,7 +52,7 @@ if ($LASTEXITCODE -ne 0) {
 	Write-GHActionLog -Message $ClamDStartResult
 	Exit 1
 }
-Write-GHActionDebug -Message $ClamDStartResult
+Write-GHActionLog -Message $ClamDStartResult
 Write-Output -InputObject "::endgroup::"
 $GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
 $SetFail = $false
@@ -73,7 +65,7 @@ function Execute-Scan {
 	Write-Output -InputObject "::group::Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsLength = $Elements.Longlength
-	Write-GHActionDebug -Message "Elements ($Session - $ElementsLength):"
+	Write-GHActionLog -Message "Elements ($Session - $ElementsLength):"
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
@@ -89,7 +81,7 @@ function Execute-Scan {
 		Exit 1
 	}
 	if (($LASTEXITCODE -eq 0) -and ($ClamDScanResult -notmatch "found")) {
-		Write-GHActionDebug -Message $ClamDScanResult
+		Write-GHActionLog -Message $ClamDScanResult
 	} else {
 		$script:SetFail = $true
 		if (($LASTEXITCODE -eq 1) -or ($ClamDScanResult -match "found")) {
