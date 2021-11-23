@@ -73,13 +73,13 @@ function Execute-Scan {
 	Write-Output -InputObject "::group::Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsLength = $Elements.Longlength
-	Write-GHActionDebug -Message "Elements list ($Session - $ElementsLength):`n$($Elements -join "`n")"
+	Write-GHActionDebug -Message "Elements ($Session - $ElementsLength):"
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
 	}
-	Set-Content -Encoding utf8NoBOM -NoNewLine -Path $TemporaryFile -Value $ElementsRaw
-	$script:TotalScanElements += ($ElementsLength + 1)
+	Set-Content -Encoding utf8NoBOM -NoNewLine -Path $TemporaryFile -Value $ElementsRaw.Trim()
+	$script:TotalScanElements += $ElementsLength
 	$ClamDScanResult = $null
 	try {
 		$ClamDScanResult = $(clamdscan --fdpass --file-list $TemporaryFile --multiscan) -join "`n"
@@ -144,8 +144,9 @@ if ($GitDepth -eq $true) {
 }
 Write-Output -InputObject "Total scan elements: $TotalScanElements"
 Remove-Item -Path $TemporaryFile
+Write-Output -InputObject "Stop ClamAV daemon."
+Get-Process -Name *clamd* | Stop-Process
 if ($SetFail -eq $true) {
 	Exit 1
 }
-Write-Output -InputObject "Stop ClamAV daemon."
 Exit 0

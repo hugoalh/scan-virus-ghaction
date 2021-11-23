@@ -1,0 +1,6 @@
+/media/sda1/apks
+/media/cdrom
+https://dl-cdn.alpinelinux.org/alpine/v3.14/main
+https://dl-cdn.alpinelinux.org/alpine/v3.14/community
+@edge https://dl-cdn.alpinelinux.org/alpine/edge/main
+@edgecommunity https://dl-cdn.alpinelinux.org/alpine/edge/community
