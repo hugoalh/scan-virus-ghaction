@@ -24,7 +24,7 @@ try {
 }
 if ($LASTEXITCODE -ne 0) {
 	$FreshClamErrorCode = $LASTEXITCODE
-	$FreshClamErrorMessage = $null
+	$FreshClamErrorMessage = ""
 	switch ($FreshClamErrorCode) {
 		40 { $FreshClamErrorMessage = ": Unknown option passed" }
 		50 { $FreshClamErrorMessage = ": Cannot change directory" }
