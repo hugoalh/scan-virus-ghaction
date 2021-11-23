@@ -69,10 +69,10 @@ function Execute-Scan {
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
-		Write-Output -InputObject $Element
+		Write-Output -InputObject "- $Element"
 		if ($(Test-Path -Path $Element -PathType Leaf) -eq $true) {
-			foreach ($Algorithm in @("SHA1", "SHA256", "SHA384", "SHA512", "MD5")) {
-				Write-Output -InputObject "  $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+			foreach ($Algorithm in @("MD5", "SHA1", "SHA256", "SHA384", "SHA512")) {
+				Write-Output -InputObject "  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
 			}
 		}
 	}
