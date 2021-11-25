@@ -51,7 +51,47 @@ Require Software:
 
 #### `gitdepth`
 
-**\[Optional\]** `<boolean = false>` Also scan Git commits.
+**\[Optional\]** `<boolean = false>` Also scan every Git commits.
+
+#### `list_elements`
+
+**\[Optional\]** `<string = "none">` List elements.
+
+- **`"none"`:** Not list.
+- **`"debug"`:** List at debug level.
+- **`"log"`:** List at log level.
+
+> **💡 Hint:** Enable this list maybe able to create log bomb.
+
+#### `list_hashes`
+
+**\[Optional\]** `<string = "none">` List elements' hashes.
+
+- **`"none"`:** Not list.
+- **`"debug"`:** List at debug level.
+- **`"log"`:** List at log level.
+
+> **💡 Hint:** Enable this list maybe able to create log bomb.
+
+#### `list_miscellaneousresults`
+
+**\[Optional\]** `<string = "debug">` List miscellaneous results.
+
+- **`"none"`:** Not list.
+- **`"debug"`:** List at debug level.
+- **`"log"`:** List at log level.
+
+> **⚠ Important:** If the result is unexpected, it is always list as error.
+
+#### `list_scanresults`
+
+**\[Optional\]** `<string = "debug">` List scan results.
+
+- **`"none"`:** Not list.
+- **`"debug"`:** List at debug level.
+- **`"log"`:** List at log level.
+
+> **⚠ Important:** If the result is unexpected, it is always list as error.
 
 ### 📤 Output
 

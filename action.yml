@@ -4,9 +4,25 @@ author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
   gitdepth:
-    description: "{boolean} Also scan Git commits."
+    description: "{boolean} Also scan every Git commits."
     required: false
     default: "false"
+  list_elements:
+    description: "{string} List elements."
+    required: false
+    default: "none"
+  list_hashes:
+    description: "{string} List hashes."
+    required: false
+    default: "none"
+  list_miscellaneousresults:
+    description: "{string} List miscellaneous results."
+    required: false
+    default: "debug"
+  list_scanresults:
+    description: "{string} List scan results."
+    required: false
+    default: "debug"
 runs:
   using: "docker"
   image: "Dockerfile"

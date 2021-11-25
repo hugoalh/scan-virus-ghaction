@@ -1,3 +1,19 @@
+function Write-GHActionDebug {
+	param (
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
+	)
+	foreach ($Line in ($Message.Trim() -split "`n")) {
+		Write-Output -InputObject "::debug::$Line"
+	}
+}
+function Write-GHActionError {
+	param (
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
+	)
+	foreach ($Line in ($Message.Trim() -split "`n")) {
+		Write-Output -InputObject "::error::$Line"
+	}
+}
 function Write-GHActionLog {
 	param (
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
@@ -6,12 +22,60 @@ function Write-GHActionLog {
 		Write-Output -InputObject $Line
 	}
 }
+function Write-GHActionWarning {
+	param (
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
+	)
+	foreach ($Line in ($Message.Trim() -split "`n")) {
+		Write-Output -InputObject "::warning::$Line"
+	}
+}
+function Convert-GHActionListInput {
+	param (
+		[Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)][AllowEmptyString()]$Value,
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Name
+	)
+	switch ($Value.GetType().Name) {
+		"Int32" {
+			if (($Value -ge 0) -and ($Value -le 2)) {
+				return $Value
+			}
+		}
+		"String" {
+			switch ($Value) {
+				"none" { return 0 }
+				"debug" { return 1 }
+				"log" { return 2 }
+			}
+		}
+	}
+	Write-GHActionError -Message "SyntaxError: Input ``$Name``'s value is not in the list!"
+	Exit 1
+}
+function Publish-GHActionRawLog {
+	param (
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][uInt16]$Condition,
+		[Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)][AllowEmptyString()][string]$Message
+	)
+	switch ($Condition) {
+		1 { Write-GHActionDebug -Message $Message }
+		2 { Write-GHActionLog -Message $Message }
+	}
+}
+$GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
+$ListElements = Convert-GHActionListInput -Name "list_elements" -Value $env:INPUT_LIST_ELEMENTS
+$ListHashes = Convert-GHActionListInput -Name "list_hashes" -Value $env:INPUT_LIST_HASHES
+$ListMiscellaneousResults = Convert-GHActionListInput -Name "list_miscellaneousresults" -Value $env:INPUT_LIST_MISCELLANEOUSRESULTS
+$ListScanResults = Convert-GHActionListInput -Name "list_scanresults" -Value $env:INPUT_LIST_SCANRESULTS
+if ($ListHashes -gt $ListElements) {
+	$ListHashes = $ListElements
+}
 Write-Output -InputObject "::group::Update ClamAV via FreshClam."
 $FreshClamResult = $null
 try {
 	$FreshClamResult = $(freshclam) -join "`n"
 } catch {
-	Write-Output -InputObject "::error::Unable to execute FreshClam!"
+	Write-GHActionError -Message "Unable to execute FreshClam!"
 	Exit 1
 }
 if ($LASTEXITCODE -ne 0) {
@@ -33,89 +97,88 @@ if ($LASTEXITCODE -ne 0) {
 		61 { $FreshClamErrorMessage = ": Cannot drop privileges" }
 		62 { $FreshClamErrorMessage = ": Cannot initialize logger" }
 	}
-	Write-Output -InputObject "::error::Unexpected FreshClam result {$($FreshClamErrorCode)$($FreshClamErrorMessage)}!"
 	Write-GHActionLog -Message $FreshClamResult
+	Write-GHActionError -Message "Unexpected FreshClam result {$($FreshClamErrorCode)$($FreshClamErrorMessage)}!"
 	Exit 1
 }
-Write-GHActionLog -Message $FreshClamResult
+Publish-GHActionRawLog -Condition $ListMiscellaneousResults -Message $FreshClamResult
 Write-Output -InputObject "::endgroup::"
 Write-Output -InputObject "::group::Start ClamAV daemon."
 $ClamDStartResult = $null
 try {
 	$ClamDStartResult = $(clamd) -join "`n"
-} catch {
+}
+catch {
 	Write-Output -InputObject "::error::Unable to execute ClamD!"
 	Exit 1
 }
 if ($LASTEXITCODE -ne 0) {
-	Write-Output -InputObject "::error::Unexpected ClamD result {$LASTEXITCODE}!"
 	Write-GHActionLog -Message $ClamDStartResult
+	Write-Output -InputObject "::error::Unexpected ClamD result {$LASTEXITCODE}!"
 	Exit 1
 }
-Write-GHActionLog -Message $ClamDStartResult
+Publish-GHActionRawLog -Condition $ListMiscellaneousResults -Message $ClamDStartResult
 Write-Output -InputObject "::endgroup::"
-$GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
 $SetFail = $false
 $TemporaryFile = (New-TemporaryFile).FullName
 $TotalScanElements = 0
-function Execute-Scan {
+function Start-ScanVirus {
 	param (
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Session
 	)
 	Write-Output -InputObject "::group::Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsLength = $Elements.Longlength
-	Write-GHActionLog -Message "Elements ($Session - $ElementsLength):"
+	Publish-GHActionRawLog -Condition $ListElements -Message "Elements ($Session - $ElementsLength):"
 	$ElementsRaw = ""
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
-		Write-Output -InputObject "- $Element"
-		if ($(Test-Path -Path $Element -PathType Leaf) -eq $true) {
+		Publish-GHActionRawLog -Condition $ListElements -Message "- $Element"
+		if (($ListHashes -gt 0) -and (Test-Path -Path $Element -PathType Leaf)) {
 			foreach ($Algorithm in @("MD5", "SHA1", "SHA256", "SHA384", "SHA512")) {
-				Write-Output -InputObject "  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+				Publish-GHActionRawLog -Condition $ListHashes -Message "  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
 			}
 		}
 	}
-	Set-Content -Encoding utf8NoBOM -NoNewLine -Path $TemporaryFile -Value $ElementsRaw.Trim()
+	Set-Content -Encoding utf8NoBOM -NoNewline -Path $TemporaryFile -Value $ElementsRaw.Trim()
 	$script:TotalScanElements += $ElementsLength
-	Write-GHActionLog -Message ""
-	Write-GHActionLog -Message "ClamDScan Result ($Session):"
 	$ClamDScanResult = $null
 	try {
 		$ClamDScanResult = $(clamdscan --fdpass --file-list $TemporaryFile --multiscan) -join "`n"
 	} catch {
-		Write-Output -InputObject "::error::Unable to execute ClamDScan ($Session)!"
+		Write-GHActionError -Message "Unable to execute ClamDScan ($Session)!"
 		Write-Output -InputObject "::endgroup::"
 		Exit 1
 	}
-	if (($LASTEXITCODE -eq 0) -and ($ClamDScanResult -notmatch "found")) {
-		Write-GHActionLog -Message $ClamDScanResult
+	if ($LASTEXITCODE -eq 0) {
+		Publish-GHActionRawLog -Condition $ListScanResults -Message "ClamDScan Result ($Session):`n$ClamDScanResult"
 	} else {
+		$ClamDScanErrorCode = $LASTEXITCODE
 		$script:SetFail = $true
-		if (($LASTEXITCODE -eq 1) -or ($ClamDScanResult -match "found")) {
-			Write-Output -InputObject "::error::Found virus in $Session via ClamAV!"
+		Write-GHActionLog -Message "ClamDScan Result ($Session):`n$ClamDScanResult"
+		if ($ClamDScanErrorCode -eq 1) {
+			Write-GHActionError -Message "Found virus in $Session via ClamAV!"
 		} else {
-			Write-Output -InputObject "::error::Unexpected ClamDScan result ($Session){$LASTEXITCODE}!"
+			Write-GHActionError -Message "Unexpected ClamDScan result ($Session){$ClamDScanErrorCode}!"
 		}
-		Write-GHActionLog -Message $ClamDScanResult
 	}
 	Write-Output -InputObject "::endgroup::"
 }
-Execute-Scan -Session "current workspace"
-if ($GitDepth -eq $true) {
-	if ($(Test-Path -Path .\.git) -eq $true) {
+Start-ScanVirus -Session "current workspace"
+if ($GitDepth) {
+	if (Test-Path -Path .\.git) {
 		$GitCommitsRaw = $null
 		try {
 			$GitCommitsRaw = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
 		} catch {
-			Write-Output -InputObject "::error::Unable to execute Git-Log!"
+			Write-GHActionError -Message "Unable to execute Git-Log!"
 			Exit 1
 		}
 		if (($LASTEXITCODE -eq 0) -and ($GitCommitsRaw -notmatch "error") -and ($GitCommitsRaw -notmatch "fatal")) {
 			$GitCommits = ($GitCommitsRaw -split "`n")
 			$GitCommitsLength = $GitCommits.Longlength
 			if ($GitCommitsLength -le 1) {
-				Write-Output -InputObject "::warning::Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-run. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
+				Write-GHActionWarning -Message "Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-run. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsLength; $GitCommitsIndex++) {
 				$GitCommit = $GitCommits[$GitCommitsIndex]
@@ -124,29 +187,30 @@ if ($GitDepth -eq $true) {
 				try {
 					$GitCheckoutResult = $(git checkout "$GitCommit" --quiet) -join "`n"
 				} catch {
-					Write-Output -InputObject "::error::Unable to execute Git-Checkout (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit))!"
+					Write-GHActionError -Message "Unable to execute Git-Checkout (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit))!"
 					Exit 1
 				}
 				if ($LASTEXITCODE -eq 0) {
-					Execute-Scan -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
+					Start-ScanVirus -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
 				} else {
-					Write-Output -InputObject "::error::Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)){$LASTEXITCODE}!"
-					Write-GHActionLog -Message $($GitCheckoutResult -join "`n")
+					$GitCheckoutErrorCode = $LASTEXITCODE
+					Write-GHActionLog -Message $GitCheckoutResult
+					Write-GHActionError -Message "Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)){$GitCheckoutErrorCode}!"
 				}
 			}
 		} else {
-			Write-Output -InputObject "::error::Unexpected Git-Log result {$LASTEXITCODE}!"
 			Write-GHActionLog -Message $GitCommitsRaw
+			Write-GHActionError -Message "Unexpected Git-Log result {$LASTEXITCODE}!"
 		}
 	} else {
-		Write-Output -InputObject "::warning::Current workspace is not a Git repository!"
+		Write-GHActionWarning -Message "Current workspace is not a Git repository!"
 	}
 }
-Write-Output -InputObject "Total scan elements: $TotalScanElements"
+Publish-GHActionRawLog -Condition $ListMiscellaneousResults -Message "Total scan elements: $TotalScanElements"
 Remove-Item -Path $TemporaryFile
 Write-Output -InputObject "Stop ClamAV daemon."
 Get-Process -Name *clamd* | Stop-Process
-if ($SetFail -eq $true) {
+if ($SetFail) {
 	Exit 1
 }
 Exit 0
