@@ -81,7 +81,7 @@ Require Software:
 - **`1` / `"debug"`:** List at debug level.
 - **`2` / `"log"`:** List at log level.
 
-> **⚠ Important:** If the result is unexpected, it is always list as error level.
+> **⚠ Important:** If the result is unexpected, it is always list at error level.
 
 #### `list_scanresults`
 
@@ -91,7 +91,7 @@ Require Software:
 - **`1` / `"debug"`:** List at debug level.
 - **`2` / `"log"`:** List at log level.
 
-> **⚠ Important:** If the result is unexpected, it is always list as error level.
+> **⚠ Important:** If the result is unexpected, it is always list at error level.
 
 ### 📤 Output
 
