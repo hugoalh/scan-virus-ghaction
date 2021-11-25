@@ -8,19 +8,19 @@ inputs:
     required: false
     default: "false"
   list_elements:
-    description: "{string} List elements."
+    description: "{(number | string)} List elements."
     required: false
     default: "none"
   list_hashes:
-    description: "{string} List hashes."
+    description: "{(number | string)} List hashes."
     required: false
     default: "none"
   list_miscellaneousresults:
-    description: "{string} List miscellaneous results."
+    description: "{(number | string)} List miscellaneous results."
     required: false
     default: "debug"
   list_scanresults:
-    description: "{string} List scan results."
+    description: "{(number | string)} List scan results."
     required: false
     default: "debug"
 runs:

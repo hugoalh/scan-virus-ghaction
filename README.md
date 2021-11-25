@@ -21,7 +21,7 @@ A GitHub Action to scan virus in the GitHub Action workspace.
 
 ### 🛡 Anti Virus Software
 
-- [ClamAV](https://www.clamav.net) (via `clamdscan` (ClamDScan))
+- [ClamAV](https://www.clamav.net) (via ClamDScan (`clamdscan`))
 
 ### ⚠ Disclaimer
 
@@ -29,7 +29,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ### 🌟 Feature
 
-- Faster than other GitHub Actions with the same purpose (between 5% to 95%).
+- 4% to 96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
 
 ## 📚 Documentation
 
@@ -55,43 +55,43 @@ Require Software:
 
 #### `list_elements`
 
-**\[Optional\]** `<string = "none">` List elements.
+**\[Optional\]** `<(number | string) = "none">` List elements.
 
-- **`"none"`:** Not list.
-- **`"debug"`:** List at debug level.
-- **`"log"`:** List at log level.
+- **`0` / `"none"`:** Not list.
+- **`1` / `"debug"`:** List at debug level.
+- **`2` / `"log"`:** List at log level.
 
-> **💡 Hint:** Enable this list maybe able to create log bomb.
+> **💡 Hint:** Enable this list will significantly increase the log size.
 
 #### `list_hashes`
 
-**\[Optional\]** `<string = "none">` List elements' hashes.
+**\[Optional\]** `<(number | string) = "none">` List elements' hashes.
 
-- **`"none"`:** Not list.
-- **`"debug"`:** List at debug level.
-- **`"log"`:** List at log level.
+- **`0` / `"none"`:** Not list.
+- **`1` / `"debug"`:** List at debug level.
+- **`2` / `"log"`:** List at log level.
 
-> **💡 Hint:** Enable this list maybe able to create log bomb.
+> **💡 Hint:** Enable this list will significantly increase the log size.
 
 #### `list_miscellaneousresults`
 
-**\[Optional\]** `<string = "debug">` List miscellaneous results.
+**\[Optional\]** `<(number | string) = "debug">` List miscellaneous results.
 
-- **`"none"`:** Not list.
-- **`"debug"`:** List at debug level.
-- **`"log"`:** List at log level.
+- **`0` / `"none"`:** Not list.
+- **`1` / `"debug"`:** List at debug level.
+- **`2` / `"log"`:** List at log level.
 
-> **⚠ Important:** If the result is unexpected, it is always list as error.
+> **⚠ Important:** If the result is unexpected, it is always list as error level.
 
 #### `list_scanresults`
 
-**\[Optional\]** `<string = "debug">` List scan results.
+**\[Optional\]** `<(number | string) = "debug">` List scan results.
 
-- **`"none"`:** Not list.
-- **`"debug"`:** List at debug level.
-- **`"log"`:** List at log level.
+- **`0` / `"none"`:** Not list.
+- **`1` / `"debug"`:** List at debug level.
+- **`2` / `"log"`:** List at log level.
 
-> **⚠ Important:** If the result is unexpected, it is always list as error.
+> **⚠ Important:** If the result is unexpected, it is always list as error level.
 
 ### 📤 Output
 

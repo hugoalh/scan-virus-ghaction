@@ -32,8 +32,8 @@ function Write-GHActionWarning {
 }
 function Convert-GHActionListInput {
 	param (
-		[Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)][AllowEmptyString()]$Value,
-		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Name
+		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Name,
+		[Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)][AllowEmptyString()]$Value
 	)
 	switch ($Value.GetType().Name) {
 		"Int32" {
