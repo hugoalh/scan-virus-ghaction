@@ -122,7 +122,7 @@ Write-Output -InputObject "::endgroup::"
 $SetFail = $false
 $TemporaryFile = (New-TemporaryFile).FullName
 $TotalScanElements = 0
-function Start-ScanVirus {
+function Invoke-ScanVirus {
 	param (
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][string]$Session
 	)
@@ -164,7 +164,7 @@ function Start-ScanVirus {
 	}
 	Write-Output -InputObject "::endgroup::"
 }
-Start-ScanVirus -Session "current workspace"
+Invoke-ScanVirus -Session "current workspace"
 if ($GitDepth) {
 	if (Test-Path -Path .\.git) {
 		$GitCommitsRaw = $null
@@ -191,7 +191,7 @@ if ($GitDepth) {
 					Exit 1
 				}
 				if ($LASTEXITCODE -eq 0) {
-					Start-ScanVirus -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
+					Invoke-ScanVirus -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
 				} else {
 					$GitCheckoutErrorCode = $LASTEXITCODE
 					Write-GHActionLog -Message $GitCheckoutResult
