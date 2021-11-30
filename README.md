@@ -30,6 +30,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 ### 🌟 Feature
 
 - 4% to 96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
+- Ability to scan other things, not limited to only Git repository.
 
 ## 📚 Documentation
 
@@ -61,7 +62,7 @@ Require Software:
 - **`1` / `"debug"`:** List at debug level.
 - **`2` / `"log"`:** List at log level.
 
-> **💡 Hint:** Enable this list will significantly increase the log size.
+> **⚠ Important:** Enable this list will significantly increase the log size.
 
 #### `list_hashes`
 
@@ -71,7 +72,7 @@ Require Software:
 - **`1` / `"debug"`:** List at debug level.
 - **`2` / `"log"`:** List at log level.
 
-> **💡 Hint:** Enable this list will significantly increase the log size.
+> **⚠ Important:** Enable this list will significantly increase the log size.
 
 #### `list_miscellaneousresults`
 
