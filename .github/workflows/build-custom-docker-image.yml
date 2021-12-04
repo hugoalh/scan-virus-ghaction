@@ -1,20 +1,21 @@
 # $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-name: "Build Custom Environment"
+name: "Build Custom Docker Image"
 on:
-  schedule:
-    - cron: "0 0 * * 3"
-  push:
-    branches:
-      - "main"
-  release:
-    types:
-      - "published"
+#  schedule:
+#    - cron: "0 0 * * 3"
+#  push:
+#    branches:
+#      - "main"
+#  release:
+#    types:
+#      - "published"
+  workflow_dispatch:
 env:
-  IMAGE_NAME: "${{github.repository}}"
   REGISTRY: "ghcr.io"
+  IMAGE_NAME: "${{github.repository}}"
 jobs:
-  build-custom-environment:
-    name: "Build Custom Environment"
+  build-custom-docker-image:
+    name: "Build Custom Docker Image"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
@@ -30,10 +31,15 @@ jobs:
         uses: "docker/metadata-action@v3.6.1"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
       - name: "Build & Push Docker Image"
         uses: "docker/build-push-action@v2.7.0"
         with:
-          file: "custom-environment/Dockerfile"
+          context: "./"
+          file: "Dockerfile"
           labels: "${{steps.meta.outputs.labels}}"
           pull: "true"
           push: "true"

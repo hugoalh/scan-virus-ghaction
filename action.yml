@@ -11,8 +11,8 @@ inputs:
     description: "{(number | string)} List elements."
     required: false
     default: "none"
-  list_hashes:
-    description: "{(number | string)} List hashes."
+  list_elementshashes:
+    description: "{(number | string)} List elements' hashes."
     required: false
     default: "none"
   list_miscellaneousresults:
@@ -25,7 +25,7 @@ inputs:
     default: "debug"
 runs:
   using: "docker"
-  image: "custom-environment/Dockerfile"
+  image: "Dockerfile"
 branding:
   icon: "shield"
   color: "red"

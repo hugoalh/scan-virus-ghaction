@@ -64,11 +64,11 @@ function Publish-GHActionRawLog {
 }
 $GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
 $ListElements = Convert-GHActionListInput -Name "list_elements" -Value $env:INPUT_LIST_ELEMENTS
-$ListHashes = Convert-GHActionListInput -Name "list_hashes" -Value $env:INPUT_LIST_HASHES
+$ListElementsHashes = Convert-GHActionListInput -Name "list_elementshashes" -Value $env:INPUT_LIST_ELEMENTSHASHES
 $ListMiscellaneousResults = Convert-GHActionListInput -Name "list_miscellaneousresults" -Value $env:INPUT_LIST_MISCELLANEOUSRESULTS
 $ListScanResults = Convert-GHActionListInput -Name "list_scanresults" -Value $env:INPUT_LIST_SCANRESULTS
-if ($ListHashes -gt $ListElements) {
-	$ListHashes = $ListElements
+if ($ListElementsHashes -gt $ListElements) {
+	$ListElementsHashes = $ListElements
 }
 Write-Output -InputObject "::group::Update ClamAV via FreshClam."
 $FreshClamResult = $null
@@ -134,9 +134,9 @@ function Invoke-ScanVirus {
 	foreach ($Element in $Elements) {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
 		Publish-GHActionRawLog -Condition $ListElements -Message "- $Element"
-		if (($ListHashes -gt 0) -and (Test-Path -Path $Element -PathType Leaf)) {
+		if (($ListElementsHashes -gt 0) -and (Test-Path -Path $Element -PathType Leaf)) {
 			foreach ($Algorithm in @("MD5", "SHA1", "SHA256", "SHA384", "SHA512")) {
-				Publish-GHActionRawLog -Condition $ListHashes -Message "  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+				Publish-GHActionRawLog -Condition $ListElementsHashes -Message "  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
 			}
 		}
 	}
