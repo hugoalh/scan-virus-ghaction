@@ -16,7 +16,6 @@ RUN ["apk", "upgrade"]
 RUN ["apk", "add", "--allow-untrusted", "--no-cache", "ca-certificates", "clamav@edgecommunity", "clamav-clamdscan@edgecommunity", "clamav-daemon@edgecommunity", "clamav-db@edgecommunity", "clamav-doc@edgecommunity", "clamav-libs@edgecommunity", "clamav-libunrar@edgecommunity", "clamav-milter@edgecommunity", "clamav-scanner@edgecommunity", "curl", "freshclam@edgecommunity", "git@edge", "icu-libs", "krb5-libs", "less", "libgcc", "libintl", "libssl1.1", "libstdc++", "lttng-ust@edge", "ncurses-terminfo-base", "openssh-client@edge", "tzdata", "userspace-rcu", "zlib"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
-RUN ["export", "POWERSHELL_TELEMETRY_OPTOUT=1"]
 COPY clamd-minify.conf /etc/clamav/clamd.conf
 COPY freshclam-minify.conf /etc/clamav/freshclam.conf
 RUN ["freshclam"]
