@@ -34,6 +34,8 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
+> **⚠ Important:** This documentation is v0.3.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+
 ### 🎯 Entrypoint / Target
 
 ```yml
@@ -64,7 +66,7 @@ Require Software:
 
 > **⚠ Important:** Enable this list will significantly increase the log size.
 
-#### `list_hashes`
+#### `list_elementshashes`
 
 **\[Optional\]** `<(number | string) = "none">` List elements' hashes.
 

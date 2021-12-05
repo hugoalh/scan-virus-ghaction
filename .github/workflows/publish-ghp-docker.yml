@@ -1,21 +1,16 @@
 # $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-name: "Build Custom Docker Image"
+name: "Publish - GitHub Packages - Docker"
 on:
-#  schedule:
-#    - cron: "0 0 * * 3"
-#  push:
-#    branches:
-#      - "main"
-#  release:
-#    types:
-#      - "published"
+  release:
+    types:
+      - "published"
   workflow_dispatch:
 env:
   REGISTRY: "ghcr.io"
   IMAGE_NAME: "${{github.repository}}"
 jobs:
-  build-custom-docker-image:
-    name: "Build Custom Docker Image"
+  publish-ghp-docker:
+    name: "Publish - GitHub Packages - Docker"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
@@ -26,21 +21,26 @@ jobs:
           registry: "${{env.REGISTRY}}"
           username: "${{github.actor}}"
           password: "${{github.token}}"
-      - name: "Extract Docker Metadata"
-        id: "meta"
+      - name: "Generate Docker Metadata"
+        id: "docker-meta"
         uses: "docker/metadata-action@v3.6.1"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+          labels: |
+            org.opencontainers.image.authors=hugoalh
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.title=Scan Virus (GitHub Action) Image
+            org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Build & Push Docker Image"
         uses: "docker/build-push-action@v2.7.0"
         with:
           context: "./"
           file: "Dockerfile"
-          labels: "${{steps.meta.outputs.labels}}"
+          labels: "${{steps.docker-meta.outputs.labels}}"
+          platforms: |
+            linux/amd64
           pull: "true"
           push: "true"
-          tags: "${{steps.meta.outputs.tags}}"
+          tags: "${{steps.docker-meta.outputs.tags}}"
