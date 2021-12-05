@@ -1,9 +1,9 @@
 # $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 name: "Publish - GitHub Packages - Docker"
 on:
-  release:
-    types:
-      - "published"
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
 env:
   REGISTRY: "ghcr.io"
