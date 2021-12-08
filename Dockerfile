@@ -19,5 +19,5 @@ RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 COPY clamd-minify.conf /etc/clamav/clamd.conf
 COPY freshclam-minify.conf /etc/clamav/freshclam.conf
 RUN ["freshclam"]
-COPY main.ps1 /
-CMD ["pwsh", "-NonInteractive", "/main.ps1"]
+COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/main.ps1
+CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
