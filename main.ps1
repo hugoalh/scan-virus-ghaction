@@ -179,7 +179,7 @@ if ($GitDepth) {
 			$GitCommits = ($GitCommitsRaw -split "`n")
 			$GitCommitsLength = $GitCommits.Longlength
 			if ($GitCommitsLength -le 1) {
-				Write-GHActionWarning -Message "Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-run. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
+				Write-GHActionWarning -Message "Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsLength; $GitCommitsIndex++) {
 				$GitCommit = $GitCommits[$GitCommitsIndex]
