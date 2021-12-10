@@ -9,4 +9,3 @@ echo "Setup main system."
 apk update
 apk upgrade
 apk add --allow-untrusted --no-cache ca-certificates clamav@edgecommunity clamav-clamdscan@edgecommunity clamav-daemon@edgecommunity clamav-db@edgecommunity clamav-doc@edgecommunity clamav-libs@edgecommunity clamav-libunrar@edgecommunity clamav-milter@edgecommunity clamav-scanner@edgecommunity curl freshclam@edgecommunity git@edge icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base openssh-client@edge tzdata userspace-rcu zlib
-freshclam
