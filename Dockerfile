@@ -10,7 +10,6 @@ COPY alpine-repositories /etc/apk/repositories
 COPY main.ps1 setup.sh /opt/hugoalh/scan-virus-ghaction/
 RUN ["sh", "/opt/hugoalh/scan-virus-ghaction/setup.sh"]
 RUN ["rm", "-f", "/opt/hugoalh/scan-virus-ghaction/setup.sh"]
-COPY clamd-minify.conf /etc/clamav/clamd.conf
-COPY freshclam-minify.conf /etc/clamav/freshclam.conf
+COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam"]
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
