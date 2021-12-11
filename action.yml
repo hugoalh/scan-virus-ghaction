@@ -25,7 +25,7 @@ inputs:
     default: "debug"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.3.1"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.3.2"
 branding:
   icon: "shield"
   color: "red"
