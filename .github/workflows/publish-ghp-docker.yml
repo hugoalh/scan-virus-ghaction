@@ -35,12 +35,12 @@ jobs:
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |
-            type=raw,enable=${{github.event.inputs.latest == 'true'}},value=latest
             type=raw,enable=${{github.event.inputs.tag != ''}},value=${{github.event.inputs.tag}}
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}.{{minor}}
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}.{{minor}}.{{patch}}
+            type=raw,enable=${{github.event.inputs.latest == 'true'}},value=latest
             type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{version}}
+            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}.{{minor}}.{{patch}}
+            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}.{{minor}}
+            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}
           labels: |
             org.opencontainers.image.authors=hugoalh
             org.opencontainers.image.licenses=MIT
