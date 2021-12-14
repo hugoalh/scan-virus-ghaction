@@ -4,7 +4,8 @@ on:
   schedule:
     - cron: "0 0 1 * *"
   workflow_dispatch:
-concurrency: "scan-virus-cross"
+concurrency:
+  group: "scan-virus-cross"
 jobs:
   scan-virus-cross:
     name: "Scan Virus - ${{matrix.repositories}}"
@@ -12,12 +13,28 @@ jobs:
     strategy:
       matrix:
         repositories:
+          - "0x48piraj/MalWAReX"
+          - "acastillorobles77/MalwareDatabase"
+          - "CYB3RMX/MalwareAnalysis101"
+          - "Da2dalus/The-MALWARE-Repo"
           - "electron/electron"
+          - "Endermanch/MalwareDatabase"
           - "fabrimagic72/malware-samples"
           - "facebook/react"
+          - "HynekPetrak/javascript-malware-collection"
+          - "InQuest/malware-samples"
+          - "jstrosch/malware-samples"
+          - "MalDev101/Loveware"
+          - "MalwareSamples/Linux-Malware-Samples"
+          - "MalwareSamples/Macos-Malware-Samples"
+          - "mstfknn/malware-sample-library"
+          - "NavyTitanium/Misc-Malwares"
+          - "NEUAI/MalwareLibrary"
           - "npm/cli"
           - "PowerShell/PowerShell"
+          - "Virus-Samples/Malware-Sample-Sources"
       fail-fast: false
+      max-parallel: 2
     steps:
       - name: "Checkout Repository ${{matrix.repositories}}"
         uses: "actions/checkout@v2.4.0"
@@ -29,3 +46,7 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@v0.3.2"
         with:
           gitdepth: "true"
+          list_elements: "none"
+          list_elementshashes: "none"
+          list_miscellaneousresults: "none"
+          list_scanresults: "none"
