@@ -8,7 +8,7 @@ concurrency:
   group: "scan-virus-cross"
 jobs:
   scan-virus-cross:
-    name: "Scan Virus - ${{matrix.repositories}}"
+    name: "${{matrix.repositories}}"
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
@@ -17,6 +17,7 @@ jobs:
           - "acastillorobles77/MalwareDatabase"
           - "CYB3RMX/MalwareAnalysis101"
           - "Da2dalus/The-MALWARE-Repo"
+          - "desktop/desktop"
           - "electron/electron"
           - "Endermanch/MalwareDatabase"
           - "fabrimagic72/malware-samples"
@@ -27,6 +28,7 @@ jobs:
           - "MalDev101/Loveware"
           - "MalwareSamples/Linux-Malware-Samples"
           - "MalwareSamples/Macos-Malware-Samples"
+          - "MalwareSamples/Ransomware-Malware-Samples"
           - "mstfknn/malware-sample-library"
           - "NavyTitanium/Misc-Malwares"
           - "NEUAI/MalwareLibrary"
@@ -42,7 +44,7 @@ jobs:
           repository: "${{matrix.repositories}}"
           fetch-depth: 0
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
-      - name: "Scan Repository ${{matrix.repositories}}"
+      - name: "Depth Scan Repository ${{matrix.repositories}}"
         uses: "hugoalh/scan-virus-ghaction@v0.3.2"
         with:
           gitdepth: "true"
