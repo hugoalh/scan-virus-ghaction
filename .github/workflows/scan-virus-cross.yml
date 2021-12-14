@@ -1,0 +1,31 @@
+# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: "Scan Virus - Cross"
+on:
+  schedule:
+    - cron: "0 0 1 * *"
+  workflow_dispatch:
+concurrency: "scan-virus-cross"
+jobs:
+  scan-virus-cross:
+    name: "Scan Virus - ${{matrix.repositories}}"
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        repositories:
+          - "electron/electron"
+          - "fabrimagic72/malware-samples"
+          - "facebook/react"
+          - "npm/cli"
+          - "PowerShell/PowerShell"
+      fail-fast: false
+    steps:
+      - name: "Checkout Repository ${{matrix.repositories}}"
+        uses: "actions/checkout@v2.4.0"
+        with:
+          repository: "${{matrix.repositories}}"
+          fetch-depth: 0
+          token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
+      - name: "Scan Repository ${{matrix.repositories}}"
+        uses: "hugoalh/scan-virus-ghaction@v0.3.2"
+        with:
+          gitdepth: "true"
