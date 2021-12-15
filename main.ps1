@@ -62,6 +62,7 @@ function Publish-GHActionRawLog {
 		2 { Write-GHActionLog -Message $Message }
 	}
 }
+Write-Output -InputObject "Import inputs."
 $GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
 $ListElements = Convert-GHActionListInput -Name "list_elements" -Value $env:INPUT_LIST_ELEMENTS
 $ListElementsHashes = Convert-GHActionListInput -Name "list_elementshashes" -Value $env:INPUT_LIST_ELEMENTSHASHES
