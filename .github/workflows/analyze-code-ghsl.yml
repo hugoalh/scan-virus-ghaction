@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Analyze Repository"
-        uses: "github/super-linter@v4.8.4"
+        uses: "github/super-linter@v4.8.5"
         env:
           DISABLE_ERRORS: "true"
           GITHUB_TOKEN: "${{github.token}}"
