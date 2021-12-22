@@ -94,7 +94,7 @@ function Invoke-ScanVirus {
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
 		if (($ListElementsHashes -gt 0) -and (Test-Path -Path $Element -PathType Leaf)) {
 			foreach ($Algorithm in @('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')) {
-				$ListElementsMessage += "  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+				$ListElementsMessage += "`n  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
 			}
 		}
 	}
