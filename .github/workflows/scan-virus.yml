@@ -32,6 +32,8 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
           gitdepth: "true"
+          list_elements: "debug"
+          list_elementshashes: "debug"
   flat:
     name: "Flat Scan"
     runs-on: "ubuntu-latest"
@@ -41,3 +43,6 @@ jobs:
         uses: "actions/checkout@v2.4.0"
       - name: "Flat Scan Repository"
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
+        with:
+          list_elements: "debug"
+          list_elementshashes: "debug"
