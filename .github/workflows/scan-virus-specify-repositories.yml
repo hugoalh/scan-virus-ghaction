@@ -1,0 +1,43 @@
+# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: "Scan Virus - Specify Repositories"
+on:
+  workflow_dispatch:
+    inputs:
+      repositories:
+        description: "{string[]} GitHub repositories."
+        required: true
+jobs:
+  expression:
+    name: "Expression"
+    runs-on: "ubuntu-latest"
+    steps:
+      - run: |
+          $Repositories = '${{github.event.inputs.repositories}}'.Trim() -split '[,;] *'
+          for ($Index = 0; $Index -lt $Repositories.Count; $Index++) {
+            $Repositories[$Index] = $Repositories[$Index] -replace '^(?:https?:\/\/)?github\.com\/', ''
+          }
+          Write-Host -Object "::set-output name=repositories::{`"repositories`":[`"$($Repositories -join '","')`"]}"
+        shell: "pwsh"
+  scan-virus-specify-repositories:
+    name: "Scan Virus - ${{matrix.repositories}}"
+    runs-on: "ubuntu-latest"
+    needs:
+      - "expression"
+    strategy:
+      fail-fast: false
+      matrix: "${{fromJSON(needs.expression.outputs.repositories)}}"
+    steps:
+      - name: "Checkout Repository ${{matrix.repositories}}"
+        uses: "actions/checkout@v2.4.0"
+        with:
+          repository: "${{matrix.repositories}}"
+          fetch-depth: 0
+          token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
+      - name: "Depth Scan Repository ${{matrix.repositories}}"
+        uses: "hugoalh/scan-virus-ghaction@v0.3.2"
+        with:
+          gitdepth: "true"
+          list_elements: "none"
+          list_elementshashes: "none"
+          list_miscellaneousresults: "none"
+          list_scanresults: "none"
