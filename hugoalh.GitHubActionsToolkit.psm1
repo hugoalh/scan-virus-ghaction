@@ -236,7 +236,7 @@ function Enter-GHActionsLogGroup {
 	param(
 		[Parameter(Mandatory = $true, Position = 0)][string]$Title
 	)
-	Send-GHActionsCommand -Command 'group' -Message $Title
+	Write-GHActionsCommand -Command 'group' -Message $Title
 }
 <#
 .SYNOPSIS
@@ -247,7 +247,7 @@ End an expandable group in the log.
 function Exit-GHActionsLogGroup {
 	[CmdletBinding()]
 	param ()
-	Send-GHActionsCommand -Command 'endgroup' -Message ''
+	Write-GHActionsCommand -Command 'endgroup' -Message ''
 }
 <#
 .SYNOPSIS
