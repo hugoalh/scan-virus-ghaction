@@ -37,8 +37,8 @@ jobs:
           fetch-depth: 0
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
       - name: "Depth Scan Repository ${{matrix.repositories}}"
-        uses: "hugoalh/scan-virus-ghaction@v0.3.2"
+        uses: "hugoalh/scan-virus-ghaction@v0.4.0"
         with:
-          gitdepth: "true"
+          integrate: "git"
           list_miscellaneousresults: "none"
           list_scanresults: "none"

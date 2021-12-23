@@ -13,7 +13,8 @@
 
 | **Tag / Version** | **Target** | **Support** |
 |:-:|:-:|:-:|
-| v0.X.X | Docker | L |
+| v0.4.X | Docker | L |
+| < v0.4.0 | Docker | 👎{🐛} |
 
 ## Report Vulnerability
 
