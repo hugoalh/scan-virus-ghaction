@@ -158,7 +158,7 @@ if ($Integrate -match '^npm:') {
 			Write-GHActionsError -Message "Unable to import version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)!"
 			continue
 		}
-		Invoke-ScanVirus -Session "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)."
+		Invoke-ScanVirus -Session "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)"
 		Remove-Item -Force -Path $(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball)
 	}
 } else {
