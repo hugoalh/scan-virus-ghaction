@@ -3,18 +3,18 @@ name: "Scan Virus"
 author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
-  gitdepth:
-    description: "{boolean} Also scan every Git commits."
+  integrate:
+    description: "{string} Integrate with service."
     required: false
-    default: "false"
+    default: "none"
   list_elements:
     description: "{(number | string)} List elements."
     required: false
     default: "none"
   list_elementshashes:
-    description: "{(number | string)} List elements' hashes."
+    description: "{boolean} List elements' hashes under itself."
     required: false
-    default: "none"
+    default: "false"
   list_miscellaneousresults:
     description: "{(number | string)} List miscellaneous results."
     required: false

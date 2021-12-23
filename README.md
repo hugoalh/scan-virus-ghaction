@@ -34,7 +34,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.3.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.4.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
@@ -52,9 +52,13 @@ Require Software:
 
 ### 📥 Input
 
-#### `gitdepth`
+#### `integrate`
 
-**\[Optional\]** `<boolean = false>` Also scan every Git commits.
+**\[Optional\]** `<string = "none">` Integrate with service.
+
+- **`"none"`:** No integration.
+- **`"git"`:** Git integration.
+- **`"npm:<Package>"`:** NPM integration with package name `<Package>`.
 
 #### `list_elements`
 
@@ -68,27 +72,12 @@ Require Software:
 
 #### `list_elementshashes`
 
-**\[Optional\]** `<(number | string) = "none">` List elements' hashes.
-
-- **`0` / `"none"`:** Not list.
-- **`1` / `"debug"`:** List at debug level.
-- **`2` / `"log"`:** List at log level.
+**\[Optional\]** `<boolean = false>` List elements' hashes under itself.
 
 > **⚠ Important:**
 >
 > - Enable this list will significantly increase the log size.
-> - When this input's value is greater than input `list_elements`'s value, this input's value will be equal to input `list_elements`'s value.
->   | **`list_elements`** | **This (Defined)** | **This (Final)** |
->   |:-:|:-:|:-:|
->   | `0` | `0` | `0` |
->   | `0` | `1` | `0` |
->   | `0` | `2` | `0` |
->   | `1` | `0` | `0` |
->   | `1` | `1` | `1` |
->   | `1` | `2` | `1` |
->   | `2` | `0` | `0` |
->   | `2` | `1` | `1` |
->   | `2` | `2` | `2` |
+> - This list will list at the same level as input `list_elements`.
 
 #### `list_miscellaneousresults`
 
@@ -126,10 +115,10 @@ jobs:
         uses: "actions/checkout@v2.4.0"
         with:
           fetch-depth: 0
-      - name: "Full Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.1.0"
+      - name: "Depth Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction@v0.4.0"
         with:
-          gitdepth: "true"
+          integrate: "git"
 ```
 
 ### Guide

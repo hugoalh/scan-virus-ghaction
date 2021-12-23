@@ -14,15 +14,15 @@ on:
       - "synchronize"
   workflow_dispatch:
     inputs:
-      gitdepth:
-        description: "{boolean} Also scan Git commits."
+      integrate_git:
+        description: "{boolean} Git integration."
         required: false
         default: "true"
 jobs:
   depth:
     name: "Depth Scan"
     runs-on: "ubuntu-latest"
-    if: "${{github.event.inputs.gitdepth == 'true'}}"
+    if: "${{github.event.inputs.integrate_git == 'true'}}"
     steps:
       - name: "Checkout Repository"
         uses: "actions/checkout@v2.4.0"
@@ -31,13 +31,13 @@ jobs:
       - name: "Depth Scan Repository"
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
-          gitdepth: "true"
+          integrate: "git"
           list_elements: "debug"
           list_elementshashes: "debug"
   flat:
     name: "Flat Scan"
     runs-on: "ubuntu-latest"
-    if: "${{github.event.inputs.gitdepth != 'true'}}"
+    if: "${{github.event.inputs.integrate_git != 'true'}}"
     steps:
       - name: "Checkout Repository"
         uses: "actions/checkout@v2.4.0"

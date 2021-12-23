@@ -24,14 +24,16 @@ function Write-TriageLog {
 	}
 }
 Write-Host -Object 'Import inputs.'
-$GitDepth = [bool]::Parse($env:INPUT_GITDEPTH)
-$ListElements = Get-InputList -Name "list_elements"
-$ListElementsHashes = Get-InputList -Name "list_elementshashes"
-$ListMiscellaneousResults = Get-InputList -Name "list_miscellaneousresults"
-$ListScanResults = Get-InputList -Name "list_scanresults"
-if ($ListElementsHashes -gt $ListElements) {
-	$ListElementsHashes = $ListElements
+$Integrate = (Get-GHActionsInput -Name 'integrate' -Require -Trim).ToLower()
+if ($Integrate -notin @('none', 'git')) {
+	if ($Integrate -notmatch '^npm:(?:@[\da-z*~-][\da-z*._~-]*\/)?[\da-z~-][\da-z._~-]*$') {
+		Write-GHActionsFail -Message "Input ``integrate``'s value is not in the list!"
+	}
 }
+$ListElements = Get-InputList -Name 'list_elements'
+$ListElementsHashes = [bool]::Parse((Get-GHActionsInput -Name 'list_elementshashes' -Require -Trim))
+$ListMiscellaneousResults = Get-InputList -Name 'list_miscellaneousresults'
+$ListScanResults = Get-InputList -Name 'list_scanresults'
 Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
 $FreshClamResult = $null
 try {
@@ -90,9 +92,9 @@ function Invoke-ScanVirus {
 	$ListElementsMessage = "Elements ($Session - $ElementsLength):"
 	$ElementsRaw = ''
 	foreach ($Element in $Elements) {
-		$ListElementsMessage += "`n$Element"
+		$ListElementsMessage += "`n- $Element"
 		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
-		if (($ListElementsHashes -gt 0) -and (Test-Path -Path $Element -PathType Leaf)) {
+		if ($ListElementsHashes -and (Test-Path -Path $Element -PathType Leaf)) {
 			foreach ($Algorithm in @('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')) {
 				$ListElementsMessage += "`n  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
 			}
@@ -120,43 +122,85 @@ function Invoke-ScanVirus {
 	}
 	Exit-GHActionsLogGroup
 }
-Invoke-ScanVirus -Session 'current workspace'
-if ($GitDepth) {
-	Write-Host -Object 'Import Git information.'
-	if (Test-Path -Path .\.git) {
-		$GitCommitsRaw = $null
+if ($Integrate -match '^npm:') {
+	Write-Host -Object 'Import NPM information.'
+	$Elements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
+	if ($Elements.Count -gt 0) {
+		Write-GHActionsWarning -Message 'NPM integration require a clean workspace! To not show this message again, please do not use `actions/checkout` in the previous steps.'
+		$Elements | Remove-Item -Force
+	}
+	$NPMPackageName = $Integrate -replace '^npm:', ''
+	$NPMPackageNameEncode = $NPMPackageName -replace '^@', '' -replace '\/', '-'
+	Write-TriageLog -Condition $ListMiscellaneousResults -Message "NPM Package: $NPMPackageName"
+	$NPMRegistryResponse = $null
+	try {
+		$NPMRegistryResponse = Invoke-WebRequest -Method Get -Uri "https://registry.npmjs.org/$NPMPackageName" -UseBasicParsing
+	} catch {
+		Write-GHActionsFail -Message "NPM package `"$PackageName`" not found!"
+	}
+	$NPMPackageContent = $NPMRegistryResponse.Content | ConvertFrom-Json -Depth 100 -ErrorAction Stop
+	$NPMPackageVersionsList = @()
+	$NPMPackageVersionsTarballs = [ordered]@{}
+	$NPMPackageContent.versions.PSObject.Properties | ForEach-Object -Process {
+		$NPMPackageVersionsList += $_.Name
+		$NPMPackageVersionsTarballs[$_.Name] = $_.Value.dist.tarball
+	}
+	$NPMPackageVersionsLength = $NPMPackageVersionsList.LongLength
+	for ($NPMPackageVersionsIndex = 0; $NPMPackageVersionsIndex -lt $NPMPackageVersionsLength; $NPMPackageVersionsIndex++) {
+		$NPMPackageCurrentVersion = $NPMPackageVersionsList[$NPMPackageVersionsIndex]
+		$NPMPackageCurrentTarball = "$NPMPackageNameEncode-$NPMPackageCurrentVersion.tgz"
+		$NPMPackageCurrentTarballUrl = $NPMPackageVersionsTarballs[$NPMPackageCurrentVersion]
+		Write-Host -Object "Import version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)."
 		try {
-			$GitCommitsRaw = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
+			$NPMPackageCurrentTarballOutFilePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball
+			Invoke-WebRequest -Method Get -OutFile $NPMPackageCurrentTarballOutFilePath -Uri $NPMPackageCurrentTarballUrl -UseBasicParsing
 		} catch {
-			Write-GHActionsFail -Message 'Unable to execute Git-Log!'
+			Write-GHActionsError -Message "Unable to import version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)!"
+			continue
 		}
-		if ($LASTEXITCODE -eq 0) {
-			$GitCommits = $GitCommitsRaw -split "`n"
-			$GitCommitsLength = $GitCommits.Longlength
-			if ($GitCommitsLength -le 1) {
-				Write-GHActionsWarning -Message "Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
+		Invoke-ScanVirus -Session "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)."
+		Remove-Item -Force -Path $(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball)
+	}
+} else {
+	Invoke-ScanVirus -Session 'current workspace'
+	if ($Integrate -eq 'git') {
+		Write-Host -Object 'Import Git information.'
+		Write-TriageLog -Condition $ListMiscellaneousResults -Message "Repository: $env:GITHUB_REPOSITORY"
+		if (Test-Path -Path .\.git) {
+			$GitCommitsRaw = $null
+			try {
+				$GitCommitsRaw = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
+			} catch {
+				Write-GHActionsFail -Message 'Unable to execute Git-Log!'
 			}
-			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsLength; $GitCommitsIndex++) {
-				$GitCommit = $GitCommits[$GitCommitsIndex]
-				Write-Host -Object "Checkout commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)."
-				$GitCheckoutResult = $null
-				try {
-					$GitCheckoutResult = $(git checkout "$GitCommit" --force --quiet) -join "`n"
-				} catch {
-					Write-GHActionsFail -Message "Unable to execute Git-Checkout (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit))!"
+			if ($LASTEXITCODE -eq 0) {
+				$GitCommits = $GitCommitsRaw -split "`n"
+				$GitCommitsLength = $GitCommits.Longlength
+				if ($GitCommitsLength -le 1) {
+					Write-GHActionsWarning -Message "Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 				}
-				if ($LASTEXITCODE -eq 0) {
-					Invoke-ScanVirus -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
-				} else {
-					Write-GHActionsError -Message $GitCheckoutResult -Title "Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)) ($LASTEXITCODE)"
+				for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsLength; $GitCommitsIndex++) {
+					$GitCommit = $GitCommits[$GitCommitsIndex]
+					Write-Host -Object "Checkout commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)."
+					$GitCheckoutResult = $null
+					try {
+						$GitCheckoutResult = $(git checkout "$GitCommit" --force --quiet) -join "`n"
+					} catch {
+						Write-GHActionsFail -Message "Unable to execute Git-Checkout (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit))!"
+					}
+					if ($LASTEXITCODE -eq 0) {
+						Invoke-ScanVirus -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
+					} else {
+						Write-GHActionsError -Message $GitCheckoutResult -Title "Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)) ($LASTEXITCODE)"
+					}
 				}
+			} else {
+				Write-GHActionLog -Message $GitCommitsRaw
+				Write-GHActionsError -Message $GitCommitsRaw -Title "Unexpected Git-Log result ($LASTEXITCODE)"
 			}
 		} else {
-			Write-GHActionLog -Message $GitCommitsRaw
-			Write-GHActionsError -Message $GitCommitsRaw -Title "Unexpected Git-Log result ($LASTEXITCODE)"
+			Write-GHActionsWarning -Message 'Current workspace is not a Git repository!'
 		}
-	} else {
-		Write-GHActionsWarning -Message 'Current workspace is not a Git repository!'
 	}
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message "Total scan elements: $TotalScanElements"
@@ -164,6 +208,6 @@ Remove-Item -Path $ScanElementsList
 Write-Host -Object 'Stop ClamAV daemon.'
 Get-Process -Name *clamd* | Stop-Process
 if ($ConclusionFail) {
-	Exit 1
+	exit 1
 }
-Exit 0
+exit 0
