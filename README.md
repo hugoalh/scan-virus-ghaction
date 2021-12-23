@@ -57,8 +57,12 @@ Require Software:
 **\[Optional\]** `<string = "none">` Integrate with service.
 
 - **`"none"`:** No integration.
-- **`"git"`:** Git integration.
-- **`"npm:<Package>"`:** NPM integration with package name `<Package>`.
+- **`"git"`:** Git integration with previously checkouted repository via `actions/checkout`.
+- **`"npm:<Package>"`:** NPM integration with package `<Package>`.
+  > **⚠ Important:**
+  >
+  > - This only support packages which inside the official registry.
+  > - This require a clean workspace.
 
 #### `list_elements`
 

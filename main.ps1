@@ -124,10 +124,11 @@ function Invoke-ScanVirus {
 }
 if ($Integrate -match '^npm:') {
 	Write-Host -Object 'Import NPM information.'
-	$Elements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
-	if ($Elements.Count -gt 0) {
-		Write-GHActionsWarning -Message 'NPM integration require a clean workspace! To not show this message again, please do not use `actions/checkout` in the previous steps.'
-		$Elements | Remove-Item -Force
+	$UselessElements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
+	if ($UselessElements.Count -gt 0) {
+		Write-GHActionsWarning -Message 'NPM integration require a clean workspace!'
+		Write-Host -Object 'Clean workspace.'
+		$UselessElements | Remove-Item -Force
 	}
 	$NPMPackageName = $Integrate -replace '^npm:', ''
 	$NPMPackageNameEncode = $NPMPackageName -replace '^@', '' -replace '\/', '-'
