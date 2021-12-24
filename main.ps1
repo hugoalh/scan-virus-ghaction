@@ -60,7 +60,7 @@ if ($LASTEXITCODE -ne 0) {
 		61 { $FreshClamError += ': Cannot drop privileges'; break }
 		62 { $FreshClamError += ': Cannot initialize logger'; break }
 	}
-	Write-GHActionsFail -Message "Unexpected FreshClam result ($FreshClamError):`n$FreshClamResult"
+	Write-GHActionsFail -Message "Unexpected FreshClam result: $FreshClamError!`n$FreshClamResult"
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message $FreshClamResult
 Exit-GHActionsLogGroup
@@ -73,7 +73,7 @@ catch {
 	Write-GHActionsFail -Message 'Unable to execute ClamD!'
 }
 if ($LASTEXITCODE -ne 0) {
-	Write-GHActionsFail -Message "Unexpected ClamD result ($LASTEXITCODE):`n$ClamDStartResult"
+	Write-GHActionsFail -Message "Unexpected ClamD result: $LASTEXITCODE!`n$ClamDStartResult"
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message $ClamDStartResult
 Exit-GHActionsLogGroup
@@ -87,7 +87,7 @@ function Invoke-ScanVirus {
 	Enter-GHActionsLogGroup -Title "Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
 	$ElementsCount = $Elements.Longlength
-	$ElementsListConsole = "Elements ($Session - $ElementsCount):"
+	$ElementsListConsole = "Elements ($Session): $ElementsCount`n----------------"
 	$ElementsListScan = ''
 	foreach ($Element in $Elements) {
 		$ElementsListConsole += "`n- $Element"
@@ -111,14 +111,14 @@ function Invoke-ScanVirus {
 		Write-GHActionsFail -Message "Unable to execute ClamDScan ($Session)!"
 	}
 	if ($LASTEXITCODE -eq 0) {
-		Write-TriageLog -Condition $ListScanResults -Message "ClamDScan Result ($Session):`n$ClamDScanResult"
+		Write-TriageLog -Condition $ListScanResults -Message "ClamDScan Result ($Session)`n----------------`n$ClamDScanResult"
 	} else {
 		$ClamDScanErrorCode = $LASTEXITCODE
 		$script:ConclusionFail = $true
 		if ($ClamDScanErrorCode -eq 1) {
-			Write-GHActionsError -Message "Found virus in $Session via ClamAV:`n$ClamDScanResult"
+			Write-GHActionsError -Message "Found virus in $Session via ClamAV!`n$ClamDScanResult"
 		} else {
-			Write-GHActionsError -Message "Unexpected ClamDScan result ($Session) ($ClamDScanErrorCode):`n$ClamDScanResult"
+			Write-GHActionsError -Message "Unexpected ClamDScan result ($Session): $ClamDScanErrorCode!`n$ClamDScanResult"
 		}
 	}
 	Exit-GHActionsLogGroup
@@ -138,7 +138,7 @@ if ($Integrate -match '^npm:') {
 	try {
 		$NPMRegistryResponse = Invoke-WebRequest -Method Get -Uri "https://registry.npmjs.org/$NPMPackageName" -UseBasicParsing
 	} catch {
-		Write-GHActionsFail -Message "NPM package `"$PackageName`" not found!"
+		Write-GHActionsFail -Message "NPM package `"$PackageName`" not found!`n$($_.Exception.Message)"
 	}
 	$NPMPackageContent = $NPMRegistryResponse.Content | ConvertFrom-Json -Depth 100 -ErrorAction Stop
 	$NPMPackageVersionsList = @()
@@ -193,11 +193,11 @@ if ($Integrate -match '^npm:') {
 					if ($LASTEXITCODE -eq 0) {
 						Invoke-ScanVirus -Session $GitCurrentSession
 					} else {
-						Write-GHActionsError -Message "Unexpected Git-Checkout result ($GitCurrentSession) ($LASTEXITCODE):`n$GitCheckoutResult"
+						Write-GHActionsError -Message "Unexpected Git-Checkout result ($GitCurrentSession): $LASTEXITCODE!`n$GitCheckoutResult"
 					}
 				}
 			} else {
-				Write-GHActionsError -Message "Unexpected Git-Log result ($LASTEXITCODE):`n$GitCommitsRaw"
+				Write-GHActionsError -Message "Unexpected Git-Log result: $LASTEXITCODE!`n$GitCommitsRaw"
 			}
 		} else {
 			Write-GHActionsWarning -Message 'Current workspace is not a Git repository!'
