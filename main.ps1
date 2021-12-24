@@ -86,7 +86,7 @@ function Invoke-ScanVirus {
 	)
 	Enter-GHActionsLogGroup -Title "Scan $Session."
 	[string[]]$Elements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
-	[unit]$ElementsCount = $Elements.Longlength
+	[uint]$ElementsCount = $Elements.Longlength
 	[string]$ElementsListConsole = "Elements ($Session): $ElementsCount`n----------------"
 	[string]$ElementsListScan = ''
 	foreach ($Element in ($Elements | Sort-Object)) {
