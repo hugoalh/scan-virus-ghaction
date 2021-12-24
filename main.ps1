@@ -42,26 +42,24 @@ try {
 	Write-GHActionsFail -Message 'Unable to execute FreshClam!'
 }
 if ($LASTEXITCODE -ne 0) {
-	$FreshClamErrorCode = $LASTEXITCODE
-	$FreshClamErrorMessage = ''
+	$FreshClamError = "$LASTEXITCODE"
 	switch ($FreshClamErrorCode) {
-		40 { $FreshClamErrorMessage = ': Unknown option passed' }
-		50 { $FreshClamErrorMessage = ': Cannot change directory' }
-		51 { $FreshClamErrorMessage = ': Cannot check MD5 sum' }
-		52 { $FreshClamErrorMessage = ': Connection (network) problem' }
-		53 { $FreshClamErrorMessage = ': Cannot unlink file' }
-		54 { $FreshClamErrorMessage = ': MD5 or digital signature verification error' }
-		55 { $FreshClamErrorMessage = ': Error reading file' }
-		56 { $FreshClamErrorMessage = ': Config file error' }
-		57 { $FreshClamErrorMessage = ': Cannot create new file' }
-		58 { $FreshClamErrorMessage = ': Cannot read database from remote server' }
-		59 { $FreshClamErrorMessage = ': Mirrors are not fully synchronized (try again later)' }
-		60 { $FreshClamErrorMessage = ': Cannot get information about user from /etc/passwd' }
-		61 { $FreshClamErrorMessage = ': Cannot drop privileges' }
-		62 { $FreshClamErrorMessage = ': Cannot initialize logger' }
+		40 { $FreshClamError += ': Unknown option passed' }
+		50 { $FreshClamError += ': Cannot change directory' }
+		51 { $FreshClamError += ': Cannot check MD5 sum' }
+		52 { $FreshClamError += ': Connection (network) problem' }
+		53 { $FreshClamError += ': Cannot unlink file' }
+		54 { $FreshClamError += ': MD5 or digital signature verification error' }
+		55 { $FreshClamError += ': Error reading file' }
+		56 { $FreshClamError += ': Config file error' }
+		57 { $FreshClamError += ': Cannot create new file' }
+		58 { $FreshClamError += ': Cannot read database from remote server' }
+		59 { $FreshClamError += ': Mirrors are not fully synchronized (try again later)' }
+		60 { $FreshClamError += ': Cannot get information about user from /etc/passwd' }
+		61 { $FreshClamError += ': Cannot drop privileges' }
+		62 { $FreshClamError += ': Cannot initialize logger' }
 	}
-	Write-GHActionsError -Message $FreshClamResult -Title "Unexpected FreshClam result ($($FreshClamErrorCode)$($FreshClamErrorMessage))"
-	exit 1
+	Write-GHActionsFail -Message "Unexpected FreshClam result ($FreshClamError):`n$FreshClamResult"
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message $FreshClamResult
 Exit-GHActionsLogGroup
@@ -74,8 +72,7 @@ catch {
 	Write-GHActionsFail -Message 'Unable to execute ClamD!'
 }
 if ($LASTEXITCODE -ne 0) {
-	Write-GHActionsError -Message $ClamDStartResult -Title "Unexpected ClamD result ($LASTEXITCODE)"
-	exit 1
+	Write-GHActionsFail -Message "Unexpected ClamD result ($LASTEXITCODE):`n$ClamDStartResult"
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message $ClamDStartResult
 Exit-GHActionsLogGroup
@@ -115,9 +112,9 @@ function Invoke-ScanVirus {
 		$ClamDScanErrorCode = $LASTEXITCODE
 		$script:ConclusionFail = $true
 		if ($ClamDScanErrorCode -eq 1) {
-			Write-GHActionsError -Message $ClamDScanResult -Title "Found virus in $Session via ClamAV"
+			Write-GHActionsError -Message "Found virus in $Session via ClamAV:`n$ClamDScanResult"
 		} else {
-			Write-GHActionsError -Message $ClamDScanResult -Title "Unexpected ClamDScan result ($Session) ($ClamDScanErrorCode)"
+			Write-GHActionsError -Message "Unexpected ClamDScan result ($Session) ($ClamDScanErrorCode):`n$ClamDScanResult"
 		}
 	}
 	Exit-GHActionsLogGroup
@@ -131,7 +128,7 @@ if ($Integrate -match '^npm:') {
 		$UselessElements | Remove-Item -Force
 	}
 	$NPMPackageName = $Integrate -replace '^npm:', ''
-	$NPMPackageNameEncode = $NPMPackageName -replace '^@', '' -replace '\/', '-'
+	$NPMPackageNameSafe = $NPMPackageName -replace '^@', '' -replace '\/', '-'
 	Write-TriageLog -Condition $ListMiscellaneousResults -Message "NPM Package: $NPMPackageName"
 	$NPMRegistryResponse = $null
 	try {
@@ -146,58 +143,57 @@ if ($Integrate -match '^npm:') {
 		$NPMPackageVersionsList += $_.Name
 		$NPMPackageVersionsTarballs[$_.Name] = $_.Value.dist.tarball
 	}
-	$NPMPackageVersionsLength = $NPMPackageVersionsList.LongLength
-	for ($NPMPackageVersionsIndex = 0; $NPMPackageVersionsIndex -lt $NPMPackageVersionsLength; $NPMPackageVersionsIndex++) {
+	$NPMPackageVersionsCount = $NPMPackageVersionsList.LongLength
+	for ($NPMPackageVersionsIndex = 0; $NPMPackageVersionsIndex -lt $NPMPackageVersionsCount; $NPMPackageVersionsIndex++) {
 		$NPMPackageCurrentVersion = $NPMPackageVersionsList[$NPMPackageVersionsIndex]
-		$NPMPackageCurrentTarball = "$NPMPackageNameEncode-$NPMPackageCurrentVersion.tgz"
-		$NPMPackageCurrentTarballUrl = $NPMPackageVersionsTarballs[$NPMPackageCurrentVersion]
-		Write-Host -Object "Import version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)."
+		$NPMPackageCurrentSession = "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsCount) ($NPMPackageCurrentVersion)"
+		$NPMPackageCurrentTarball = "$NPMPackageNameSafe-$NPMPackageCurrentVersion.tgz"
+		$NPMPackageCurrentTarballPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball
+		Write-Host -Object "Import $NPMPackageCurrentSession."
 		try {
-			$NPMPackageCurrentTarballOutFilePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball
-			Invoke-WebRequest -Method Get -OutFile $NPMPackageCurrentTarballOutFilePath -Uri $NPMPackageCurrentTarballUrl -UseBasicParsing
+			Invoke-WebRequest -Method Get -OutFile $NPMPackageCurrentTarballPath -Uri "$($NPMPackageVersionsTarballs[$NPMPackageCurrentVersion])" -UseBasicParsing
 		} catch {
-			Write-GHActionsError -Message "Unable to import version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)!"
+			Write-GHActionsError -Message "Unable to import $NPMPackageCurrentSession!"
 			continue
 		}
-		Invoke-ScanVirus -Session "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsLength) ($NPMPackageCurrentVersion)"
-		Remove-Item -Force -Path $(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball)
+		Invoke-ScanVirus -Session $NPMPackageCurrentSession
+		Remove-Item -Force -Path $NPMPackageCurrentTarballPath
 	}
 } else {
 	Invoke-ScanVirus -Session 'current workspace'
 	if ($Integrate -eq 'git') {
 		Write-Host -Object 'Import Git information.'
-		Write-TriageLog -Condition $ListMiscellaneousResults -Message "Repository: $env:GITHUB_REPOSITORY"
 		if (Test-Path -Path .\.git) {
-			$GitCommitsRaw = $null
+			$GitLogResult = $null
 			try {
-				$GitCommitsRaw = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
+				$GitLogResult = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
 			} catch {
 				Write-GHActionsFail -Message 'Unable to execute Git-Log!'
 			}
 			if ($LASTEXITCODE -eq 0) {
-				$GitCommits = $GitCommitsRaw -split "`n"
-				$GitCommitsLength = $GitCommits.Longlength
-				if ($GitCommitsLength -le 1) {
-					Write-GHActionsWarning -Message "Current Git repository has only $GitCommitsLength commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
+				$GitCommitsHashes = $GitLogResult -split "`n"
+				$GitCommitsCount = $GitCommitsHashes.Longlength
+				if ($GitCommitsCount -le 1) {
+					Write-GHActionsWarning -Message "Current Git repository has only $GitCommitsCount commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 				}
-				for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsLength; $GitCommitsIndex++) {
-					$GitCommit = $GitCommits[$GitCommitsIndex]
-					Write-Host -Object "Checkout commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)."
+				for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsCount; $GitCommitsIndex++) {
+					$GitCommitHash = $GitCommitsHashes[$GitCommitsIndex]
+					$GitCurrentSession = "commit #$($GitCommitsIndex + 1)/$($GitCommitsCount) ($GitCommitHash)"
+					Write-Host -Object "Checkout $GitCurrentSession."
 					$GitCheckoutResult = $null
 					try {
-						$GitCheckoutResult = $(git checkout "$GitCommit" --force --quiet) -join "`n"
+						$GitCheckoutResult = $(git checkout "$GitCommitHash" --force --quiet) -join "`n"
 					} catch {
-						Write-GHActionsFail -Message "Unable to execute Git-Checkout (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit))!"
+						Write-GHActionsFail -Message "Unable to execute Git-Checkout ($GitCurrentSession)!"
 					}
 					if ($LASTEXITCODE -eq 0) {
-						Invoke-ScanVirus -Session "commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)"
+						Invoke-ScanVirus -Session $GitCurrentSession
 					} else {
-						Write-GHActionsError -Message $GitCheckoutResult -Title "Unexpected Git-Checkout result (commit #$($GitCommitsIndex + 1)/$($GitCommitsLength) ($GitCommit)) ($LASTEXITCODE)"
+						Write-GHActionsError -Message "Unexpected Git-Checkout result ($GitCurrentSession) ($LASTEXITCODE):`n$GitCheckoutResult"
 					}
 				}
 			} else {
-				Write-GHActionLog -Message $GitCommitsRaw
-				Write-GHActionsError -Message $GitCommitsRaw -Title "Unexpected Git-Log result ($LASTEXITCODE)"
+				Write-GHActionsError -Message "Unexpected Git-Log result ($LASTEXITCODE):`n$GitCommitsRaw"
 			}
 		} else {
 			Write-GHActionsWarning -Message 'Current workspace is not a Git repository!'
