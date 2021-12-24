@@ -6,9 +6,25 @@ on:
       repositories:
         description: "{string[]} GitHub repositories."
         required: true
+      list_elements:
+        description: "{(number | string)} List elements."
+        required: false
+        default: "none"
+      list_elementshashes:
+        description: "{boolean} List elements' hashes under itself."
+        required: false
+        default: "false"
+      list_miscellaneousresults:
+        description: "{(number | string)} List miscellaneous results."
+        required: false
+        default: "none"
+      list_scanresults:
+        description: "{(number | string)} List scan results."
+        required: false
+        default: "none"
 jobs:
   parse-inputs:
-    name: "Parse Inputs"
+    name: "(Parse Inputs)"
     runs-on: "ubuntu-latest"
     steps:
       - run: |
@@ -40,5 +56,7 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           integrate: "git"
-          list_miscellaneousresults: "none"
-          list_scanresults: "none"
+          list_elements: ${{github.event.inputs.list_elements}}
+          list_elementshashes: ${{github.event.inputs.list_elementshashes}}
+          list_miscellaneousresults: ${{github.event.inputs.list_miscellaneousresults}}
+          list_scanresults: ${{github.event.inputs.list_scanresults}}
