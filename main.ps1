@@ -24,17 +24,17 @@ function Write-TriageLog {
 	}
 }
 Write-Host -Object 'Import inputs.'
-$Integrate = Get-GHActionsInput -Name 'integrate' -Require -Trim
+[string]$Integrate = Get-GHActionsInput -Name 'integrate' -Require -Trim
 switch ($Integrate) {
 	'git' { $Integrate = 'git'; break }
 	'none' { $Integrate = 'none'; break }
 	{ $Integrate -match '^npm:(?:@[\da-z*~-][\da-z*._~-]*\/)?[\da-z~-][\da-z._~-]*$' } { break }
 	Default { Write-GHActionsFail -Message "Input ``integrate``'s value is not in the list!" }
 }
-$ListElements = Get-InputList -Name 'list_elements'
-$ListElementsHashes = [bool]::Parse((Get-GHActionsInput -Name 'list_elementshashes' -Require -Trim))
-$ListMiscellaneousResults = Get-InputList -Name 'list_miscellaneousresults'
-$ListScanResults = Get-InputList -Name 'list_scanresults'
+[uint]$ListElements = Get-InputList -Name 'list_elements'
+[bool]$ListElementsHashes = [bool]::Parse((Get-GHActionsInput -Name 'list_elementshashes' -Require -Trim))
+[uint]$ListMiscellaneousResults = Get-InputList -Name 'list_miscellaneousresults'
+[uint]$ListScanResults = Get-InputList -Name 'list_scanresults'
 Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
 $FreshClamResult = $null
 try {
@@ -43,7 +43,7 @@ try {
 	Write-GHActionsFail -Message 'Unable to execute FreshClam!'
 }
 if ($LASTEXITCODE -ne 0) {
-	$FreshClamError = "$LASTEXITCODE"
+	[string]$FreshClamError = "$LASTEXITCODE"
 	switch ($FreshClamErrorCode) {
 		40 { $FreshClamError += ': Unknown option passed'; break }
 		50 { $FreshClamError += ': Cannot change directory'; break }
@@ -77,19 +77,19 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message $ClamDStartResult
 Exit-GHActionsLogGroup
-$ConclusionFail = $false
-$ElementsScanListPath = (New-TemporaryFile).FullName
-$TotalScanElements = 0
+[bool]$ConclusionFail = $false
+[string]$ElementsScanListPath = (New-TemporaryFile).FullName
+[uint]$TotalScanElements = 0
 function Invoke-ScanVirus {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
 	Enter-GHActionsLogGroup -Title "Scan $Session."
-	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
-	$ElementsCount = $Elements.Longlength
-	$ElementsListConsole = "Elements ($Session): $ElementsCount`n----------------"
-	$ElementsListScan = ''
-	foreach ($Element in $Elements) {
+	[string[]]$Elements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
+	[unit]$ElementsCount = $Elements.Longlength
+	[string]$ElementsListConsole = "Elements ($Session): $ElementsCount`n----------------"
+	[string]$ElementsListScan = ''
+	foreach ($Element in ($Elements | Sort-Object)) {
 		$ElementsListConsole += "`n- $Element"
 		$ElementsListScan += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
 		if ($ListElementsHashes -and (Test-Path -Path $Element -PathType Leaf)) {
@@ -113,7 +113,7 @@ function Invoke-ScanVirus {
 	if ($LASTEXITCODE -eq 0) {
 		Write-TriageLog -Condition $ListScanResults -Message "ClamDScan Result ($Session)`n----------------`n$ClamDScanResult"
 	} else {
-		$ClamDScanErrorCode = $LASTEXITCODE
+		[uint]$ClamDScanErrorCode = $LASTEXITCODE
 		$script:ConclusionFail = $true
 		if ($ClamDScanErrorCode -eq 1) {
 			Write-GHActionsError -Message "Found virus in $Session via ClamAV!`n$ClamDScanResult"
@@ -125,14 +125,14 @@ function Invoke-ScanVirus {
 }
 if ($Integrate -match '^npm:') {
 	Write-Host -Object 'Import NPM information.'
-	$UselessElements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
+	[string[]]$UselessElements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
 	if ($UselessElements.Count -gt 0) {
 		Write-GHActionsWarning -Message 'NPM integration require a clean workspace!'
 		Write-Host -Object 'Clean workspace.'
 		$UselessElements | Remove-Item -Force
 	}
-	$NPMPackageName = $Integrate -replace '^npm:', ''
-	$NPMPackageNameSafe = $NPMPackageName -replace '^@', '' -replace '\/', '-'
+	[string]$NPMPackageName = $Integrate -replace '^npm:', ''
+	[string]$NPMPackageNameSafe = $NPMPackageName -replace '^@', '' -replace '\/', '-'
 	Write-TriageLog -Condition $ListMiscellaneousResults -Message "NPM Package: $NPMPackageName"
 	$NPMRegistryResponse = $null
 	try {
@@ -140,19 +140,19 @@ if ($Integrate -match '^npm:') {
 	} catch {
 		Write-GHActionsFail -Message "NPM package `"$PackageName`" not found!`n$($_.Exception.Message)"
 	}
-	$NPMPackageContent = $NPMRegistryResponse.Content | ConvertFrom-Json -Depth 100 -ErrorAction Stop
-	$NPMPackageVersionsList = @()
-	$NPMPackageVersionsTarballs = [ordered]@{}
+	[pscustomobject]$NPMPackageContent = $NPMRegistryResponse.Content | ConvertFrom-Json -Depth 100 -ErrorAction Stop
+	[string[]]$NPMPackageVersionsList = @()
+	[hashtable]$NPMPackageVersionsTarballs = [ordered]@{}
 	$NPMPackageContent.versions.PSObject.Properties | ForEach-Object -Process {
 		$NPMPackageVersionsList += $_.Name
 		$NPMPackageVersionsTarballs[$_.Name] = $_.Value.dist.tarball
 	}
-	$NPMPackageVersionsCount = $NPMPackageVersionsList.LongLength
+	[uint]$NPMPackageVersionsCount = $NPMPackageVersionsList.LongLength
 	for ($NPMPackageVersionsIndex = 0; $NPMPackageVersionsIndex -lt $NPMPackageVersionsCount; $NPMPackageVersionsIndex++) {
-		$NPMPackageCurrentVersion = $NPMPackageVersionsList[$NPMPackageVersionsIndex]
-		$NPMPackageCurrentSession = "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsCount) ($NPMPackageCurrentVersion)"
-		$NPMPackageCurrentTarball = "$NPMPackageNameSafe-$NPMPackageCurrentVersion.tgz"
-		$NPMPackageCurrentTarballPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball
+		[string]$NPMPackageCurrentVersion = $NPMPackageVersionsList[$NPMPackageVersionsIndex]
+		[string]$NPMPackageCurrentSession = "version #$($NPMPackageVersionsIndex + 1)/$($NPMPackageVersionsCount) ($NPMPackageCurrentVersion)"
+		[string]$NPMPackageCurrentTarball = "$NPMPackageNameSafe-$NPMPackageCurrentVersion.tgz"
+		[string]$NPMPackageCurrentTarballPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball
 		Write-Host -Object "Import $NPMPackageCurrentSession."
 		try {
 			Invoke-WebRequest -Method Get -OutFile $NPMPackageCurrentTarballPath -Uri "$($NPMPackageVersionsTarballs[$NPMPackageCurrentVersion])" -UseBasicParsing
@@ -175,14 +175,14 @@ if ($Integrate -match '^npm:') {
 				Write-GHActionsFail -Message 'Unable to execute Git-Log!'
 			}
 			if ($LASTEXITCODE -eq 0) {
-				$GitCommitsHashes = $GitLogResult -split "`n"
-				$GitCommitsCount = $GitCommitsHashes.Longlength
+				[string[]]$GitCommitsHashes = $GitLogResult -split "`n"
+				[uint]$GitCommitsCount = $GitCommitsHashes.Longlength
 				if ($GitCommitsCount -le 1) {
 					Write-GHActionsWarning -Message "Current Git repository has only $GitCommitsCount commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 				}
 				for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsCount; $GitCommitsIndex++) {
-					$GitCommitHash = $GitCommitsHashes[$GitCommitsIndex]
-					$GitCurrentSession = "commit #$($GitCommitsIndex + 1)/$($GitCommitsCount) ($GitCommitHash)"
+					[string]$GitCommitHash = $GitCommitsHashes[$GitCommitsIndex]
+					[string]$GitCurrentSession = "commit #$($GitCommitsIndex + 1)/$($GitCommitsCount) ($GitCommitHash)"
 					Write-Host -Object "Checkout $GitCurrentSession."
 					$GitCheckoutResult = $null
 					try {
