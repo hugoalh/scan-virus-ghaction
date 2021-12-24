@@ -18,17 +18,18 @@ function Write-TriageLog {
 	)
 	if ($Message.Length -gt 0) {
 		switch ($Condition) {
-			1 { Write-GHActionsDebug -Message $Message }
-			2 { Write-Host -Object $Message }
+			1 { Write-GHActionsDebug -Message $Message; break }
+			2 { Write-Host -Object $Message; break }
 		}
 	}
 }
 Write-Host -Object 'Import inputs.'
-$Integrate = (Get-GHActionsInput -Name 'integrate' -Require -Trim).ToLower()
-if ($Integrate -notin @('none', 'git')) {
-	if ($Integrate -notmatch '^npm:(?:@[\da-z*~-][\da-z*._~-]*\/)?[\da-z~-][\da-z._~-]*$') {
-		Write-GHActionsFail -Message "Input ``integrate``'s value is not in the list!"
-	}
+$Integrate = Get-GHActionsInput -Name 'integrate' -Require -Trim
+switch ($Integrate) {
+	'git' { $Integrate = 'git'; break }
+	'none' { $Integrate = 'none'; break }
+	{ $Integrate -match '^npm:(?:@[\da-z*~-][\da-z*._~-]*\/)?[\da-z~-][\da-z._~-]*$' } { break }
+	Default { Write-GHActionsFail -Message "Input ``integrate``'s value is not in the list!" }
 }
 $ListElements = Get-InputList -Name 'list_elements'
 $ListElementsHashes = [bool]::Parse((Get-GHActionsInput -Name 'list_elementshashes' -Require -Trim))
@@ -44,20 +45,20 @@ try {
 if ($LASTEXITCODE -ne 0) {
 	$FreshClamError = "$LASTEXITCODE"
 	switch ($FreshClamErrorCode) {
-		40 { $FreshClamError += ': Unknown option passed' }
-		50 { $FreshClamError += ': Cannot change directory' }
-		51 { $FreshClamError += ': Cannot check MD5 sum' }
-		52 { $FreshClamError += ': Connection (network) problem' }
-		53 { $FreshClamError += ': Cannot unlink file' }
-		54 { $FreshClamError += ': MD5 or digital signature verification error' }
-		55 { $FreshClamError += ': Error reading file' }
-		56 { $FreshClamError += ': Config file error' }
-		57 { $FreshClamError += ': Cannot create new file' }
-		58 { $FreshClamError += ': Cannot read database from remote server' }
-		59 { $FreshClamError += ': Mirrors are not fully synchronized (try again later)' }
-		60 { $FreshClamError += ': Cannot get information about user from /etc/passwd' }
-		61 { $FreshClamError += ': Cannot drop privileges' }
-		62 { $FreshClamError += ': Cannot initialize logger' }
+		40 { $FreshClamError += ': Unknown option passed'; break }
+		50 { $FreshClamError += ': Cannot change directory'; break }
+		51 { $FreshClamError += ': Cannot check MD5 sum'; break }
+		52 { $FreshClamError += ': Connection (network) problem'; break }
+		53 { $FreshClamError += ': Cannot unlink file'; break }
+		54 { $FreshClamError += ': MD5 or digital signature verification error'; break }
+		55 { $FreshClamError += ': Error reading file'; break }
+		56 { $FreshClamError += ': Config file error'; break }
+		57 { $FreshClamError += ': Cannot create new file'; break }
+		58 { $FreshClamError += ': Cannot read database from remote server'; break }
+		59 { $FreshClamError += ': Mirrors are not fully synchronized (try again later)'; break }
+		60 { $FreshClamError += ': Cannot get information about user from /etc/passwd'; break }
+		61 { $FreshClamError += ': Cannot drop privileges'; break }
+		62 { $FreshClamError += ': Cannot initialize logger'; break }
 	}
 	Write-GHActionsFail -Message "Unexpected FreshClam result ($FreshClamError):`n$FreshClamResult"
 }
@@ -77,7 +78,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-TriageLog -Condition $ListMiscellaneousResults -Message $ClamDStartResult
 Exit-GHActionsLogGroup
 $ConclusionFail = $false
-$ScanElementsList = (New-TemporaryFile).FullName
+$ElementsScanListPath = (New-TemporaryFile).FullName
 $TotalScanElements = 0
 function Invoke-ScanVirus {
 	param (
@@ -85,24 +86,27 @@ function Invoke-ScanVirus {
 	)
 	Enter-GHActionsLogGroup -Title "Scan $Session."
 	$Elements = (Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse | Sort-Object)
-	$ElementsLength = $Elements.Longlength
-	$ListElementsMessage = "Elements ($Session - $ElementsLength):"
-	$ElementsRaw = ''
+	$ElementsCount = $Elements.Longlength
+	$ElementsListConsole = "Elements ($Session - $ElementsCount):"
+	$ElementsListScan = ''
 	foreach ($Element in $Elements) {
-		$ListElementsMessage += "`n- $Element"
-		$ElementsRaw += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
+		$ElementsListConsole += "`n- $Element"
+		$ElementsListScan += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
 		if ($ListElementsHashes -and (Test-Path -Path $Element -PathType Leaf)) {
 			foreach ($Algorithm in @('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')) {
-				$ListElementsMessage += "`n  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+				$ElementsListConsole += "`n  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
 			}
 		}
 	}
-	Write-TriageLog -Condition $ListElements -Message $ListElementsMessage
-	Set-Content -Encoding utf8NoBOM -NoNewline -Path $ScanElementsList -Value $ElementsRaw.Trim()
-	$script:TotalScanElements += $ElementsLength
+	Write-TriageLog -Condition $ListElements -Message $ElementsListConsole
+	if ($ListElements -gt 0) {
+		Write-Host -Object ''
+	}
+	Set-Content -Encoding utf8NoBOM -NoNewline -Path $ElementsScanListPath -Value $ElementsListScan.Trim()
+	$script:TotalScanElements += $ElementsCount
 	$ClamDScanResult = $null
 	try {
-		$ClamDScanResult = $(clamdscan --fdpass --file-list $ScanElementsList --multiscan) -join "`n"
+		$ClamDScanResult = $(clamdscan --fdpass --file-list $ElementsScanListPath --multiscan) -join "`n"
 	} catch {
 		Write-GHActionsFail -Message "Unable to execute ClamDScan ($Session)!"
 	}
@@ -201,7 +205,7 @@ if ($Integrate -match '^npm:') {
 	}
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message "Total scan elements: $TotalScanElements"
-Remove-Item -Path $ScanElementsList
+Remove-Item -Path $ElementsScanListPath
 Write-Host -Object 'Stop ClamAV daemon.'
 Get-Process -Name *clamd* | Stop-Process
 if ($ConclusionFail) {
