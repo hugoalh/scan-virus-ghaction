@@ -6,6 +6,10 @@ on:
       repositories:
         description: "{string[]} GitHub repositories."
         required: true
+      integrate_git:
+        description: "{boolean} Git integration."
+        required: false
+        default: "true"
       list_elements:
         description: "{(number | string)} List elements."
         required: false
@@ -37,9 +41,10 @@ jobs:
         shell: "pwsh"
     outputs:
       matrix: "${{steps.parser.outputs.matrix}}"
-  scan-virus-specify-repositories:
+  scan-virus-specify-repositories-depth:
     name: "${{matrix.repositories}}"
     runs-on: "ubuntu-latest"
+    if: "${{github.event.inputs.integrate_git == 'true'}}"
     needs:
       - "parse-inputs"
     strategy:
@@ -56,6 +61,28 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           integrate: "git"
+          list_elements: ${{github.event.inputs.list_elements}}
+          list_elementshashes: ${{github.event.inputs.list_elementshashes}}
+          list_miscellaneousresults: ${{github.event.inputs.list_miscellaneousresults}}
+          list_scanresults: ${{github.event.inputs.list_scanresults}}
+  scan-virus-specify-repositories-flat:
+    name: "${{matrix.repositories}}"
+    runs-on: "ubuntu-latest"
+    if: "${{github.event.inputs.integrate_git == 'false'}}"
+    needs:
+      - "parse-inputs"
+    strategy:
+      fail-fast: false
+      matrix: "${{fromJSON(needs.parse-inputs.outputs.matrix)}}"
+    steps:
+      - name: "Checkout Repository ${{matrix.repositories}}"
+        uses: "actions/checkout@v2.4.0"
+        with:
+          repository: "${{matrix.repositories}}"
+          token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
+      - name: "Flat Scan Repository ${{matrix.repositories}}"
+        uses: "hugoalh/scan-virus-ghaction@main"
+        with:
           list_elements: ${{github.event.inputs.list_elements}}
           list_elementshashes: ${{github.event.inputs.list_elementshashes}}
           list_miscellaneousresults: ${{github.event.inputs.list_miscellaneousresults}}
