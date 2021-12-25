@@ -28,7 +28,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - run: |
-          $NPMPackages = '${{github.event.inputs.packages}}'.Trim() -split '[ ,;]+'
+          [string[]]$NPMPackages = '${{github.event.inputs.packages}}'.Trim() -split '[ ,;]+'
           for ($Index = 0; $Index -lt $NPMPackages.Count; $Index++) {
             $NPMPackages[$Index] = $NPMPackages[$Index] -replace '^(?:https?:\/\/)?(?:www\.)?npmjs\.com\/package\/', ''
           }
@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix: "${{fromJSON(needs.parse-inputs.outputs.matrix)}}"
     steps:
-      - name: "Depth Scan NPM Package ${{matrix.packages}}"
+      - name: "Scan NPM Package ${{matrix.packages}}"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           integrate: "npm:${{matrix.packages}}"

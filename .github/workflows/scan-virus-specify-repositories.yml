@@ -32,19 +32,25 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - run: |
-          $Repositories = '${{github.event.inputs.repositories}}'.Trim() -split '[ ,;]+'
+          [string[]]$Repositories = '${{github.event.inputs.repositories}}'.Trim() -split '[ ,;]+'
           for ($Index = 0; $Index -lt $Repositories.Count; $Index++) {
             $Repositories[$Index] = $Repositories[$Index] -replace '^(?:https?:\/\/)?github\.com\/', ''
           }
           Write-Host -Object "::set-output name=matrix::{`"repositories`":[`"$($Repositories -join '","')`"]}"
+          [bool]$GitIntegration = [bool]::Parse('${{github.event.inputs.integrate_git}}')
+          Write-Host -Object "::set-output name=depth::$($GitIntegration ? 0 : 1)"
+          Write-Host -Object "::set-output name=integrate::$($GitIntegration ? 'git' : 'none')"
+          Write-Host -Object "::set-output name=title::$($GitIntegration ? 'Depth' : 'Flat')"
         id: "parser"
         shell: "pwsh"
     outputs:
+      depth: "${{steps.parser.outputs.depth}}"
+      integrate: "${{steps.parser.outputs.integrate}}"
       matrix: "${{steps.parser.outputs.matrix}}"
-  scan-virus-specify-repositories-depth:
-    name: "${{matrix.repositories}}"
+      title: "${{steps.parser.outputs.title}}"
+  scan-virus-specify-repositories:
+    name: "${{needs.parse-inputs.outputs.title}} Scan - ${{matrix.repositories}}"
     runs-on: "ubuntu-latest"
-    if: "${{github.event.inputs.integrate_git == 'true'}}"
     needs:
       - "parse-inputs"
     strategy:
@@ -55,34 +61,12 @@ jobs:
         uses: "actions/checkout@v2.4.0"
         with:
           repository: "${{matrix.repositories}}"
-          fetch-depth: 0
+          fetch-depth: "${{needs.parse-inputs.outputs.depth}}"
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
-      - name: "Depth Scan Repository ${{matrix.repositories}}"
+      - name: "${{needs.parse-inputs.outputs.title}} Scan Repository ${{matrix.repositories}}"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
-          integrate: "git"
-          list_elements: ${{github.event.inputs.list_elements}}
-          list_elementshashes: ${{github.event.inputs.list_elementshashes}}
-          list_miscellaneousresults: ${{github.event.inputs.list_miscellaneousresults}}
-          list_scanresults: ${{github.event.inputs.list_scanresults}}
-  scan-virus-specify-repositories-flat:
-    name: "${{matrix.repositories}}"
-    runs-on: "ubuntu-latest"
-    if: "${{github.event.inputs.integrate_git == 'false'}}"
-    needs:
-      - "parse-inputs"
-    strategy:
-      fail-fast: false
-      matrix: "${{fromJSON(needs.parse-inputs.outputs.matrix)}}"
-    steps:
-      - name: "Checkout Repository ${{matrix.repositories}}"
-        uses: "actions/checkout@v2.4.0"
-        with:
-          repository: "${{matrix.repositories}}"
-          token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
-      - name: "Flat Scan Repository ${{matrix.repositories}}"
-        uses: "hugoalh/scan-virus-ghaction@main"
-        with:
+          integrate: "${{needs.parse-inputs.outputs.integrate}}"
           list_elements: ${{github.event.inputs.list_elements}}
           list_elementshashes: ${{github.event.inputs.list_elementshashes}}
           list_miscellaneousresults: ${{github.event.inputs.list_miscellaneousresults}}
