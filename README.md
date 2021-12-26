@@ -17,11 +17,14 @@
 
 ## 📝 Description
 
-A GitHub Action to scan virus in the GitHub Action workspace.
+A GitHub Action to scan virus (e.g.: malware and malicious files) in the GitHub Action workspace.
 
-### 🛡 Anti Virus Software
+### 🛡 Software
 
-- [ClamAV](https://www.clamav.net) (via ClamDScan (`clamdscan`))
+- [ClamAV](https://www.clamav.net)
+  > ClamAV (by [Cisco](https://www.cisco.com)) is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
+- **(>= v0.5.0)** [YARA](http://virustotal.github.io/yara)
+  > YARA (by [VirusTotal](https://www.virustotal.com)) is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
 
 ### ⚠ Disclaimer
 
@@ -51,6 +54,14 @@ Require Software:
 - Docker
 
 ### 📥 Input
+
+#### `clamav`
+
+**(>= v0.5.0) \[Optional\]** `<boolean = true>` Use ClamAV.
+
+#### `yara`
+
+**(>= v0.5.0) \[Optional\]** `<boolean = true>` Use YARA.
 
 #### `integrate`
 

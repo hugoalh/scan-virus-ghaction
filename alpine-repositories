@@ -2,3 +2,4 @@ https://dl-cdn.alpinelinux.org/alpine/v3.15/main
 https://dl-cdn.alpinelinux.org/alpine/v3.15/community
 @edge https://dl-cdn.alpinelinux.org/alpine/edge/main
 @edgecommunity https://dl-cdn.alpinelinux.org/alpine/edge/community
+@edgetest https://dl-cdn.alpinelinux.org/alpine/edge/testing
