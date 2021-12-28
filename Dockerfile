@@ -20,7 +20,7 @@ RUN ["apk", "add", "--allow-untrusted", "--no-cache", "ca-certificates", "clamav
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam"]
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
-RUN ["pwsh", "-C", "Install-Module -Force -Name PowerShellGet -Verbose"]
-RUN ["pwsh", "-C", "Update-Module -Name PowerShellGet -Verbose"]
-RUN ["pwsh", "-C", "Install-Module -Force -Name 'hugoalh.GitHubActionsToolkit' -Verbose"]
+RUN ["pwsh", "-C", "Install-Module -AcceptLicense -Force -Name PowerShellGet -Scope AllUsers -Verbose"]
+RUN ["pwsh", "-C", "Update-Module -AcceptLicense -Force -Name PowerShellGet -Scope AllUsers -Verbose"]
+RUN ["pwsh", "-C", "Install-Module -AcceptLicense -Force -Name 'hugoalh.GitHubActionsToolkit' -Scope AllUsers -Verbose"]
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
