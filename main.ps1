@@ -1,4 +1,4 @@
-Import-Module -Name "$PSScriptRoot\hugoalh.GitHubActionsToolkit.psm1" -Scope Local
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope Local
 function Get-InputList {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Name

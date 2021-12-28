@@ -19,5 +19,8 @@ RUN ["apk", "upgrade"]
 RUN ["apk", "add", "--allow-untrusted", "--no-cache", "ca-certificates", "clamav@edgecommunity", "clamav-clamdscan@edgecommunity", "clamav-daemon@edgecommunity", "clamav-db@edgecommunity", "clamav-doc@edgecommunity", "clamav-libs@edgecommunity", "clamav-libunrar@edgecommunity", "clamav-milter@edgecommunity", "clamav-scanner@edgecommunity", "curl", "freshclam@edgecommunity", "git@edge", "icu-libs", "krb5-libs", "less", "libgcc", "libintl", "libssl1.1", "libstdc++", "lttng-ust@edge", "ncurses-terminfo-base", "openssh-client@edge", "tzdata", "userspace-rcu", "yara@edgetest", "zlib"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam"]
-COPY hugoalh.GitHubActionsToolkit.psm1 main.ps1 /opt/hugoalh/scan-virus-ghaction/
+COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
+RUN ["pwsh", "-C", "Install-Module -Force -Name PowerShellGet -Verbose"]
+RUN ["pwsh", "-C", "Update-Module -Name PowerShellGet -Verbose"]
+RUN ["pwsh", "-C", "Install-Module -Force -Name 'hugoalh.GitHubActionsToolkit' -Verbose"]
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
