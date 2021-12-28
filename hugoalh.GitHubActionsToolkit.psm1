@@ -7,6 +7,8 @@ An internal function to escape characters that could cause issues.
 String that need to escape characters.
 .PARAMETER Command
 Also escape command properties characters.
+.OUTPUTS
+String
 #>
 function Format-GHActionsEscapeCharacters {
 	[CmdletBinding()]
@@ -16,7 +18,7 @@ function Format-GHActionsEscapeCharacters {
 	)
 	begin {}
 	process {
-		$Result = $InputObject -replace '%', '%25' -replace "`n", '%0A' -replace "`r", '%0D'
+		[string]$Result = $InputObject -replace '%', '%25' -replace "`n", '%0A' -replace "`r", '%0D'
 		if ($Command) {
 			$Result = $Result -replace ',', '%2C' -replace ':', '%3A'
 		}
@@ -35,6 +37,8 @@ Workflow command.
 Message.
 .PARAMETER Properties
 Workflow command properties.
+.OUTPUTS
+Void
 #>
 function Write-GHActionsCommand {
 	[CmdletBinding()]
@@ -43,7 +47,7 @@ function Write-GHActionsCommand {
 		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyString()][string]$Message,
 		[Parameter(Position = 2)][hashtable]$Properties = @{}
 	)
-	$Result = "::$Command"
+	[string]$Result = "::$Command"
 	if ($Properties.Count -gt 0) {
 		$Result += " $($($Properties.GetEnumerator() | ForEach-Object -Process {
 			"$($_.Name)=$(Format-GHActionsEscapeCharacters -InputObject $_.Value -Command)"
@@ -52,6 +56,16 @@ function Write-GHActionsCommand {
 	$Result += "::$(Format-GHActionsEscapeCharacters -InputObject $Message)"
 	Write-Host -Object $Result
 }
+<#
+.SYNOPSIS
+GitHub Actions - Internal - Test Environment Variable
+.DESCRIPTION
+An internal function to validate environment variable.
+.PARAMETER InputObject
+Environment variable that need to validate.
+.OUTPUTS
+Boolean -or Void
+#>
 function Test-GHActionsEnvironmentVariable {
 	[CmdletBinding()]
 	param (
@@ -73,6 +87,8 @@ Environment variables.
 Environment variable name.
 .PARAMETER Value
 Environment variable value.
+.OUTPUTS
+Void
 #>
 function Add-GHActionsEnvironmentVariable {
 	[CmdletBinding(DefaultParameterSetName = 'single')]
@@ -82,7 +98,7 @@ function Add-GHActionsEnvironmentVariable {
 		[Parameter(Mandatory = $true, ParameterSetName = 'single', Position = 1)][ValidatePattern('^.+$')][string]$Value
 	)
 	begin {
-		$Result = @{}
+		[hashtable]$Result = @{}
 	}
 	process {
 		switch ($PSCmdlet.ParameterSetName) {
@@ -104,7 +120,7 @@ function Add-GHActionsEnvironmentVariable {
 					}
 					'String' {
 						if (Test-GHActionsEnvironmentVariable -InputObject $InputObject) {
-							$InputObjectSplit = $InputObject.Split('=')
+							[string[]]$InputObjectSplit = $InputObject.Split('=')
 							$Result[$InputObjectSplit[0]] = $InputObjectSplit[1]
 						}
 					}
@@ -117,7 +133,6 @@ function Add-GHActionsEnvironmentVariable {
 				$Result[$Name] = $Value
 			}
 		}
-		
 	}
 	end {
 		Add-Content -Encoding utf8NoBOM -Path $env:GITHUB_ENV -Value "$($($Result.GetEnumerator() | ForEach-Object -Process {
@@ -132,6 +147,8 @@ GitHub Actions - Add PATH
 Add directory to the system `PATH` variable and automatically makes it available to all subsequent actions in the current job; The currently running action cannot access the updated path variable.
 .PARAMETER Path
 System path.
+.OUTPUTS
+Void
 #>
 function Add-GHActionsPATH {
 	[CmdletBinding()]
@@ -139,7 +156,7 @@ function Add-GHActionsPATH {
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)][string[]]$Path
 	)
 	begin {
-		$Result = @()
+		[string[]]$Result = @()
 	}
 	process {
 		$Path.GetEnumerator() | ForEach-Object -Process {
@@ -161,6 +178,8 @@ GitHub Actions - Add Secret Mask
 Make a secret will get masked from the log.
 .PARAMETER Value
 The secret.
+.OUTPUTS
+Void
 #>
 function Add-GHActionsSecretMask {
 	[CmdletBinding()]
@@ -178,6 +197,8 @@ function Add-GHActionsSecretMask {
 GitHub Actions - Disable Command Echo
 .DESCRIPTION
 Disable echoing of workflow commands, the workflow run's log will not show the command itself; A workflow command is echoed if there are any errors processing the command; Secret `ACTIONS_STEP_DEBUG` will ignore this.
+.OUTPUTS
+Void
 #>
 function Disable-GHActionsCommandEcho {
 	[CmdletBinding()]
@@ -189,11 +210,13 @@ function Disable-GHActionsCommandEcho {
 GitHub Actions - Disable Processing Command
 .DESCRIPTION
 Stop processing any workflow commands to allow log anything without accidentally running workflow commands.
+.OUTPUTS
+String
 #>
 function Disable-GHActionsProcessingCommand {
 	[CmdletBinding()]
 	param()
-	$EndToken = (New-Guid).Guid
+	[string]$EndToken = (New-Guid).Guid
 	Write-GHActionsCommand -Command 'stop-commands' -Message $EndToken
 	return $EndToken
 }
@@ -202,6 +225,8 @@ function Disable-GHActionsProcessingCommand {
 GitHub Actions - Enable Command Echo
 .DESCRIPTION
 Enable echoing of workflow commands, the workflow run's log will show the command itself; The `add-mask`, `debug`, `warning`, and `error` commands do not support echoing because their outputs are already echoed to the log; Secret `ACTIONS_STEP_DEBUG` will ignore this.
+.OUTPUTS
+Void
 #>
 function Enable-GHActionsCommandEcho {
 	[CmdletBinding()]
@@ -215,6 +240,8 @@ GitHub Actions - Enable Processing Command
 Resume processing any workflow commands to allow running workflow commands.
 .PARAMETER EndToken
 Token from `Disable-GHActionsProcessingCommand`.
+.OUTPUTS
+Void
 #>
 function Enable-GHActionsProcessingCommand {
 	[CmdletBinding()]
@@ -230,6 +257,8 @@ GitHub Actions - Enter Log Group
 Create an expandable group in the log; Anything write to the log between `Enter-GHActionsLogGroup` and `Exit-GHActionsLogGroup` commands are inside an expandable group in the log.
 .PARAMETER Title
 Title of the log group.
+.OUTPUTS
+Void
 #>
 function Enter-GHActionsLogGroup {
 	[CmdletBinding()]
@@ -243,6 +272,8 @@ function Enter-GHActionsLogGroup {
 GitHub Actions - Exit Log Group
 .DESCRIPTION
 End an expandable group in the log.
+.OUTPUTS
+Void
 #>
 function Exit-GHActionsLogGroup {
 	[CmdletBinding()]
@@ -260,6 +291,8 @@ Name of the input.
 Whether the input is require. If required and not present, will throw an error.
 .PARAMETER Trim
 Trim the input's value.
+.OUTPUTS
+Hashtable -or String
 #>
 function Get-GHActionsInput {
 	[CmdletBinding()]
@@ -269,11 +302,11 @@ function Get-GHActionsInput {
 		[switch]$Trim
 	)
 	begin {
-		$Result = @{}
+		[hashtable]$Result = @{}
 	}
 	process {
 		$Name.GetEnumerator() | ForEach-Object -Process {
-			$InputValue = Get-ChildItem -Path "Env:\INPUT_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
+			[string]$InputValue = Get-ChildItem -Path "Env:\INPUT_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
 			if ($InputValue -eq $null) {
 				if ($Require) {
 					throw "Input ``$_`` is not defined!"
@@ -300,6 +333,8 @@ function Get-GHActionsInput {
 GitHub Actions - Get Debug Status
 .DESCRIPTION
 Get debug status.
+.OUTPUTS
+Boolean
 #>
 function Get-GHActionsIsDebug {
 	[CmdletBinding()]
@@ -318,6 +353,8 @@ Get state.
 Name of the state.
 .PARAMETER Trim
 Trim the state's value.
+.OUTPUTS
+Hashtable -or String
 #>
 function Get-GHActionsState {
 	[CmdletBinding()]
@@ -326,11 +363,11 @@ function Get-GHActionsState {
 		[switch]$Trim
 	)
 	begin {
-		$Result = @{}
+		[hashtable]$Result = @{}
 	}
 	process {
 		$Name.GetEnumerator() | ForEach-Object -Process {
-			$StateValue = Get-ChildItem -Path "Env:\STATE_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
+			[string]$StateValue = Get-ChildItem -Path "Env:\STATE_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
 			if ($StateValue -eq $null) {
 				$Result[$_] = $StateValue
 			} else {
@@ -351,11 +388,26 @@ function Get-GHActionsState {
 }
 <#
 .SYNOPSIS
+GitHub Actions - Get Webhook Event Payload
+.DESCRIPTION
+Get the complete webhook event payload.
+.OUTPUTS
+PSCustomObject
+#>
+function Get-GHActionsWebhookEventPayload {
+	[CmdletBinding()]
+	param ()
+	return (Get-Content -Encoding utf8NoBOM -Path $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json -Depth 100)
+}
+<#
+.SYNOPSIS
 Execute script block in a log group.
 .PARAMETER Title
 Title of the log group.
 .PARAMETER ScriptBlock
 Script block to execute in the log group.
+.OUTPUTS
+Any
 #>
 function Invoke-GHActionsScriptGroup {
 	[CmdletBinding()]
@@ -379,6 +431,8 @@ Set output.
 Name of the output.
 .PARAMETER Value
 Value of the output.
+.OUTPUTS
+Void
 #>
 function Set-GHActionsOutput {
 	[CmdletBinding()]
@@ -388,6 +442,18 @@ function Set-GHActionsOutput {
 	)
 	Write-GHActionsCommand -Command 'set-output' -Message $Value -Properties @{'name' = $Name }
 }
+<#
+.SYNOPSIS
+GitHub Actions - Set State
+.DESCRIPTION
+Set state.
+.PARAMETER Name
+Name of the state.
+.PARAMETER Value
+Value of the state.
+.OUTPUTS
+Void
+#>
 function Set-GHActionsState {
 	[CmdletBinding()]
 	param(
@@ -396,6 +462,16 @@ function Set-GHActionsState {
 	)
 	Write-GHActionsCommand -Command 'save-state' -Message $Value -Properties @{'name' = $Name }
 }
+<#
+.SYNOPSIS
+GitHub Actions - Write Debug
+.DESCRIPTION
+Prints a debug message to the log.
+.PARAMETER Message
+Message that need to log at debug level.
+.OUTPUTS
+Void
+#>
 function Write-GHActionsDebug {
 	[CmdletBinding()]
 	param (
@@ -407,6 +483,28 @@ function Write-GHActionsDebug {
 	}
 	end {}
 }
+<#
+.SYNOPSIS
+GitHub Actions - Write Error
+.DESCRIPTION
+Prints an error message to the log.
+.PARAMETER Message
+Message that need to log at error level.
+.PARAMETER File
+Issue file path.
+.PARAMETER Line
+Issue file line start.
+.PARAMETER Col
+Issue file column start.
+.PARAMETER EndLine
+Issue file line end.
+.PARAMETER EndColumn
+Issue file column end.
+.PARAMETER Title
+Issue title.
+.OUTPUTS
+Void
+#>
 function Write-GHActionsError {
 	[CmdletBinding()]
 	param (
@@ -419,7 +517,7 @@ function Write-GHActionsError {
 		[Parameter()][string]$Title
 	)
 	begin {
-		$Properties = @{}
+		[hashtable]$Properties = @{}
 		if ($File.Length -gt 0) {
 			$Properties.'file' = $File
 		}
@@ -444,6 +542,16 @@ function Write-GHActionsError {
 	}
 	end {}
 }
+<#
+.SYNOPSIS
+GitHub Actions - Write Fail
+.DESCRIPTION
+Prints an error message to the log and end the process.
+.PARAMETER Message
+Message that need to log at error level.
+.OUTPUTS
+Void
+#>
 function Write-GHActionsFail {
 	[CmdletBinding()]
 	param(
@@ -452,6 +560,28 @@ function Write-GHActionsFail {
 	Write-GHActionsCommand -Command 'error' -Message $Message
 	exit 1
 }
+<#
+.SYNOPSIS
+GitHub Actions - Write Notice
+.DESCRIPTION
+Prints a notice message to the log.
+.PARAMETER Message
+Message that need to log at notice level.
+.PARAMETER File
+Issue file path.
+.PARAMETER Line
+Issue file line start.
+.PARAMETER Col
+Issue file column start.
+.PARAMETER EndLine
+Issue file line end.
+.PARAMETER EndColumn
+Issue file column end.
+.PARAMETER Title
+Issue title.
+.OUTPUTS
+Void
+#>
 function Write-GHActionsNotice {
 	[CmdletBinding()]
 	param (
@@ -464,7 +594,7 @@ function Write-GHActionsNotice {
 		[Parameter()][string]$Title
 	)
 	begin {
-		$Properties = @{}
+		[hashtable]$Properties = @{}
 		if ($File.Length -gt 0) {
 			$Properties.'file' = $File
 		}
@@ -489,6 +619,28 @@ function Write-GHActionsNotice {
 	}
 	end {}
 }
+<#
+.SYNOPSIS
+GitHub Actions - Write Warning
+.DESCRIPTION
+Prints a warning message to the log.
+.PARAMETER Message
+Message that need to log at warning level.
+.PARAMETER File
+Issue file path.
+.PARAMETER Line
+Issue file line start.
+.PARAMETER Col
+Issue file column start.
+.PARAMETER EndLine
+Issue file line end.
+.PARAMETER EndColumn
+Issue file column end.
+.PARAMETER Title
+Issue title.
+.OUTPUTS
+Void
+#>
 function Write-GHActionsWarning {
 	[CmdletBinding()]
 	param (
@@ -501,7 +653,7 @@ function Write-GHActionsWarning {
 		[Parameter()][string]$Title
 	)
 	begin {
-		$Properties = @{}
+		[hashtable]$Properties = @{}
 		if ($File.Length -gt 0) {
 			$Properties.'file' = $File
 		}
@@ -526,4 +678,4 @@ function Write-GHActionsWarning {
 	}
 	end {}
 }
-Export-ModuleMember -Function Add-GHActionsEnvironmentVariable, Add-GHActionsPATH, Add-GHActionsSecretMask, Disable-GHActionsCommandEcho, Disable-GHActionsProcessingCommand, Enable-GHActionsCommandEcho, Enable-GHActionsProcessingCommand, Enter-GHActionsLogGroup, Exit-GHActionsLogGroup, Get-GHActionsInput, Get-GHActionsIsDebug, Get-GHActionsState, Invoke-GHActionsScriptGroup, Set-GHActionsOutput, Set-GHActionsState, Write-GHActionsDebug, Write-GHActionsError, Write-GHActionsFail, Write-GHActionsNotice, Write-GHActionsWarning
+Export-ModuleMember -Function Add-GHActionsEnvironmentVariable, Add-GHActionsPATH, Add-GHActionsSecretMask, Disable-GHActionsCommandEcho, Disable-GHActionsProcessingCommand, Enable-GHActionsCommandEcho, Enable-GHActionsProcessingCommand, Enter-GHActionsLogGroup, Exit-GHActionsLogGroup, Get-GHActionsInput, Get-GHActionsIsDebug, Get-GHActionsState, Get-GHActionsWebhookEventPayload, Invoke-GHActionsScriptGroup, Set-GHActionsOutput, Set-GHActionsState, Write-GHActionsDebug, Write-GHActionsError, Write-GHActionsFail, Write-GHActionsNotice, Write-GHActionsWarning
