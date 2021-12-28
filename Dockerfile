@@ -20,6 +20,7 @@ RUN ["apk", "add", "--allow-untrusted", "--no-cache", "ca-certificates", "clamav
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam"]
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
+RUN ["pwsh", "-C", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted"]
 RUN ["pwsh", "-C", "Install-Module -AcceptLicense -Name PowerShellGet -Scope AllUsers -Verbose"]
 RUN ["pwsh", "-C", "Update-Module -AcceptLicense -Scope AllUsers -Verbose"]
 RUN ["pwsh", "-C", "Install-Module -AcceptLicense -Name 'hugoalh.GitHubActionsToolkit' -Scope AllUsers -Verbose"]
