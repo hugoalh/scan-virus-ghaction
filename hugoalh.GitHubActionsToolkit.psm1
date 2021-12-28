@@ -306,7 +306,7 @@ function Get-GHActionsInput {
 	}
 	process {
 		$Name.GetEnumerator() | ForEach-Object -Process {
-			[string]$InputValue = Get-ChildItem -Path "Env:\INPUT_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
+			$InputValue = Get-ChildItem -Path "Env:\INPUT_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
 			if ($InputValue -eq $null) {
 				if ($Require) {
 					throw "Input ``$_`` is not defined!"
@@ -367,7 +367,7 @@ function Get-GHActionsState {
 	}
 	process {
 		$Name.GetEnumerator() | ForEach-Object -Process {
-			[string]$StateValue = Get-ChildItem -Path "Env:\STATE_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
+			$StateValue = Get-ChildItem -Path "Env:\STATE_$($_.ToUpper() -replace '[ \n\r]','_')" -ErrorAction SilentlyContinue
 			if ($StateValue -eq $null) {
 				$Result[$_] = $StateValue
 			} else {
