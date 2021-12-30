@@ -67,7 +67,7 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           integrate: "${{needs.parse-inputs.outputs.integrate}}"
-          list_elements: ${{github.event.inputs.list_elements}}
-          list_elementshashes: ${{github.event.inputs.list_elementshashes}}
-          list_miscellaneousresults: ${{github.event.inputs.list_miscellaneousresults}}
-          list_scanresults: ${{github.event.inputs.list_scanresults}}
+          list_elements: "${{github.event.inputs.list_elements}}"
+          list_elementshashes: "${{github.event.inputs.list_elementshashes}}"
+          list_miscellaneousresults: "${{github.event.inputs.list_miscellaneousresults}}"
+          list_scanresults: "${{github.event.inputs.list_scanresults}}"

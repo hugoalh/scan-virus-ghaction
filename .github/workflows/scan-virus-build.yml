@@ -52,3 +52,5 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
           integrate: "${{needs.parse-inputs.outputs.integrate}}"
+          list_elements: "debug"
+          list_elementshashes: "true"
