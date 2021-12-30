@@ -1,6 +1,17 @@
 # $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-name: "Scan Virus"
+name: "Scan Virus (Build)"
 on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+    types:
+      - "opened"
+      - "edited"
+      - "reopened"
+      - "synchronize"
   workflow_dispatch:
     inputs:
       integrate_git:
@@ -38,6 +49,6 @@ jobs:
         with:
           fetch-depth: "${{needs.parse-inputs.outputs.depth}}"
       - name: "${{needs.parse-inputs.outputs.title}} Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@main"
+        uses: "hugoalh/scan-virus-ghaction/use-docker-build@${{github.sha}}"
         with:
           integrate: "${{needs.parse-inputs.outputs.integrate}}"
