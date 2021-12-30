@@ -1,0 +1,1015 @@
+name	author	local	remote_repository	remote_commit	remote_path
+alienvaultlabs-apt-ngo-wuaclt	AlienVault Labs	alienvaultlabs/malware_analysis/APT_NGO_wuaclt/yara/APT_NGO_wuaclt.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/APT_NGO_wuaclt/yara/APT_NGO_wuaclt.yar
+alienvaultlabs-apt-ngo-wuaclt-pdf	AlienVault Labs	alienvaultlabs/malware_analysis/APT_NGO_wuaclt/yara/APT_NGO_wuaclt_PDF.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/APT_NGO_wuaclt/yara/APT_NGO_wuaclt_PDF.yar
+alienvaultlabs-avdetect	AlienVault Labs	alienvaultlabs/malware_rulesets/yara/avdetect.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_rulesets/yara/avdetect.yar
+alienvaultlabs-commentcrew-apt1	AlienVault Labs	alienvaultlabs/malware_analysis/CommentCrew/apt1.yara	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/CommentCrew/apt1.yara
+alienvaultlabs-dbgdetect	AlienVault Labs	alienvaultlabs/malware_rulesets/yara/dbgdetect.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_rulesets/yara/dbgdetect.yar
+alienvaultlabs-fpu	AlienVault Labs	alienvaultlabs/malware_analysis/FPU/fpu.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/FPU/fpu.yar
+alienvaultlabs-georbotbinary	AlienVault Labs	alienvaultlabs/malware_analysis/Georbot/GeorBotBinary.yara	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/Georbot/GeorBotBinary.yara
+alienvaultlabs-georbotmemory	AlienVault Labs	alienvaultlabs/malware_analysis/Georbot/GeorBotMemory.yara	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/Georbot/GeorBotMemory.yara
+alienvaultlabs-hangover	AlienVault Labs	alienvaultlabs/malware_analysis/Hangover/hangover.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/Hangover/hangover.yar
+alienvaultlabs-kins	AlienVault Labs	alienvaultlabs/malware_analysis/KINS/kins.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/KINS/kins.yar
+alienvaultlabs-osx-leverage	AlienVault Labs	alienvaultlabs/malware_analysis/OSX_Leverage/leverage.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/OSX_Leverage/leverage.yar
+alienvaultlabs-sandboxdetect	AlienVault Labs	alienvaultlabs/malware_rulesets/yara/sandboxdetect.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_rulesets/yara/sandboxdetect.yar
+alienvaultlabs-themask-careto	AlienVault Labs	alienvaultlabs/malware_analysis/TheMask_Careto/mask.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/TheMask_Careto/mask.yar
+alienvaultlabs-urausy-skypedat	AlienVault Labs	alienvaultlabs/malware_analysis/Urausy/urausy_skypedat.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_analysis/Urausy/urausy_skypedat.yar
+alienvaultlabs-vmdetect	AlienVault Labs	alienvaultlabs/malware_rulesets/yara/vmdetect.yar	https://github.com/AlienVault-Labs/AlienVaultLabs	refs/heads/master	malware_rulesets/yara/vmdetect.yar
+appleinc-xprotect	Apple Inc	appleinc-xprotect/XProtect.yara	https://gist.github.com/pedramamini/c586a151a978f971b70412ca4485c491	68ba7792699177c033c673c7ffccfa7a0ed5ce47	XProtect.yara
+bamfdetect-abaddon	Brian Wallace	bamfdetect/abaddon.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/abaddon.yara
+bamfdetect-alina	Brian Wallace	bamfdetect/alina.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/alina.yara
+bamfdetect-andromeda	Brian Wallace	bamfdetect/andromeda.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/andromeda.yara
+bamfdetect-athenahttp	Brian Wallace	bamfdetect/athenahttp.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/athenahttp.yara
+bamfdetect-backoff	Brian Wallace	bamfdetect/backoff.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/backoff.yara
+bamfdetect-blackshades	Brian Wallace	bamfdetect/blackshades.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/blackshades.yara
+bamfdetect-blackworm	Brian Wallace	bamfdetect/blackworm.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/blackworm.yara
+bamfdetect-bozok	Brian Wallace	bamfdetect/bozok.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/bozok.yara
+bamfdetect-cybergate	Brian Wallace	bamfdetect/cybergate.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/cybergate.yara
+bamfdetect-cythosia	Brian Wallace	bamfdetect/cythosia.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/cythosia.yara
+bamfdetect-darkcomet	Brian Wallace	bamfdetect/darkcomet.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/darkcomet.yara
+bamfdetect-dendroid	Brian Wallace	bamfdetect/dendroid.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/dendroid.yara
+bamfdetect-dexter	Brian Wallace	bamfdetect/dexter.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/dexter.yara
+bamfdetect-diamondfox	Brian Wallace	bamfdetect/diamondfox.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/diamondfox.yara
+bamfdetect-easterjackpos	Brian Wallace	bamfdetect/easterjackpos.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/easterjackpos.yara
+bamfdetect-elise	Brian Wallace	bamfdetect/elise.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/elise.yara
+bamfdetect-evora	Brian Wallace	bamfdetect/evora.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/evora.yara
+bamfdetect-genome	Brian Wallace	bamfdetect/genome.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/genome.yara
+bamfdetect-glassrat	Brian Wallace	bamfdetect/glassrat.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/glassrat.yara
+bamfdetect-herpes	Brian Wallace	bamfdetect/herpes.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/herpes.yara
+bamfdetect-jackpos	Brian Wallace	bamfdetect/jackpos.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/jackpos.yara
+bamfdetect-maazben	Brian Wallace	bamfdetect/maazben.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/maazben.yara
+bamfdetect-madnesspro	Brian Wallace	bamfdetect/madnesspro.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/madnesspro.yara
+bamfdetect-nanocore	Brian Wallace	bamfdetect/nanocore.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/nanocore.yara
+bamfdetect-njrat	Brian Wallace	bamfdetect/njrat.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/njrat.yara
+bamfdetect-pbot	Brian Wallace	bamfdetect/pbot.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/pbot.yara
+bamfdetect-poisonivy	Brian Wallace	bamfdetect/poisonivy.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/poisonivy.yara
+bamfdetect-pony	Brian Wallace	bamfdetect/pony.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/pony.yara
+bamfdetect-projecthook	Brian Wallace	bamfdetect/projecthook.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/projecthook.yara
+bamfdetect-solarbot	Brian Wallace	bamfdetect/solarbot.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/solarbot.yara
+bamfdetect-vertexnet	Brian Wallace	bamfdetect/vertexnet.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/vertexnet.yara
+bamfdetect-vskimmer	Brian Wallace	bamfdetect/vskimmer.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/vskimmer.yara
+bamfdetect-xtreme	Brian Wallace	bamfdetect/xtreme.yara	https://github.com/bwall/bamfdetect	refs/heads/master	BAMF_Detect/modules/yara/xtreme.yara
+bartblaze-apt-confucius-b	Bart P	bartblaze/APT/Confucius_B.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/APT/Confucius_B.yar
+bartblaze-apt-cotx-rat	Bart P	bartblaze/APT/Cotx_RAT.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/APT/Cotx_RAT.yar
+bartblaze-apt-royalroad-rtf	Bart P	bartblaze/APT/RoyalRoad_RTF.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/APT/RoyalRoad_RTF.yar
+bartblaze-crimeware-andromeda	Bart P	bartblaze/crimeware/Andromeda.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Andromeda.yar
+bartblaze-crimeware-arechclient	Bart P	bartblaze/crimeware/ArechClient.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/ArechClient.yar
+bartblaze-crimeware-arechclient-campaign-july2021	Bart P	bartblaze/crimeware/ArechClient_Campaign_July2021.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/ArechClient_Campaign_July2021.yar
+bartblaze-crimeware-avemaria	Bart P	bartblaze/crimeware/AveMaria.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/AveMaria.yar
+bartblaze-crimeware-bazarbackdoor	Bart P	bartblaze/crimeware/BazarBackdoor.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/BazarBackdoor.yar
+bartblaze-crimeware-bazarloader	Bart P	bartblaze/crimeware/BazarLoader.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/BazarLoader.yar
+bartblaze-crimeware-crunchyroll	Bart P	bartblaze/crimeware/CrunchyRoll.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/CrunchyRoll.yar
+bartblaze-crimeware-ganelp	Bart P	bartblaze/crimeware/Ganelp.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Ganelp.yar
+bartblaze-crimeware-icedid	Bart P	bartblaze/crimeware/IcedID.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/IcedID.yar
+bartblaze-crimeware-jssloader	Bart P	bartblaze/crimeware/JSSLoader.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/JSSLoader.yar
+bartblaze-crimeware-jupyter	Bart P	bartblaze/crimeware/Jupyter.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Jupyter.yar
+bartblaze-crimeware-keybase	Bart P	bartblaze/crimeware/KeyBase.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/KeyBase.yar
+bartblaze-crimeware-lnkr	Bart P	bartblaze/crimeware/LNKR.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/LNKR.yar
+bartblaze-crimeware-monero-compromise	Bart P	bartblaze/crimeware/Monero_Compromise.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Monero_Compromise.yar
+bartblaze-crimeware-parallax	Bart P	bartblaze/crimeware/Parallax.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Parallax.yar
+bartblaze-crimeware-purplefox	Bart P	bartblaze/crimeware/PurpleFox.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/PurpleFox.yar
+bartblaze-crimeware-redline	Bart P	bartblaze/crimeware/RedLine.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/RedLine.yar
+bartblaze-crimeware-redline-campaign-june2021	Bart P	bartblaze/crimeware/RedLine_Campaign_June2021.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/RedLine_Campaign_June2021.yar
+bartblaze-crimeware-systembc	Bart P	bartblaze/crimeware/SystemBC.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/SystemBC.yar
+bartblaze-crimeware-unk-br-banker	Bart P	bartblaze/crimeware/Unk_BR_Banker.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Unk_BR_Banker.yar
+bartblaze-crimeware-unk-crime-downloader-1	Bart P	bartblaze/crimeware/Unk_Crime_Downloader_1.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Unk_Crime_Downloader_1.yar
+bartblaze-crimeware-unk-desktoploader	Bart P	bartblaze/crimeware/Unk_DesktopLoader.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/Unk_DesktopLoader.yar
+bartblaze-crimeware-zloader	Bart P	bartblaze/crimeware/ZLoader.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/crimeware/ZLoader.yar
+bartblaze-generic-autoit	Bart P	bartblaze/generic/AutoIT.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/AutoIT.yar
+bartblaze-generic-enigmastub	Bart P	bartblaze/generic/EnigmaStub.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/EnigmaStub.yar
+bartblaze-generic-generic-phishing-pdf	Bart P	bartblaze/generic/Generic_Phishing_PDF.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/Generic_Phishing_PDF.yar
+bartblaze-generic-hidden	Bart P	bartblaze/generic/Hidden.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/Hidden.yar
+bartblaze-generic-ieuser-author-doc	Bart P	bartblaze/generic/IEuser_author_doc.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/IEuser_author_doc.yar
+bartblaze-generic-lnk-ruleset	Bart P	bartblaze/generic/LNK_Ruleset.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/LNK_Ruleset.yar
+bartblaze-generic-malscript-tricks	Bart P	bartblaze/generic/MalScript_Tricks.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/MalScript_Tricks.yar
+bartblaze-generic-minitor	Bart P	bartblaze/generic/MiniTor.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/MiniTor.yar
+bartblaze-generic-olefile-in-cad-fas-lsp	Bart P	bartblaze/generic/OLEfile_in_CAD_FAS_LSP.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/OLEfile_in_CAD_FAS_LSP.yar
+bartblaze-generic-pyinstaller	Bart P	bartblaze/generic/PyInstaller.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/PyInstaller.yar
+bartblaze-generic-rclone	Bart P	bartblaze/generic/Rclone.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/Rclone.yar
+bartblaze-generic-vmprotectstub	Bart P	bartblaze/generic/VMProtectStub.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/VMProtectStub.yar
+bartblaze-generic-webshell-in-image	Bart P	bartblaze/generic/Webshell_in_image.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/generic/Webshell_in_image.yar
+bartblaze-hacktools-adfind	Bart P	bartblaze/hacktools/Adfind.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/Adfind.yar
+bartblaze-hacktools-createminidump	Bart P	bartblaze/hacktools/CreateMiniDump.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/CreateMiniDump.yar
+bartblaze-hacktools-defendercontrol	Bart P	bartblaze/hacktools/DefenderControl.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/DefenderControl.yar
+bartblaze-hacktools-gmer	Bart P	bartblaze/hacktools/Gmer.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/Gmer.yar
+bartblaze-hacktools-gmer-driver	Bart P	bartblaze/hacktools/Gmer_Driver.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/Gmer_Driver.yar
+bartblaze-hacktools-hiddenvnc	Bart P	bartblaze/hacktools/HiddenVNC.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/HiddenVNC.yar
+bartblaze-hacktools-iisraid	Bart P	bartblaze/hacktools/IISRaid.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/IISRaid.yar
+bartblaze-hacktools-impacket	Bart P	bartblaze/hacktools/Impacket.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/Impacket.yar
+bartblaze-hacktools-kportscan	Bart P	bartblaze/hacktools/KPortScan.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/KPortScan.yar
+bartblaze-hacktools-lazagne	Bart P	bartblaze/hacktools/LaZagne.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/LaZagne.yar
+bartblaze-hacktools-nlbrute	Bart P	bartblaze/hacktools/NLBrute.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/NLBrute.yar
+bartblaze-hacktools-powertool	Bart P	bartblaze/hacktools/PowerTool.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/PowerTool.yar
+bartblaze-hacktools-rdpwrap	Bart P	bartblaze/hacktools/RDPWrap.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/RDPWrap.yar
+bartblaze-hacktools-responder	Bart P	bartblaze/hacktools/Responder.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/Responder.yar
+bartblaze-hacktools-windows-credentials-editor	Bart P	bartblaze/hacktools/Windows_Credentials_Editor.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/hacktools/Windows_Credentials_Editor.yar
+bartblaze-ransomware-avaddon	Bart P	bartblaze/ransomware/Avaddon.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Avaddon.yar
+bartblaze-ransomware-blackkingdom	Bart P	bartblaze/ransomware/BlackKingDom.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/BlackKingDom.yar
+bartblaze-ransomware-crylock	Bart P	bartblaze/ransomware/CryLock.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/CryLock.yar
+bartblaze-ransomware-darkside	Bart P	bartblaze/ransomware/Darkside.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Darkside.yar
+bartblaze-ransomware-dearcry	Bart P	bartblaze/ransomware/DearCry.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/DearCry.yar
+bartblaze-ransomware-ekans	Bart P	bartblaze/ransomware/Ekans.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Ekans.yar
+bartblaze-ransomware-fusion	Bart P	bartblaze/ransomware/Fusion.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Fusion.yar
+bartblaze-ransomware-maze	Bart P	bartblaze/ransomware/Maze.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Maze.yar
+bartblaze-ransomware-pysa	Bart P	bartblaze/ransomware/Pysa.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Pysa.yar
+bartblaze-ransomware-ragnarlocker	Bart P	bartblaze/ransomware/RagnarLocker.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/RagnarLocker.yar
+bartblaze-ransomware-revil-cert	Bart P	bartblaze/ransomware/REvil_Cert.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/REvil_Cert.yar
+bartblaze-ransomware-revil-dropper	Bart P	bartblaze/ransomware/REvil_Dropper.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/REvil_Dropper.yar
+bartblaze-ransomware-satan-mutexes	Bart P	bartblaze/ransomware/Satan_Mutexes.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Satan_Mutexes.yar
+bartblaze-ransomware-sfile	Bart P	bartblaze/ransomware/Sfile.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Sfile.yar
+bartblaze-ransomware-wickrme	Bart P	bartblaze/ransomware/WickrMe.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/WickrMe.yar
+bartblaze-ransomware-winlock	Bart P	bartblaze/ransomware/WinLock.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/WinLock.yar
+bartblaze-ransomware-xiaoba	Bart P	bartblaze/ransomware/XiaoBa.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/XiaoBa.yar
+bartblaze-ransomware-zeppelin	Bart P	bartblaze/ransomware/Zeppelin.yar	https://github.com/bartblaze/Yara-rules	refs/heads/master	rules/ransomware/Zeppelin.yar
+binaryalert-eicar	BinaryAlert	binaryalert/eicar.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/eicar.yara
+binaryalert-hacktool-macos-exploit-cve-2015-5889	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_exploit_cve_2015_5889.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_exploit_cve_2015_5889.yara
+binaryalert-hacktool-macos-exploit-tpwn	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_exploit_tpwn.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_exploit_tpwn.yara
+binaryalert-hacktool-macos-juuso-keychaindump	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_juuso_keychaindump.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_juuso_keychaindump.yara
+binaryalert-hacktool-macos-keylogger-dannvix	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_keylogger_dannvix.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_keylogger_dannvix.yara
+binaryalert-hacktool-macos-keylogger-giacomolaw	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_keylogger_giacomolaw.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_keylogger_giacomolaw.yara
+binaryalert-hacktool-macos-keylogger-logkext	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_keylogger_logkext.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_keylogger_logkext.yara
+binaryalert-hacktool-macos-macpmem	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_macpmem.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_macpmem.yara
+binaryalert-hacktool-macos-n0fate-chainbreaker	BinaryAlert	binaryalert/hacktool/macos/hacktool_macos_n0fate_chainbreaker.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/macos/hacktool_macos_n0fate_chainbreaker.yara
+binaryalert-hacktool-multi-bloodhound-owned	BinaryAlert	binaryalert/hacktool/multi/hacktool_multi_bloodhound_owned.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/multi/hacktool_multi_bloodhound_owned.yara
+binaryalert-hacktool-multi-jtesta-ssh-mitm	BinaryAlert	binaryalert/hacktool/multi/hacktool_multi_jtesta_ssh_mitm.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/multi/hacktool_multi_jtesta_ssh_mitm.yara
+binaryalert-hacktool-multi-masscan	BinaryAlert	binaryalert/hacktool/multi/hacktool_multi_masscan.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/multi/hacktool_multi_masscan.yara
+binaryalert-hacktool-multi-ntlmrelayx	BinaryAlert	binaryalert/hacktool/multi/hacktool_multi_ntlmrelayx.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/multi/hacktool_multi_ntlmrelayx.yara
+binaryalert-hacktool-multi-pyrasite-py	BinaryAlert	binaryalert/hacktool/multi/hacktool_multi_pyrasite_py.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/multi/hacktool_multi_pyrasite_py.yara
+binaryalert-hacktool-multi-responder-py	BinaryAlert	binaryalert/hacktool/multi/hacktool_multi_responder_py.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/multi/hacktool_multi_responder_py.yara
+binaryalert-hacktool-windows-cobaltstrike-beacon	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_cobaltstrike_beacon.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_cobaltstrike_beacon.yara
+binaryalert-hacktool-windows-hot-potato	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_hot_potato.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_hot_potato.yara
+binaryalert-hacktool-windows-mimikatz-copywrite	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_mimikatz_copywrite.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_mimikatz_copywrite.yara
+binaryalert-hacktool-windows-mimikatz-errors	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_mimikatz_errors.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_mimikatz_errors.yara
+binaryalert-hacktool-windows-mimikatz-files	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_mimikatz_files.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_mimikatz_files.yara
+binaryalert-hacktool-windows-mimikatz-modules	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_mimikatz_modules.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_mimikatz_modules.yara
+binaryalert-hacktool-windows-mimikatz-sekurlsa	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_mimikatz_sekurlsa.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_mimikatz_sekurlsa.yara
+binaryalert-hacktool-windows-moyix-creddump	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_moyix_creddump.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_moyix_creddump.yara
+binaryalert-hacktool-windows-ncc-wmicmd	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_ncc_wmicmd.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_ncc_wmicmd.yara
+binaryalert-hacktool-windows-rdp-cmd-delivery	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_rdp_cmd_delivery.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_rdp_cmd_delivery.yara
+binaryalert-hacktool-windows-wmi-implant	BinaryAlert	binaryalert/hacktool/windows/hacktool_windows_wmi_implant.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/hacktool/windows/hacktool_windows_wmi_implant.yara
+binaryalert-malware-macos-apt-sofacy-xagent	BinaryAlert	binaryalert/malware/macos/malware_macos_apt_sofacy_xagent.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/macos/malware_macos_apt_sofacy_xagent.yara
+binaryalert-malware-macos-bella	BinaryAlert	binaryalert/malware/macos/malware_macos_bella.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/macos/malware_macos_bella.yara
+binaryalert-malware-macos-macspy	BinaryAlert	binaryalert/malware/macos/malware_macos_macspy.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/macos/malware_macos_macspy.yara
+binaryalert-malware-macos-marten4n6-evilosx	BinaryAlert	binaryalert/malware/macos/malware_macos_marten4n6_evilosx.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/macos/malware_macos_marten4n6_evilosx.yara
+binaryalert-malware-macos-neoneggplant-eggshell	BinaryAlert	binaryalert/malware/macos/malware_macos_neoneggplant_eggshell.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/macos/malware_macos_neoneggplant_eggshell.yara
+binaryalert-malware-macos-proton-rat-generic	BinaryAlert	binaryalert/malware/macos/malware_macos_proton_rat_generic.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/macos/malware_macos_proton_rat_generic.yara
+binaryalert-malware-multi-pupy-rat	BinaryAlert	binaryalert/malware/multi/malware_multi_pupy_rat.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/multi/malware_multi_pupy_rat.yara
+binaryalert-malware-multi-vesche-basicrat	BinaryAlert	binaryalert/malware/multi/malware_multi_vesche_basicrat.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/multi/malware_multi_vesche_basicrat.yara
+binaryalert-malware-windows-ccleaner-backdoor	BinaryAlert	binaryalert/malware/windows/malware_windows_ccleaner_backdoor.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_ccleaner_backdoor.yara
+binaryalert-malware-windows-moonlightmaze-de-tool	BinaryAlert	binaryalert/malware/windows/malware_windows_moonlightmaze_de_tool.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_moonlightmaze_de_tool.yara
+binaryalert-malware-windows-moonlightmaze-loki	BinaryAlert	binaryalert/malware/windows/malware_windows_moonlightmaze_loki.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_moonlightmaze_loki.yara
+binaryalert-malware-windows-moonlightmaze-wipe	BinaryAlert	binaryalert/malware/windows/malware_windows_moonlightmaze_wipe.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_moonlightmaze_wipe.yara
+binaryalert-malware-windows-pony-stealer	BinaryAlert	binaryalert/malware/windows/malware_windows_pony_stealer.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_pony_stealer.yara
+binaryalert-malware-windows-remcos-rat	BinaryAlert	binaryalert/malware/windows/malware_windows_remcos_rat.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_remcos_rat.yara
+binaryalert-malware-windows-t3ntman-crunchrat	BinaryAlert	binaryalert/malware/windows/malware_windows_t3ntman_crunchrat.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_t3ntman_crunchrat.yara
+binaryalert-malware-windows-xrat-quasarrat	BinaryAlert	binaryalert/malware/windows/malware_windows_xrat_quasarrat.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/malware/windows/malware_windows_xrat_quasarrat.yara
+binaryalert-ransomware-windows-cerber-evasion	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_cerber_evasion.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_cerber_evasion.yara
+binaryalert-ransomware-windows-cryptolocker	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_cryptolocker.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_cryptolocker.yara
+binaryalert-ransomware-windows-hydracrypt	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_hydracrypt.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_hydracrypt.yara
+binaryalert-ransomware-windows-petya-variant-1	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_petya_variant_1.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_petya_variant_1.yara
+binaryalert-ransomware-windows-petya-variant-2	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_petya_variant_2.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_petya_variant_2.yara
+binaryalert-ransomware-windows-petya-variant-3	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_petya_variant_3.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_petya_variant_3.yara
+binaryalert-ransomware-windows-wannacry	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_wannacry.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_wannacry.yara
+binaryalert-ransomware-windows-zcrypt	BinaryAlert	binaryalert/ransomware/windows/ransomware_windows_zcrypt.yara	https://github.com/airbnb/binaryalert	refs/heads/master	rules/public/ransomware/windows/ransomware_windows_zcrypt.yara
+burp-angler-ek-checkpoint	Burp	burp/angler_ek_checkpoint.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_ek_checkpoint.yar
+burp-angler-ek-redirector	Burp	burp/angler_ek_redirector.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_ek_redirector.yar
+burp-angler-flash	Burp	burp/angler_flash.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_flash.yar
+burp-angler-flash-uncompressed	Burp	burp/angler_flash_uncompressed.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_flash_uncompressed.yar
+burp-angler-flash2	Burp	burp/angler_flash2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_flash2.yar
+burp-angler-flash4	Burp	burp/angler_flash4.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_flash4.yar
+burp-angler-flash5	Burp	burp/angler_flash5.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_flash5.yar
+burp-angler-html	Burp	burp/angler_html.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_html.yar
+burp-angler-html2	Burp	burp/angler_html2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_html2.yar
+burp-angler-jar	Burp	burp/angler_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_jar.yar
+burp-angler-js	Burp	burp/angler_js.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	angler_js.yar
+burp-blackhole-basic	Burp	burp/blackhole_basic.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole_basic.yar
+burp-blackhole1-jar	Burp	burp/blackhole1_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole1_jar.yar
+burp-blackhole2-css	Burp	burp/blackhole2_css.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_css.yar
+burp-blackhole2-htm	Burp	burp/blackhole2_htm.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm.yar
+burp-blackhole2-htm3	Burp	burp/blackhole2_htm3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm3.yar
+burp-blackhole2-htm4	Burp	burp/blackhole2_htm4.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm4.yar
+burp-blackhole2-htm5	Burp	burp/blackhole2_htm5.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm5.yar
+burp-blackhole2-htm6	Burp	burp/blackhole2_htm6.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm6.yar
+burp-blackhole2-htm8	Burp	burp/blackhole2_htm8.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm8.yar
+burp-blackhole2-htm10	Burp	burp/blackhole2_htm10.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm10.yar
+burp-blackhole2-htm11	Burp	burp/blackhole2_htm11.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm11.yar
+burp-blackhole2-htm12	Burp	burp/blackhole2_htm12.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_htm12.yar
+burp-blackhole2-jar	Burp	burp/blackhole2_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_jar.yar
+burp-blackhole2-jar2	Burp	burp/blackhole2_jar2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_jar2.yar
+burp-blackhole2-jar3	Burp	burp/blackhole2_jar3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_jar3.yar
+burp-blackhole2-pdf	Burp	burp/blackhole2_pdf.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	blackhole2_pdf.yar
+burp-bleedinglife2-adobe-2010-1297-exploit	Burp	burp/bleedinglife2_adobe_2010_1297_exploit.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	bleedinglife2_adobe_2010_1297_exploit.yar
+burp-bleedinglife2-adobe-2010-2884-exploit	Burp	burp/bleedinglife2_adobe_2010_2884_exploit.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	bleedinglife2_adobe_2010_2884_exploit.yar
+burp-bleedinglife2-jar2	Burp	burp/bleedinglife2_jar2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	bleedinglife2_jar2.yar
+burp-bleedinglife2-java-2010-0842-exploit	Burp	burp/bleedinglife2_java_2010_0842_exploit.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	bleedinglife2_java_2010_0842_exploit.yar
+burp-crimepack-jar	Burp	burp/crimepack_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	crimepack_jar.yar
+burp-crimepack-jar3	Burp	burp/crimepack_jar3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	crimepack_jar3.yar
+burp-cve-2013-0074	Burp	burp/cve_2013_0074.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	cve_2013_0074.yar
+burp-cve-2013-0422	Burp	burp/cve_2013_0422.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	cve_2013_0422.yar
+burp-eleonore-jar	Burp	burp/eleonore_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	eleonore_jar.yar
+burp-eleonore-jar2	Burp	burp/eleonore_jar2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	eleonore_jar2.yar
+burp-eleonore-jar3	Burp	burp/eleonore_jar3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	eleonore_jar3.yar
+burp-eleonore-js	Burp	burp/eleonore_js.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	eleonore_js.yar
+burp-eleonore-js2	Burp	burp/eleonore_js2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	eleonore_js2.yar
+burp-eleonore-js3	Burp	burp/eleonore_js3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	eleonore_js3.yar
+burp-fragus-htm	Burp	burp/fragus_htm.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_htm.yar
+burp-fragus-js	Burp	burp/fragus_js.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_js.yar
+burp-fragus-js-flash	Burp	burp/fragus_js_flash.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_js_flash.yar
+burp-fragus-js-java	Burp	burp/fragus_js_java.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_js_java.yar
+burp-fragus-js-quicktime	Burp	burp/fragus_js_quicktime.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_js_quicktime.yar
+burp-fragus-js-vml	Burp	burp/fragus_js_vml.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_js_vml.yar
+burp-fragus-js2	Burp	burp/fragus_js2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	fragus_js2.yar
+burp-javascript-exploit-and-obfuscation	Burp	burp/javascript_exploit_and_obfuscation.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	javascript_exploit_and_obfuscation.yar
+burp-malicious-office	Burp	burp/malicious_office.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	malicious_office.yar
+burp-malicious-pdf	Burp	burp/malicious_pdf.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	malicious_pdf.yar
+burp-phoenix-html	Burp	burp/phoenix_html.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html.yar
+burp-phoenix-html2	Burp	burp/phoenix_html2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html2.yar
+burp-phoenix-html3	Burp	burp/phoenix_html3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html3.yar
+burp-phoenix-html4	Burp	burp/phoenix_html4.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html4.yar
+burp-phoenix-html5	Burp	burp/phoenix_html5.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html5.yar
+burp-phoenix-html6	Burp	burp/phoenix_html6.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html6.yar
+burp-phoenix-html7	Burp	burp/phoenix_html7.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html7.yar
+burp-phoenix-html8	Burp	burp/phoenix_html8.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html8.yar
+burp-phoenix-html9	Burp	burp/phoenix_html9.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html9.yar
+burp-phoenix-html10	Burp	burp/phoenix_html10.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html10.yar
+burp-phoenix-html11	Burp	burp/phoenix_html11.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_html11.yar
+burp-phoenix-jar	Burp	burp/phoenix_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_jar.yar
+burp-phoenix-jar2	Burp	burp/phoenix_jar2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_jar2.yar
+burp-phoenix-jar3	Burp	burp/phoenix_jar3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_jar3.yar
+burp-phoenix-pdf	Burp	burp/phoenix_pdf.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_pdf.yar
+burp-phoenix-pdf2	Burp	burp/phoenix_pdf2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_pdf2.yar
+burp-phoenix-pdf3	Burp	burp/phoenix_pdf3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	phoenix_pdf3.yar
+burp-redkit-bin-basic	Burp	burp/redkit_bin_basic.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	redkit_bin_basic.yar
+burp-sakura-jar	Burp	burp/sakura_jar.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	sakura_jar.yar
+burp-sakura-jar2	Burp	burp/sakura_jar2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	sakura_jar2.yar
+burp-zeroaccess-css	Burp	burp/zeroaccess_css.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_css.yar
+burp-zeroaccess-css2	Burp	burp/zeroaccess_css2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_css2.yar
+burp-zeroaccess-htm	Burp	burp/zeroaccess_htm.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_htm.yar
+burp-zeroaccess-js	Burp	burp/zeroaccess_js.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_js.yar
+burp-zeroaccess-js2	Burp	burp/zeroaccess_js2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_js2.yar
+burp-zeroaccess-js3	Burp	burp/zeroaccess_js3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_js3.yar
+burp-zeroaccess-js4	Burp	burp/zeroaccess_js4.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeroaccess_js4.yar
+burp-zerox88-js2	Burp	burp/zerox88_js2.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zerox88_js2.yar
+burp-zerox88-js3	Burp	burp/zerox88_js3.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zerox88_js3.yar
+burp-zeus-js	Burp	burp/zeus_js.yar	https://github.com/codewatchorg/Burp-Yara-Rules	refs/heads/master	zeus_js.yar
+cape-agenttesla	CAPE	cape/data/yara/CAPE/AgentTesla.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/AgentTesla.yar
+cape-al-khaser	CAPE	cape/analyzer/windows/data/yara/Al-khaser.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/Al-khaser.yar
+cape-amadey	CAPE	cape/data/yara/CAPE/Amadey.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Amadey.yar
+cape-arkei	CAPE	cape/data/yara/CAPE/Arkei.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Arkei.yar
+cape-asyncrat	CAPE	cape/data/yara/CAPE/AsyncRat.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/AsyncRat.yar
+cape-atlas	CAPE	cape/data/yara/CAPE/Atlas.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Atlas.yar
+cape-azer	CAPE	cape/data/yara/CAPE/Azer.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Azer.yar
+cape-azorult	CAPE	cape/data/yara/CAPE/Azorult.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Azorult.yar
+cape-badrabbit	CAPE	cape/data/yara/CAPE/BadRabbit.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/BadRabbit.yar
+cape-bazar	CAPE	cape/data/yara/CAPE/Bazar.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Bazar.yar
+cape-bitpaymer	CAPE	cape/data/yara/CAPE/BitPaymer.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/BitPaymer.yar
+cape-buerloader	CAPE	cape/analyzer/windows/data/yara/BuerLoader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/BuerLoader.yar
+cape-buerloader	CAPE	cape/data/yara/CAPE/BuerLoader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/BuerLoader.yar
+cape-cerber	CAPE	cape/data/yara/CAPE/Cerber.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Cerber.yar
+cape-cobaltstrikebeacon	CAPE	cape/data/yara/CAPE/CobaltStrikeBeacon.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/CobaltStrikeBeacon.yar
+cape-codoso	CAPE	cape/data/yara/CAPE/Codoso.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Codoso.yar
+cape-conti	CAPE	cape/data/yara/CAPE/Conti.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Conti.yar
+cape-cryptoshield	CAPE	cape/data/yara/CAPE/Cryptoshield.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Cryptoshield.yar
+cape-doppelpaymer	CAPE	cape/data/yara/CAPE/DoppelPaymer.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/DoppelPaymer.yar
+cape-dreambot	CAPE	cape/data/yara/CAPE/Dreambot.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Dreambot.yar
+cape-dridexloader	CAPE	cape/analyzer/windows/data/yara/DridexLoader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/DridexLoader.yar
+cape-dridexloader	CAPE	cape/data/yara/CAPE/DridexLoader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/DridexLoader.yar
+cape-dridexv4	CAPE	cape/data/yara/CAPE/DridexV4.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/DridexV4.yar
+cape-emotet	CAPE	cape/analyzer/windows/data/yara/Emotet.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/Emotet.yar
+cape-emotet	CAPE	cape/data/yara/CAPE/Emotet.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Emotet.yar
+cape-emotet-loader	CAPE	cape/data/yara/CAPE/Emotet_Loader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Emotet_Loader.yar
+cape-eternalromance	CAPE	cape/data/yara/CAPE/EternalRomance.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/EternalRomance.yar
+cape-fareit	CAPE	cape/data/yara/CAPE/Fareit.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Fareit.yar
+cape-formbook	CAPE	cape/analyzer/windows/data/yara/Formbook.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/Formbook.yar
+cape-gandcrab	CAPE	cape/data/yara/CAPE/Gandcrab.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Gandcrab.yar
+cape-gettickcountantivm	CAPE	cape/analyzer/windows/data/yara/GetTickCountAntiVM.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/GetTickCountAntiVM.yar
+cape-gootkit	CAPE	cape/data/yara/CAPE/Gootkit.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Gootkit.yar
+cape-guloader	CAPE	cape/analyzer/windows/data/yara/Guloader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/Guloader.yar
+cape-guloader	CAPE	cape/data/yara/CAPE/Guloader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Guloader.yar
+cape-hancitor	CAPE	cape/data/yara/CAPE/Hancitor.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Hancitor.yar
+cape-hermes	CAPE	cape/data/yara/CAPE/Hermes.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Hermes.yar
+cape-icedid	CAPE	cape/analyzer/windows/data/yara/IcedID.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/IcedID.yar
+cape-icedid	CAPE	cape/data/yara/CAPE/IcedID.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/IcedID.yar
+cape-icedidloader	CAPE	cape/data/yara/CAPE/IcedIDLoader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/IcedIDLoader.yar
+cape-ies-heavensgate	CAPE	cape/data/yara/binaries/HeavensGate.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/binaries/HeavensGate.yar
+cape-jaff	CAPE	cape/data/yara/CAPE/Jaff.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Jaff.yar
+cape-kovter	CAPE	cape/data/yara/CAPE/Kovter.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Kovter.yar
+cape-kpot	CAPE	cape/data/yara/CAPE/Kpot.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Kpot.yar
+cape-kronos	CAPE	cape/data/yara/CAPE/Kronos.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Kronos.yar
+cape-lockbit	CAPE	cape/data/yara/CAPE/Lockbit.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Lockbit.yar
+cape-locky	CAPE	cape/data/yara/CAPE/Locky.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Locky.yar
+cape-loki	CAPE	cape/data/yara/CAPE/Loki.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Loki.yar
+cape-magniber	CAPE	cape/data/yara/CAPE/Magniber.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Magniber.yar
+cape-masslogger	CAPE	cape/data/yara/CAPE/MassLogger.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/MassLogger.yar
+cape-megacortex	CAPE	cape/data/yara/CAPE/MegaCortex.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/MegaCortex.yar
+cape-mole	CAPE	cape/data/yara/CAPE/Mole.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Mole.yar
+cape-mysterysnail	CAPE	cape/analyzer/windows/data/yara/MysterySnail.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/MysterySnail.yar
+cape-nanolocker	CAPE	cape/data/yara/CAPE/NanoLocker.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/NanoLocker.yar
+cape-nemty	CAPE	cape/data/yara/CAPE/Nemty.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Nemty.yar
+cape-nettraveler	CAPE	cape/data/yara/CAPE/NetTraveler.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/NetTraveler.yar
+cape-pafish	CAPE	cape/analyzer/windows/data/yara/Pafish.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/Pafish.yar
+cape-pafish	CAPE	cape/data/yara/CAPE/Pafish.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Pafish.yar
+cape-petrwrap	CAPE	cape/data/yara/CAPE/PetrWrap.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/PetrWrap.yar
+cape-petya	CAPE	cape/data/yara/CAPE/Petya.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Petya.yar
+cape-qakbot	CAPE	cape/data/yara/CAPE/QakBot.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/QakBot.yar
+cape-ramnit	CAPE	cape/data/yara/CAPE/Ramnit.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Ramnit.yar
+cape-rcsession	CAPE	cape/data/yara/CAPE/RCSession.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/RCSession.yar
+cape-rdtscpantivm	CAPE	cape/analyzer/windows/data/yara/RdtscpAntiVM.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/RdtscpAntiVM.yar
+cape-remcos	CAPE	cape/data/yara/CAPE/Remcos.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Remcos.yar
+cape-rokrat	CAPE	cape/data/yara/CAPE/RokRat.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/RokRat.yar
+cape-ryuk	CAPE	cape/data/yara/CAPE/Ryuk.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Ryuk.yar
+cape-scarab	CAPE	cape/data/yara/CAPE/Scarab.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Scarab.yar
+cape-sedreco	CAPE	cape/data/yara/CAPE/Sedreco.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Sedreco.yar
+cape-seduploader	CAPE	cape/data/yara/CAPE/Seduploader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Seduploader.yar
+cape-singlestepantihook	CAPE	cape/analyzer/windows/data/yara/SingleStepAntiHook.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/SingleStepAntiHook.yar
+cape-squirrelwaffle	CAPE	cape/data/yara/CAPE/SquirrelWaffle.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/SquirrelWaffle.yar
+cape-tclient	CAPE	cape/data/yara/CAPE/TClient.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/TClient.yar
+cape-trickbot	CAPE	cape/data/yara/CAPE/TrickBot.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/TrickBot.yar
+cape-tscookie	CAPE	cape/data/yara/CAPE/TSCookie.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/TSCookie.yar
+cape-ursnif	CAPE	cape/data/yara/CAPE/Ursnif.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Ursnif.yar
+cape-ursnif3	CAPE	cape/data/yara/CAPE/Ursnif3.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Ursnif3.yar
+cape-ursnifv3	CAPE	cape/analyzer/windows/data/yara/UrsnifV3.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/UrsnifV3.yar
+cape-varenyky	CAPE	cape/data/yara/CAPE/Varenyky.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Varenyky.yar
+cape-vbcrypter	CAPE	cape/analyzer/windows/data/yara/VBCrypter.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/VBCrypter.yar
+cape-vidar	CAPE	cape/data/yara/CAPE/Vidar.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Vidar.yar
+cape-wanacry	CAPE	cape/data/yara/CAPE/WanaCry.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/WanaCry.yar
+cape-zerot	CAPE	cape/data/yara/CAPE/ZeroT.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/ZeroT.yar
+cape-zeuspanda	CAPE	cape/data/yara/CAPE/ZeusPanda.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/ZeusPanda.yar
+cape-zloader	CAPE	cape/analyzer/windows/data/yara/Zloader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	analyzer/windows/data/yara/Zloader.yar
+cape-zloader	CAPE	cape/data/yara/CAPE/Zloader.yar	https://github.com/kevoreilly/CAPEv2	refs/heads/master	data/yara/CAPE/Zloader.yar
+citizenlab-3102	Citizen Lab	citizenlab/malware-families/3102.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/3102.yara
+citizenlab-9002	Citizen Lab	citizenlab/malware-families/9002.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/9002.yara
+citizenlab-bangat	Citizen Lab	citizenlab/malware-families/bangat.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/bangat.yara
+citizenlab-boouset	Citizen Lab	citizenlab/malware-families/boouset.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/boouset.yara
+citizenlab-comfoo	Citizen Lab	citizenlab/malware-families/comfoo.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/comfoo.yara
+citizenlab-cookies	Citizen Lab	citizenlab/malware-families/cookies.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/cookies.yara
+citizenlab-cxpid	Citizen Lab	citizenlab/malware-families/cxpid.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/cxpid.yara
+citizenlab-enfal	Citizen Lab	citizenlab/malware-families/enfal.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/enfal.yara
+citizenlab-ezcob	Citizen Lab	citizenlab/malware-families/ezcob.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/ezcob.yara
+citizenlab-fakem	Citizen Lab	citizenlab/malware-families/fakem.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/fakem.yara
+citizenlab-favorite	Citizen Lab	citizenlab/malware-families/favorite.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/favorite.yara
+citizenlab-filetypes	Citizen Lab	citizenlab/filetypes.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	filetypes.yara
+citizenlab-glasses	Citizen Lab	citizenlab/malware-families/glasses.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/glasses.yara
+citizenlab-iexpl0re	Citizen Lab	citizenlab/malware-families/iexpl0re.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/iexpl0re.yara
+citizenlab-imuler	Citizen Lab	citizenlab/malware-families/imuler.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/imuler.yara
+citizenlab-insta11	Citizen Lab	citizenlab/malware-families/insta11.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/insta11.yara
+citizenlab-keyboy	Citizen Lab	citizenlab/malware-families/keyboy.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/keyboy.yara
+citizenlab-luckycat	Citizen Lab	citizenlab/malware-families/luckycat.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/luckycat.yara
+citizenlab-lurk0+cctv0	Citizen Lab	citizenlab/malware-families/lurk0+cctv0.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/lurk0+cctv0.yara
+citizenlab-maccontrol	Citizen Lab	citizenlab/malware-families/maccontrol.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/maccontrol.yara
+citizenlab-malware-families	Citizen Lab	citizenlab/malware-families/malware-families.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/malware-families.yara
+citizenlab-mirage	Citizen Lab	citizenlab/malware-families/mirage.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/mirage.yara
+citizenlab-mongal	Citizen Lab	citizenlab/malware-families/mongal.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/mongal.yara
+citizenlab-msattacker	Citizen Lab	citizenlab/malware-families/msattacker.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/msattacker.yara
+citizenlab-naikon	Citizen Lab	citizenlab/malware-families/naikon.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/naikon.yara
+citizenlab-naspyupdate	Citizen Lab	citizenlab/malware-families/naspyupdate.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/naspyupdate.yara
+citizenlab-nettraveler	Citizen Lab	citizenlab/malware-families/nettraveler.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/nettraveler.yara
+citizenlab-nsfree	Citizen Lab	citizenlab/malware-families/nsfree.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/nsfree.yara
+citizenlab-oleidentifiers	Citizen Lab	citizenlab/oleidentifiers.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	oleidentifiers.yara
+citizenlab-olyx	Citizen Lab	citizenlab/malware-families/olyx.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/olyx.yara
+citizenlab-payloads	Citizen Lab	citizenlab/payloads.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	payloads.yara
+citizenlab-plugx	Citizen Lab	citizenlab/malware-families/plugx.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/plugx.yara
+citizenlab-pubsab	Citizen Lab	citizenlab/malware-families/pubsab.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/pubsab.yara
+citizenlab-quarian	Citizen Lab	citizenlab/malware-families/quarian.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/quarian.yara
+citizenlab-regsubdat	Citizen Lab	citizenlab/malware-families/regsubdat.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/regsubdat.yara
+citizenlab-remote	Citizen Lab	citizenlab/malware-families/remote.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/remote.yara
+citizenlab-rookie	Citizen Lab	citizenlab/malware-families/rookie.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/rookie.yara
+citizenlab-rooter	Citizen Lab	citizenlab/malware-families/rooter.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/rooter.yara
+citizenlab-safenet	Citizen Lab	citizenlab/malware-families/safenet.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/safenet.yara
+citizenlab-scarhikn	Citizen Lab	citizenlab/malware-families/scarhikn.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/scarhikn.yara
+citizenlab-surtr	Citizen Lab	citizenlab/malware-families/surtr.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/surtr.yara
+citizenlab-t5000	Citizen Lab	citizenlab/malware-families/t5000.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/t5000.yara
+citizenlab-up007	Citizen Lab	citizenlab/malware-families/UP007.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/UP007.yara
+citizenlab-vidgrab	Citizen Lab	citizenlab/malware-families/vidgrab.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/vidgrab.yara
+citizenlab-warp	Citizen Lab	citizenlab/malware-families/warp.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/warp.yara
+citizenlab-wimmie	Citizen Lab	citizenlab/malware-families/wimmie.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/wimmie.yara
+citizenlab-xtreme	Citizen Lab	citizenlab/malware-families/xtreme.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/xtreme.yara
+citizenlab-yayih	Citizen Lab	citizenlab/malware-families/yayih.yara	https://github.com/citizenlab/malware-signatures	refs/heads/master	malware-families/yayih.yara
+conventionengine-conventionengine	stvemillertime	conventionengine/ConventionEngine.yar	https://github.com/stvemillertime/ConventionEngine	refs/heads/master	ConventionEngine.yar
+cyberdefenses-droppers-wirenet-dropper	CyberDefenses	cyberdefenses/droppers/wirenet_dropper.yar	https://github.com/CyberDefenses/CDI_yara	refs/heads/master	droppers/wirenet_dropper.yar
+cyberdefenses-trojans-installmonstr	CyberDefenses	cyberdefenses/trojans/installmonstr.yar	https://github.com/CyberDefenses/CDI_yara	refs/heads/master	trojans/installmonstr.yar
+cyberdefenses-webshells-u34	CyberDefenses	cyberdefenses/webshells/u34.yar	https://github.com/CyberDefenses/CDI_yara	refs/heads/master	webshells/u34.yar
+deadbits-acbackdoor-linux	Adam M. Swanda (deadbits)	deadbits/ACBackdoor_Linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/ACBackdoor_Linux.yara
+deadbits-apt32-kerrdown	Adam M. Swanda (deadbits)	deadbits/APT32_KerrDown.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/APT32_KerrDown.yara
+deadbits-apt32-ratsnif	Adam M. Swanda (deadbits)	deadbits/APT32_Ratsnif.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/APT32_Ratsnif.yara
+deadbits-apt34-longwatch	Adam M. Swanda (deadbits)	deadbits/APT34_LONGWATCH.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/APT34_LONGWATCH.yara
+deadbits-apt34-pickpocket	Adam M. Swanda (deadbits)	deadbits/APT34_PICKPOCKET.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/APT34_PICKPOCKET.yara
+deadbits-apt34-valuevault	Adam M. Swanda (deadbits)	deadbits/APT34_VALUEVAULT.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/APT34_VALUEVAULT.yara
+deadbits-avemaria-warzone	Adam M. Swanda (deadbits)	deadbits/avemaria_warzone.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/avemaria_warzone.yara
+deadbits-crescentcore-dmg	Adam M. Swanda (deadbits)	deadbits/crescentcore_dmg.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/crescentcore_dmg.yara
+deadbits-dacls-linux	Adam M. Swanda (deadbits)	deadbits/Dacls_Linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/Dacls_Linux.yara
+deadbits-dacls-windows	Adam M. Swanda (deadbits)	deadbits/Dacls_Windows.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/Dacls_Windows.yara
+deadbits-dnspionage	Adam M. Swanda (deadbits)	deadbits/DNSpionage.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/DNSpionage.yara
+deadbits-evilgnome-linux	Adam M. Swanda (deadbits)	deadbits/EvilGnome_Linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/EvilGnome_Linux.yara
+deadbits-glupteba	Adam M. Swanda (deadbits)	deadbits/Glupteba.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/Glupteba.yara
+deadbits-godlua-linux	Adam M. Swanda (deadbits)	deadbits/godlua_linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/godlua_linux.yara
+deadbits-jsworm	Adam M. Swanda (deadbits)	deadbits/JSWorm.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/JSWorm.yara
+deadbits-kpot-v2	Adam M. Swanda (deadbits)	deadbits/KPOT_v2.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/KPOT_v2.yara
+deadbits-redghost-linux	Adam M. Swanda (deadbits)	deadbits/RedGhost_Linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/RedGhost_Linux.yara
+deadbits-remcos-rat-2019	Adam M. Swanda (deadbits)	deadbits/REMCOS_RAT_2019.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/REMCOS_RAT_2019.yara
+deadbits-silenttrinity-delivery	Adam M. Swanda (deadbits)	deadbits/SilentTrinity_Delivery.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/SilentTrinity_Delivery.yara
+deadbits-silenttrinity-payload	Adam M. Swanda (deadbits)	deadbits/SilentTrinity_Payload.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/SilentTrinity_Payload.yara
+deadbits-ta505-flowerpippi	Adam M. Swanda (deadbits)	deadbits/TA505_FlowerPippi.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/TA505_FlowerPippi.yara
+deadbits-watchbog-linux	Adam M. Swanda (deadbits)	deadbits/WatchBog_Linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/WatchBog_Linux.yara
+deadbits-winnti-linux	Adam M. Swanda (deadbits)	deadbits/winnti_linux.yara	https://github.com/deadbits/yara-rules	refs/heads/master	rules/winnti_linux.yara
+didierstevens-contains-pe-file	Didier Stevens	didierstevens/contains_pe_file.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	contains_pe_file.yara
+didierstevens-contains-vbe-file	Didier Stevens	didierstevens/contains_vbe_file.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	contains_vbe_file.yara
+didierstevens-ios-canary	Didier Stevens	didierstevens/IOS_canary.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	IOS_canary.yara
+didierstevens-jpeg-exif-contains-eval	Didier Stevens	didierstevens/JPEG_EXIF_Contains_eval.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	JPEG_EXIF_Contains_eval.yara
+didierstevens-maldoc	Didier Stevens	didierstevens/maldoc.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	maldoc.yara
+didierstevens-pe-file-pyinstaller	Didier Stevens	didierstevens/pe_file_pyinstaller.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	pe_file_pyinstaller.yara
+didierstevens-peid-userdb-rules-with-pe-module	Didier Stevens	didierstevens/peid-userdb-rules-with-pe-module.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	peid-userdb-rules-with-pe-module.yara
+didierstevens-peid-userdb-rules-without-pe-module	Didier Stevens	didierstevens/peid-userdb-rules-without-pe-module.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	peid-userdb-rules-without-pe-module.yara
+didierstevens-rtf	Didier Stevens	didierstevens/rtf.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	rtf.yara
+didierstevens-vba	Didier Stevens	didierstevens/vba.yara	https://github.com/DidierStevens/DidierStevensSuite	refs/heads/master	vba.yara
+eset-animalfarm	ESET	eset/animalfarm/animalfarm.yar	https://github.com/eset/malware-ioc	refs/heads/master	animalfarm/animalfarm.yar
+eset-badiis	ESET	eset/badiis/badiis.yar	https://github.com/eset/malware-ioc	refs/heads/master	badiis/badiis.yar
+eset-groundbait-prikormka	ESET	eset/groundbait/prikormka.yar	https://github.com/eset/malware-ioc	refs/heads/master	groundbait/prikormka.yar
+eset-invisimole	ESET	eset/invisimole/invisimole.yar	https://github.com/eset/malware-ioc	refs/heads/master	invisimole/invisimole.yar
+eset-keydnap	ESET	eset/keydnap/keydnap.yar	https://github.com/eset/malware-ioc	refs/heads/master	keydnap/keydnap.yar
+eset-kobalos	ESET	eset/kobalos/kobalos.yar	https://github.com/eset/malware-ioc	refs/heads/master	kobalos/kobalos.yar
+eset-moose-linux-moose	ESET	eset/moose/linux-moose.yar	https://github.com/eset/malware-ioc	refs/heads/master	moose/linux-moose.yar
+eset-mumblehard-packer	ESET	eset/mumblehard/mumblehard_packer.yar	https://github.com/eset/malware-ioc	refs/heads/master	mumblehard/mumblehard_packer.yar
+eset-potao-potaonew	ESET	eset/potao/PotaoNew.yara	https://github.com/eset/malware-ioc	refs/heads/master	potao/PotaoNew.yara
+eset-rakos	ESET	eset/rakos/rakos.yar	https://github.com/eset/malware-ioc	refs/heads/master	rakos/rakos.yar
+eset-sparklinggoblin	ESET	eset/sparklinggoblin/SparklingGoblin.yar	https://github.com/eset/malware-ioc	refs/heads/master	sparklinggoblin/SparklingGoblin.yar
+eset-sshdoor	ESET	eset/sshdoor/sshdoor.yar	https://github.com/eset/malware-ioc	refs/heads/master	sshdoor/sshdoor.yar
+eset-stantinko	ESET	eset/stantinko/stantinko.yar	https://github.com/eset/malware-ioc	refs/heads/master	stantinko/stantinko.yar
+eset-turla-carbon	ESET	eset/turla/carbon.yar	https://github.com/eset/malware-ioc	refs/heads/master	turla/carbon.yar
+eset-turla-gazer	ESET	eset/turla/gazer.yar	https://github.com/eset/malware-ioc	refs/heads/master	turla/gazer.yar
+eset-turla-outlook	ESET	eset/turla/turla-outlook.yar	https://github.com/eset/malware-ioc	refs/heads/master	turla/turla-outlook.yar
+eset-windigo-onimiki	ESET	eset/windigo/windigo-onimiki.yar	https://github.com/eset/malware-ioc	refs/heads/master	windigo/windigo-onimiki.yar
+eset-winnti-group-skip20-sqllang-hook	ESET	eset/winnti_group/skip20_sqllang_hook.yar	https://github.com/eset/malware-ioc	refs/heads/master	winnti_group/skip20_sqllang_hook.yar
+fideliscyber-alienspy	Fidelis Cyber	fideliscyber/AlienSpy.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/AlienSpy.yar
+fideliscyber-crime-win-pws-fareit	Fidelis Cyber	fideliscyber/crime_win_PWS_Fareit.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/crime_win_PWS_Fareit.yar
+fideliscyber-crime-win32-exe-rat-netwire	Fidelis Cyber	fideliscyber/crime_win32_exe_rat_netwire.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/crime_win32_exe_rat_netwire.yar
+fideliscyber-darkcomet	Fidelis Cyber	fideliscyber/DarkComet.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/DarkComet.yar
+fideliscyber-inocnation	Fidelis Cyber	fideliscyber/inocnation.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/inocnation.yar
+fideliscyber-ursnif	Fidelis Cyber	fideliscyber/ursnif.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/ursnif.yar
+fideliscyber-xenon-crypter	Fidelis Cyber	fideliscyber/xenon-crypter.yar	https://github.com/fideliscyber/indicators	refs/heads/master	yararules/xenon-crypter.yar
+neo23x0-apt-aa19-024a	Florian Roth (Neo23x0)	neo23x0/apt_aa19_024a.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_aa19_024a.yar
+neo23x0-apt-agent-btz	Florian Roth (Neo23x0)	neo23x0/apt_agent_btz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_agent_btz.yar
+neo23x0-apt-alienspy-rat	Florian Roth (Neo23x0)	neo23x0/apt_alienspy_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_alienspy_rat.yar
+neo23x0-apt-apt3-bemstour	Florian Roth (Neo23x0)	neo23x0/apt_apt3_bemstour.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt3_bemstour.yar
+neo23x0-apt-apt6-malware	Florian Roth (Neo23x0)	neo23x0/apt_apt6_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt6_malware.yar
+neo23x0-apt-apt10	Florian Roth (Neo23x0)	neo23x0/apt_apt10.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt10.yar
+neo23x0-apt-apt10-redleaves	Florian Roth (Neo23x0)	neo23x0/apt_apt10_redleaves.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt10_redleaves.yar
+neo23x0-apt-apt12-malware	Florian Roth (Neo23x0)	neo23x0/apt_apt12_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt12_malware.yar
+neo23x0-apt-apt15	Florian Roth (Neo23x0)	neo23x0/apt_apt15.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt15.yar
+neo23x0-apt-apt17-mal-sep17	Florian Roth (Neo23x0)	neo23x0/apt_apt17_mal_sep17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt17_mal_sep17.yar
+neo23x0-apt-apt17-malware	Florian Roth (Neo23x0)	neo23x0/apt_apt17_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt17_malware.yar
+neo23x0-apt-apt19	Florian Roth (Neo23x0)	neo23x0/apt_apt19.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt19.yar
+neo23x0-apt-apt28	Florian Roth (Neo23x0)	neo23x0/apt_apt28.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt28.yar
+neo23x0-apt-apt28-drovorub	Florian Roth (Neo23x0)	neo23x0/apt_apt28_drovorub.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt28_drovorub.yar
+neo23x0-apt-apt29-grizzly-steppe	Florian Roth (Neo23x0)	neo23x0/apt_apt29_grizzly_steppe.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt29_grizzly_steppe.yar
+neo23x0-apt-apt29-nobelium-may21	Florian Roth (Neo23x0)	neo23x0/apt_apt29_nobelium_may21.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt29_nobelium_may21.yar
+neo23x0-apt-apt30-backspace	Florian Roth (Neo23x0)	neo23x0/apt_apt30_backspace.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt30_backspace.yar
+neo23x0-apt-apt32	Florian Roth (Neo23x0)	neo23x0/apt_apt32.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt32.yar
+neo23x0-apt-apt34	Florian Roth (Neo23x0)	neo23x0/apt_apt34.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt34.yar
+neo23x0-apt-apt37	Florian Roth (Neo23x0)	neo23x0/apt_apt37.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt37.yar
+neo23x0-apt-apt37-bluelight	Florian Roth (Neo23x0)	neo23x0/apt_apt37_bluelight.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt37_bluelight.yar
+neo23x0-apt-apt41	Florian Roth (Neo23x0)	neo23x0/apt_apt41.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_apt41.yar
+neo23x0-apt-ar18-165a	Florian Roth (Neo23x0)	neo23x0/apt_ar18_165a.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ar18_165a.yar
+neo23x0-apt-area1-phishing-diplomacy	Florian Roth (Neo23x0)	neo23x0/apt_area1_phishing_diplomacy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_area1_phishing_diplomacy.yar
+neo23x0-apt-aus-parl-compromise	Florian Roth (Neo23x0)	neo23x0/apt_aus_parl_compromise.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_aus_parl_compromise.yar
+neo23x0-apt-babyshark	Florian Roth (Neo23x0)	neo23x0/apt_babyshark.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_babyshark.yar
+neo23x0-apt-backdoor-ssh-python	Florian Roth (Neo23x0)	neo23x0/apt_backdoor_ssh_python.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_backdoor_ssh_python.yar
+neo23x0-apt-backdoor-sunburst-fnv1a-experimental	Florian Roth (Neo23x0)	neo23x0/apt_backdoor_sunburst_fnv1a_experimental.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_backdoor_sunburst_fnv1a_experimental.yar
+neo23x0-apt-backspace	Florian Roth (Neo23x0)	neo23x0/apt_backspace.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_backspace.yar
+neo23x0-apt-beepservice	Florian Roth (Neo23x0)	neo23x0/apt_beepservice.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_beepservice.yar
+neo23x0-apt-between-hk-and-burma	Florian Roth (Neo23x0)	neo23x0/apt_between-hk-and-burma.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_between-hk-and-burma.yar
+neo23x0-apt-bigbang	Florian Roth (Neo23x0)	neo23x0/apt_bigbang.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_bigbang.yar
+neo23x0-apt-bitter	Florian Roth (Neo23x0)	neo23x0/apt_bitter.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_bitter.yar
+neo23x0-apt-blackenergy	Florian Roth (Neo23x0)	neo23x0/apt_blackenergy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_blackenergy.yar
+neo23x0-apt-blackenergy-installer	Florian Roth (Neo23x0)	neo23x0/apt_blackenergy_installer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_blackenergy_installer.yar
+neo23x0-apt-bluetermite-emdivi	Florian Roth (Neo23x0)	neo23x0/apt_bluetermite_emdivi.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_bluetermite_emdivi.yar
+neo23x0-apt-bronze-butler	Florian Roth (Neo23x0)	neo23x0/apt_bronze_butler.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_bronze_butler.yar
+neo23x0-apt-buckeye	Florian Roth (Neo23x0)	neo23x0/apt_buckeye.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_buckeye.yar
+neo23x0-apt-carbon-paper-turla	Florian Roth (Neo23x0)	neo23x0/apt_carbon_paper_turla.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_carbon_paper_turla.yar
+neo23x0-apt-casper	Florian Roth (Neo23x0)	neo23x0/apt_casper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_casper.yar
+neo23x0-apt-cheshirecat	Florian Roth (Neo23x0)	neo23x0/apt_cheshirecat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cheshirecat.yar
+neo23x0-apt-cloudatlas	Florian Roth (Neo23x0)	neo23x0/apt_cloudatlas.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cloudatlas.yar
+neo23x0-apt-cloudduke	Florian Roth (Neo23x0)	neo23x0/apt_cloudduke.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cloudduke.yar
+neo23x0-apt-cmstar	Florian Roth (Neo23x0)	neo23x0/apt_cmstar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cmstar.yar
+neo23x0-apt-cn-netfilter	Florian Roth (Neo23x0)	neo23x0/apt_cn_netfilter.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cn_netfilter.yar
+neo23x0-apt-cn-pp-zerot	Florian Roth (Neo23x0)	neo23x0/apt_cn_pp_zerot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cn_pp_zerot.yar
+neo23x0-apt-cn-reddelta	Florian Roth (Neo23x0)	neo23x0/apt_cn_reddelta.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cn_reddelta.yar
+neo23x0-apt-cobaltstrike	Florian Roth (Neo23x0)	neo23x0/apt_cobaltstrike.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cobaltstrike.yar
+neo23x0-apt-cobaltstrike-evasive	Florian Roth (Neo23x0)	neo23x0/apt_cobaltstrike_evasive.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_cobaltstrike_evasive.yar
+neo23x0-apt-codoso	Florian Roth (Neo23x0)	neo23x0/apt_codoso.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_codoso.yar
+neo23x0-apt-coreimpact-agent	Florian Roth (Neo23x0)	neo23x0/apt_coreimpact_agent.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_coreimpact_agent.yar
+neo23x0-apt-danti-svcmondr	Florian Roth (Neo23x0)	neo23x0/apt_danti_svcmondr.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_danti_svcmondr.yar
+neo23x0-apt-darkcaracal	Florian Roth (Neo23x0)	neo23x0/apt_darkcaracal.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_darkcaracal.yar
+neo23x0-apt-darkhydrus	Florian Roth (Neo23x0)	neo23x0/apt_darkhydrus.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_darkhydrus.yar
+neo23x0-apt-deeppanda	Florian Roth (Neo23x0)	neo23x0/apt_deeppanda.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_deeppanda.yar
+neo23x0-apt-derusbi	Florian Roth (Neo23x0)	neo23x0/apt_derusbi.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_derusbi.yar
+neo23x0-apt-dnspionage	Florian Roth (Neo23x0)	neo23x0/apt_dnspionage.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_dnspionage.yar
+neo23x0-apt-donotteam-ytyframework	Florian Roth (Neo23x0)	neo23x0/apt_donotteam_ytyframework.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_donotteam_ytyframework.yar
+neo23x0-apt-dragonfly	Florian Roth (Neo23x0)	neo23x0/apt_dragonfly.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_dragonfly.yar
+neo23x0-apt-dtrack	Florian Roth (Neo23x0)	neo23x0/apt_dtrack.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_dtrack.yar
+neo23x0-apt-dubnium	Florian Roth (Neo23x0)	neo23x0/apt_dubnium.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_dubnium.yar
+neo23x0-apt-duqu1-5-modules	Florian Roth (Neo23x0)	neo23x0/apt_duqu1_5_modules.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_duqu1_5_modules.yar
+neo23x0-apt-duqu2	Florian Roth (Neo23x0)	neo23x0/apt_duqu2.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_duqu2.yar
+neo23x0-apt-dustman	Florian Roth (Neo23x0)	neo23x0/apt_dustman.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_dustman.yar
+neo23x0-apt-emissary	Florian Roth (Neo23x0)	neo23x0/apt_emissary.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_emissary.yar
+neo23x0-apt-eqgrp	Florian Roth (Neo23x0)	neo23x0/apt_eqgrp.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_eqgrp.yar
+neo23x0-apt-eqgrp-apr17	Florian Roth (Neo23x0)	neo23x0/apt_eqgrp_apr17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_eqgrp_apr17.yar
+neo23x0-apt-eternalblue-non-wannacry	Florian Roth (Neo23x0)	neo23x0/apt_eternalblue_non_wannacry.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_eternalblue_non_wannacry.yar
+neo23x0-apt-exile-rat	Florian Roth (Neo23x0)	neo23x0/apt_exile_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_exile_rat.yar
+neo23x0-apt-f5-bigip-expl-payloads	Florian Roth (Neo23x0)	neo23x0/apt_f5_bigip_expl_payloads.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_f5_bigip_expl_payloads.yar
+neo23x0-apt-fakem-backdoor	Florian Roth (Neo23x0)	neo23x0/apt_fakem_backdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fakem_backdoor.yar
+neo23x0-apt-fancybear-computrace-agent	Florian Roth (Neo23x0)	neo23x0/apt_fancybear_computrace_agent.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fancybear_computrace_agent.yar
+neo23x0-apt-fancybear-dnc	Florian Roth (Neo23x0)	neo23x0/apt_fancybear_dnc.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fancybear_dnc.yar
+neo23x0-apt-fancybear-osxagent	Florian Roth (Neo23x0)	neo23x0/apt_fancybear_osxagent.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fancybear_osxagent.yar
+neo23x0-apt-fidelis-phishing-plain-sight	Florian Roth (Neo23x0)	neo23x0/apt_fidelis_phishing_plain_sight.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fidelis_phishing_plain_sight.yar
+neo23x0-apt-fin7	Florian Roth (Neo23x0)	neo23x0/apt_fin7.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fin7.yar
+neo23x0-apt-fin7-backdoor	Florian Roth (Neo23x0)	neo23x0/apt_fin7_backdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fin7_backdoor.yar
+neo23x0-apt-fin8	Florian Roth (Neo23x0)	neo23x0/apt_fin8.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fin8.yar
+neo23x0-apt-flame2-orchestrator	Florian Roth (Neo23x0)	neo23x0/apt_flame2_orchestrator.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_flame2_orchestrator.yar
+neo23x0-apt-foudre	Florian Roth (Neo23x0)	neo23x0/apt_foudre.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_foudre.yar
+neo23x0-apt-four-element-sword	Florian Roth (Neo23x0)	neo23x0/apt_four_element_sword.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_four_element_sword.yar
+neo23x0-apt-freemilk	Florian Roth (Neo23x0)	neo23x0/apt_freemilk.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_freemilk.yar
+neo23x0-apt-fujinama-rat	Florian Roth (Neo23x0)	neo23x0/apt_fujinama_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fujinama_rat.yar
+neo23x0-apt-furtim	Florian Roth (Neo23x0)	neo23x0/apt_furtim.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_furtim.yar
+neo23x0-apt-fvey-shadowbroker-dec16	Florian Roth (Neo23x0)	neo23x0/apt_fvey_shadowbroker_dec16.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fvey_shadowbroker_dec16.yar
+neo23x0-apt-fvey-shadowbroker-jan17	Florian Roth (Neo23x0)	neo23x0/apt_fvey_shadowbroker_jan17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_fvey_shadowbroker_jan17.yar
+neo23x0-apt-ghostdragon-gh0st-rat	Florian Roth (Neo23x0)	neo23x0/apt_ghostdragon_gh0st_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ghostdragon_gh0st_rat.yar
+neo23x0-apt-glassrat	Florian Roth (Neo23x0)	neo23x0/apt_glassRAT.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_glassRAT.yar
+neo23x0-apt-golddragon	Florian Roth (Neo23x0)	neo23x0/apt_golddragon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_golddragon.yar
+neo23x0-apt-goldenspy	Florian Roth (Neo23x0)	neo23x0/apt_goldenspy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_goldenspy.yar
+neo23x0-apt-greenbug	Florian Roth (Neo23x0)	neo23x0/apt_greenbug.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_greenbug.yar
+neo23x0-apt-greyenergy	Florian Roth (Neo23x0)	neo23x0/apt_greyenergy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_greyenergy.yar
+neo23x0-apt-grizzlybear-uscert	Florian Roth (Neo23x0)	neo23x0/apt_grizzlybear_uscert.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_grizzlybear_uscert.yar
+neo23x0-apt-hackingteam-rules	Florian Roth (Neo23x0)	neo23x0/apt_hackingteam_rules.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hackingteam_rules.yar
+neo23x0-apt-hafnium	Florian Roth (Neo23x0)	neo23x0/apt_hafnium.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hafnium.yar
+neo23x0-apt-hafnium-log-sigs	Florian Roth (Neo23x0)	neo23x0/apt_hafnium_log_sigs.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hafnium_log_sigs.yar
+neo23x0-apt-ham-tofu-chches	Florian Roth (Neo23x0)	neo23x0/apt_ham_tofu_chches.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ham_tofu_chches.yar
+neo23x0-apt-hatman	Florian Roth (Neo23x0)	neo23x0/apt_hatman.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hatman.yar
+neo23x0-apt-hellsing-kaspersky	Florian Roth (Neo23x0)	neo23x0/apt_hellsing_kaspersky.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hellsing_kaspersky.yar
+neo23x0-apt-hidden-cobra	Florian Roth (Neo23x0)	neo23x0/apt_hidden_cobra.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hidden_cobra.yar
+neo23x0-apt-hiddencobra-bankshot	Florian Roth (Neo23x0)	neo23x0/apt_hiddencobra_bankshot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hiddencobra_bankshot.yar
+neo23x0-apt-hiddencobra-wiper	Florian Roth (Neo23x0)	neo23x0/apt_hiddencobra_wiper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hiddencobra_wiper.yar
+neo23x0-apt-hizor-rat	Florian Roth (Neo23x0)	neo23x0/apt_hizor_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hizor_rat.yar
+neo23x0-apt-hkdoor	Florian Roth (Neo23x0)	neo23x0/apt_hkdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_hkdoor.yar
+neo23x0-apt-iamtheking	Florian Roth (Neo23x0)	neo23x0/apt_iamtheking.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_iamtheking.yar
+neo23x0-apt-icefog	Florian Roth (Neo23x0)	neo23x0/apt_icefog.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_icefog.yar
+neo23x0-apt-indetectables-rat	Florian Roth (Neo23x0)	neo23x0/apt_indetectables_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_indetectables_rat.yar
+neo23x0-apt-industroyer	Florian Roth (Neo23x0)	neo23x0/apt_industroyer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_industroyer.yar
+neo23x0-apt-inocnation	Florian Roth (Neo23x0)	neo23x0/apt_inocnation.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_inocnation.yar
+neo23x0-apt-irongate	Florian Roth (Neo23x0)	neo23x0/apt_irongate.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_irongate.yar
+neo23x0-apt-irontiger	Florian Roth (Neo23x0)	neo23x0/apt_irontiger.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_irontiger.yar
+neo23x0-apt-irontiger-trendmicro	Florian Roth (Neo23x0)	neo23x0/apt_irontiger_trendmicro.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_irontiger_trendmicro.yar
+neo23x0-apt-ism-rat	Florian Roth (Neo23x0)	neo23x0/apt_ism_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ism_rat.yar
+neo23x0-apt-kaspersky-duqu2	Florian Roth (Neo23x0)	neo23x0/apt_kaspersky_duqu2.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_kaspersky_duqu2.yar
+neo23x0-apt-ke3chang	Florian Roth (Neo23x0)	neo23x0/apt_ke3chang.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ke3chang.yar
+neo23x0-apt-keyboys	Florian Roth (Neo23x0)	neo23x0/apt_keyboys.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_keyboys.yar
+neo23x0-apt-keylogger-cn	Florian Roth (Neo23x0)	neo23x0/apt_keylogger_cn.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_keylogger_cn.yar
+neo23x0-apt-khrat	Florian Roth (Neo23x0)	neo23x0/apt_khrat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_khrat.yar
+neo23x0-apt-korplug-fast	Florian Roth (Neo23x0)	neo23x0/apt_korplug_fast.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_korplug_fast.yar
+neo23x0-apt-kwampirs	Florian Roth (Neo23x0)	neo23x0/apt_kwampirs.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_kwampirs.yar
+neo23x0-apt-laudanum-webshells	Florian Roth (Neo23x0)	neo23x0/apt_laudanum_webshells.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_laudanum_webshells.yar
+neo23x0-apt-lazarus-applejeus	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_applejeus.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_applejeus.yar
+neo23x0-apt-lazarus-aug20	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_aug20.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_aug20.yar
+neo23x0-apt-lazarus-dec17	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_dec17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_dec17.yar
+neo23x0-apt-lazarus-dec20	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_dec20.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_dec20.yar
+neo23x0-apt-lazarus-jan21	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_jan21.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_jan21.yar
+neo23x0-apt-lazarus-jun18	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_jun18.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_jun18.yar
+neo23x0-apt-lazarus-vhd-ransomware	Florian Roth (Neo23x0)	neo23x0/apt_lazarus_vhd_ransomware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lazarus_vhd_ransomware.yar
+neo23x0-apt-leviathan	Florian Roth (Neo23x0)	neo23x0/apt_leviathan.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_leviathan.yar
+neo23x0-apt-lnx-kobalos	Florian Roth (Neo23x0)	neo23x0/apt_lnx_kobalos.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lnx_kobalos.yar
+neo23x0-apt-lotusblossom-elise	Florian Roth (Neo23x0)	neo23x0/apt_lotusblossom_elise.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_lotusblossom_elise.yar
+neo23x0-apt-magichound	Florian Roth (Neo23x0)	neo23x0/apt_magichound.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_magichound.yar
+neo23x0-apt-microcin	Florian Roth (Neo23x0)	neo23x0/apt_microcin.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_microcin.yar
+neo23x0-apt-middle-east-talosreport	Florian Roth (Neo23x0)	neo23x0/apt_middle_east_talosreport.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_middle_east_talosreport.yar
+neo23x0-apt-miniasp	Florian Roth (Neo23x0)	neo23x0/apt_miniasp.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_miniasp.yar
+neo23x0-apt-minidionis	Florian Roth (Neo23x0)	neo23x0/apt_minidionis.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_minidionis.yar
+neo23x0-apt-mofang	Florian Roth (Neo23x0)	neo23x0/apt_mofang.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_mofang.yar
+neo23x0-apt-molerats-jul17	Florian Roth (Neo23x0)	neo23x0/apt_molerats_jul17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_molerats_jul17.yar
+neo23x0-apt-monsoon	Florian Roth (Neo23x0)	neo23x0/apt_monsoon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_monsoon.yar
+neo23x0-apt-moonlightmaze	Florian Roth (Neo23x0)	neo23x0/apt_moonlightmaze.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_moonlightmaze.yar
+neo23x0-apt-ms-platinum	Florian Roth (Neo23x0)	neo23x0/apt_ms_platinum.yara	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ms_platinum.yara
+neo23x0-apt-muddywater	Florian Roth (Neo23x0)	neo23x0/apt_muddywater.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_muddywater.yar
+neo23x0-apt-naikon	Florian Roth (Neo23x0)	neo23x0/apt_naikon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_naikon.yar
+neo23x0-apt-nanocore-rat	Florian Roth (Neo23x0)	neo23x0/apt_nanocore_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_nanocore_rat.yar
+neo23x0-apt-nazar	Florian Roth (Neo23x0)	neo23x0/apt_nazar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_nazar.yar
+neo23x0-apt-ncsc-report-04-2018	Florian Roth (Neo23x0)	neo23x0/apt_ncsc_report_04_2018.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ncsc_report_04_2018.yar
+neo23x0-apt-netwire-rat	Florian Roth (Neo23x0)	neo23x0/apt_netwire_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_netwire_rat.yar
+neo23x0-apt-nk-gen	Florian Roth (Neo23x0)	neo23x0/apt_nk_gen.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_nk_gen.yar
+neo23x0-apt-nk-inkysquid	Florian Roth (Neo23x0)	neo23x0/apt_nk_inkysquid.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_nk_inkysquid.yar
+neo23x0-apt-oilrig	Florian Roth (Neo23x0)	neo23x0/apt_oilrig.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_oilrig.yar
+neo23x0-apt-oilrig-chafer-mar18	Florian Roth (Neo23x0)	neo23x0/apt_oilrig_chafer_mar18.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_oilrig_chafer_mar18.yar
+neo23x0-apt-oilrig-oct17	Florian Roth (Neo23x0)	neo23x0/apt_oilrig_oct17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_oilrig_oct17.yar
+neo23x0-apt-oilrig-rgdoor	Florian Roth (Neo23x0)	neo23x0/apt_oilrig_rgdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_oilrig_rgdoor.yar
+neo23x0-apt-olympic-destroyer	Florian Roth (Neo23x0)	neo23x0/apt_olympic_destroyer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_olympic_destroyer.yar
+neo23x0-apt-onhat-proxy	Florian Roth (Neo23x0)	neo23x0/apt_onhat_proxy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_onhat_proxy.yar
+neo23x0-apt-op-cleaver	Florian Roth (Neo23x0)	neo23x0/apt_op_cleaver.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_op_cleaver.yar
+neo23x0-apt-op-cloudhopper	Florian Roth (Neo23x0)	neo23x0/apt_op_cloudhopper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_op_cloudhopper.yar
+neo23x0-apt-op-honeybee	Florian Roth (Neo23x0)	neo23x0/apt_op_honeybee.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_op_honeybee.yar
+neo23x0-apt-op-shadowhammer	Florian Roth (Neo23x0)	neo23x0/apt_op_shadowhammer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_op_shadowhammer.yar
+neo23x0-apt-op-wocao	Florian Roth (Neo23x0)	neo23x0/apt_op_wocao.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_op_wocao.yar
+neo23x0-apt-passcv	Florian Roth (Neo23x0)	neo23x0/apt_passcv.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_passcv.yar
+neo23x0-apt-passthehashtoolkit	Florian Roth (Neo23x0)	neo23x0/apt_passthehashtoolkit.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_passthehashtoolkit.yar
+neo23x0-apt-patchwork	Florian Roth (Neo23x0)	neo23x0/apt_patchwork.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_patchwork.yar
+neo23x0-apt-plead-downloader	Florian Roth (Neo23x0)	neo23x0/apt_plead_downloader.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_plead_downloader.yar
+neo23x0-apt-plugx	Florian Roth (Neo23x0)	neo23x0/apt_plugx.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_plugx.yar
+neo23x0-apt-poisonivy	Florian Roth (Neo23x0)	neo23x0/apt_poisonivy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_poisonivy.yar
+neo23x0-apt-poisonivy-gen3	Florian Roth (Neo23x0)	neo23x0/apt_poisonivy_gen3.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_poisonivy_gen3.yar
+neo23x0-apt-poseidon-group	Florian Roth (Neo23x0)	neo23x0/apt_poseidon_group.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_poseidon_group.yar
+neo23x0-apt-poshspy	Florian Roth (Neo23x0)	neo23x0/apt_poshspy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_poshspy.yar
+neo23x0-apt-prikormka	Florian Roth (Neo23x0)	neo23x0/apt_prikormka.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_prikormka.yar
+neo23x0-apt-project-m	Florian Roth (Neo23x0)	neo23x0/apt_project_m.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_project_m.yar
+neo23x0-apt-project-sauron	Florian Roth (Neo23x0)	neo23x0/apt_project_sauron.yara	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_project_sauron.yara
+neo23x0-apt-project-sauron-extras	Florian Roth (Neo23x0)	neo23x0/apt_project_sauron_extras.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_project_sauron_extras.yar
+neo23x0-apt-promethium-neodymium	Florian Roth (Neo23x0)	neo23x0/apt_promethium_neodymium.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_promethium_neodymium.yar
+neo23x0-apt-pulsesecure	Florian Roth (Neo23x0)	neo23x0/apt_pulsesecure.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_pulsesecure.yar
+neo23x0-apt-putterpanda	Florian Roth (Neo23x0)	neo23x0/apt_putterpanda.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_putterpanda.yar
+neo23x0-apt-quarkspwdump	Florian Roth (Neo23x0)	neo23x0/apt_quarkspwdump.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_quarkspwdump.yar
+neo23x0-apt-quasar-rat	Florian Roth (Neo23x0)	neo23x0/apt_quasar_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_quasar_rat.yar
+neo23x0-apt-quasar-vermin	Florian Roth (Neo23x0)	neo23x0/apt_quasar_vermin.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_quasar_vermin.yar
+neo23x0-apt-rancor	Florian Roth (Neo23x0)	neo23x0/apt_rancor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_rancor.yar
+neo23x0-apt-reaver-sunorcal	Florian Roth (Neo23x0)	neo23x0/apt_reaver_sunorcal.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_reaver_sunorcal.yar
+neo23x0-apt-rehashed-rat	Florian Roth (Neo23x0)	neo23x0/apt_rehashed_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_rehashed_rat.yar
+neo23x0-apt-revenge-rat	Florian Roth (Neo23x0)	neo23x0/apt_revenge_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_revenge_rat.yar
+neo23x0-apt-rocketkitten-keylogger	Florian Roth (Neo23x0)	neo23x0/apt_rocketkitten_keylogger.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_rocketkitten_keylogger.yar
+neo23x0-apt-rokrat	Florian Roth (Neo23x0)	neo23x0/apt_rokrat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_rokrat.yar
+neo23x0-apt-royalroad	Florian Roth (Neo23x0)	neo23x0/apt_royalroad.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_royalroad.yar
+neo23x0-apt-ruag	Florian Roth (Neo23x0)	neo23x0/apt_ruag.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ruag.yar
+neo23x0-apt-rwmc-powershell-creddump	Florian Roth (Neo23x0)	neo23x0/apt_rwmc_powershell_creddump.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_rwmc_powershell_creddump.yar
+neo23x0-apt-sakula	Florian Roth (Neo23x0)	neo23x0/apt_sakula.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sakula.yar
+neo23x0-apt-sandworm-centreon	Florian Roth (Neo23x0)	neo23x0/apt_sandworm_centreon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sandworm_centreon.yar
+neo23x0-apt-sandworm-exim-expl	Florian Roth (Neo23x0)	neo23x0/apt_sandworm_exim_expl.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sandworm_exim_expl.yar
+neo23x0-apt-saudi-aramco-phish	Florian Roth (Neo23x0)	neo23x0/apt_saudi_aramco_phish.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_saudi_aramco_phish.yar
+neo23x0-apt-scanbox-deeppanda	Florian Roth (Neo23x0)	neo23x0/apt_scanbox_deeppanda.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_scanbox_deeppanda.yar
+neo23x0-apt-scarcruft	Florian Roth (Neo23x0)	neo23x0/apt_scarcruft.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_scarcruft.yar
+neo23x0-apt-seaduke-unit42	Florian Roth (Neo23x0)	neo23x0/apt_seaduke_unit42.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_seaduke_unit42.yar
+neo23x0-apt-sednit-delphidownloader	Florian Roth (Neo23x0)	neo23x0/apt_sednit_delphidownloader.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sednit_delphidownloader.yar
+neo23x0-apt-servantshell	Florian Roth (Neo23x0)	neo23x0/apt_servantshell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_servantshell.yar
+neo23x0-apt-shadowpad	Florian Roth (Neo23x0)	neo23x0/apt_shadowpad.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_shadowpad.yar
+neo23x0-apt-shamoon	Florian Roth (Neo23x0)	neo23x0/apt_shamoon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_shamoon.yar
+neo23x0-apt-shamoon2	Florian Roth (Neo23x0)	neo23x0/apt_shamoon2.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_shamoon2.yar
+neo23x0-apt-shellcrew-streamex	Florian Roth (Neo23x0)	neo23x0/apt_shellcrew_streamex.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_shellcrew_streamex.yar
+neo23x0-apt-sidewinder	Florian Roth (Neo23x0)	neo23x0/apt_sidewinder.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sidewinder.yar
+neo23x0-apt-silence	Florian Roth (Neo23x0)	neo23x0/apt_silence.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_silence.yar
+neo23x0-apt-skeletonkey	Florian Roth (Neo23x0)	neo23x0/apt_skeletonkey.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_skeletonkey.yar
+neo23x0-apt-slingshot	Florian Roth (Neo23x0)	neo23x0/apt_slingshot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_slingshot.yar
+neo23x0-apt-snaketurla-osx	Florian Roth (Neo23x0)	neo23x0/apt_snaketurla_osx.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_snaketurla_osx.yar
+neo23x0-apt-snowglobe-babar	Florian Roth (Neo23x0)	neo23x0/apt_snowglobe_babar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_snowglobe_babar.yar
+neo23x0-apt-sofacy	Florian Roth (Neo23x0)	neo23x0/apt_sofacy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy.yar
+neo23x0-apt-sofacy-cannon	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_cannon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_cannon.yar
+neo23x0-apt-sofacy-dec15	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_dec15.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_dec15.yar
+neo23x0-apt-sofacy-fysbis	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_fysbis.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_fysbis.yar
+neo23x0-apt-sofacy-hospitality	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_hospitality.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_hospitality.yar
+neo23x0-apt-sofacy-jun16	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_jun16.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_jun16.yar
+neo23x0-apt-sofacy-oct17-camp	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_oct17_camp.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_oct17_camp.yar
+neo23x0-apt-sofacy-xtunnel-bundestag	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_xtunnel_bundestag.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_xtunnel_bundestag.yar
+neo23x0-apt-sofacy-zebrocy	Florian Roth (Neo23x0)	neo23x0/apt_sofacy_zebrocy.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sofacy_zebrocy.yar
+neo23x0-apt-solarwinds-sunburst	Florian Roth (Neo23x0)	neo23x0/apt_solarwinds_sunburst.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_solarwinds_sunburst.yar
+neo23x0-apt-solarwinds-susp-sunburst	Florian Roth (Neo23x0)	neo23x0/apt_solarwinds_susp_sunburst.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_solarwinds_susp_sunburst.yar
+neo23x0-apt-sphinx-moth	Florian Roth (Neo23x0)	neo23x0/apt_sphinx_moth.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sphinx_moth.yar
+neo23x0-apt-stonedrill	Florian Roth (Neo23x0)	neo23x0/apt_stonedrill.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_stonedrill.yar
+neo23x0-apt-strider	Florian Roth (Neo23x0)	neo23x0/apt_strider.yara	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_strider.yara
+neo23x0-apt-stuxnet	Florian Roth (Neo23x0)	neo23x0/apt_stuxnet.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_stuxnet.yar
+neo23x0-apt-stuxshop	Florian Roth (Neo23x0)	neo23x0/apt_stuxshop.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_stuxshop.yar
+neo23x0-apt-suckfly	Florian Roth (Neo23x0)	neo23x0/apt_suckfly.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_suckfly.yar
+neo23x0-apt-sunspot	Florian Roth (Neo23x0)	neo23x0/apt_sunspot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sunspot.yar
+neo23x0-apt-sysscan	Florian Roth (Neo23x0)	neo23x0/apt_sysscan.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_sysscan.yar
+neo23x0-apt-ta17-293a	Florian Roth (Neo23x0)	neo23x0/apt_ta17_293A.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ta17_293A.yar
+neo23x0-apt-ta17-318a	Florian Roth (Neo23x0)	neo23x0/apt_ta17_318A.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ta17_318A.yar
+neo23x0-apt-ta17-318b	Florian Roth (Neo23x0)	neo23x0/apt_ta17_318B.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ta17_318B.yar
+neo23x0-apt-ta18-074a	Florian Roth (Neo23x0)	neo23x0/apt_ta18_074A.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ta18_074A.yar
+neo23x0-apt-ta18-149a	Florian Roth (Neo23x0)	neo23x0/apt_ta18_149A.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ta18_149A.yar
+neo23x0-apt-ta459	Florian Roth (Neo23x0)	neo23x0/apt_ta459.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_ta459.yar
+neo23x0-apt-telebots	Florian Roth (Neo23x0)	neo23x0/apt_telebots.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_telebots.yar
+neo23x0-apt-terracotta	Florian Roth (Neo23x0)	neo23x0/apt_terracotta.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_terracotta.yar
+neo23x0-apt-terracotta-liudoor	Florian Roth (Neo23x0)	neo23x0/apt_terracotta_liudoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_terracotta_liudoor.yar
+neo23x0-apt-tetris	Florian Roth (Neo23x0)	neo23x0/apt_tetris.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_tetris.yar
+neo23x0-apt-threatgroup-3390	Florian Roth (Neo23x0)	neo23x0/apt_threatgroup_3390.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_threatgroup_3390.yar
+neo23x0-apt-thrip	Florian Roth (Neo23x0)	neo23x0/apt_thrip.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_thrip.yar
+neo23x0-apt-tick-datper	Florian Roth (Neo23x0)	neo23x0/apt_tick_datper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_tick_datper.yar
+neo23x0-apt-tick-weaponized-usb	Florian Roth (Neo23x0)	neo23x0/apt_tick_weaponized_usb.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_tick_weaponized_usb.yar
+neo23x0-apt-tidepool	Florian Roth (Neo23x0)	neo23x0/apt_tidepool.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_tidepool.yar
+neo23x0-apt-tophat	Florian Roth (Neo23x0)	neo23x0/apt_tophat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_tophat.yar
+neo23x0-apt-triton	Florian Roth (Neo23x0)	neo23x0/apt_triton.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_triton.yar
+neo23x0-apt-triton-mal-sshdoor	Florian Roth (Neo23x0)	neo23x0/apt_triton_mal_sshdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_triton_mal_sshdoor.yar
+neo23x0-apt-turbo-campaign	Florian Roth (Neo23x0)	neo23x0/apt_turbo_campaign.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turbo_campaign.yar
+neo23x0-apt-turla	Florian Roth (Neo23x0)	neo23x0/apt_turla.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla.yar
+neo23x0-apt-turla-gazer	Florian Roth (Neo23x0)	neo23x0/apt_turla_gazer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla_gazer.yar
+neo23x0-apt-turla-kazuar	Florian Roth (Neo23x0)	neo23x0/apt_turla_kazuar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla_kazuar.yar
+neo23x0-apt-turla-mosquito	Florian Roth (Neo23x0)	neo23x0/apt_turla_mosquito.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla_mosquito.yar
+neo23x0-apt-turla-neuron	Florian Roth (Neo23x0)	neo23x0/apt_turla_neuron.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla_neuron.yar
+neo23x0-apt-turla-penquin	Florian Roth (Neo23x0)	neo23x0/apt_turla_penquin.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla_penquin.yar
+neo23x0-apt-turla-png-dropper-nov18	Florian Roth (Neo23x0)	neo23x0/apt_turla_png_dropper_nov18.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_turla_png_dropper_nov18.yar
+neo23x0-apt-uboat-rat	Florian Roth (Neo23x0)	neo23x0/apt_uboat_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_uboat_rat.yar
+neo23x0-apt-unc2447-sombrat	Florian Roth (Neo23x0)	neo23x0/apt_unc2447_sombrat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_unc2447_sombrat.yar
+neo23x0-apt-unc2546-dewmode	Florian Roth (Neo23x0)	neo23x0/apt_unc2546_dewmode.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_unc2546_dewmode.yar
+neo23x0-apt-unit78020-malware	Florian Roth (Neo23x0)	neo23x0/apt_unit78020_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_unit78020_malware.yar
+neo23x0-apt-uscert-ta17-1117a	Florian Roth (Neo23x0)	neo23x0/apt_uscert_ta17-1117a.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_uscert_ta17-1117a.yar
+neo23x0-apt-venom-linux-rootkit	Florian Roth (Neo23x0)	neo23x0/apt_venom_linux_rootkit.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_venom_linux_rootkit.yar
+neo23x0-apt-volatile-cedar	Florian Roth (Neo23x0)	neo23x0/apt_volatile_cedar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_volatile_cedar.yar
+neo23x0-apt-vpnfilter	Florian Roth (Neo23x0)	neo23x0/apt_vpnfilter.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_vpnfilter.yar
+neo23x0-apt-waterbear	Florian Roth (Neo23x0)	neo23x0/apt_waterbear.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_waterbear.yar
+neo23x0-apt-waterbug	Florian Roth (Neo23x0)	neo23x0/apt_waterbug.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_waterbug.yar
+neo23x0-apt-webmonitor-rat	Florian Roth (Neo23x0)	neo23x0/apt_webmonitor_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_webmonitor_rat.yar
+neo23x0-apt-webshell-chinachopper	Florian Roth (Neo23x0)	neo23x0/apt_webshell_chinachopper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_webshell_chinachopper.yar
+neo23x0-apt-wildneutron	Florian Roth (Neo23x0)	neo23x0/apt_wildneutron.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_wildneutron.yar
+neo23x0-apt-wilted-tulip	Florian Roth (Neo23x0)	neo23x0/apt_wilted_tulip.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_wilted_tulip.yar
+neo23x0-apt-win-plugx	Florian Roth (Neo23x0)	neo23x0/apt_win_plugx.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_win_plugx.yar
+neo23x0-apt-winnti	Florian Roth (Neo23x0)	neo23x0/apt_winnti.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_winnti.yar
+neo23x0-apt-winnti-br	Florian Roth (Neo23x0)	neo23x0/apt_winnti_br.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_winnti_br.yar
+neo23x0-apt-winnti-burning-umbrella	Florian Roth (Neo23x0)	neo23x0/apt_winnti_burning_umbrella.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_winnti_burning_umbrella.yar
+neo23x0-apt-winnti-hdroot	Florian Roth (Neo23x0)	neo23x0/apt_winnti_hdroot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_winnti_hdroot.yar
+neo23x0-apt-winnti-linux	Florian Roth (Neo23x0)	neo23x0/apt_winnti_linux.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_winnti_linux.yar
+neo23x0-apt-winnti-ms-report-201701	Florian Roth (Neo23x0)	neo23x0/apt_winnti_ms_report_201701.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_winnti_ms_report_201701.yar
+neo23x0-apt-woolengoldfish	Florian Roth (Neo23x0)	neo23x0/apt_woolengoldfish.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_woolengoldfish.yar
+neo23x0-apt-xrat	Florian Roth (Neo23x0)	neo23x0/apt_xrat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_xrat.yar
+neo23x0-apt-zxshell	Florian Roth (Neo23x0)	neo23x0/apt_zxshell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/apt_zxshell.yar
+neo23x0-cn-pentestset-scripts	Florian Roth (Neo23x0)	neo23x0/cn_pentestset_scripts.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/cn_pentestset_scripts.yar
+neo23x0-cn-pentestset-tools	Florian Roth (Neo23x0)	neo23x0/cn_pentestset_tools.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/cn_pentestset_tools.yar
+neo23x0-cn-pentestset-webshells	Florian Roth (Neo23x0)	neo23x0/cn_pentestset_webshells.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/cn_pentestset_webshells.yar
+neo23x0-crime-academic-data-centers-camp-may20	Florian Roth (Neo23x0)	neo23x0/crime_academic_data_centers_camp_may20.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_academic_data_centers_camp_may20.yar
+neo23x0-crime-andromeda-jun17	Florian Roth (Neo23x0)	neo23x0/crime_andromeda_jun17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_andromeda_jun17.yar
+neo23x0-crime-antifw-installrex	Florian Roth (Neo23x0)	neo23x0/crime_antifw_installrex.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_antifw_installrex.yar
+neo23x0-crime-atm-dispenserxfs	Florian Roth (Neo23x0)	neo23x0/crime_atm_dispenserxfs.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_atm_dispenserxfs.yar
+neo23x0-crime-atm-javadipcash	Florian Roth (Neo23x0)	neo23x0/crime_atm_javadipcash.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_atm_javadipcash.yar
+neo23x0-crime-atm-loup	Florian Roth (Neo23x0)	neo23x0/crime_atm_loup.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_atm_loup.yar
+neo23x0-crime-atm-xfsadm	Florian Roth (Neo23x0)	neo23x0/crime_atm_xfsadm.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_atm_xfsadm.yar
+neo23x0-crime-atm-xfscashncr	Florian Roth (Neo23x0)	neo23x0/crime_atm_xfscashncr.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_atm_xfscashncr.yar
+neo23x0-crime-bad-patch	Florian Roth (Neo23x0)	neo23x0/crime_bad_patch.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_bad_patch.yar
+neo23x0-crime-badrabbit	Florian Roth (Neo23x0)	neo23x0/crime_badrabbit.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_badrabbit.yar
+neo23x0-crime-bazarbackdoor	Florian Roth (Neo23x0)	neo23x0/crime_bazarbackdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_bazarbackdoor.yar
+neo23x0-crime-bernhard-pos	Florian Roth (Neo23x0)	neo23x0/crime_bernhard_pos.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_bernhard_pos.yar
+neo23x0-crime-bluenoroff-pos	Florian Roth (Neo23x0)	neo23x0/crime_bluenoroff_pos.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_bluenoroff_pos.yar
+neo23x0-crime-buzus-softpulse	Florian Roth (Neo23x0)	neo23x0/crime_buzus_softpulse.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_buzus_softpulse.yar
+neo23x0-crime-cmstar	Florian Roth (Neo23x0)	neo23x0/crime_cmstar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_cmstar.yar
+neo23x0-crime-cn-campaign-njrat	Florian Roth (Neo23x0)	neo23x0/crime_cn_campaign_njrat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_cn_campaign_njrat.yar
+neo23x0-crime-cn-group-btc	Florian Roth (Neo23x0)	neo23x0/crime_cn_group_btc.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_cn_group_btc.yar
+neo23x0-crime-cobalt-gang-pdf	Florian Roth (Neo23x0)	neo23x0/crime_cobalt_gang_pdf.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_cobalt_gang_pdf.yar
+neo23x0-crime-cobaltgang	Florian Roth (Neo23x0)	neo23x0/crime_cobaltgang.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_cobaltgang.yar
+neo23x0-crime-corkow-dll	Florian Roth (Neo23x0)	neo23x0/crime_corkow_dll.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_corkow_dll.yar
+neo23x0-crime-covid-ransom	Florian Roth (Neo23x0)	neo23x0/crime_covid_ransom.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_covid_ransom.yar
+neo23x0-crime-credstealer-generic	Florian Roth (Neo23x0)	neo23x0/crime_credstealer_generic.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_credstealer_generic.yar
+neo23x0-crime-crypto-miner	Florian Roth (Neo23x0)	neo23x0/crime_crypto_miner.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_crypto_miner.yar
+neo23x0-crime-cryptowall-svg	Florian Roth (Neo23x0)	neo23x0/crime_cryptowall_svg.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_cryptowall_svg.yar
+neo23x0-crime-dearcry-ransom	Florian Roth (Neo23x0)	neo23x0/crime_dearcry_ransom.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_dearcry_ransom.yar
+neo23x0-crime-dexter-trojan	Florian Roth (Neo23x0)	neo23x0/crime_dexter_trojan.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_dexter_trojan.yar
+neo23x0-crime-dridex-xml	Florian Roth (Neo23x0)	neo23x0/crime_dridex_xml.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_dridex_xml.yar
+neo23x0-crime-emotet	Florian Roth (Neo23x0)	neo23x0/crime_emotet.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_emotet.yar
+neo23x0-crime-enfal	Florian Roth (Neo23x0)	neo23x0/crime_enfal.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_enfal.yar
+neo23x0-crime-envrial	Florian Roth (Neo23x0)	neo23x0/crime_envrial.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_envrial.yar
+neo23x0-crime-eternalrocks	Florian Roth (Neo23x0)	neo23x0/crime_eternalrocks.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_eternalrocks.yar
+neo23x0-crime-evilcorp-dridex-banker	Florian Roth (Neo23x0)	neo23x0/crime_evilcorp_dridex_banker.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_evilcorp_dridex_banker.yar
+neo23x0-crime-fareit	Florian Roth (Neo23x0)	neo23x0/crime_fareit.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_fareit.yar
+neo23x0-crime-fireball	Florian Roth (Neo23x0)	neo23x0/crime_fireball.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_fireball.yar
+neo23x0-crime-floxif-flystudio	Florian Roth (Neo23x0)	neo23x0/crime_floxif_flystudio.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_floxif_flystudio.yar
+neo23x0-crime-gamaredon	Florian Roth (Neo23x0)	neo23x0/crime_gamaredon.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_gamaredon.yar
+neo23x0-crime-goldeneye	Florian Roth (Neo23x0)	neo23x0/crime_goldeneye.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_goldeneye.yar
+neo23x0-crime-gozi-crypter	Florian Roth (Neo23x0)	neo23x0/crime_gozi_crypter.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_gozi_crypter.yar
+neo23x0-crime-guloader	Florian Roth (Neo23x0)	neo23x0/crime_guloader.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_guloader.yar
+neo23x0-crime-h2miner-kinsing	Florian Roth (Neo23x0)	neo23x0/crime_h2miner_kinsing.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_h2miner_kinsing.yar
+neo23x0-crime-hermes-ransom	Florian Roth (Neo23x0)	neo23x0/crime_hermes_ransom.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_hermes_ransom.yar
+neo23x0-crime-icedid	Florian Roth (Neo23x0)	neo23x0/crime_icedid.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_icedid.yar
+neo23x0-crime-kasper-oct17	Florian Roth (Neo23x0)	neo23x0/crime_kasper_oct17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_kasper_oct17.yar
+neo23x0-crime-kins-dropper	Florian Roth (Neo23x0)	neo23x0/crime_kins_dropper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_kins_dropper.yar
+neo23x0-crime-kr-malware	Florian Roth (Neo23x0)	neo23x0/crime_kr_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_kr_malware.yar
+neo23x0-crime-kraken-bot1	Florian Roth (Neo23x0)	neo23x0/crime_kraken_bot1.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_kraken_bot1.yar
+neo23x0-crime-kriskynote	Florian Roth (Neo23x0)	neo23x0/crime_kriskynote.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_kriskynote.yar
+neo23x0-crime-locky	Florian Roth (Neo23x0)	neo23x0/crime_locky.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_locky.yar
+neo23x0-crime-loki-bot	Florian Roth (Neo23x0)	neo23x0/crime_loki_bot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_loki_bot.yar
+neo23x0-crime-mal-grandcrab	Florian Roth (Neo23x0)	neo23x0/crime_mal_grandcrab.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_mal_grandcrab.yar
+neo23x0-crime-mal-nitol	Florian Roth (Neo23x0)	neo23x0/crime_mal_nitol.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_mal_nitol.yar
+neo23x0-crime-mal-ransom-wadharma	Florian Roth (Neo23x0)	neo23x0/crime_mal_ransom_wadharma.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_mal_ransom_wadharma.yar
+neo23x0-crime-malumpos	Florian Roth (Neo23x0)	neo23x0/crime_malumpos.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_malumpos.yar
+neo23x0-crime-malware-generic	Florian Roth (Neo23x0)	neo23x0/crime_malware_generic.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_malware_generic.yar
+neo23x0-crime-malware-set-oct16	Florian Roth (Neo23x0)	neo23x0/crime_malware_set_oct16.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_malware_set_oct16.yar
+neo23x0-crime-maze-ransomware	Florian Roth (Neo23x0)	neo23x0/crime_maze_ransomware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_maze_ransomware.yar
+neo23x0-crime-mikey-trojan	Florian Roth (Neo23x0)	neo23x0/crime_mikey_trojan.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_mikey_trojan.yar
+neo23x0-crime-mirai	Florian Roth (Neo23x0)	neo23x0/crime_mirai.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_mirai.yar
+neo23x0-crime-mywscript-dropper	Florian Roth (Neo23x0)	neo23x0/crime_mywscript_dropper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_mywscript_dropper.yar
+neo23x0-crime-nansh0u	Florian Roth (Neo23x0)	neo23x0/crime_nansh0u.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_nansh0u.yar
+neo23x0-crime-nkminer	Florian Roth (Neo23x0)	neo23x0/crime_nkminer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_nkminer.yar
+neo23x0-crime-nopetya-jun17	Florian Roth (Neo23x0)	neo23x0/crime_nopetya_jun17.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_nopetya_jun17.yar
+neo23x0-crime-ole-loadswf-cve-2018-4878	Florian Roth (Neo23x0)	neo23x0/crime_ole_loadswf_cve_2018_4878.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ole_loadswf_cve_2018_4878.yar
+neo23x0-crime-parallax-rat	Florian Roth (Neo23x0)	neo23x0/crime_parallax_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_parallax_rat.yar
+neo23x0-crime-phish-gina-dec15	Florian Roth (Neo23x0)	neo23x0/crime_phish_gina_dec15.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_phish_gina_dec15.yar
+neo23x0-crime-ransom-conti	Florian Roth (Neo23x0)	neo23x0/crime_ransom_conti.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_conti.yar
+neo23x0-crime-ransom-darkside	Florian Roth (Neo23x0)	neo23x0/crime_ransom_darkside.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_darkside.yar
+neo23x0-crime-ransom-generic	Florian Roth (Neo23x0)	neo23x0/crime_ransom_generic.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_generic.yar
+neo23x0-crime-ransom-germanwiper	Florian Roth (Neo23x0)	neo23x0/crime_ransom_germanwiper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_germanwiper.yar
+neo23x0-crime-ransom-lockergoga	Florian Roth (Neo23x0)	neo23x0/crime_ransom_lockergoga.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_lockergoga.yar
+neo23x0-crime-ransom-prolock	Florian Roth (Neo23x0)	neo23x0/crime_ransom_prolock.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_prolock.yar
+neo23x0-crime-ransom-ragna-locker	Florian Roth (Neo23x0)	neo23x0/crime_ransom_ragna_locker.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_ragna_locker.yar
+neo23x0-crime-ransom-revil	Florian Roth (Neo23x0)	neo23x0/crime_ransom_revil.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_revil.yar
+neo23x0-crime-ransom-robinhood	Florian Roth (Neo23x0)	neo23x0/crime_ransom_robinhood.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_robinhood.yar
+neo23x0-crime-ransom-stealbit-lockbit	Florian Roth (Neo23x0)	neo23x0/crime_ransom_stealbit_lockbit.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ransom_stealbit_lockbit.yar
+neo23x0-crime-rat-parallax	Florian Roth (Neo23x0)	neo23x0/crime_rat_parallax.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_rat_parallax.yar
+neo23x0-crime-revil-general	Florian Roth (Neo23x0)	neo23x0/crime_revil_general.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_revil_general.yar
+neo23x0-crime-rombertik-carbongrabber	Florian Roth (Neo23x0)	neo23x0/crime_rombertik_carbongrabber.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_rombertik_carbongrabber.yar
+neo23x0-crime-ryuk-ransomware	Florian Roth (Neo23x0)	neo23x0/crime_ryuk_ransomware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_ryuk_ransomware.yar
+neo23x0-crime-shifu-trojan	Florian Roth (Neo23x0)	neo23x0/crime_shifu_trojan.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_shifu_trojan.yar
+neo23x0-crime-snarasite	Florian Roth (Neo23x0)	neo23x0/crime_snarasite.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_snarasite.yar
+neo23x0-crime-socgholish	Florian Roth (Neo23x0)	neo23x0/crime_socgholish.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_socgholish.yar
+neo23x0-crime-teledoor	Florian Roth (Neo23x0)	neo23x0/crime_teledoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_teledoor.yar
+neo23x0-crime-trickbot	Florian Roth (Neo23x0)	neo23x0/crime_trickbot.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_trickbot.yar
+neo23x0-crime-upatre-oct15	Florian Roth (Neo23x0)	neo23x0/crime_upatre_oct15.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_upatre_oct15.yar
+neo23x0-crime-wannacry	Florian Roth (Neo23x0)	neo23x0/crime_wannacry.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_wannacry.yar
+neo23x0-crime-wsh-rat	Florian Roth (Neo23x0)	neo23x0/crime_wsh_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_wsh_rat.yar
+neo23x0-crime-xbash	Florian Roth (Neo23x0)	neo23x0/crime_xbash.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_xbash.yar
+neo23x0-crime-zeus-panda	Florian Roth (Neo23x0)	neo23x0/crime_zeus_panda.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_zeus_panda.yar
+neo23x0-crime-zloader-maldocs	Florian Roth (Neo23x0)	neo23x0/crime_zloader_maldocs.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/crime_zloader_maldocs.yar
+neo23x0-expl-adselfservice-cve-2021-40539	Florian Roth (Neo23x0)	neo23x0/expl_adselfservice_cve_2021_40539.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/expl_adselfservice_cve_2021_40539.yar
+neo23x0-expl-cve-2021-1647	Florian Roth (Neo23x0)	neo23x0/expl_cve_2021_1647.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/expl_cve_2021_1647.yar
+neo23x0-expl-cve-2021-26084-confluence-log	Florian Roth (Neo23x0)	neo23x0/expl_cve_2021_26084_confluence_log.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/expl_cve_2021_26084_confluence_log.yar
+neo23x0-expl-cve-2021-40444	Florian Roth (Neo23x0)	neo23x0/expl_cve_2021_40444.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/expl_cve_2021_40444.yar
+neo23x0-expl-log4j-cve-2021-44228	Florian Roth (Neo23x0)	neo23x0/expl_log4j_cve_2021_44228.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/expl_log4j_cve_2021_44228.yar
+neo23x0-expl-proxyshell	Florian Roth (Neo23x0)	neo23x0/expl_proxyshell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/expl_proxyshell.yar
+neo23x0-exploit-cve-2014-4076	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2014_4076.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2014_4076.yar
+neo23x0-exploit-cve-2015-1674	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2015_1674.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2015_1674.yar
+neo23x0-exploit-cve-2015-1701	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2015_1701.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2015_1701.yar
+neo23x0-exploit-cve-2015-2426	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2015_2426.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2015_2426.yar
+neo23x0-exploit-cve-2015-2545	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2015_2545.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2015_2545.yar
+neo23x0-exploit-cve-2015-5119	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2015_5119.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2015_5119.yar
+neo23x0-exploit-cve-2017-8759	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2017_8759.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2017_8759.yar
+neo23x0-exploit-cve-2017-9800	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2017_9800.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2017_9800.yar
+neo23x0-exploit-cve-2017-11882	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2017_11882.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2017_11882.yar
+neo23x0-exploit-cve-2018-0802	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2018_0802.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2018_0802.yar
+neo23x0-exploit-cve-2018-16858	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2018_16858.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2018_16858.yar
+neo23x0-exploit-cve-2021-31166	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2021_31166.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2021_31166.yar
+neo23x0-exploit-cve-2021-33766-proxytoken	Florian Roth (Neo23x0)	neo23x0/exploit_cve_2021_33766_proxytoken.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_cve_2021_33766_proxytoken.yar
+neo23x0-exploit-f5-bigip-cve-2021-22986-log	Florian Roth (Neo23x0)	neo23x0/exploit_f5_bigip_cve_2021_22986_log.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_f5_bigip_cve_2021_22986_log.yar
+neo23x0-exploit-gitlab-cve-2021-22205	Florian Roth (Neo23x0)	neo23x0/exploit_gitlab_cve_2021_22205.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_gitlab_cve_2021_22205.yar
+neo23x0-exploit-rtf-ole2link	Florian Roth (Neo23x0)	neo23x0/exploit_rtf_ole2link.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_rtf_ole2link.yar
+neo23x0-exploit-shitrix	Florian Roth (Neo23x0)	neo23x0/exploit_shitrix.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_shitrix.yar
+neo23x0-exploit-tlb-scripts	Florian Roth (Neo23x0)	neo23x0/exploit_tlb_scripts.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_tlb_scripts.yar
+neo23x0-exploit-uac-elevators	Florian Roth (Neo23x0)	neo23x0/exploit_uac_elevators.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/exploit_uac_elevators.yar
+neo23x0-gen-ace-with-exe	Florian Roth (Neo23x0)	neo23x0/gen_ace_with_exe.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_ace_with_exe.yar
+neo23x0-gen-anomalies-keyword-combos	Florian Roth (Neo23x0)	neo23x0/gen_anomalies_keyword_combos.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_anomalies_keyword_combos.yar
+neo23x0-gen-armitage	Florian Roth (Neo23x0)	neo23x0/gen_armitage.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_armitage.yar
+neo23x0-gen-autocad-lsp-malware	Florian Roth (Neo23x0)	neo23x0/gen_autocad_lsp_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_autocad_lsp_malware.yar
+neo23x0-gen-b374k-extra	Florian Roth (Neo23x0)	neo23x0/gen_b374k_extra.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_b374k_extra.yar
+neo23x0-gen-bad-pdf	Florian Roth (Neo23x0)	neo23x0/gen_bad_pdf.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_bad_pdf.yar
+neo23x0-gen-case-anomalies	Florian Roth (Neo23x0)	neo23x0/gen_case_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_case_anomalies.yar
+neo23x0-gen-cert-payloads	Florian Roth (Neo23x0)	neo23x0/gen_cert_payloads.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_cert_payloads.yar
+neo23x0-gen-chaos-payload	Florian Roth (Neo23x0)	neo23x0/gen_chaos_payload.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_chaos_payload.yar
+neo23x0-gen-cmd-script-obfuscated	Florian Roth (Neo23x0)	neo23x0/gen_cmd_script_obfuscated.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_cmd_script_obfuscated.yar
+neo23x0-gen-cn-hacktool-scripts	Florian Roth (Neo23x0)	neo23x0/gen_cn_hacktool_scripts.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_cn_hacktool_scripts.yar
+neo23x0-gen-cn-hacktools	Florian Roth (Neo23x0)	neo23x0/gen_cn_hacktools.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_cn_hacktools.yar
+neo23x0-gen-cn-webshells	Florian Roth (Neo23x0)	neo23x0/gen_cn_webshells.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_cn_webshells.yar
+neo23x0-gen-cobaltstrike-by-avast	Florian Roth (Neo23x0)	neo23x0/gen_cobaltstrike_by_avast.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_cobaltstrike_by_avast.yar
+neo23x0-gen-crime-bitpaymer	Florian Roth (Neo23x0)	neo23x0/gen_crime_bitpaymer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_crime_bitpaymer.yar
+neo23x0-gen-crimson-rat	Florian Roth (Neo23x0)	neo23x0/gen_crimson_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_crimson_rat.yar
+neo23x0-gen-crunchrat	Florian Roth (Neo23x0)	neo23x0/gen_crunchrat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_crunchrat.yar
+neo23x0-gen-dde-in-office-docs	Florian Roth (Neo23x0)	neo23x0/gen_dde_in_office_docs.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_dde_in_office_docs.yar
+neo23x0-gen-deviceguard-evasion	Florian Roth (Neo23x0)	neo23x0/gen_deviceguard_evasion.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_deviceguard_evasion.yar
+neo23x0-gen-dropper-pdb	Florian Roth (Neo23x0)	neo23x0/gen_dropper_pdb.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_dropper_pdb.yar
+neo23x0-gen-elf-file-anomalies	Florian Roth (Neo23x0)	neo23x0/gen_elf_file_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_elf_file_anomalies.yar
+neo23x0-gen-empire	Florian Roth (Neo23x0)	neo23x0/gen_empire.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_empire.yar
+neo23x0-gen-enigma-protector	Florian Roth (Neo23x0)	neo23x0/gen_enigma_protector.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_enigma_protector.yar
+neo23x0-gen-event-mute-hook	Florian Roth (Neo23x0)	neo23x0/gen_event_mute_hook.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_event_mute_hook.yar
+neo23x0-gen-excel-auto-open-evasion	Florian Roth (Neo23x0)	neo23x0/gen_excel_auto_open_evasion.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_excel_auto_open_evasion.yar
+neo23x0-gen-excel-xll-addin-suspicious	Florian Roth (Neo23x0)	neo23x0/gen_excel_xll_addin_suspicious.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_excel_xll_addin_suspicious.yar
+neo23x0-gen-excel-xor-obfuscation-velvetsweatshop	Florian Roth (Neo23x0)	neo23x0/gen_excel_xor_obfuscation_velvetsweatshop.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_excel_xor_obfuscation_velvetsweatshop.yar
+neo23x0-gen-excel4macro-sharpshooter	Florian Roth (Neo23x0)	neo23x0/gen_Excel4Macro_Sharpshooter.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_Excel4Macro_Sharpshooter.yar
+neo23x0-gen-exploit-cve-2017-10271-weblogic	Florian Roth (Neo23x0)	neo23x0/gen_exploit_cve_2017_10271_weblogic.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_exploit_cve_2017_10271_weblogic.yar
+neo23x0-gen-faked-versions	Florian Roth (Neo23x0)	neo23x0/gen_faked_versions.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_faked_versions.yar
+neo23x0-gen-file-anomalies	Florian Roth (Neo23x0)	neo23x0/gen_file_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_file_anomalies.yar
+neo23x0-gen-fireeye-redteam-tools	Florian Roth (Neo23x0)	neo23x0/gen_fireeye_redteam_tools.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_fireeye_redteam_tools.yar
+neo23x0-gen-floxif	Florian Roth (Neo23x0)	neo23x0/gen_floxif.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_floxif.yar
+neo23x0-gen-gen-cactustorch	Florian Roth (Neo23x0)	neo23x0/gen_gen_cactustorch.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_gen_cactustorch.yar
+neo23x0-gen-github-net-redteam-tools-guids	Florian Roth (Neo23x0)	neo23x0/gen_github_net_redteam_tools_guids.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_github_net_redteam_tools_guids.yar
+neo23x0-gen-github-net-redteam-tools-names	Florian Roth (Neo23x0)	neo23x0/gen_github_net_redteam_tools_names.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_github_net_redteam_tools_names.yar
+neo23x0-gen-gobfuscate	Florian Roth (Neo23x0)	neo23x0/gen_gobfuscate.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_gobfuscate.yar
+neo23x0-gen-google-anomaly	Florian Roth (Neo23x0)	neo23x0/gen_google_anomaly.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_google_anomaly.yar
+neo23x0-gen-gpp-cpassword	Florian Roth (Neo23x0)	neo23x0/gen_gpp_cpassword.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_gpp_cpassword.yar
+neo23x0-gen-hawkeye	Florian Roth (Neo23x0)	neo23x0/gen_hawkeye.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_hawkeye.yar
+neo23x0-gen-hktl-roothelper	Florian Roth (Neo23x0)	neo23x0/gen_hktl_roothelper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_hktl_roothelper.yar
+neo23x0-gen-hta-anomalies	Florian Roth (Neo23x0)	neo23x0/gen_hta_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_hta_anomalies.yar
+neo23x0-gen-hunting-susp-rar	Florian Roth (Neo23x0)	neo23x0/gen_hunting_susp_rar.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_hunting_susp_rar.yar
+neo23x0-gen-icon-anomalies	Florian Roth (Neo23x0)	neo23x0/gen_icon_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_icon_anomalies.yar
+neo23x0-gen-impacket-tools	Florian Roth (Neo23x0)	neo23x0/gen_impacket_tools.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_impacket_tools.yar
+neo23x0-gen-invoke-mimikatz	Florian Roth (Neo23x0)	neo23x0/gen_invoke_mimikatz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_invoke_mimikatz.yar
+neo23x0-gen-invoke-psimage	Florian Roth (Neo23x0)	neo23x0/gen_invoke_psimage.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_invoke_psimage.yar
+neo23x0-gen-invoke-thehash	Florian Roth (Neo23x0)	neo23x0/gen_invoke_thehash.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_invoke_thehash.yar
+neo23x0-gen-javascript-powershell	Florian Roth (Neo23x0)	neo23x0/gen_javascript_powershell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_javascript_powershell.yar
+neo23x0-gen-kerberoast	Florian Roth (Neo23x0)	neo23x0/gen_kerberoast.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_kerberoast.yar
+neo23x0-gen-khepri	Florian Roth (Neo23x0)	neo23x0/gen_khepri.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_khepri.yar
+neo23x0-gen-kirbi-mimkatz	Florian Roth (Neo23x0)	neo23x0/gen_kirbi_mimkatz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_kirbi_mimkatz.yar
+neo23x0-gen-lnx-malware-indicators	Florian Roth (Neo23x0)	neo23x0/gen_lnx_malware_indicators.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_lnx_malware_indicators.yar
+neo23x0-gen-loaders	Florian Roth (Neo23x0)	neo23x0/gen_loaders.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_loaders.yar
+neo23x0-gen-macro-builders	Florian Roth (Neo23x0)	neo23x0/gen_macro_builders.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_macro_builders.yar
+neo23x0-gen-macro-shellexecute-action	Florian Roth (Neo23x0)	neo23x0/gen_macro_ShellExecute_action.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_macro_ShellExecute_action.yar
+neo23x0-gen-macro-staroffice-suspicious	Florian Roth (Neo23x0)	neo23x0/gen_macro_staroffice_suspicious.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_macro_staroffice_suspicious.yar
+neo23x0-gen-mal-backnet	Florian Roth (Neo23x0)	neo23x0/gen_mal_backnet.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_mal_backnet.yar
+neo23x0-gen-mal-link	Florian Roth (Neo23x0)	neo23x0/gen_mal_link.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_mal_link.yar
+neo23x0-gen-mal-scripts	Florian Roth (Neo23x0)	neo23x0/gen_mal_scripts.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_mal_scripts.yar
+neo23x0-gen-malware-macos-plist-suspicious	Florian Roth (Neo23x0)	neo23x0/gen_malware_MacOS_plist_suspicious.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_malware_MacOS_plist_suspicious.yar
+neo23x0-gen-malware-set-qa	Florian Roth (Neo23x0)	neo23x0/gen_malware_set_qa.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_malware_set_qa.yar
+neo23x0-gen-merlin-agent	Florian Roth (Neo23x0)	neo23x0/gen_merlin_agent.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_merlin_agent.yar
+neo23x0-gen-metasploit-loader-rsmudge	Florian Roth (Neo23x0)	neo23x0/gen_metasploit_loader_rsmudge.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_metasploit_loader_rsmudge.yar
+neo23x0-gen-metasploit-payloads	Florian Roth (Neo23x0)	neo23x0/gen_metasploit_payloads.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_metasploit_payloads.yar
+neo23x0-gen-mimikatz	Florian Roth (Neo23x0)	neo23x0/gen_mimikatz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_mimikatz.yar
+neo23x0-gen-mimikittenz	Florian Roth (Neo23x0)	neo23x0/gen_mimikittenz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_mimikittenz.yar
+neo23x0-gen-mimipenguin	Florian Roth (Neo23x0)	neo23x0/gen_mimipenguin.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_mimipenguin.yar
+neo23x0-gen-nopowershell	Florian Roth (Neo23x0)	neo23x0/gen_nopowershell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_nopowershell.yar
+neo23x0-gen-osx-backdoor-bella	Florian Roth (Neo23x0)	neo23x0/gen_osx_backdoor_bella.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_osx_backdoor_bella.yar
+neo23x0-gen-osx-evilosx	Florian Roth (Neo23x0)	neo23x0/gen_osx_evilosx.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_osx_evilosx.yar
+neo23x0-gen-osx-pyagent-persistence	Florian Roth (Neo23x0)	neo23x0/gen_osx_pyagent_persistence.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_osx_pyagent_persistence.yar
+neo23x0-gen-p0wnshell	Florian Roth (Neo23x0)	neo23x0/gen_p0wnshell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_p0wnshell.yar
+neo23x0-gen-pirpi	Florian Roth (Neo23x0)	neo23x0/gen_pirpi.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_pirpi.yar
+neo23x0-gen-powerkatz	Florian Roth (Neo23x0)	neo23x0/gen_powerkatz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powerkatz.yar
+neo23x0-gen-powershdll	Florian Roth (Neo23x0)	neo23x0/gen_powershdll.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershdll.yar
+neo23x0-gen-powershell-empire	Florian Roth (Neo23x0)	neo23x0/gen_powershell_empire.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershell_empire.yar
+neo23x0-gen-powershell-invocation	Florian Roth (Neo23x0)	neo23x0/gen_powershell_invocation.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershell_invocation.yar
+neo23x0-gen-powershell-obfuscation	Florian Roth (Neo23x0)	neo23x0/gen_powershell_obfuscation.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershell_obfuscation.yar
+neo23x0-gen-powershell-suite	Florian Roth (Neo23x0)	neo23x0/gen_powershell_suite.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershell_suite.yar
+neo23x0-gen-powershell-susp	Florian Roth (Neo23x0)	neo23x0/gen_powershell_susp.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershell_susp.yar
+neo23x0-gen-powershell-toolkit	Florian Roth (Neo23x0)	neo23x0/gen_powershell_toolkit.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powershell_toolkit.yar
+neo23x0-gen-powersploit-dropper	Florian Roth (Neo23x0)	neo23x0/gen_powersploit_dropper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_powersploit_dropper.yar
+neo23x0-gen-ps-empire-eval	Florian Roth (Neo23x0)	neo23x0/gen_ps_empire_eval.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_ps_empire_eval.yar
+neo23x0-gen-ps-osiris	Florian Roth (Neo23x0)	neo23x0/gen_ps_osiris.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_ps_osiris.yar
+neo23x0-gen-ps1-shellcode	Florian Roth (Neo23x0)	neo23x0/gen_ps1_shellcode.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_ps1_shellcode.yar
+neo23x0-gen-pua	Florian Roth (Neo23x0)	neo23x0/gen_pua.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_pua.yar
+neo23x0-gen-pupy-rat	Florian Roth (Neo23x0)	neo23x0/gen_pupy_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_pupy_rat.yar
+neo23x0-gen-python-encoded-adware	Florian Roth (Neo23x0)	neo23x0/gen_python_encoded_adware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_python_encoded_adware.yar
+neo23x0-gen-python-pty-shell	Florian Roth (Neo23x0)	neo23x0/gen_python_pty_shell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_python_pty_shell.yar
+neo23x0-gen-python-pyminifier-encoded-payload	Florian Roth (Neo23x0)	neo23x0/gen_python_pyminifier_encoded_payload.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_python_pyminifier_encoded_payload.yar
+neo23x0-gen-python-reverse-shell	Florian Roth (Neo23x0)	neo23x0/gen_python_reverse_shell.yara	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_python_reverse_shell.yara
+neo23x0-gen-rar-exfil	Florian Roth (Neo23x0)	neo23x0/gen_rar_exfil.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_rar_exfil.yar
+neo23x0-gen-rats-malwareconfig	Florian Roth (Neo23x0)	neo23x0/gen_rats_malwareconfig.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_rats_malwareconfig.yar
+neo23x0-gen-recon-indicators	Florian Roth (Neo23x0)	neo23x0/gen_recon_indicators.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_recon_indicators.yar
+neo23x0-gen-redmimicry	Florian Roth (Neo23x0)	neo23x0/gen_redmimicry.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_redmimicry.yar
+neo23x0-gen-redsails	Florian Roth (Neo23x0)	neo23x0/gen_redsails.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_redsails.yar
+neo23x0-gen-regsrv32-issue	Florian Roth (Neo23x0)	neo23x0/gen_regsrv32_issue.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_regsrv32_issue.yar
+neo23x0-gen-remote-potato0	Florian Roth (Neo23x0)	neo23x0/gen_remote_potato0.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_remote_potato0.yar
+neo23x0-gen-rottenpotato	Florian Roth (Neo23x0)	neo23x0/gen_rottenpotato.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_rottenpotato.yar
+neo23x0-gen-sfx-with-microsoft-copyright	Florian Roth (Neo23x0)	neo23x0/gen_sfx_with_microsoft_copyright.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_sfx_with_microsoft_copyright.yar
+neo23x0-gen-sharpcat	Florian Roth (Neo23x0)	neo23x0/gen_sharpcat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_sharpcat.yar
+neo23x0-gen-shikataganai	Florian Roth (Neo23x0)	neo23x0/gen_shikataganai.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_shikataganai.yar
+neo23x0-gen-sign-anomalies	Florian Roth (Neo23x0)	neo23x0/gen_sign_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_sign_anomalies.yar
+neo23x0-gen-solarwinds-credential-stealer	Florian Roth (Neo23x0)	neo23x0/gen_solarwinds_credential_stealer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_solarwinds_credential_stealer.yar
+neo23x0-gen-susp-bat-aux	Florian Roth (Neo23x0)	neo23x0/gen_susp_bat_aux.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_bat_aux.yar
+neo23x0-gen-susp-cmd-var-expansion	Florian Roth (Neo23x0)	neo23x0/gen_susp_cmd_var_expansion.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_cmd_var_expansion.yar
+neo23x0-gen-susp-hacktool	Florian Roth (Neo23x0)	neo23x0/gen_susp_hacktool.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_hacktool.yar
+neo23x0-gen-susp-js-obfuscatorio	Florian Roth (Neo23x0)	neo23x0/gen_susp_js_obfuscatorio.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_js_obfuscatorio.yar
+neo23x0-gen-susp-lnk	Florian Roth (Neo23x0)	neo23x0/gen_susp_lnk.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_lnk.yar
+neo23x0-gen-susp-lnk-files	Florian Roth (Neo23x0)	neo23x0/gen_susp_lnk_files.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_lnk_files.yar
+neo23x0-gen-susp-obfuscation	Florian Roth (Neo23x0)	neo23x0/gen_susp_obfuscation.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_obfuscation.yar
+neo23x0-gen-susp-office-dropper	Florian Roth (Neo23x0)	neo23x0/gen_susp_office_dropper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_office_dropper.yar
+neo23x0-gen-susp-sfx	Florian Roth (Neo23x0)	neo23x0/gen_susp_sfx.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_sfx.yar
+neo23x0-gen-susp-strings-in-ole	Florian Roth (Neo23x0)	neo23x0/gen_susp_strings_in_ole.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_strings_in_ole.yar
+neo23x0-gen-susp-wer-files	Florian Roth (Neo23x0)	neo23x0/gen_susp_wer_files.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_wer_files.yar
+neo23x0-gen-susp-xor	Florian Roth (Neo23x0)	neo23x0/gen_susp_xor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_susp_xor.yar
+neo23x0-gen-suspicious-inpage-dropper	Florian Roth (Neo23x0)	neo23x0/gen_suspicious_InPage_dropper.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_suspicious_InPage_dropper.yar
+neo23x0-gen-suspicious-strings	Florian Roth (Neo23x0)	neo23x0/gen_suspicious_strings.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_suspicious_strings.yar
+neo23x0-gen-sysinternals-anomaly	Florian Roth (Neo23x0)	neo23x0/gen_sysinternals_anomaly.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_sysinternals_anomaly.yar
+neo23x0-gen-tempracer	Florian Roth (Neo23x0)	neo23x0/gen_tempracer.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_tempracer.yar
+neo23x0-gen-thumbs-cloaking	Florian Roth (Neo23x0)	neo23x0/gen_thumbs_cloaking.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_thumbs_cloaking.yar
+neo23x0-gen-transformed-strings	Florian Roth (Neo23x0)	neo23x0/gen_transformed_strings.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_transformed_strings.yar
+neo23x0-gen-tscookie-rat	Florian Roth (Neo23x0)	neo23x0/gen_tscookie_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_tscookie_rat.yar
+neo23x0-gen-unicorn-obfuscated-powershell	Florian Roth (Neo23x0)	neo23x0/gen_unicorn_obfuscated_powershell.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_unicorn_obfuscated_powershell.yar
+neo23x0-gen-unspecified-malware	Florian Roth (Neo23x0)	neo23x0/gen_unspecified_malware.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_unspecified_malware.yar
+neo23x0-gen-url-persitence	Florian Roth (Neo23x0)	neo23x0/gen_url_persitence.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_url_persitence.yar
+neo23x0-gen-url-to-local-exe	Florian Roth (Neo23x0)	neo23x0/gen_url_to_local_exe.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_url_to_local_exe.yar
+neo23x0-gen-vhd-anomaly	Florian Roth (Neo23x0)	neo23x0/gen_vhd_anomaly.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_vhd_anomaly.yar
+neo23x0-gen-webshells	Florian Roth (Neo23x0)	neo23x0/gen_webshells.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_webshells.yar
+neo23x0-gen-win-privesc	Florian Roth (Neo23x0)	neo23x0/gen_win_privesc.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_win_privesc.yar
+neo23x0-gen-winpayloads	Florian Roth (Neo23x0)	neo23x0/gen_winpayloads.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_winpayloads.yar
+neo23x0-gen-winshells	Florian Roth (Neo23x0)	neo23x0/gen_winshells.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_winshells.yar
+neo23x0-gen-wmi-implant	Florian Roth (Neo23x0)	neo23x0/gen_wmi_implant.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_wmi_implant.yar
+neo23x0-gen-xor-hunting	Florian Roth (Neo23x0)	neo23x0/gen_xor_hunting.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_xor_hunting.yar
+neo23x0-gen-xored-pe	Florian Roth (Neo23x0)	neo23x0/gen_xored_pe.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_xored_pe.yar
+neo23x0-gen-xtreme-rat	Florian Roth (Neo23x0)	neo23x0/gen_xtreme_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_xtreme_rat.yar
+neo23x0-gen-ysoserial-payloads	Florian Roth (Neo23x0)	neo23x0/gen_ysoserial_payloads.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_ysoserial_payloads.yar
+neo23x0-gen-zoho-rcef-logs	Florian Roth (Neo23x0)	neo23x0/gen_zoho_rcef_logs.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/gen_zoho_rcef_logs.yar
+neo23x0-general-cloaking	Florian Roth (Neo23x0)	neo23x0/general_cloaking.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/general_cloaking.yar
+neo23x0-general-officemacros	Florian Roth (Neo23x0)	neo23x0/general_officemacros.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/general_officemacros.yar
+neo23x0-generic-anomalies	Florian Roth (Neo23x0)	neo23x0/generic_anomalies.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_anomalies.yar
+neo23x0-generic-cryptors	Florian Roth (Neo23x0)	neo23x0/generic_cryptors.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_cryptors.yar
+neo23x0-generic-dumps	Florian Roth (Neo23x0)	neo23x0/generic_dumps.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_dumps.yar
+neo23x0-generic-exe2hex-payload	Florian Roth (Neo23x0)	neo23x0/generic_exe2hex_payload.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_exe2hex_payload.yar
+neo23x0-last month	Florian Roth (Neo23x0)	neo23x0/last month	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/last month
+neo23x0-mal-avemaria-rat	Florian Roth (Neo23x0)	neo23x0/mal_avemaria_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_avemaria_rat.yar
+neo23x0-mal-codecov-hack	Florian Roth (Neo23x0)	neo23x0/mal_codecov_hack.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_codecov_hack.yar
+neo23x0-mal-crime-unknown	Florian Roth (Neo23x0)	neo23x0/mal_crime_unknown.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_crime_unknown.yar
+neo23x0-mal-cryp-rat	Florian Roth (Neo23x0)	neo23x0/mal_cryp_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_cryp_rat.yar
+neo23x0-mal-netsha	Florian Roth (Neo23x0)	neo23x0/mal_netsha.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_netsha.yar
+neo23x0-mal-passwordstate-backdoor	Florian Roth (Neo23x0)	neo23x0/mal_passwordstate_backdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_passwordstate_backdoor.yar
+neo23x0-mal-ransom-lorenz	Florian Roth (Neo23x0)	neo23x0/mal_ransom_lorenz.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_ransom_lorenz.yar
+neo23x0-pua-cryptocoin-miner	Florian Roth (Neo23x0)	neo23x0/pua_cryptocoin_miner.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/pua_cryptocoin_miner.yar
+neo23x0-pua-xmrig-monero-miner	Florian Roth (Neo23x0)	neo23x0/pua_xmrig_monero_miner.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/pua_xmrig_monero_miner.yar
+neo23x0-pup-lightftp	Florian Roth (Neo23x0)	neo23x0/pup_lightftp.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/pup_lightftp.yar
+neo23x0-spy-equation-fiveeyes	Florian Roth (Neo23x0)	neo23x0/spy_equation_fiveeyes.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/spy_equation_fiveeyes.yar
+neo23x0-spy-querty-fiveeyes	Florian Roth (Neo23x0)	neo23x0/spy_querty_fiveeyes.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/spy_querty_fiveeyes.yar
+neo23x0-spy-regin-fiveeyes	Florian Roth (Neo23x0)	neo23x0/spy_regin_fiveeyes.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/spy_regin_fiveeyes.yar
+neo23x0-thor-hacktools	Florian Roth (Neo23x0)	neo23x0/thor-hacktools.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/thor-hacktools.yar
+neo23x0-thor-inverse-matches	Florian Roth (Neo23x0)	neo23x0/thor_inverse_matches.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/thor_inverse_matches.yar
+neo23x0-thor-webshells	Florian Roth (Neo23x0)	neo23x0/thor-webshells.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/thor-webshells.yar
+neo23x0-threat-lenovo-superfish	Florian Roth (Neo23x0)	neo23x0/threat_lenovo_superfish.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/threat_lenovo_superfish.yar
+neo23x0-vul-cve-2020-0688	Florian Roth (Neo23x0)	neo23x0/vul_cve_2020_0688.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_cve_2020_0688.yar
+neo23x0-vul-cve-2020-1938	Florian Roth (Neo23x0)	neo23x0/vul_cve_2020_1938.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_cve_2020_1938.yar
+neo23x0-vul-cve-2021-3438-printdriver	Florian Roth (Neo23x0)	neo23x0/vul_cve_2021_3438_printdriver.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_cve_2021_3438_printdriver.yar
+neo23x0-vul-cve-2021-386471-omi	Florian Roth (Neo23x0)	neo23x0/vul_cve_2021_386471_omi.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_cve_2021_386471_omi.yar
+neo23x0-vul-dell-bios-upd-driver	Florian Roth (Neo23x0)	neo23x0/vul_dell_bios_upd_driver.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_dell_bios_upd_driver.yar
+neo23x0-vul-drivecrypt	Florian Roth (Neo23x0)	neo23x0/vul_drivecrypt.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_drivecrypt.yar
+neo23x0-vul-jquery-fileupload-cve-2018-9206	Florian Roth (Neo23x0)	neo23x0/vul_jquery_fileupload_cve_2018_9206.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_jquery_fileupload_cve_2018_9206.yar
+neo23x0-vul-php-zlib-backdoor	Florian Roth (Neo23x0)	neo23x0/vul_php_zlib_backdoor.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/vul_php_zlib_backdoor.yar
+neo23x0-webshell-xsl-transform	Florian Roth (Neo23x0)	neo23x0/webshell_xsl_transform.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/webshell_xsl_transform.yar
+neo23x0-yara-mixed-ext-vars	Florian Roth (Neo23x0)	neo23x0/yara_mixed_ext_vars.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/yara_mixed_ext_vars.yar
