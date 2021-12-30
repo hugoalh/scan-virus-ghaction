@@ -17,9 +17,9 @@
 
 ## 📝 Description
 
-A GitHub Action to scan virus (e.g.: malware and malicious files) in the GitHub Action workspace.
+A GitHub Action to scan virus (including malicious files and malware) in the GitHub Action workspace.
 
-### 🛡 Software
+### 🛡 Anti Virus Software
 
 - [ClamAV](https://www.clamav.net)
   > ClamAV (by [Cisco](https://www.cisco.com)) is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
