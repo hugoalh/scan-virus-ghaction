@@ -1,5 +1,5 @@
 [string]$IndexDelimiter = "`t"
-[string[]]$IndexFile = Get-Content -Encoding utf8NoBOM -Path "$PSScriptRoot\index.tsv"
+[string[]]$IndexFile = Get-Content -Encoding utf8NoBOM -Path .\index.tsv
 [string[]]$RulesNameList = @()
 [hashtable]$RulesPullList = @{}
 ConvertFrom-Csv -Delimiter $IndexDelimiter -Header ($IndexFile[0] -split $IndexDelimiter) -InputObject $IndexFile[1..$IndexFile.Count] | ForEach-Object -Process {
@@ -13,18 +13,19 @@ ConvertFrom-Csv -Delimiter $IndexDelimiter -Header ($IndexFile[0] -split $IndexD
 	}
 }
 foreach ($RemoteRepositoryArchive in $RulesPullList.Keys) {
-	[string]$ArchivePath = "\tmp\$($RemoteRepositoryArchive -replace '[\/.:]+', '-')"
+	[string]$ArchivePath = ".\rules\$($RemoteRepositoryArchive -replace '[\/.:]+', '-')"
+	[string]$ArchiveFile = "$ArchivePath.zip"
 	try {
-		Invoke-WebRequest -Method Get -Uri "$RemoteRepositoryArchive.zip" -UseBasicParsing -OutFile "$ArchivePath.zip"
+		Invoke-WebRequest -Method Get -Uri "$RemoteRepositoryArchive.zip" -UseBasicParsing -OutFile $ArchiveFile -Verbose
 	} catch {
 		Write-Error -Message "Cannot fetch `"$RemoteRepositoryArchive`"!"
 		continue
 	}
-	Expand-Archive -Path "$ArchivePath.zip" -DestinationPath $ArchivePath
-	Remove-Item -Path "$ArchivePath.zip" -Force
+	Expand-Archive -Path $ArchiveFile -DestinationPath $ArchivePath
+	Remove-Item -Path $ArchiveFile -Force
 	[string]$ArchiveAdditionalFolder = Join-Path -Path $ArchivePath -ChildPath (Get-ChildItem -Path $ArchivePath -Name)
 	$RulesPullList[$RemoteRepositoryArchive].GetEnumerator() | ForEach-Object -Process {
-		Copy-Item -Path (Join-Path -Path $ArchiveAdditionalFolder -ChildPath $_.Name) -Destination "$PSScriptRoot\rules\$($_.Value)"
+		Copy-Item -Path (Join-Path -Path $ArchiveAdditionalFolder -ChildPath $_.Name) -Destination ".\rules\$($_.Value)"
 	}
 	Get-ChildItem -Path $ArchivePath -Force -Recurse | Remove-Item -Force
 }
