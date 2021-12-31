@@ -1,3 +1,4 @@
+[string]$RulesDirectory = '\opt\hugoalh\scan-virus-ghaction\yara\rules\'
 [hashtable]$RulesList = @{}
 [string]$IndexDelimiter = "`t"
 [string[]]$IndexFile = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath '.\index.tsv') -Encoding 'utf8NoBOM'
@@ -21,7 +22,9 @@ foreach ($RemoteRepositoryArchive in $RulesList.Keys) {
 	Remove-Item -Path $ArchiveFile -Force
 	[string]$ArchiveAdditionalFolder = Join-Path -Path $ArchivePath -ChildPath (Get-ChildItem -Path $ArchivePath -Name)
 	$RulesList[$RemoteRepositoryArchive].GetEnumerator() | ForEach-Object -Process {
-		Copy-Item -Path (Join-Path -Path $ArchiveAdditionalFolder -ChildPath $_.Name) -Destination "\opt\hugoalh\scan-virus-ghaction\yara\rules\$($_.Value)"
+		[string]$RuleDestinationPath = "$($RulesDirectory)$($_.Value)"
+		New-Item -Path (Split-Path -Path $RuleDestinationPath -Parent) -ItemType Directory
+		Copy-Item -Path (Join-Path -Path $ArchiveAdditionalFolder -ChildPath $_.Name) -Destination $RuleDestinationPath
 	}
 	Get-ChildItem -Path $ArchivePath -Force -Recurse | Remove-Item -Force
 }

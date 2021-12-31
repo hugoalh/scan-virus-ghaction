@@ -1,5 +1,4 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope Local
-$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara\rules.yarac'
 function Get-InputList {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Name
@@ -122,9 +121,10 @@ function Invoke-ScanVirus {
 			Write-GHActionsError -Message "Unexpected ClamDScan result ($Session): $ClamDScanErrorCode!`n$ClamDScanResult"
 		}
 	}
+	<#
 	$YARAResult = $null
 	try {
-		$YARAResult = $(yara --compiled-rules $YARARulesPath --recursive ./)
+		$YARAResult = $(yara --compiled-rules $YARARulesPath --recursive ./) -join "`n"
 	} catch {
 		Write-GHActionsFail -Message "Unable to execute YARA ($Session)!"
 	}
@@ -139,6 +139,7 @@ function Invoke-ScanVirus {
 			Write-GHActionsError -Message "Unexpected YARA result ($Session): $YARAErrorCode!`n$YARAResult"
 		}
 	}
+	#>
 	Exit-GHActionsLogGroup
 }
 if ($Integrate -match '^npm:') {
