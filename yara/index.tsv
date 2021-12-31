@@ -985,7 +985,6 @@ neo23x0-generic-anomalies	Florian Roth (Neo23x0)	TRUE	neo23x0/generic_anomalies.
 neo23x0-generic-cryptors	Florian Roth (Neo23x0)	TRUE	neo23x0/generic_cryptors.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_cryptors.yar
 neo23x0-generic-dumps	Florian Roth (Neo23x0)	TRUE	neo23x0/generic_dumps.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_dumps.yar
 neo23x0-generic-exe2hex-payload	Florian Roth (Neo23x0)	TRUE	neo23x0/generic_exe2hex_payload.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/generic_exe2hex_payload.yar
-neo23x0-last month	Florian Roth (Neo23x0)	TRUE	neo23x0/last month	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/last month
 neo23x0-mal-avemaria-rat	Florian Roth (Neo23x0)	TRUE	neo23x0/mal_avemaria_rat.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_avemaria_rat.yar
 neo23x0-mal-codecov-hack	Florian Roth (Neo23x0)	TRUE	neo23x0/mal_codecov_hack.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_codecov_hack.yar
 neo23x0-mal-crime-unknown	Florian Roth (Neo23x0)	TRUE	neo23x0/mal_crime_unknown.yar	https://github.com/Neo23x0/signature-base	refs/heads/master	yara/mal_crime_unknown.yar

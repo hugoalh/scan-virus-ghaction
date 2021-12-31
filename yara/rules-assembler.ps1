@@ -13,7 +13,7 @@ ConvertFrom-Csv -Delimiter $IndexDelimiter -Header ($IndexFile[0] -split $IndexD
 	}
 }
 foreach ($RemoteRepositoryArchive in $RulesPullList.Keys) {
-	[string]$ArchivePath = "$env:TEMP\$($RemoteRepositoryArchive -replace '[\/.:]+', '-')"
+	[string]$ArchivePath = "\tmp\$($RemoteRepositoryArchive -replace '[\/.:]+', '-')"
 	try {
 		Invoke-WebRequest -Method Get -Uri "$RemoteRepositoryArchive.zip" -UseBasicParsing -OutFile "$ArchivePath.zip"
 	} catch {
