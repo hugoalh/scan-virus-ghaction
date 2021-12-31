@@ -12,6 +12,7 @@ ConvertFrom-Csv -Delimiter $IndexDelimiter -Header ($IndexFile[0] -split $IndexD
 		$RulesPullList[$RemoteRepositoryArchive][$_.remote_path] = $_.local
 	}
 }
+New-Item -ItemType Directory -Path .\ -Name rules
 foreach ($RemoteRepositoryArchive in $RulesPullList.Keys) {
 	[string]$ArchivePath = ".\rules\$($RemoteRepositoryArchive -replace '[\/.:]+', '-')"
 	[string]$ArchiveFile = "$ArchivePath.zip"
