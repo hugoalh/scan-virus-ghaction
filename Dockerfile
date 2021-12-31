@@ -13,14 +13,14 @@ ENV \
 COPY --from=setup-1 /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
-RUN ["pwsh", "-C", "Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -Verbose"]
-RUN ["pwsh", "-C", "Install-Module -Name PowerShellGet -Scope AllUsers -AcceptLicense -Verbose"]
-RUN ["pwsh", "-C", "Update-Module -Scope AllUsers -AcceptLicense -Verbose"]
-RUN ["pwsh", "-C", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope AllUsers -AcceptLicense -Verbose"]
 COPY alpine-repositories /etc/apk/repositories
 RUN ["apk", "update"]
 RUN ["apk", "upgrade"]
 RUN ["apk", "add", "--allow-untrusted", "--no-cache", "ca-certificates", "clamav@edgecommunity", "clamav-clamdscan@edgecommunity", "clamav-daemon@edgecommunity", "clamav-db@edgecommunity", "clamav-doc@edgecommunity", "clamav-libs@edgecommunity", "clamav-libunrar@edgecommunity", "clamav-milter@edgecommunity", "clamav-scanner@edgecommunity", "curl", "freshclam@edgecommunity", "git@edge", "icu-libs", "krb5-libs", "less", "libgcc", "libintl", "libssl1.1", "libstdc++", "lttng-ust@edge", "ncurses-terminfo-base", "openssh-client@edge", "tzdata", "userspace-rcu", "yara@edgetest", "zlib"]
+RUN ["pwsh", "-C", "Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -Verbose"]
+RUN ["pwsh", "-C", "Install-Module -Name PowerShellGet -Scope AllUsers -AcceptLicense -Verbose"]
+RUN ["pwsh", "-C", "Update-Module -Scope AllUsers -AcceptLicense -Verbose"]
+RUN ["pwsh", "-C", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope AllUsers -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam"]
 FROM alpine:3.15 AS yara-rules-assembler
