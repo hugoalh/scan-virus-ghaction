@@ -16,9 +16,9 @@ foreach ($RemoteRepositoryArchive in $RulesPullList.Keys) {
 	[string]$ArchivePath = ".\rules\$($RemoteRepositoryArchive -replace '[\/.:]+', '-')"
 	[string]$ArchiveFile = "$ArchivePath.zip"
 	try {
-		Invoke-WebRequest -Method Get -Uri "$RemoteRepositoryArchive.zip" -UseBasicParsing -OutFile $ArchiveFile -Verbose
+		Invoke-WebRequest -Method Get -Uri "$RemoteRepositoryArchive.zip" -OutFile $ArchiveFile -Verbose
 	} catch {
-		Write-Error -Message "Cannot fetch `"$RemoteRepositoryArchive`"!"
+		Write-Error -Message "Cannot fetch `"$RemoteRepositoryArchive.zip`"!"
 		continue
 	}
 	Expand-Archive -Path $ArchiveFile -DestinationPath $ArchivePath
