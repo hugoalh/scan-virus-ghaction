@@ -1,16 +1,16 @@
-FROM alpine:3.15 AS setup-1
+FROM alpine:3.15 AS extract-powershell-archive
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/powershell-7.2.1-linux-alpine-x64.tar.gz /tmp/powershell-7.2.1-linux-alpine-x64.tar.gz
 RUN ["mkdir", "-p", "/opt/microsoft/powershell/7"]
 RUN ["tar", "zxf", "/tmp/powershell-7.2.1-linux-alpine-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
-FROM alpine:3.15 AS setup-2
+FROM alpine:3.15 AS setup-software
 ENV \
 	DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
 	LANG=en_US.UTF-8 \
 	LC_ALL=en_US.UTF-8 \
 	PS_INSTALL_FOLDER=/opt/microsoft/powershell/7 \
 	PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
-COPY --from=setup-1 /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
+COPY --from=extract-powershell-archive /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 COPY alpine-repositories /etc/apk/repositories
@@ -24,14 +24,14 @@ RUN ["pwsh", "-C", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope A
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam"]
 FROM alpine:3.15 AS yara-rules-assembler
-COPY --from=setup-2 / /
+COPY --from=setup-software / /
 COPY yara/index.tsv yara/rules-assembler.ps1 /opt/hugoalh/scan-virus-ghaction/yara/
 RUN ["mkdir", "-p", "/opt/hugoalh/scan-virus-ghaction/yara/rules"]
 RUN ["mkdir", "-p", "/tmp"]
 RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/yara/rules-assembler.ps1"]
 FROM alpine:3.15 AS main
-COPY --from=setup-2 / /
+COPY --from=setup-software / /
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
-COPY yara/index.tsv yara/rules-assembler.ps1 /opt/hugoalh/scan-virus-ghaction/yara/
+COPY yara/index.tsv /opt/hugoalh/scan-virus-ghaction/yara/
 COPY --from=yara-rules-assembler /opt/hugoalh/scan-virus-ghaction/yara/rules /opt/hugoalh/scan-virus-ghaction/yara/rules
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]

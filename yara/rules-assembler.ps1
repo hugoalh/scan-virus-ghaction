@@ -2,7 +2,7 @@
 [hashtable]$RulesList = @{}
 [string]$IndexDelimiter = "`t"
 [string[]]$IndexFile = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath '.\index.tsv') -Encoding 'utf8NoBOM'
-ConvertFrom-Csv -InputObject $IndexFile[1..$IndexFile.Count] -Delimiter $IndexDelimiter -Header ($IndexFile[0] -split $IndexDelimiter) | Where-Object -Property 'enable' -EQ 'TRUE' | ForEach-Object -Process {
+ConvertFrom-Csv -InputObject $IndexFile[1..$IndexFile.Count] -Delimiter $IndexDelimiter -Header ($IndexFile[0] -split $IndexDelimiter) | ForEach-Object -Process {
 	[string]$RemoteRepositoryArchive = "$($_.remote_repository)/archive/$($_.remote_commit)"
 	if ($RulesList.Contains($RemoteRepositoryArchive) -eq $false) {
 		$RulesList[$RemoteRepositoryArchive] = @{}
@@ -23,8 +23,12 @@ foreach ($RemoteRepositoryArchive in $RulesList.Keys) {
 	[string]$ArchiveAdditionalFolder = Join-Path -Path $ArchivePath -ChildPath (Get-ChildItem -Path $ArchivePath -Name)
 	$RulesList[$RemoteRepositoryArchive].GetEnumerator() | ForEach-Object -Process {
 		[string]$RuleDestinationPath = "$($RulesDirectory)$($_.Value)"
-		New-Item -Path (Split-Path -Path $RuleDestinationPath -Parent) -ItemType Directory
+		[string]$RuleDestinationDirectory = Split-Path -Path $RuleDestinationPath -Parent
+		if ((Test-Path -Path $RuleDestinationDirectory -PathType Container) -eq $false) {
+			New-Item -Path $RuleDestinationDirectory -ItemType Directory
+		}
 		Copy-Item -Path (Join-Path -Path $ArchiveAdditionalFolder -ChildPath $_.Name) -Destination $RuleDestinationPath
 	}
 	Get-ChildItem -Path $ArchivePath -Force -Recurse | Remove-Item -Force
 }
+Get-ChildItem -Path $RulesDirectory -Recurse -Force -Name | Write-Verbose
