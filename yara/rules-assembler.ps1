@@ -29,6 +29,7 @@ foreach ($RemoteRepositoryArchive in $RulesList.Keys) {
 		}
 		Copy-Item -Path (Join-Path -Path $ArchiveAdditionalFolder -ChildPath $_.Name) -Destination $RuleDestinationPath
 	}
-	Get-ChildItem -Path $ArchivePath -Recurse -Force -Name | Remove-Item
+	Get-ChildItem -Path $ArchivePath -Recurse -Force -Name | ForEach-Object -Process {
+		return Join-Path -Path $ArchivePath -ChildPath $_
+	} | Remove-Item
 }
-Get-ChildItem -Path $RulesDirectory -Recurse -Force -Name

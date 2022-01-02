@@ -144,11 +144,11 @@ function Invoke-ScanVirus {
 }
 if ($Integrate -match '^npm:') {
 	Write-Host -Object 'Import NPM information.'
-	[string[]]$UselessElements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
+	[string[]]$UselessElements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force -Name
 	if ($UselessElements.Count -gt 0) {
 		Write-GHActionsWarning -Message 'NPM integration require a clean workspace!'
 		Write-Host -Object 'Clean workspace.'
-		$UselessElements | Remove-Item -Force
+		$UselessElements | ForEach-Object -Process { return Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_ } | Remove-Item -Force
 	}
 	[string]$NPMPackageName = $Integrate -replace '^npm:', ''
 	[string]$NPMPackageNameSafe = $NPMPackageName -replace '^@', '' -replace '\/', '-'
