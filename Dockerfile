@@ -22,7 +22,7 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -Scope 'AllUsers'
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
-RUN ["freshclam"]
+RUN ["freshclam", "--verbose"]
 FROM alpine:3.15 AS yara-rules-assembler
 COPY --from=setup-software / /
 COPY yara/index.tsv yara/rules-assembler.ps1 /opt/hugoalh/scan-virus-ghaction/yara/

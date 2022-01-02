@@ -1,13 +1,13 @@
-Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope Local
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 function Get-InputList {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Name
 	)
-	$Value = Get-GHActionsInput -Name $Name -Require -Trim
+	[string]$Value = Get-GHActionsInput -Name $Name -Require -Trim
 	switch ($Value) {
-		{$_ -in @(0, '0', 'none')} { return 0 }
-		{$_ -in @(1, '1', 'debug')} { return 1 }
-		{$_ -in @(2, '2', 'log')} { return 2 }
+		{($_ -eq '0') -or ($_ -eq 'none')} { return 0 }
+		{($_ -eq '1') -or ($_ -eq 'debug')} { return 1 }
+		{($_ -eq '2') -or ($_ -eq 'log')} { return 2 }
 	}
 	Write-GHActionsFail -Message "Input ``$Name``'s value is not in the list!"
 }
@@ -85,7 +85,7 @@ function Invoke-ScanVirus {
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
 	Enter-GHActionsLogGroup -Title "Scan $Session."
-	[string[]]$Elements = Get-ChildItem -Force -Name -Path $env:GITHUB_WORKSPACE -Recurse
+	[string[]]$Elements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force -Name
 	[uint]$ElementsCount = $Elements.Longlength
 	[string]$ElementsListConsole = "Elements ($Session): $ElementsCount`n----------------"
 	[string]$ElementsListScan = ''
@@ -94,7 +94,7 @@ function Invoke-ScanVirus {
 		$ElementsListScan += "$(Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element)`n"
 		if ($ListElementsHashes -and (Test-Path -Path $Element -PathType Leaf)) {
 			foreach ($Algorithm in @('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')) {
-				$ElementsListConsole += "`n  - $($Algorithm): $((Get-FileHash -Algorithm $Algorithm -Path $Element).Hash)"
+				$ElementsListConsole += "`n  - $($Algorithm): $((Get-FileHash -Path $Element -Algorithm $Algorithm).Hash)"
 			}
 		}
 	}
@@ -102,7 +102,7 @@ function Invoke-ScanVirus {
 	if ($ListElements -gt 0) {
 		Write-Host -Object ''
 	}
-	Set-Content -Encoding utf8NoBOM -NoNewline -Path $ElementsScanListPath -Value $ElementsListScan.Trim()
+	Set-Content -Path $ElementsScanListPath -Value $ElementsListScan.Trim() -NoNewline -Encoding utf8NoBOM
 	$script:TotalScanElements += $ElementsCount
 	$ClamDScanResult = $null
 	try {
@@ -148,18 +148,20 @@ if ($Integrate -match '^npm:') {
 	if ($UselessElements.Count -gt 0) {
 		Write-GHActionsWarning -Message 'NPM integration require a clean workspace!'
 		Write-Host -Object 'Clean workspace.'
-		$UselessElements | ForEach-Object -Process { return Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_ } | Remove-Item -Force
+		$UselessElements | ForEach-Object -Process {
+			return Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_
+		} | Remove-Item -Force -Confirm:$false
 	}
 	[string]$NPMPackageName = $Integrate -replace '^npm:', ''
 	[string]$NPMPackageNameSafe = $NPMPackageName -replace '^@', '' -replace '\/', '-'
 	Write-TriageLog -Condition $ListMiscellaneousResults -Message "NPM Package: $NPMPackageName"
 	$NPMRegistryResponse = $null
 	try {
-		$NPMRegistryResponse = Invoke-WebRequest -Method Get -Uri "https://registry.npmjs.org/$NPMPackageName" -UseBasicParsing
+		$NPMRegistryResponse = Invoke-WebRequest -Uri "https://registry.npmjs.org/$NPMPackageName" -UseBasicParsing -Method Get
 	} catch {
 		Write-GHActionsFail -Message "NPM package `"$PackageName`" not found!`n$($_.Exception.Message)"
 	}
-	[pscustomobject]$NPMPackageContent = $NPMRegistryResponse.Content | ConvertFrom-Json -Depth 100 -ErrorAction Stop
+	[pscustomobject]$NPMPackageContent = ($NPMRegistryResponse.Content | ConvertFrom-Json -ErrorAction Stop)
 	[string[]]$NPMPackageVersionsList = @()
 	[hashtable]$NPMPackageVersionsTarballs = [ordered]@{}
 	$NPMPackageContent.versions.PSObject.Properties | ForEach-Object -Process {
@@ -174,19 +176,19 @@ if ($Integrate -match '^npm:') {
 		[string]$NPMPackageCurrentTarballPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $NPMPackageCurrentTarball
 		Write-Host -Object "Import $NPMPackageCurrentSession."
 		try {
-			Invoke-WebRequest -Method Get -OutFile $NPMPackageCurrentTarballPath -Uri "$($NPMPackageVersionsTarballs[$NPMPackageCurrentVersion])" -UseBasicParsing
+			Invoke-WebRequest -Uri "$($NPMPackageVersionsTarballs[$NPMPackageCurrentVersion])" -UseBasicParsing -Method Get -OutFile $NPMPackageCurrentTarballPath
 		} catch {
 			Write-GHActionsError -Message "Unable to import $NPMPackageCurrentSession!"
 			continue
 		}
 		Invoke-ScanVirus -Session $NPMPackageCurrentSession
-		Remove-Item -Force -Path $NPMPackageCurrentTarballPath
+		Remove-Item -Path $NPMPackageCurrentTarballPath -Force -Confirm:$false
 	}
 } else {
 	Invoke-ScanVirus -Session 'current workspace'
 	if ($Integrate -eq 'git') {
 		Write-Host -Object 'Import Git information.'
-		if (Test-Path -Path .\.git) {
+		if (Test-Path -Path '.\.git') {
 			$GitLogResult = $null
 			try {
 				$GitLogResult = $(git --no-pager log --all --format=%H --reflog --reverse) -join "`n"
@@ -224,9 +226,9 @@ if ($Integrate -match '^npm:') {
 	}
 }
 Write-TriageLog -Condition $ListMiscellaneousResults -Message "Total scan elements: $TotalScanElements"
-Remove-Item -Path $ElementsScanListPath
+Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
 Write-Host -Object 'Stop ClamAV daemon.'
-Get-Process -Name *clamd* | Stop-Process
+Get-Process -Name '*clamd*' | Stop-Process
 if ($ConclusionFail) {
 	exit 1
 }
