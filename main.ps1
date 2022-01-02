@@ -148,9 +148,7 @@ if ($Integrate -match '^npm:') {
 	if ($UselessElements.Count -gt 0) {
 		Write-GHActionsWarning -Message 'NPM integration require a clean workspace!'
 		Write-Host -Object 'Clean workspace.'
-		$UselessElements | ForEach-Object -Process {
-			return Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_
-		} | Remove-Item -Force -Confirm:$false
+		$UselessElements | Remove-Item -Recurse -Force -Confirm:$false
 	}
 	[string]$NPMPackageName = $Integrate -replace '^npm:', ''
 	[string]$NPMPackageNameSafe = $NPMPackageName -replace '^@', '' -replace '\/', '-'
