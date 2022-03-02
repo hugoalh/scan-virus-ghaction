@@ -45,7 +45,7 @@ jobs:
       - "parse-inputs"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v2.4.0"
+        uses: "actions/checkout@v3"
         with:
           fetch-depth: "${{needs.parse-inputs.outputs.depth}}"
       - name: "${{needs.parse-inputs.outputs.title}} Scan Repository"
