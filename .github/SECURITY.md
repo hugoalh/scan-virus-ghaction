@@ -5,7 +5,7 @@
 > | **Legend** | **Description** |
 > |:-:|:--|
 > | L | **LTS:** Long term supported. |
-> | ✔ | **Yes:** Supported. |
+> | ✔ | **Active / Current:** Currently supported. |
 > | 👎{🐛} | **Partly (Issue):** Partly supported due to confirmed contains bugs and/or issues. |
 > | 👎{🧓} | **Partly (Old):** Partly supported due to deprecated by newer versions. |
 > | ❌{🐛} | **No (Issue):** Not supported due to confirmed contains bugs and/or issues. |
@@ -13,8 +13,8 @@
 
 | **Tag / Version** | **Target** | **Support** |
 |:-:|:-:|:-:|
-| v0.4.X | Docker | L |
-| < v0.4.0 | Docker | ❌{🐛🧓} |
+| v0.X.X | Docker | L |
+| < v0.5.0 | Docker | ❌{🐛🧓} |
 
 ## Report Vulnerability
 

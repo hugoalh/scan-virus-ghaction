@@ -1,5 +1,5 @@
 # $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-name: "Scan Virus - Specify NPM Packages"
+name: "Scan Virus - Specify"
 on:
   workflow_dispatch:
     inputs:
@@ -47,7 +47,7 @@ jobs:
       matrix: "${{fromJSON(needs.parse-inputs.outputs.matrix)}}"
     steps:
       - name: "Scan NPM Package ${{matrix.packages}}"
-        uses: "hugoalh/scan-virus-ghaction@main"
+        uses: "hugoalh/scan-virus-ghaction@v0.4.2"
         with:
           integrate: "npm:${{matrix.packages}}"
           list_elements: "${{github.event.inputs.list_elements}}"

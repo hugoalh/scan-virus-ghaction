@@ -8,7 +8,8 @@ updates:
       time: "00:00"
       timezone: "Etc/UTC"
     labels:
-      - "Status/Unread 🔵"
+      - "Platform/Docker 🐳"
+      - "Status/Pending 🔵"
       - "Type/Dependency 📦"
     open-pull-requests-limit: 100
     pull-request-branch-name:
@@ -21,7 +22,8 @@ updates:
       time: "00:00"
       timezone: "Etc/UTC"
     labels:
-      - "Status/Unread 🔵"
+      - "Platform/GitHub/Actions :octocat:"
+      - "Status/Pending 🔵"
       - "Type/Dependency 📦"
     open-pull-requests-limit: 100
     pull-request-branch-name:

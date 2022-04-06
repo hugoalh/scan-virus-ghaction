@@ -2,7 +2,7 @@
 name: "Documentation Issue (Form)"
 description: "Report a documentation issue."
 labels:
-  - "Status/Unread 🔵"
+  - "Status/Pending 🔵"
   - "Type/Documentation 📚"
 body:
   - type: "textarea"

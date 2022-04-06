@@ -23,7 +23,7 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 
 - [ClamAV](https://www.clamav.net)
   > ClamAV (by [Cisco](https://www.cisco.com)) is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
-- **(>= v0.5.0)** [YARA](http://virustotal.github.io/yara)
+- **(Not Available Yet)** [YARA](http://virustotal.github.io/yara)
   > YARA (by [VirusTotal](https://www.virustotal.com)) is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
 
 ### ⚠ Disclaimer
@@ -37,7 +37,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.4.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.5.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
@@ -55,64 +55,22 @@ Require Software:
 
 ### 📥 Input
 
-#### `clamav`
+#### `target`
 
-**(>= v0.5.0) \[Optional\]** `<boolean = true>` Use ClamAV.
+**\[Optional\]** `<string = "./">` Target.
 
-#### `yara`
+- **Local (`"./"`):** Workspace.
+  > **💡 Hint:** Suitable for:
+  > - previously checkouted repository via `actions/checkout`
+  > - previously prepared files to workspace
+- **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or each line.
+  > **⚠ Important:** Require a clean workspace.
 
-**(>= v0.5.0) \[Optional\]** `<boolean = true>` Use YARA.
+#### `deep`
 
-#### `integrate`
+**\[Optional\]** `<boolean = false>` Scan deeper:
 
-**\[Optional\]** `<string = "none">` Integrate with service.
-
-- **`"none"`:** No integration.
-- **`"git"`:** Git integration with previously checkouted repository via `actions/checkout`.
-- **`"npm:<Package>"`:** NPM integration with package `<Package>`.
-  > **⚠ Important:**
-  >
-  > - This only support packages which inside the official registry.
-  > - This require a clean workspace.
-
-#### `list_elements`
-
-**\[Optional\]** `<(number | string) = "none">` List elements.
-
-- **`0` / `"none"`:** Not list.
-- **`1` / `"debug"`:** List at debug level.
-- **`2` / `"log"`:** List at log level.
-
-> **⚠ Important:** Enable this list will significantly increase the log size.
-
-#### `list_elementshashes`
-
-**\[Optional\]** `<boolean = false>` List elements' hashes under itself.
-
-> **⚠ Important:**
->
-> - Enable this list will significantly increase the log size.
-> - This list will list at the same level as input `list_elements`.
-
-#### `list_miscellaneousresults`
-
-**\[Optional\]** `<(number | string) = "debug">` List miscellaneous results.
-
-- **`0` / `"none"`:** Not list.
-- **`1` / `"debug"`:** List at debug level.
-- **`2` / `"log"`:** List at log level.
-
-> **⚠ Important:** If the result is unexpected, it is always list at error level.
-
-#### `list_scanresults`
-
-**\[Optional\]** `<(number | string) = "debug">` List scan results.
-
-- **`0` / `"none"`:** Not list.
-- **`1` / `"debug"`:** List at debug level.
-- **`2` / `"log"`:** List at log level.
-
-> **⚠ Important:** If the result is unexpected, it is always list at error level.
+- For Git repository, scan every commits.
 
 ### 📤 Output
 
@@ -127,13 +85,11 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v2.4.0"
+        uses: "actions/checkout@v3.0.0"
         with:
           fetch-depth: 0
-      - name: "Depth Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.4.0"
-        with:
-          integrate: "git"
+      - name: "Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction@v0.5.0"
 ```
 
 ### Guide

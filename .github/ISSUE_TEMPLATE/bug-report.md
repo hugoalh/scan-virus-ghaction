@@ -1,7 +1,7 @@
 ---
 name: "Bug Report (Markdown)"
 about: "Report a bug."
-labels: "Status/Unread 🔵,Type/Bug 🐛"
+labels: "Status/Pending 🔵,Type/Bug 🐛"
 ---
 > ### Suggested Content List
 >

@@ -2,7 +2,7 @@
 name: "Feature Request (Form)"
 description: "Suggest an idea."
 labels:
-  - "Status/Unread 🔵"
+  - "Status/Pending 🔵"
   - "Type/Enhancement ➕"
 body:
   - type: "textarea"
