@@ -34,7 +34,7 @@ if ($Target -match '^\.\/$') {
 	target_list = $TargetList
 	cache = $Cache
 	deep = $Deep
-} | Format-Table -AutoSize -Wrap
+} | Format-Table -Wrap
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
 	Write-GHActionsFail -Message "Input ``target`` has no valid target!"

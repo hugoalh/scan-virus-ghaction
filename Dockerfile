@@ -1,8 +1,8 @@
 FROM alpine:3.15 AS extract-powershell
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
-ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/powershell-7.2.1-linux-alpine-x64.tar.gz /tmp/powershell-7.2.1-linux-alpine-x64.tar.gz
+ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.2/powershell-7.2.2-linux-alpine-x64.tar.gz /tmp/powershell-7.2.2-linux-alpine-x64.tar.gz
 RUN ["mkdir", "-p", "/opt/microsoft/powershell/7"]
-RUN ["tar", "zxf", "/tmp/powershell-7.2.1-linux-alpine-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
+RUN ["tar", "zxf", "/tmp/powershell-7.2.2-linux-alpine-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
 FROM alpine:3.15 AS setup
 ENV \
