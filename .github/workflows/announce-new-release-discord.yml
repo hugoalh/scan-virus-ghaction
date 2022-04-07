@@ -35,7 +35,7 @@ jobs:
             {
               "embeds": [
                 {
-                  "description": "**__Scan Virus (GitHub Action)__**",
+                  "description": "**__Scan Virus (GitHub Action)__**\n${{github.event.repository.description}}",
                   "color": "16,116,231",
                   "thumbnail": {
                     "url": "https://i.imgur.com/knmLbFg.png"
