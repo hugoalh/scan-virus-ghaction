@@ -40,6 +40,7 @@ if ($Target -match '^\.\/$') {
 		Write-GHActionsFail -Message "Input ``target`` has no valid target!"
 	}
 }
+[bool]$Cache = [bool]::Parse((Get-GHActionsInput -Name 'cache' -Require -Trim))
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Update image software.'
@@ -77,21 +78,26 @@ function Invoke-ScanVirus {
 		} else {
 			[string]$ElementHash = ''
 			foreach ($Algorithm in @('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')) {
-				$ElementHash += (Get-FileHash -Path $Element -Algorithm $Algorithm).Hash
+				$ElementHash += (Get-FileHash -Path $ElementFullPath -Algorithm $Algorithm).Hash
 			}
 			$ElementListDisplay.Hash = $ElementHash
-			if ($ElementsHashStorage -contains $ElementHash) {
+			if (($ElementsHashStorage -ccontains "$Element==$ElementHash") -and $Cache) {
 				$ElementListDisplay.Scan = $false
 			} else {
 				$ElementListDisplay.Scan = $true
 				$ElementsListScan += $ElementFullPath
 			}
-			$ElementsHashStorage += $ElementHash
+			$script:ElementsHashStorage += "$Element==$ElementHash"
 		}
 		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	$ElementsListDisplay | Format-Table -Property @('Path', 'Directory', 'Scan', 'Hash') -AutoSize -Wrap
+	$ElementsListDisplay | Format-Table -Property @(
+		@{Expression='Path'; Width=20},
+		@{Expression='Directory'; Width=9},
+		@{Expression='Scan'; Width=6},
+		@{Expression='Hash'; Width=40}
+	) -Wrap
 	Exit-GHActionsLogGroup
 	if ($ElementsListScan.Length -gt 0) {
 		Set-Content -Path $ElementsScanListPath -Value ($ElementsListScan -join "`n") -NoNewline -Encoding UTF8NoBOM

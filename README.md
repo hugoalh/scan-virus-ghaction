@@ -63,14 +63,18 @@ Require Software:
   > **💡 Hint:** Suitable for:
   > - previously checkouted repository via `actions/checkout`
   > - previously prepared files to workspace
-- **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or each line.
+- **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or per line.
   > **⚠ Important:** Require a clean workspace.
+
+#### `cache`
+
+**\[Optional\]** `<boolean = false>` Cache data to reduce repeat alarms and scan time in each sessions.
+
+> **⚠ Important:** When enabled this, if it has alarm and you need to check affected sessions, it is highly recommanded to use diff tool.
 
 #### `deep`
 
-**\[Optional\]** `<boolean = false>` Scan deeper:
-
-- For Git repository, scan every commits.
+**\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits.
 
 ### 📤 Output
 

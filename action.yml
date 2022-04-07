@@ -7,6 +7,10 @@ inputs:
     description: "{string} Target."
     required: false
     default: "./"
+  cache:
+    description: "{boolean} Cache data."
+    required: false
+    default: "false"
   deep:
     description: "{boolean} Scan deeper."
     required: false

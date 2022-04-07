@@ -25,4 +25,5 @@ jobs:
       - name: "Scan Repository"
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
+          cache: "true"
           deep: "true"
