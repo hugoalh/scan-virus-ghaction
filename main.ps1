@@ -13,36 +13,32 @@ function Test-StringIsURL {
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Target = Get-GHActionsInput -Name 'target' -Require -Trim
 if ($Target -match '^\.\/$') {
-	Write-GHActionsDebug -Message 'Target: Local'
 	$TargetIsLocal = $true
 } else {
-	[string[]]$TargetListFault = @()
-	[string[]]$TargetListRaw = $Target -split "\s*;\s*|\s*\r?\n\s*"
+	[string[]]$TargetListRaw = $Target -split ";|\r?\n"
 	$TargetListRaw | ForEach-Object -Process {
 		[string]$TargetListRawCurrent = $_.Trim()
 		if ($TargetListRawCurrent.Length -gt 0) {
 			if (Test-StringIsURL -InputObject $TargetListRawCurrent) {
 				$TargetList += $TargetListRawCurrent
 			} else {
-				$TargetListFault += $TargetListRawCurrent
+				Write-GHActionsWarning -Message "Input ``target``'s value ``$TargetListRawCurrent`` is not a valid target!"
 			}
 		}
-	}
-	if ($TargetList.Length -eq 0) {
-		Write-GHActionsDebug -Message 'Target: Network * 0'
-	} else {
-		Write-GHActionsDebug -Message "Target: Network * $($TargetList.Length) ($($TargetList -join '; '))"
-	}
-	$TargetListFault | ForEach-Object -Process {
-		Write-GHActionsWarning -Message "Input ``target``'s value ``$_`` is not a valid target!"
-	}
-	if ($TargetList.Length -eq 0) {
-		Write-GHActionsFail -Message "Input ``target`` has no valid target!"
 	}
 }
 [bool]$Cache = [bool]::Parse((Get-GHActionsInput -Name 'cache' -Require -Trim))
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
+[ordered]@{
+	target_isLocal = $TargetIsLocal
+	target_list = $TargetList
+	cache = $Cache
+	deep = $Deep
+} | Format-Table -AutoSize -Wrap
 Exit-GHActionsLogGroup
+if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
+	Write-GHActionsFail -Message "Input ``target`` has no valid target!"
+}
 Enter-GHActionsLogGroup -Title 'Update image software.'
 Invoke-Expression -Command 'apk update' -ErrorAction Stop
 Invoke-Expression -Command 'apk upgrade' -ErrorAction Stop
