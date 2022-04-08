@@ -37,7 +37,7 @@ Write-Host -Object (([ordered]@{
 	target_list = $TargetList
 	cache = $Cache
 	deep = $Deep
-} | Format-Table -AutoSize -Wrap | Out-String) -replace '^(\r?\n)+|(\r?\n)+$', '')
+} | Format-Table -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
 	Write-GHActionsFail -Message "Input ``target`` has no valid target!"
@@ -89,7 +89,7 @@ function Invoke-ScanVirus {
 		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	Write-Host -Object (($ElementsListDisplay | Format-List -Property @('Directory', 'Scan', 'Hash') -GroupBy 'Path' | Out-String) -replace '(\r?\n)+$', '')
+	Write-Host -Object (($ElementsListDisplay | Format-List -Property @('Directory', 'Scan', 'Hash') -GroupBy 'Path' | Out-String) -replace '(?:\r?\n)+$', '')
 	Exit-GHActionsLogGroup
 	$script:TotalElements += $Elements.Length
 	$script:TotalScanElements += $ElementsListScan.Length
