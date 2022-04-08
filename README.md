@@ -60,11 +60,17 @@ Require Software:
 **\[Optional\]** `<string = "./">` Target.
 
 - **Local (`"./"`):** Workspace.
-  > **💡 Hint:** Suitable for:
+  > **💡 Hint:**
+  >
+  > Suitable for:
+  >
   > - previously checkouted repository via `actions/checkout`
   > - previously prepared files to workspace
 - **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or per line.
-  > **⚠ Important:** Require a clean workspace.
+  > **⚠ Important:**
+  >
+  > - Each files have limited size for maximum 4 GB.
+  > - Require a clean workspace.
 
 #### `cache`
 

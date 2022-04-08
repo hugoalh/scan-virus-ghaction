@@ -1,7 +1,10 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction Stop
+[bool]$ConclusionFail = $false
 [string[]]$ElementsHashStorage = @()
 [bool]$TargetIsLocal = $false
 [string[]]$TargetList = @()
+[uint]$TotalElements = 0
+[uint]$TotalScanElements = 0
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -49,9 +52,7 @@ Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
 Invoke-Expression -Command 'clamd' -ErrorAction Stop
 Exit-GHActionsLogGroup
-[bool]$ConclusionFail = $false
 [string]$ElementsScanListPath = (New-TemporaryFile).FullName
-[uint]$TotalScanElements = 0
 function Invoke-ScanVirus {
 	[CmdletBinding()][OutputType([void])]
 	param (
@@ -90,11 +91,12 @@ function Invoke-ScanVirus {
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
 	Write-Host -Object (($ElementsListDisplay | Format-List -Property @('Directory', 'Scan', 'Hash') -GroupBy 'Path' | Out-String) -replace '(\r?\n)+$', '')
 	Exit-GHActionsLogGroup
+	$script:TotalElements += $Elements.Length
+	$script:TotalScanElements += $ElementsListScan.Length
 	if ($ElementsListScan.Length -gt 0) {
 		Set-Content -Path $ElementsScanListPath -Value ($ElementsListScan -join "`n") -NoNewline -Encoding UTF8NoBOM
-		$script:TotalScanElements += $ElementsListScan.Length
 		Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace $env:GITHUB_WORKSPACE, '.'
+		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", ''
 		if ($LASTEXITCODE -eq 1) {
 			Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
 			$script:ConclusionFail = $true
@@ -156,7 +158,7 @@ if ($TargetIsLocal) {
 		Remove-Item -Path $NetworkTemporaryFileFullPath -Force -Confirm:$false
 	}
 }
-Write-Host -Object "Total scan elements: $TotalScanElements"
+Write-Host -Object "Total scan elements: $TotalScanElements/$TotalElements ($($TotalScanElements / $TotalElements * 100)%)"
 Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
 Write-Host -Object 'Stop ClamAV daemon.'
 Get-Process -Name '*clamd*' | Stop-Process
