@@ -33,7 +33,7 @@ jobs:
             }
           }
           if ($NPMPackagesURL.Length -gt 0) {
-            Write-Host -Object "::set-output name=target::$($NPMPackagesURL -join "`n")"
+            Write-Host -Object "::set-output name=target::$($NPMPackagesURL -join ";")"
           } else {
             throw 'No URL resolved!'
           }
