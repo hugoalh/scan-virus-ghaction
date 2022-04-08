@@ -29,12 +29,12 @@ if ($Target -match '^\.\/$') {
 }
 [bool]$Cache = [bool]::Parse((Get-GHActionsInput -Name 'cache' -Require -Trim))
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
-[ordered]@{
+Write-Host -Object (([ordered]@{
 	target_isLocal = $TargetIsLocal
 	target_list = $TargetList
 	cache = $Cache
 	deep = $Deep
-} | Format-Table -Wrap
+} | Format-Table -AutoSize -Wrap | Out-String) -replace '^(\r?\n)+|(\r?\n)+$', '')
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
 	Write-GHActionsFail -Message "Input ``target`` has no valid target!"
@@ -88,18 +88,13 @@ function Invoke-ScanVirus {
 		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	$ElementsListDisplay | Format-Table -Property @(
-		@{Expression='Path'; Width=20},
-		@{Expression='Directory'; Width=9},
-		@{Expression='Scan'; Width=6},
-		@{Expression='Hash'; Width=40}
-	) -Wrap
+	Write-Host -Object (($ElementsListDisplay | Format-List -Property @('Directory', 'Scan', 'Hash') -GroupBy 'Path' | Out-String) -replace '(\r?\n)+$', '')
 	Exit-GHActionsLogGroup
 	if ($ElementsListScan.Length -gt 0) {
 		Set-Content -Path $ElementsScanListPath -Value ($ElementsListScan -join "`n") -NoNewline -Encoding UTF8NoBOM
 		$script:TotalScanElements += $ElementsListScan.Length
 		Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-		Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan"
+		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace $env:GITHUB_WORKSPACE, '.'
 		if ($LASTEXITCODE -eq 1) {
 			Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
 			$script:ConclusionFail = $true
