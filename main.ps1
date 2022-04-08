@@ -33,11 +33,11 @@ if ($Target -match '^\.\/$') {
 [bool]$Cache = [bool]::Parse((Get-GHActionsInput -Name 'cache' -Require -Trim))
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 Write-Host -Object (([ordered]@{
-	target_isLocal = $TargetIsLocal
-	target_list = $TargetList
-	cache = $Cache
-	deep = $Deep
-} | Format-Table -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+	TargetIsLocal = $TargetIsLocal
+	TargetList = $TargetList
+	Cache = $Cache
+	Deep = $Deep
+} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
 	Write-GHActionsFail -Message "Input ``target`` has no valid target!"
