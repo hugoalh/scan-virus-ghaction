@@ -34,7 +34,7 @@ if ($Target -match '^\.\/$') {
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 Write-Host -Object (([ordered]@{
 	TargetIsLocal = $TargetIsLocal
-	TargetList = $TargetList
+	TargetList = $TargetList -join ', '
 	Cache = $Cache
 	Deep = $Deep
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
