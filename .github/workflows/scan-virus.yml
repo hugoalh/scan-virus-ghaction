@@ -23,7 +23,7 @@ jobs:
             $Cache = 'true'
           }
           if ($Deep.Length -eq 0) {
-            $Deep = 'true'
+            $Deep = 'false'
           }
           Write-Host -Object "::set-output name=cache::$Cache"
           Write-Host -Object "::set-output name=deep::$Deep"
