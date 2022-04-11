@@ -7,14 +7,18 @@ inputs:
     description: "{string} Target."
     required: false
     default: "./"
-  cache:
-    description: "{boolean} Cache data."
-    required: false
-    default: "false"
   deep:
     description: "{boolean} Scan deeper."
     required: false
     default: "false"
+  clamav_enable:
+    description: "{boolean} Use ClamAV."
+    required: false
+    default: "true"
+  yara_enable:
+    description: "{boolean} Use YARA."
+    required: false
+    default: "true"
 runs:
   using: "docker"
   image: "../Dockerfile"

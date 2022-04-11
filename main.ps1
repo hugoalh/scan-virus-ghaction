@@ -1,9 +1,7 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction Stop
 [bool]$ConclusionFail = $false
-[string[]]$ElementsHashStorage = @()
 [bool]$TargetIsLocal = $false
 [string[]]$TargetList = @()
-[uint]$TotalElements = 0
 [uint]$TotalScanElements = 0
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
@@ -30,17 +28,19 @@ if ($Target -match '^\.\/$') {
 		}
 	}
 }
-[bool]$Cache = [bool]::Parse((Get-GHActionsInput -Name 'cache' -Require -Trim))
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
+[bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
+[bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
 Write-Host -Object (([ordered]@{
 	TargetIsLocal = $TargetIsLocal
 	TargetList = $TargetList -join ', '
-	Cache = $Cache
 	Deep = $Deep
+	ClamAVEnable = $ClamAVEnable
+	YARAEnable = $YARAEnable
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
-	Write-GHActionsFail -Message "Input ``target`` has no valid target!"
+	Write-GHActionsFail -Message "Input ``target`` does not have valid target!"
 }
 Enter-GHActionsLogGroup -Title 'Update image software.'
 Invoke-Expression -Command 'apk update' -ErrorAction Stop
@@ -52,7 +52,6 @@ Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
 Invoke-Expression -Command 'clamd' -ErrorAction Stop
 Exit-GHActionsLogGroup
-[string]$ElementsScanListPath = (New-TemporaryFile).FullName
 function Invoke-ScanVirus {
 	[CmdletBinding()][OutputType([void])]
 	param (
@@ -64,36 +63,18 @@ function Invoke-ScanVirus {
 	[string[]]$ElementsListScan = @()
 	foreach ($Element in ($Elements | Sort-Object)) {
 		[string]$ElementFullPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element
-		[bool]$ElementIsDirectory = Test-Path -Path $ElementFullPath -PathType Container
-		[hashtable]$ElementListDisplay = @{
-			Path = $Element
-			Directory = $ElementIsDirectory
+		$ElementsListScan += $ElementFullPath
+		$ElementsListDisplay += [pscustomobject]@{
+			Element = $Element
+			IsDirectory = Test-Path -Path $ElementFullPath -PathType Container
 		}
-		if ($ElementIsDirectory) {
-			$ElementListDisplay.Scan = $true
-			$ElementsListScan += $ElementFullPath
-		} else {
-			[string]$ElementHash = ''
-			foreach ($Algorithm in @('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')) {
-				$ElementHash += (Get-FileHash -Path $ElementFullPath -Algorithm $Algorithm).Hash
-			}
-			$ElementListDisplay.Hash = $ElementHash
-			if (($ElementsHashStorage -ccontains "$Element==$ElementHash") -and $Cache) {
-				$ElementListDisplay.Scan = $false
-			} else {
-				$ElementListDisplay.Scan = $true
-				$ElementsListScan += $ElementFullPath
-			}
-			$script:ElementsHashStorage += "$Element==$ElementHash"
-		}
-		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	Write-Host -Object (($ElementsListDisplay | Format-List -Property @('Directory', 'Scan', 'Hash') -GroupBy 'Path' | Out-String) -replace '(?:\r?\n)+$', '')
+	Write-Host -Object (($ElementsListDisplay | Format-Table -Property @('Element', 'IsDirectory') -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 	Exit-GHActionsLogGroup
-	$script:TotalElements += $Elements.Length
-	$script:TotalScanElements += $ElementsListScan.Length
-	if ($ElementsListScan.Length -gt 0) {
+	$script:TotalScanElements += $Elements.Length
+	if ($Elements.Length -gt 0) {
+		[string]$ElementsScanListPath = (New-TemporaryFile).FullName
 		Set-Content -Path $ElementsScanListPath -Value ($ElementsListScan -join "`n") -NoNewline -Encoding UTF8NoBOM
 		Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
 		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", ''
@@ -104,6 +85,7 @@ function Invoke-ScanVirus {
 			Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in $Session!"
 			$script:ConclusionFail = $true
 		}
+		Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
 		Exit-GHActionsLogGroup
 	}
 	Write-Host -Object "End session $Session."
@@ -158,8 +140,7 @@ if ($TargetIsLocal) {
 		Remove-Item -Path $NetworkTemporaryFileFullPath -Force -Confirm:$false
 	}
 }
-Write-Host -Object "Total scan elements: $TotalScanElements/$TotalElements ($($TotalScanElements / $TotalElements * 100)%)"
-Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
+Write-Host -Object "Total scan elements: $TotalScanElements"
 Write-Host -Object 'Stop ClamAV daemon.'
 Get-Process -Name '*clamd*' | Stop-Process
 if ($ConclusionFail) {
