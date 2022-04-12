@@ -100,7 +100,7 @@ function Invoke-ScanVirus {
 			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-			(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsListClamAVPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
+			(Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
 			if ($LASTEXITCODE -eq 1) {
 				Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
 				$script:ConclusionFail = $true
