@@ -163,8 +163,11 @@ if ($TargetIsLocal) {
 }
 Write-Host -Object "Total scan elements: $TotalScanElements"
 Write-Host -Object "Total scan size: $($TotalScanSize / 1TB) TB // $($TotalScanSize / 1GB) GB // $($TotalScanSize / 1MB) MB // $($TotalScanSize / 1KB) KB // $TotalScanSize B"
-Write-Host -Object 'Stop ClamAV daemon.'
-Get-Process -Name '*clamd*' | Stop-Process
+if ($ClamAVEnable) {
+	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
+	Get-Process -Name '*clamd*' | Stop-Process
+	Exit-GHActionsLogGroup
+}
 if ($ConclusionFail) {
 	exit 1
 }

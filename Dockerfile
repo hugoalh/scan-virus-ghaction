@@ -25,7 +25,16 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -S
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 
+FROM blacktop/yara:w-rules AS get-yara-rules
+
+FROM alpine:3.15 AS extract-yara-rules
+COPY --from=setup / /
+COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules
+COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
+RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
+
 FROM alpine:3.15 AS main
 COPY --from=setup / /
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
+COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules.yarac /opt/hugoalh/scan-virus-ghaction/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
