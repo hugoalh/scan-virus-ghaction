@@ -4,6 +4,8 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction S
 [string[]]$TargetList = @()
 [UInt64]$TotalScanElements = 0
 [UInt64]$TotalScanSize = 0
+[string]$YARARulesPath = "$PSScriptRoot/yara-rules"
+[string[]]$YARARules = Get-ChildItem -Path $YARARulesPath -Include '*.yarac' -Name -File
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -38,6 +40,7 @@ Write-Host -Object (([ordered]@{
 	Deep = $Deep
 	ClamAVEnable = $ClamAVEnable
 	YARAEnable = $YARAEnable
+	YARARules = $YARARules -join ', '
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
@@ -66,7 +69,8 @@ function Invoke-ScanVirus {
 	Write-Host -Object "Begin session $Session."
 	[pscustomobject[]]$ElementsRaw = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
 	[pscustomobject[]]$Elements = $ElementsRaw | Sort-Object
-	[string[]]$ElementsListScanFull = $Elements.FullName
+	[string[]]$ElementsListClamAV = @()
+	[string[]]$ElementsListYARA = @()
 	[pscustomobject[]]$ElementsListDisplay = @()
 	$Elements | ForEach-Object {
 		[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
@@ -74,7 +78,9 @@ function Invoke-ScanVirus {
 			Element = $_.FullName -replace "$env:GITHUB_WORKSPACE/", './'
 			Flag = ($ElementIsDirectory ? 'D' : '')
 		}
+		$ElementsListClamAV += $_.FullName
 		if ($ElementIsDirectory -eq $false) {
+			$ElementsListYARA += $_.FullName
 			[UInt64]$ElementSize = $_.Length
 			$ElementListDisplay.Size = $ElementSize
 			$script:TotalScanSize += $ElementSize
@@ -91,10 +97,10 @@ function Invoke-ScanVirus {
 	$script:TotalScanElements += $Elements.Length
 	if ($Elements.Length -gt 0) {
 		if ($ClamAVEnable) {
-			[string]$ElementsScanListPath = (New-TemporaryFile).FullName
-			Set-Content -Path $ElementsScanListPath -Value ($ElementsListScanFull -join "`n") -NoNewline -Encoding UTF8NoBOM
+			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
+			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-			(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
+			(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsListClamAVPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
 			if ($LASTEXITCODE -eq 1) {
 				Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
 				$script:ConclusionFail = $true
@@ -103,10 +109,24 @@ function Invoke-ScanVirus {
 				$script:ConclusionFail = $true
 			}
 			Exit-GHActionsLogGroup
-			Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
+			Remove-Item -Path $ElementsListClamAVPath -Force -Confirm:$false
 		}
 		if ($YARAEnable) {
-
+			[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
+			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
+			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
+			$YARARules | ForEach-Object -Process {
+				(Invoke-Expression -Command "yara --compiled-rules --scan-list $YARARulesPath/$_ $ElementsListYARAPath") -replace "$env:GITHUB_WORKSPACE/", './'
+			}
+			if ($LASTEXITCODE -eq 1) {
+				Write-GHActionsError -Message "Found virus in $Session via YARA!"
+				$script:ConclusionFail = $true
+			} elseif ($LASTEXITCODE -gt 1) {
+				Write-GHActionsError -Message "Unexpected YARA result ``$LASTEXITCODE`` in $Session!"
+				$script:ConclusionFail = $true
+			}
+			Exit-GHActionsLogGroup
+			Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
 		}
 	}
 	Write-Host -Object "End session $Session."
