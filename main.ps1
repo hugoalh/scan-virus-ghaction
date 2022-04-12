@@ -50,12 +50,14 @@ Enter-GHActionsLogGroup -Title 'Update image software.'
 Invoke-Expression -Command 'apk update' -ErrorAction Stop
 Invoke-Expression -Command 'apk upgrade' -ErrorAction Stop
 Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
-Invoke-Expression -Command 'freshclam' -ErrorAction Stop
-Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
-Invoke-Expression -Command 'clamd' -ErrorAction Stop
-Exit-GHActionsLogGroup
+if ($ClamAVEnable) {
+	Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
+	Invoke-Expression -Command 'freshclam' -ErrorAction Stop
+	Exit-GHActionsLogGroup
+	Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
+	Invoke-Expression -Command 'clamd' -ErrorAction Stop
+	Exit-GHActionsLogGroup
+}
 function Invoke-ScanVirus {
 	[CmdletBinding()][OutputType([void])]
 	param (
@@ -64,7 +66,7 @@ function Invoke-ScanVirus {
 	Write-Host -Object "Begin session $Session."
 	[pscustomobject[]]$ElementsRaw = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
 	[pscustomobject[]]$Elements = $ElementsRaw | Sort-Object
-	[string[]]$ElementsListScan = $Elements.FullName
+	[string[]]$ElementsListScanFull = $Elements.FullName
 	[pscustomobject[]]$ElementsListDisplay = @()
 	$Elements | ForEach-Object {
 		[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
@@ -80,23 +82,32 @@ function Invoke-ScanVirus {
 		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	Write-Host -Object (($ElementsListDisplay | Format-Table -Property @('Element', 'Flag', 'Size') -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+	Write-Host -Object (($ElementsListDisplay | Format-Table -Property @(
+		'Element',
+		'Flag',
+		@{ Expression = 'Size'; Alignment = 'Right' }
+	) -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 	Exit-GHActionsLogGroup
 	$script:TotalScanElements += $Elements.Length
 	if ($Elements.Length -gt 0) {
-		[string]$ElementsScanListPath = (New-TemporaryFile).FullName
-		Set-Content -Path $ElementsScanListPath -Value ($ElementsListScan -join "`n") -NoNewline -Encoding UTF8NoBOM
-		Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
-		if ($LASTEXITCODE -eq 1) {
-			Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
-			$script:ConclusionFail = $true
-		} elseif ($LASTEXITCODE -gt 1) {
-			Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in $Session!"
-			$script:ConclusionFail = $true
+		if ($ClamAVEnable) {
+			[string]$ElementsScanListPath = (New-TemporaryFile).FullName
+			Set-Content -Path $ElementsScanListPath -Value ($ElementsListScanFull -join "`n") -NoNewline -Encoding UTF8NoBOM
+			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
+			(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
+			if ($LASTEXITCODE -eq 1) {
+				Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
+				$script:ConclusionFail = $true
+			} elseif ($LASTEXITCODE -gt 1) {
+				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in $Session!"
+				$script:ConclusionFail = $true
+			}
+			Exit-GHActionsLogGroup
+			Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
 		}
-		Remove-Item -Path $ElementsScanListPath -Force -Confirm:$false
-		Exit-GHActionsLogGroup
+		if ($YARAEnable) {
+
+		}
 	}
 	Write-Host -Object "End session $Session."
 }
