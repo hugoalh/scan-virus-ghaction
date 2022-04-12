@@ -4,7 +4,7 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction S
 [string[]]$TargetList = @()
 [UInt64]$TotalScanElements = 0
 [UInt64]$TotalScanSize = 0
-[string]$YARARulesPath = "$PSScriptRoot/yara-rules"
+[string]$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
 [string[]]$YARARules = Get-ChildItem -Path $YARARulesPath -Include '*.yarac' -Name -File
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
@@ -116,7 +116,7 @@ function Invoke-ScanVirus {
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
 			$YARARules | ForEach-Object -Process {
-				(Invoke-Expression -Command "yara --compiled-rules --scan-list $YARARulesPath/$_ $ElementsListYARAPath") -replace "$env:GITHUB_WORKSPACE/", './'
+				(Invoke-Expression -Command "yara --compiled-rules --scan-list `"$(Join-Path -Path $YARARulesPath -ChildPath $_)`" `"$ElementsListYARAPath`"") -replace "$env:GITHUB_WORKSPACE/", './'
 			}
 			if ($LASTEXITCODE -eq 1) {
 				Write-GHActionsError -Message "Found virus in $Session via YARA!"

@@ -1,8 +1,6 @@
-[string[]]$YARAFileExtensions = @('*.yar', '*.yara')
-[hashtable]$YARARules = @{
-	common = @()
-}
-[string]$YARARulesSourcePath = "$PSScriptRoot/yara-rules/source"
+[string]$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
+[string]$YARARulesCompilePath = Join-Path -Path $YARARulesPath -ChildPath 'compile'
+[string]$YARARulesSourcePath = Join-Path -Path $YARARulesPath -ChildPath 'source'
 function Optimize-YARARules {
 	[CmdletBinding()]
 	param (
@@ -17,24 +15,9 @@ function Optimize-YARARules {
 	}
 	end {}
 }
-[string[]]$YARARulesCommonRaw = Get-ChildItem -Path $YARARulesSourcePath -Include $YARAFileExtensions -Name -File
-[string[]]$YARARulesGroup = Get-ChildItem -Path $YARARulesSourcePath -Name -Directory
-$YARARulesCommonRaw | ForEach-Object -Process {
-	[string]$YARARuleCommonPath = "$YARARulesSourcePath/$_"
-	Optimize-YARARules -Path $YARARuleCommonPath
-	$YARARules.common += $YARARuleCommonPath
-}
-$YARARulesGroup | ForEach-Object -Process {
-	[string]$YARARulesGroupName = ($_ -replace '[^a-zA-Z\d _-]', '' -replace '[ _]', '-').ToLower()
-	[string]$YARARulesGroupPath = "$YARARulesSourcePath/$_"
-	$YARARules[$YARARulesGroupName] = @()
-	[string[]]$YARARulesGroupRaw = Get-ChildItem -Path $YARARulesGroupPath -Include $YARAFileExtensions -Recurse -Name -File
-	$YARARulesGroupRaw | ForEach-Object -Process {
-		[string]$YARARuleGroupPath = "$YARARulesGroupPath/$_"
-		Optimize-YARARules -Path $YARARuleGroupPath
-		$YARARules[$YARARulesGroupName] += $YARARuleGroupPath
-	}
-}
-$YARARules.Keys | ForEach-Object -Process {
-	Invoke-Expression -Command "yarac $($YARARules[$_] -join ' ') $PSScriptRoot/yara-rules/compile/$_.yarac" -ErrorAction Stop
+[string[]]$YARARulesSource = Get-ChildItem -Path $YARARulesSourcePath -Include @('*.yar', '*.yara') -Recurse -Name -File
+$YARARulesSource | ForEach-Object -Process {
+	[string]$YARARuleFullPathOriginal = Join-Path -Path $YARARulesSourcePath -ChildPath $_
+	Optimize-YARARules -Path $YARARuleFullPathOriginal
+	Invoke-Expression -Command "yarac `"$YARARuleFullPathOriginal`" `"$(Join-Path -Path $YARARulesCompilePath -ChildPath ($_.ToLower() -replace '[^a-zA-Z\d\s_-]+', '' -replace '[\s_]+', '-' -replace '\.yara?$', '.yarac'))`"" -ErrorAction Stop
 }
