@@ -67,7 +67,7 @@ function Invoke-ScanVirus {
 	[string[]]$ElementsListScan = $Elements.FullName
 	[pscustomobject[]]$ElementsListDisplay = @()
 	$Elements | ForEach-Object {
-		[bool]$ElementIsDirectory = $_.Mode -eq 'd----'
+		[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
 		[hashtable]$ElementListDisplay = @{
 			Element = $_.FullName -replace "$env:GITHUB_WORKSPACE/", './'
 			Flag = ($ElementIsDirectory ? 'D' : '')
@@ -87,7 +87,7 @@ function Invoke-ScanVirus {
 		[string]$ElementsScanListPath = (New-TemporaryFile).FullName
 		Set-Content -Path $ElementsScanListPath -Value ($ElementsListScan -join "`n") -NoNewline -Encoding UTF8NoBOM
 		Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", ''
+		(Invoke-Expression -Command "clamdscan --fdpass --file-list $ElementsScanListPath --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
 		if ($LASTEXITCODE -eq 1) {
 			Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
 			$script:ConclusionFail = $true
@@ -151,6 +151,7 @@ if ($TargetIsLocal) {
 	}
 }
 Write-Host -Object "Total scan elements: $TotalScanElements"
+Write-Host -Object "Total scan size: $($TotalScanSize / 1TB) TB // $($TotalScanSize / 1GB) GB // $($TotalScanSize / 1MB) MB // $($TotalScanSize / 1KB) KB // $TotalScanSize B"
 Write-Host -Object 'Stop ClamAV daemon.'
 Get-Process -Name '*clamd*' | Stop-Process
 if ($ConclusionFail) {
