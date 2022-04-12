@@ -14,10 +14,6 @@ on:
       - "synchronize"
   workflow_dispatch:
     inputs:
-      cache:
-        description: "{boolean} Cache data."
-        required: false
-        default: "true"
       deep:
         description: "{boolean} Scan deeper."
         required: false
@@ -28,20 +24,14 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - run: |
-          [string]$Cache = '${{github.event.inputs.cache}}'
           [string]$Deep = '${{github.event.inputs.deep}}'
-          if ($Cache.Length -eq 0) {
-            $Cache = 'true'
-          }
           if ($Deep.Length -eq 0) {
             $Deep = 'false'
           }
-          Write-Host -Object "::set-output name=cache::$Cache"
           Write-Host -Object "::set-output name=deep::$Deep"
         id: "parser"
         shell: "pwsh"
     outputs:
-      cache: "${{steps.parser.outputs.cache}}"
       deep: "${{steps.parser.outputs.deep}}"
   scan-virus:
     name: "Scan Virus"
@@ -56,5 +46,4 @@ jobs:
       - name: "Scan Repository"
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
-          cache: "${{needs.parse-inputs.outputs.cache}}"
           deep: "${{needs.parse-inputs.outputs.deep}}"

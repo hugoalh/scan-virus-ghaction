@@ -2,7 +2,8 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction S
 [bool]$ConclusionFail = $false
 [bool]$TargetIsLocal = $false
 [string[]]$TargetList = @()
-[uint]$TotalScanElements = 0
+[UInt64]$TotalScanElements = 0
+[UInt64]$TotalScanSize = 0
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -42,6 +43,9 @@ Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
 	Write-GHActionsFail -Message "Input ``target`` does not have valid target!"
 }
+if ($true -notin @($ClamAVEnable, $YARAEnable)) {
+	Write-GHActionsFail -Message "No anti virus software enable!"
+}
 Enter-GHActionsLogGroup -Title 'Update image software.'
 Invoke-Expression -Command 'apk update' -ErrorAction Stop
 Invoke-Expression -Command 'apk upgrade' -ErrorAction Stop
@@ -58,19 +62,25 @@ function Invoke-ScanVirus {
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
 	Write-Host -Object "Begin session $Session."
-	[string[]]$Elements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force -Name
+	[pscustomobject[]]$ElementsRaw = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
+	[pscustomobject[]]$Elements = $ElementsRaw | Sort-Object
+	[string[]]$ElementsListScan = $Elements.FullName
 	[pscustomobject[]]$ElementsListDisplay = @()
-	[string[]]$ElementsListScan = @()
-	foreach ($Element in ($Elements | Sort-Object)) {
-		[string]$ElementFullPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $Element
-		$ElementsListScan += $ElementFullPath
-		$ElementsListDisplay += [pscustomobject]@{
-			Element = $Element
-			IsDirectory = Test-Path -Path $ElementFullPath -PathType Container
+	$Elements | ForEach-Object {
+		[bool]$ElementIsDirectory = $_.Mode -eq 'd----'
+		[hashtable]$ElementListDisplay = @{
+			Element = $_.FullName -replace "$env:GITHUB_WORKSPACE/", './'
+			Flag = ($ElementIsDirectory ? 'D' : '')
 		}
+		if ($ElementIsDirectory -eq $false) {
+			[UInt64]$ElementSize = $_.Length
+			$ElementListDisplay.Size = $ElementSize
+			$script:TotalScanSize += $ElementSize
+		}
+		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	Write-Host -Object (($ElementsListDisplay | Format-Table -Property @('Element', 'IsDirectory') -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+	Write-Host -Object (($ElementsListDisplay | Format-Table -Property @('Element', 'Flag', 'Size') -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 	Exit-GHActionsLogGroup
 	$script:TotalScanElements += $Elements.Length
 	if ($Elements.Length -gt 0) {
