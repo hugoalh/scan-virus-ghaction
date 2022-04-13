@@ -1,21 +1,21 @@
 FROM debian:11 AS extract-powershell
-ARG PS_INSTALL_VERSION=7
-ARG PS_VERSION=7.2.2
-ARG PS_PACKAGE_NAME=powershell-${PS_VERSION}-linux-x64.tar.gz
-ARG PS_EXTRACT_FOLDER=/tmp/${PS_PACKAGE_NAME}
-ARG PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE_NAME}
+ENV PS_INSTALL_VERSION=7
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION
+ENV PS_VERSION=7.2.2
+ENV PS_PACKAGE_NAME=powershell-${PS_VERSION}-linux-x64.tar.gz
+ENV PS_EXTRACT_FOLDER=/tmp/${PS_PACKAGE_NAME}
+ENV PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE_NAME}
 ADD ${PS_PACKAGE_URL} ${PS_EXTRACT_FOLDER}
 RUN ["mkdir", "-p", "${PS_INSTALL_FOLDER}"]
 RUN ["tar", "zxf", "${PS_EXTRACT_FOLDER}", "-C", "${PS_INSTALL_FOLDER}", "-v"]
 
 FROM debian:11 AS setup
-ARG PS_INSTALL_VERSION=7
-ARG PS_VERSION=7.2.2
+ENV PS_INSTALL_VERSION=7
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION
+ENV PS_VERSION=7.2.2
 ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
 COPY --from=extract-powershell ${PS_INSTALL_FOLDER} ${PS_INSTALL_FOLDER}
 RUN ["chmod", "a+x,o-w", "${PS_INSTALL_FOLDER}/pwsh"]
