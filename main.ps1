@@ -7,6 +7,9 @@ enum FilterMode {
 	In = 1
 }
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction Stop
+Enter-GHActionsLogGroup -Title 'Image volume:'
+(Get-Volume | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
+Exit-GHActionsLogGroup
 [bool]$ConclusionIsFail = $false
 [bool]$TargetIsLocal = $false
 [string[]]$TargetList = @()

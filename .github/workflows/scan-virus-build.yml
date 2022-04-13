@@ -48,6 +48,4 @@ jobs:
         with:
           deep: "${{needs.parse-inputs.outputs.deep}}"
           yara_enable: "true"
-          experiment_yara_rulesfilter_list: "fpu.yara"
-          experiment_yara_rulesfilter_mode: "include"
           experiment_yara_warning: "true"
