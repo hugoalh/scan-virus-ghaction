@@ -23,7 +23,7 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 
 - [ClamAV](https://www.clamav.net)
   > ClamAV (by [Cisco](https://www.cisco.com)) is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
-- **(Not Available Yet)** [YARA](http://virustotal.github.io/yara)
+- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara)
   > YARA (by [VirusTotal](https://www.virustotal.com)) is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
 
 ### ⚠ Disclaimer
@@ -69,12 +69,50 @@ Require Software:
 - **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or per line.
   > **⚠ Important:**
   >
-  > - Each files have limited size for maximum 4 GB.
+  > - Each files is recommanded to limit size for maximum 4 GB to prevent unexpected error/hang.
   > - Require a clean workspace.
 
 #### `deep`
 
 **\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits.
+
+#### `clamav_enable`
+
+**\[Optional\]** `<boolean = true>` Use ClamAV.
+
+#### `yara_enable`
+
+**\[Optional\]** `<boolean = false>` Use YARA.
+
+#### `experiment_yara_rulesfilter_list`
+
+> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
+
+**\[Optional\]** `<string[]>` YARA rules filter list, separate each rule path with semicolon (`;`) or per line; Support wildcards; Default values are:
+
+```yml
+Loki Rules/apt_scanbox_deeppanda.yar
+Loki Rules/crime_malumpos.yar
+Loki Rules/general_cloaking.yar
+Loki Rules/thor_inverse_matches.yar
+Loki Rules/thor-hacktools.yar
+Loki Rules/thor-webshells.yar
+```
+
+#### `experiment_yara_rulesfilter_mode`
+
+> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
+
+**\[Optional\]** `<string = "exclude">` YARA rules filter mode.
+
+- **`"exclude"`:** Exclude rules in input `experiment_yara_rulesfilter_list`.
+- **`"include"`:** Only include rules in input `experiment_yara_rulesfilter_list`.
+
+#### `experiment_yara_warning`
+
+> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
+
+**\[Optional\]** `<boolean = false>` Enable YARA warning.
 
 ### 📤 Output
 
@@ -93,7 +131,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.5.0"
+        uses: "hugoalh/scan-virus-ghaction@v0.6.0"
 ```
 
 ### Guide
