@@ -1,25 +1,18 @@
 FROM debian:11 AS extract-powershell
-ENV PS_INSTALL_VERSION=7
-ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION
-ENV PS_VERSION=7.2.2
-ENV PS_PACKAGE_NAME=powershell-${PS_VERSION}-linux-x64.tar.gz
-ENV PS_EXTRACT_FOLDER=/tmp/${PS_PACKAGE_NAME}
-ENV PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE_NAME}
-ADD ${PS_PACKAGE_URL} ${PS_EXTRACT_FOLDER}
-RUN ["mkdir", "-p", "${PS_INSTALL_FOLDER}"]
-RUN ["tar", "zxf", "${PS_EXTRACT_FOLDER}", "-C", "${PS_INSTALL_FOLDER}", "-v"]
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
+ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.2/powershell-7.2.2-linux-x64.tar.gz /tmp/powershell-7.2.2-linux-x64.tar.gz
+RUN ["mkdir", "-p", "/opt/microsoft/powershell/7"]
+RUN ["tar", "zxf", "/tmp/powershell-7.2.2-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
 FROM debian:11 AS setup
-ENV PS_INSTALL_VERSION=7
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
-ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION
-ENV PS_VERSION=7.2.2
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
-COPY --from=extract-powershell ${PS_INSTALL_FOLDER} ${PS_INSTALL_FOLDER}
-RUN ["chmod", "a+x,o-w", "${PS_INSTALL_FOLDER}/pwsh"]
-RUN ["ln", "-s", "${PS_INSTALL_FOLDER}/pwsh", "/usr/bin/pwsh"]
+COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
+RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
+RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "update"]
 RUN ["apt-get", "upgrade"]
 RUN ["apt-get", "--assume-yes", "--install-suggests", "install", "apt-transport-https", "automake", "bison", "ca-certificates", "clamav", "clamav-daemon", "curl", "flex", "gcc", "gnupg", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "libtool", "locales", "make", "openssh-client", "pkg-config", "yara", "zlib1g"]
