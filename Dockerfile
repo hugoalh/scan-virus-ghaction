@@ -1,23 +1,31 @@
-FROM alpine:3.15 AS extract-powershell
-ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
-ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.2/powershell-7.2.2-linux-alpine-x64.tar.gz /tmp/powershell-7.2.2-linux-alpine-x64.tar.gz
-RUN ["mkdir", "-p", "/opt/microsoft/powershell/7"]
-RUN ["tar", "zxf", "/tmp/powershell-7.2.2-linux-alpine-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
+FROM debian:11 AS extract-powershell
+ARG PS_INSTALL_VERSION=7
+ARG PS_VERSION=7.2.2
+ARG PS_PACKAGE_NAME=powershell-${PS_VERSION}-linux-x64.tar.gz
+ARG PS_EXTRACT_FOLDER=/tmp/${PS_PACKAGE_NAME}
+ARG PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE_NAME}
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION
+ADD ${PS_PACKAGE_URL} ${PS_EXTRACT_FOLDER}
+RUN ["mkdir", "-p", "${PS_INSTALL_FOLDER}"]
+RUN ["tar", "zxf", "${PS_EXTRACT_FOLDER}", "-C", "${PS_INSTALL_FOLDER}", "-v"]
 
-FROM alpine:3.15 AS setup
-ENV \
-	DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
-	LANG=en_US.UTF-8 \
-	LC_ALL=en_US.UTF-8 \
-	PS_INSTALL_FOLDER=/opt/microsoft/powershell/7 \
-	PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
-COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
-RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
-RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
-COPY alpine-repositories /etc/apk/repositories
-RUN ["apk", "update"]
-RUN ["apk", "upgrade"]
-RUN ["apk", "add", "--allow-untrusted", "ca-certificates", "clamav@edgecommunity", "clamav-clamdscan@edgecommunity", "clamav-daemon@edgecommunity", "clamav-db@edgecommunity", "clamav-doc@edgecommunity", "clamav-libs@edgecommunity", "clamav-libunrar@edgecommunity", "clamav-milter@edgecommunity", "clamav-scanner@edgecommunity", "curl", "freshclam@edgecommunity", "git@edge", "icu-libs", "krb5-libs", "less", "libgcc", "libintl", "libssl1.1", "libstdc++", "lttng-ust@edge", "ncurses-terminfo-base", "openssh-client@edge", "tzdata", "userspace-rcu", "yara@edgetest", "zlib"]
+FROM debian:11 AS setup
+ARG PS_INSTALL_VERSION=7
+ARG PS_VERSION=7.2.2
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/$PS_INSTALL_VERSION
+ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
+COPY --from=extract-powershell ${PS_INSTALL_FOLDER} ${PS_INSTALL_FOLDER}
+RUN ["chmod", "a+x,o-w", "${PS_INSTALL_FOLDER}/pwsh"]
+RUN ["ln", "-s", "${PS_INSTALL_FOLDER}/pwsh", "/usr/bin/pwsh"]
+RUN ["apt-get", "update"]
+RUN ["apt-get", "upgrade"]
+RUN ["apt-get", "--assume-yes", "--install-suggests", "install", "apt-transport-https", "automake", "bison", "ca-certificates", "clamav", "clamav-daemon", "curl", "flex", "gcc", "gnupg", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "libtool", "locales", "make", "openssh-client", "pkg-config", "yara", "zlib1g"]
+RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"]
+RUN ["locale-gen"]
+RUN ["update-locale"]
 RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
@@ -27,13 +35,13 @@ RUN ["freshclam", "--verbose"]
 
 FROM blacktop/yara:w-rules AS get-yara-rules
 
-# FROM alpine:3.15 AS extract-yara-rules
+# FROM debian:11 AS extract-yara-rules
 # COPY --from=setup / /
 # COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules/source
 # COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
 # RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
 
-FROM alpine:3.15 AS main
+FROM debian:11 AS main
 COPY --from=setup / /
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
 # COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/compile /opt/hugoalh/scan-virus-ghaction/yara-rules
