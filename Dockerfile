@@ -17,7 +17,7 @@ RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 COPY alpine-repositories /etc/apk/repositories
 RUN ["apk", "update"]
 RUN ["apk", "upgrade"]
-RUN ["apk", "add", "--allow-untrusted", "--no-cache", "ca-certificates", "clamav@edgecommunity", "clamav-clamdscan@edgecommunity", "clamav-daemon@edgecommunity", "clamav-db@edgecommunity", "clamav-doc@edgecommunity", "clamav-libs@edgecommunity", "clamav-libunrar@edgecommunity", "clamav-milter@edgecommunity", "clamav-scanner@edgecommunity", "curl", "freshclam@edgecommunity", "git@edge", "icu-libs", "krb5-libs", "less", "libgcc", "libintl", "libssl1.1", "libstdc++", "lttng-ust@edge", "ncurses-terminfo-base", "openssh-client@edge", "tzdata", "userspace-rcu", "yara@edgetest", "zlib"]
+RUN ["apk", "add", "--allow-untrusted", "ca-certificates", "clamav@edgecommunity", "clamav-clamdscan@edgecommunity", "clamav-daemon@edgecommunity", "clamav-db@edgecommunity", "clamav-doc@edgecommunity", "clamav-libs@edgecommunity", "clamav-libunrar@edgecommunity", "clamav-milter@edgecommunity", "clamav-scanner@edgecommunity", "curl", "freshclam@edgecommunity", "git@edge", "icu-libs", "krb5-libs", "less", "libgcc", "libintl", "libssl1.1", "libstdc++", "lttng-ust@edge", "ncurses-terminfo-base", "openssh-client@edge", "tzdata", "userspace-rcu", "yara@edgetest", "zlib"]
 RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
@@ -27,14 +27,15 @@ RUN ["freshclam", "--verbose"]
 
 FROM blacktop/yara:w-rules AS get-yara-rules
 
-FROM alpine:3.15 AS extract-yara-rules
-COPY --from=setup / /
-COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules/source
-COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
-RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
+# FROM alpine:3.15 AS extract-yara-rules
+# COPY --from=setup / /
+# COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules/source
+# COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
+# RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
 
 FROM alpine:3.15 AS main
 COPY --from=setup / /
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
-COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/compile /opt/hugoalh/scan-virus-ghaction/yara-rules
+# COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/compile /opt/hugoalh/scan-virus-ghaction/yara-rules
+COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]

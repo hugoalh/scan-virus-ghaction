@@ -4,7 +4,7 @@ author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
   target:
-    description: "{string} Target."
+    description: "{string[]} Target."
     required: false
     default: "./"
   deep:
@@ -19,6 +19,20 @@ inputs:
     description: "{boolean} Use YARA."
     required: false
     default: "true"
+  experiment_yara_excluderules:
+    description: "{string[]} Exclude YARA rules."
+    required: false
+    default: |
+      Loki Rules/apt_scanbox_deeppanda.yar
+      Loki Rules/crime_malumpos.yar
+      Loki Rules/general_cloaking.yar
+      Loki Rules/thor_inverse_matches.yar
+      Loki Rules/thor-hacktools.yar
+      Loki Rules/thor-webshells.yar
+  experiment_yara_warning:
+    description: "{boolean} Enable YARA warning."
+    required: false
+    default: "false"
 runs:
   using: "docker"
   image: "../Dockerfile"

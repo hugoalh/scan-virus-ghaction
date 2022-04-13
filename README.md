@@ -37,7 +37,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.5.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.6.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
@@ -57,7 +57,7 @@ Require Software:
 
 #### `target`
 
-**\[Optional\]** `<string = "./">` Target.
+**\[Optional\]** `<string[] = "./">` Target.
 
 - **Local (`"./"`):** Workspace.
   > **💡 Hint:**
@@ -71,12 +71,6 @@ Require Software:
   >
   > - Each files have limited size for maximum 4 GB.
   > - Require a clean workspace.
-
-#### `cache`
-
-**\[Optional\]** `<boolean = false>` Cache data to reduce repeat alarms and scan time in each sessions.
-
-> **⚠ Important:** When enabled this, if it has alarm and you need to check affected sessions, it is highly recommanded to use diff tool.
 
 #### `deep`
 

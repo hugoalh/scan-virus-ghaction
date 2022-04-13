@@ -1,11 +1,11 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction Stop
-[bool]$ConclusionFail = $false
+[bool]$ConclusionIsFail = $false
 [bool]$TargetIsLocal = $false
 [string[]]$TargetList = @()
 [UInt64]$TotalScanElements = 0
 [UInt64]$TotalScanSize = 0
 [string]$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[string[]]$YARARules = Get-ChildItem -Path $YARARulesPath -Include '*.yarac' -Name -File
+[string[]]$YARARules = Get-ChildItem -Path $YARARulesPath -Include @('*.yar', '*.yara') -Recurse -Name -File
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -21,12 +21,13 @@ if ($Target -match '^\.\/$') {
 } else {
 	[string[]]$TargetListRaw = $Target -split ";|\r?\n"
 	$TargetListRaw | ForEach-Object -Process {
-		[string]$TargetListRawCurrent = $_.Trim()
-		if ($TargetListRawCurrent.Length -gt 0) {
-			if (Test-StringIsURL -InputObject $TargetListRawCurrent) {
-				$TargetList += $TargetListRawCurrent
+		return $_.Trim()
+	} | Sort-Object | ForEach-Object -Process {
+		if ($_.Length -gt 0) {
+			if (Test-StringIsURL -InputObject $_) {
+				$TargetList += $_
 			} else {
-				Write-GHActionsWarning -Message "Input ``target``'s value ``$TargetListRawCurrent`` is not a valid target!"
+				Write-GHActionsWarning -Message "Input ``target``'s value ``$_`` is not a valid target!"
 			}
 		}
 	}
@@ -34,13 +35,30 @@ if ($Target -match '^\.\/$') {
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
+[string]$YARARulesExclude = Get-GHActionsInput -Name 'experiment_yara_excluderules' -Trim
+[string[]]$YARARulesExcludeList = $YARARulesExclude -split ";|\r?\n"
+[bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'experiment_yara_warning' -Require -Trim))
+[string[]]$YARARulesFilter = @()
+foreach ($YARARule in ($YARARules | Sort-Object)) {
+	[bool]$Pass = $true
+	foreach ($YARARuleExclude in $YARARulesExcludeList) {
+		if ($YARARule -like $YARARuleExclude) {
+			$Pass = $false
+		}
+	}
+	if ($Pass) {
+		$YARARulesFilter += $YARARule
+	}
+}
 Write-Host -Object (([ordered]@{
 	TargetIsLocal = $TargetIsLocal
 	TargetList = $TargetList -join ', '
 	Deep = $Deep
 	ClamAVEnable = $ClamAVEnable
 	YARAEnable = $YARAEnable
-	YARARules = $YARARules -join ', '
+	YARARules = $YARARulesFilter -join ', '
+	YARARulesExclude = $YARARulesExcludeList -join ', '
+	YARAWarning = $YARAWarning
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
 if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
@@ -103,10 +121,10 @@ function Invoke-ScanVirus {
 			(Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
 			if ($LASTEXITCODE -eq 1) {
 				Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
-				$script:ConclusionFail = $true
+				$script:ConclusionIsFail = $true
 			} elseif ($LASTEXITCODE -gt 1) {
 				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in $Session!"
-				$script:ConclusionFail = $true
+				$script:ConclusionIsFail = $true
 			}
 			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListClamAVPath -Force -Confirm:$false
@@ -115,15 +133,15 @@ function Invoke-ScanVirus {
 			[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
-			$YARARules | ForEach-Object -Process {
-				(Invoke-Expression -Command "yara --compiled-rules --scan-list `"$(Join-Path -Path $YARARulesPath -ChildPath $_)`" `"$ElementsListYARAPath`"") -replace "$env:GITHUB_WORKSPACE/", './'
+			$YARARulesFilter | ForEach-Object -Process {
+				(Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesPath -ChildPath $_)`" `"$ElementsListYARAPath`"") -replace "$env:GITHUB_WORKSPACE/", './'
 			}
 			if ($LASTEXITCODE -eq 1) {
 				Write-GHActionsError -Message "Found virus in $Session via YARA!"
-				$script:ConclusionFail = $true
+				$script:ConclusionIsFail = $true
 			} elseif ($LASTEXITCODE -gt 1) {
 				Write-GHActionsError -Message "Unexpected YARA result ``$LASTEXITCODE`` in $Session!"
-				$script:ConclusionFail = $true
+				$script:ConclusionIsFail = $true
 			}
 			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
@@ -150,7 +168,7 @@ if ($TargetIsLocal) {
 					Invoke-ScanVirus -Session $GitCurrentSession
 				} else {
 					Write-GHActionsError -Message "Unexpected Git checkout result ``$LASTEXITCODE`` in $GitCurrentSession!"
-					$ConclusionFail = $true
+					$ConclusionIsFail = $true
 					Exit-GHActionsLogGroup
 				}
 			}
@@ -167,17 +185,17 @@ if ($TargetIsLocal) {
 			Remove-Item -Path (Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_) -Recurse -Force -Confirm:$false
 		}
 	}
-	foreach ($Target in ($TargetList | Sort-Object)) {
-		Enter-GHActionsLogGroup -Title "Fetch file $Target."
+	$TargetList | ForEach-Object -Process {
+		Enter-GHActionsLogGroup -Title "Fetch file $_."
 		[string]$NetworkTemporaryFileFullPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath (New-Guid).Guid
 		try {
-			Invoke-WebRequest -Uri $Target -UseBasicParsing -Method Get -OutFile $NetworkTemporaryFileFullPath
+			Invoke-WebRequest -Uri $_ -UseBasicParsing -Method Get -OutFile $NetworkTemporaryFileFullPath
 		} catch {
-			Write-GHActionsError -Message "Unable to fetch file $Target!"
+			Write-GHActionsError -Message "Unable to fetch file $_!"
 			continue
 		}
 		Exit-GHActionsLogGroup
-		Invoke-ScanVirus -Session $Target
+		Invoke-ScanVirus -Session $_
 		Remove-Item -Path $NetworkTemporaryFileFullPath -Force -Confirm:$false
 	}
 }
@@ -188,7 +206,7 @@ if ($ClamAVEnable) {
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GHActionsLogGroup
 }
-if ($ConclusionFail) {
+if ($ConclusionIsFail) {
 	exit 1
 }
 exit 0
