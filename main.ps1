@@ -1,3 +1,11 @@
+enum FilterMode {
+	Exclude = 0
+	E = 0
+	Ex = 0
+	Include = 1
+	I = 1
+	In = 1
+}
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction Stop
 [bool]$ConclusionIsFail = $false
 [bool]$TargetIsLocal = $false
@@ -35,19 +43,39 @@ if ($Target -match '^\.\/$') {
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
-[string]$YARARulesExclude = Get-GHActionsInput -Name 'experiment_yara_excluderules' -Trim
-[string[]]$YARARulesExcludeList = $YARARulesExclude -split ";|\r?\n"
+[string]$YARARulesFilterListRaw = Get-GHActionsInput -Name 'experiment_yara_rulesfilter_list' -Trim
+[string[]]$YARARulesFilterList = $YARARulesFilterListRaw -split ";|\r?\n"
+[FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'experiment_yara_rulesfilter_mode' -Require -Trim
 [bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'experiment_yara_warning' -Require -Trim))
 [string[]]$YARARulesFilter = @()
-foreach ($YARARule in ($YARARules | Sort-Object)) {
-	[bool]$Pass = $true
-	foreach ($YARARuleExclude in $YARARulesExcludeList) {
-		if ($YARARule -like $YARARuleExclude) {
-			$Pass = $false
+switch ($YARARulesFilterMode.GetHashCode()) {
+	0 {
+		foreach ($YARARule in ($YARARules | Sort-Object)) {
+			[bool]$Pass = $true
+			foreach ($YARARuleFilterList in $YARARulesFilterList) {
+				if ($YARARule -like $YARARuleFilterList) {
+					$Pass = $false
+				}
+			}
+			if ($Pass) {
+				$YARARulesFilter += $YARARule
+			}
 		}
+		break
 	}
-	if ($Pass) {
-		$YARARulesFilter += $YARARule
+	1 {
+		foreach ($YARARule in ($YARARules | Sort-Object)) {
+			[bool]$Pass = $false
+			foreach ($YARARuleFilterList in $YARARulesFilterList) {
+				if ($YARARule -like $YARARuleFilterList) {
+					$Pass = $true
+				}
+			}
+			if ($Pass) {
+				$YARARulesFilter += $YARARule
+			}
+		}
+		break
 	}
 }
 Write-Host -Object (([ordered]@{
@@ -57,7 +85,8 @@ Write-Host -Object (([ordered]@{
 	ClamAVEnable = $ClamAVEnable
 	YARAEnable = $YARAEnable
 	YARARules = $YARARulesFilter -join ', '
-	YARARulesExclude = $YARARulesExcludeList -join ', '
+	YARARulesFilterList = $YARARulesFilterList -join ', '
+	YARARulesFilterMode = $YARARulesFilterMode
 	YARAWarning = $YARAWarning
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
@@ -120,7 +149,7 @@ function Invoke-ScanVirus {
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
 			(Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
 			if ($LASTEXITCODE -eq 1) {
-				Write-GHActionsError -Message "Found virus in $Session via ClamAV!"
+				Write-GHActionsError -Message "Found issue in $Session via ClamAV!"
 				$script:ConclusionIsFail = $true
 			} elseif ($LASTEXITCODE -gt 1) {
 				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in $Session!"
@@ -132,18 +161,18 @@ function Invoke-ScanVirus {
 		if ($YARAEnable) {
 			[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
-			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
 			$YARARulesFilter | ForEach-Object -Process {
+				Enter-GHActionsLogGroup -Title "YARA result ($_; $Session):"
 				(Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesPath -ChildPath $_)`" `"$ElementsListYARAPath`"") -replace "$env:GITHUB_WORKSPACE/", './'
+				if ($LASTEXITCODE -eq 1) {
+					Write-GHActionsError -Message "Found issue in $Session via YARA $_!"
+					$script:ConclusionIsFail = $true
+				} elseif ($LASTEXITCODE -gt 1) {
+					Write-GHActionsError -Message "Unexpected YARA $_ result ``$LASTEXITCODE`` in $Session!"
+					$script:ConclusionIsFail = $true
+				}
+				Exit-GHActionsLogGroup
 			}
-			if ($LASTEXITCODE -eq 1) {
-				Write-GHActionsError -Message "Found virus in $Session via YARA!"
-				$script:ConclusionIsFail = $true
-			} elseif ($LASTEXITCODE -gt 1) {
-				Write-GHActionsError -Message "Unexpected YARA result ``$LASTEXITCODE`` in $Session!"
-				$script:ConclusionIsFail = $true
-			}
-			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
 		}
 	}

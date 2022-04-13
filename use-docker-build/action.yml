@@ -18,9 +18,9 @@ inputs:
   yara_enable:
     description: "{boolean} Use YARA."
     required: false
-    default: "true"
-  experiment_yara_excluderules:
-    description: "{string[]} Exclude YARA rules."
+    default: "false"
+  experiment_yara_rulesfilter_list:
+    description: "{string[]} YARA rules filter list."
     required: false
     default: |
       Loki Rules/apt_scanbox_deeppanda.yar
@@ -29,6 +29,10 @@ inputs:
       Loki Rules/thor_inverse_matches.yar
       Loki Rules/thor-hacktools.yar
       Loki Rules/thor-webshells.yar
+  experiment_yara_rulesfilter_mode:
+    description: "{string} YARA rules filter mode."
+    required: false
+    default: "exclude"
   experiment_yara_warning:
     description: "{boolean} Enable YARA warning."
     required: false
