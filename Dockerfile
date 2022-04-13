@@ -15,7 +15,10 @@ RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
 RUN ["apt-get", "--assume-yes", "upgrade"]
-RUN ["apt-get", "--assume-yes", "install", "apt-transport-https", "automake", "bison", "ca-certificates", "clamav", "clamav-daemon", "curl", "flex", "gcc", "gnupg", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "libtool", "locales", "make", "openssh-client", "pkg-config", "yara", "zlib1g"]
+RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-daemon", "git", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "yara", "zlib1g"]
+# apt-transport-https
+# curl
+# gnupg
 RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"]
 RUN ["locale-gen"]
 RUN ["update-locale"]

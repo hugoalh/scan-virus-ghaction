@@ -97,8 +97,8 @@ if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 	Write-GHActionsFail -Message "No anti virus software enable!"
 }
 Enter-GHActionsLogGroup -Title 'Update image software.'
-Invoke-Expression -Command 'apk update' -ErrorAction Stop
-Invoke-Expression -Command 'apk upgrade' -ErrorAction Stop
+Invoke-Expression -Command 'apt-get --assume-yes update' -ErrorAction Stop
+Invoke-Expression -Command 'apt-get --assume-yes upgrade' -ErrorAction Stop
 Exit-GHActionsLogGroup
 if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
