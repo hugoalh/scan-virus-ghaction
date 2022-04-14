@@ -118,7 +118,7 @@ Write-OptimizePSList -InputObject ([ordered]@{
 	YARA_Warning = $YARAWarning
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
-if (($LocalTarget -eq $false) -and ($NetworkTargets.Length -eq 0)) {
+if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
 	Write-GHActionsFail -Message 'Input `targets` does not have valid target!'
 }
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
@@ -222,11 +222,11 @@ function Invoke-ScanVirus {
 				}
 			}
 			if ($YARAResultRaw.Count -gt 0) {
-				[hashtable]$YARAResult = [ordered]@{}
-				$YARAResultRaw.GetEnumerator() | Sort-Object -Property 'Name' | ForEach-Object -Process {
+				[hashtable]$YARAResult = @{}
+				$YARAResultRaw.GetEnumerator() | ForEach-Object -Process {
 					$YARAResult[$_.Name] = $_.Value -join ', '
 				}
-				Write-OptimizePSList -InputObject ($YARAResult | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
+				Write-OptimizePSList -InputObject ($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 				Write-GHActionsError -Message "Found issue in session `"$Session`" via YARA!"
 				$script:ConclusionSetFail = $true
 			}
@@ -267,7 +267,7 @@ if ($LocalTarget) {
 	}
 } else {
 	[string[]]$UselessElements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Force -Name
-	if ($UselessElements.Length -gt 0) {
+	if ($UselessElements.Count -gt 0) {
 		Write-GHActionsWarning -Message 'Require a clean workspace when target is network!'
 		Write-Host -Object 'Clean workspace.'
 		$UselessElements | ForEach-Object -Process {
@@ -297,6 +297,7 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 	TotalScanSizes_GB = "$($TotalScanSizes / 1GB) GB"
 	TotalScanSizes_TB = "$($TotalScanSizes / 1TB) TB"
 } | Format-Table -Property @('Name', @{Expression = 'Value'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+Exit-GHActionsLogGroup
 if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
 	Get-Process -Name '*clamd*' | Stop-Process
