@@ -104,7 +104,7 @@ switch ($YARARulesFilterMode.GetHashCode()) {
 	}
 }
 Write-OptimizePSList -InputObject ([ordered]@{
-	Targets = ($LocalTarget ? '*Local*' : ($NetworkTargets -join ','))
+	Targets = $LocalTarget ? '*Local*' : ($NetworkTargets -join ',')
 	Deep = $Deep
 	ClamAV_Enable = $ClamAVEnable
 	YARA_Enable = $YARAEnable
@@ -156,7 +156,7 @@ function Invoke-ScanVirus {
 		[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
 		[hashtable]$ElementListDisplay = @{
 			Element = $_.FullName -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
-			Flags = ($ElementIsDirectory ? 'D' : '')
+			Flags = $ElementIsDirectory ? 'D' : ''
 		}
 		$ElementsListClamAV += $_.FullName
 		if ($ElementIsDirectory -eq $false) {
@@ -291,11 +291,11 @@ if ($LocalTarget) {
 Enter-GHActionsLogGroup -Title "Statistics:"
 Write-OptimizePSTable -InputObject ([ordered]@{
 	TotalScanElements = $TotalScanElements
-	TotalScanSizes_B = "$TotalScanSizes  B"
-	TotalScanSizes_KB = "$($TotalScanSizes / 1KB) KB"
-	TotalScanSizes_MB = "$($TotalScanSizes / 1MB) MB"
-	TotalScanSizes_GB = "$($TotalScanSizes / 1GB) GB"
-	TotalScanSizes_TB = "$($TotalScanSizes / 1TB) TB"
+	TotalScanSizes_B = $TotalScanSizes
+	TotalScanSizes_KB = $TotalScanSizes / 1KB
+	TotalScanSizes_MB = $TotalScanSizes / 1MB
+	TotalScanSizes_GB = $TotalScanSizes / 1GB
+	TotalScanSizes_TB = $TotalScanSizes / 1TB
 } | Format-Table -Property @('Name', @{Expression = 'Value'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 Exit-GHActionsLogGroup
 if ($ClamAVEnable) {

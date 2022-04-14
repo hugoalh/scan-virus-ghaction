@@ -26,6 +26,10 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 - **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara)
   > YARA (by [VirusTotal](https://www.virustotal.com)) is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
 
+  > **Rules List:**
+  >
+  > - [blacktop](https://github.com/blacktop/docker-yara/tree/master/w-rules/rules)
+
 ### ⚠ Disclaimer
 
 This action does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
@@ -69,7 +73,7 @@ Require Software:
 - **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or per line.
   > **⚠ Important:**
   >
-  > - Each files is recommanded to limit size for maximum 4 GB to prevent unexpected error/hang.
+  > - Each files is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
   > - Require a clean workspace.
 
 #### `deep`
@@ -84,11 +88,13 @@ Require Software:
 
 **\[Optional\]** `<boolean = false>` Use YARA.
 
+> **💡 Hint:** This is recommended to keep as disable due to YARA can throw many false positives.
+
 #### `yara_rulesfilter_list`
 
 > **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
-**\[Optional\]** `<string[]>` YARA rules filter list, separate each rule path with semicolon (`;`) or per line; Support wildcards; Default values are:
+**\[Optional\]** `<string[]>` YARA rules filter list, separate each rule file with semicolon (`;`) or per line; Support wildcards; Default values are:
 
 ```yml
 Loki Rules/apt_scanbox_deeppanda.yar
@@ -113,6 +119,8 @@ Loki Rules/thor-webshells.yar
 > **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
 **\[Optional\]** `<boolean = false>` Enable YARA warning.
+
+> **💡 Hint:** This is recommended to keep as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these in most cases.
 
 ### 📤 Output
 
