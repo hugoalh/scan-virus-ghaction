@@ -1,3 +1,4 @@
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
 	E = 0
@@ -6,9 +7,8 @@ enum FilterMode {
 	I = 1
 	In = 1
 }
-Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local' -ErrorAction Stop
-Enter-GHActionsLogGroup -Title 'Image volume:'
-(Get-PSDrive | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
+Enter-GHActionsLogGroup -Title 'System volume:'
+Write-Host -Object ((Get-PSDrive | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 Exit-GHActionsLogGroup
 [bool]$ConclusionIsFail = $false
 [bool]$TargetIsLocal = $false
@@ -17,6 +17,7 @@ Exit-GHActionsLogGroup
 [UInt64]$TotalScanSize = 0
 [string]$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
 [string[]]$YARARules = Get-ChildItem -Path $YARARulesPath -Include @('*.yar', '*.yara') -Recurse -Name -File
+$YARARules = ($YARARules | Sort-Object)
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -46,14 +47,13 @@ if ($Target -match '^\.\/$') {
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
-[string]$YARARulesFilterListRaw = Get-GHActionsInput -Name 'experiment_yara_rulesfilter_list' -Trim
-[string[]]$YARARulesFilterList = $YARARulesFilterListRaw -split ";|\r?\n"
+[string[]]$YARARulesFilterList = (Get-GHActionsInput -Name 'experiment_yara_rulesfilter_list' -Trim) -split ";|\r?\n"
 [FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'experiment_yara_rulesfilter_mode' -Require -Trim
 [bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'experiment_yara_warning' -Require -Trim))
 [string[]]$YARARulesFilter = @()
 switch ($YARARulesFilterMode.GetHashCode()) {
 	0 {
-		foreach ($YARARule in ($YARARules | Sort-Object)) {
+		foreach ($YARARule in $YARARules) {
 			[bool]$Pass = $true
 			foreach ($YARARuleFilterList in $YARARulesFilterList) {
 				if ($YARARule -like $YARARuleFilterList) {
@@ -67,7 +67,7 @@ switch ($YARARulesFilterMode.GetHashCode()) {
 		break
 	}
 	1 {
-		foreach ($YARARule in ($YARARules | Sort-Object)) {
+		foreach ($YARARule in $YARARules) {
 			[bool]$Pass = $false
 			foreach ($YARARuleFilterList in $YARARulesFilterList) {
 				if ($YARARule -like $YARARuleFilterList) {
@@ -99,16 +99,20 @@ if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 	Write-GHActionsFail -Message "No anti virus software enable!"
 }
-Enter-GHActionsLogGroup -Title 'Update image software.'
-Invoke-Expression -Command 'apt-get --assume-yes update' -ErrorAction Stop
-Invoke-Expression -Command 'apt-get --assume-yes upgrade' -ErrorAction Stop
+Enter-GHActionsLogGroup -Title 'Update system software.'
+try {
+	Invoke-Expression -Command 'apt-get --assume-yes update'
+	Invoke-Expression -Command 'apt-get --assume-yes upgrade'
+} catch {  }
 Exit-GHActionsLogGroup
 if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
-	Invoke-Expression -Command 'freshclam' -ErrorAction Stop
+	try {
+		Invoke-Expression -Command 'freshclam'
+	} catch {  }
 	Exit-GHActionsLogGroup
 	Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
-	Invoke-Expression -Command 'clamd' -ErrorAction Stop
+	Invoke-Expression -Command 'clamd'
 	Exit-GHActionsLogGroup
 }
 function Invoke-ScanVirus {
@@ -116,16 +120,17 @@ function Invoke-ScanVirus {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
-	Write-Host -Object "Begin session $Session."
+	Write-Host -Object "Begin session `"$Session`"."
 	[pscustomobject[]]$ElementsRaw = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
 	[pscustomobject[]]$Elements = $ElementsRaw | Sort-Object
+	$script:TotalScanElements += $Elements.Length
 	[string[]]$ElementsListClamAV = @()
 	[string[]]$ElementsListYARA = @()
 	[pscustomobject[]]$ElementsListDisplay = @()
 	$Elements | ForEach-Object {
 		[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
 		[hashtable]$ElementListDisplay = @{
-			Element = $_.FullName -replace "$env:GITHUB_WORKSPACE/", './'
+			Element = $_.FullName -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
 			Flag = ($ElementIsDirectory ? 'D' : '')
 		}
 		$ElementsListClamAV += $_.FullName
@@ -144,18 +149,22 @@ function Invoke-ScanVirus {
 		@{ Expression = 'Size'; Alignment = 'Right' }
 	) -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 	Exit-GHActionsLogGroup
-	$script:TotalScanElements += $Elements.Length
 	if ($Elements.Length -gt 0) {
 		if ($ClamAVEnable) {
 			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-			(Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan") -replace "$env:GITHUB_WORKSPACE/", './'
+			[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan"
+			$ClamAVOutput | ForEach-Object -Process {
+				if ($_ -notmatch ': OK$') {
+					Write-Host -Object ($_ -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './')
+				}
+			}
 			if ($LASTEXITCODE -eq 1) {
-				Write-GHActionsError -Message "Found issue in $Session via ClamAV!"
+				Write-GHActionsError -Message "Found issue in session `"$Session`" via ClamAV!"
 				$script:ConclusionIsFail = $true
 			} elseif ($LASTEXITCODE -gt 1) {
-				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in $Session!"
+				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in session `"$Session`"!"
 				$script:ConclusionIsFail = $true
 			}
 			Exit-GHActionsLogGroup
@@ -164,48 +173,70 @@ function Invoke-ScanVirus {
 		if ($YARAEnable) {
 			[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
-			$YARARulesFilter | ForEach-Object -Process {
-				Enter-GHActionsLogGroup -Title "YARA result ($_; $Session):"
-				(Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesPath -ChildPath $_)`" `"$ElementsListYARAPath`"") -replace "$env:GITHUB_WORKSPACE/", './'
-				if ($LASTEXITCODE -eq 1) {
-					Write-GHActionsError -Message "Found issue in $Session via YARA $_!"
-					$script:ConclusionIsFail = $true
-				} elseif ($LASTEXITCODE -gt 1) {
-					Write-GHActionsError -Message "Unexpected YARA $_ result ``$LASTEXITCODE`` in $Session!"
+			[hashtable]$YARAResult = @{}
+			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
+			foreach ($YARARuleFilter in $YARARulesFilter) {
+				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesPath -ChildPath $YARARuleFilter)`" `"$ElementsListYARAPath`""
+				$YARAOutput | ForEach-Object -Process {
+					if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
+						Write-GHActionsDebug -Message $_
+						[string[]]$Line = $_ -split "(?<=^.+?) "
+						[string]$Rule, [string]$Element = $Line
+						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
+						if ($null -eq $YARAResult[$Element]) {
+							$YARAResult[$Element] = @()
+						}
+						$YARAResult[$Element] += "`"$YARARuleFilter`": $Rule"
+					} else {
+						Write-Host -Object $_
+					}
+				}
+				if ($LASTEXITCODE -gt 0) {
+					Write-GHActionsError -Message "Unexpected YARA `"$YARARuleFilter`" result ``$LASTEXITCODE`` in session `"$Session`"!"
 					$script:ConclusionIsFail = $true
 				}
-				Exit-GHActionsLogGroup
 			}
+			if ($YARAResult.Count -gt 0) {
+				$YARAResult.GetEnumerator() | ForEach-Object -Process {
+					$YARAResult[$_.Name] = $_.Value -join ', '
+				}
+				Write-Host -Object (($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
+				Write-GHActionsError -Message "Found issue in $Session via YARA!"
+				$script:ConclusionIsFail = $true
+			}
+			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
 		}
 	}
 	Write-Host -Object "End session $Session."
 }
 if ($TargetIsLocal) {
-	Invoke-ScanVirus -Session 'current workspace'
+	Invoke-ScanVirus -Session 'Current'
 	if ($Deep) {
 		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
-			[string[]]$GitCommits = Invoke-Expression -Command 'git --no-pager log --all --format=%H --reflog --reverse' -ErrorAction Stop
+			[string[]]$GitCommits = Invoke-Expression -Command 'git --no-pager log --all --format=%H --reflog --reverse'
 			if ($GitCommits.Length -le 1) {
 				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Length) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Length; $GitCommitsIndex++) {
 				[string]$GitCommit = $GitCommits[$GitCommitsIndex]
-				[string]$GitCurrentSession = "commit #$($GitCommitsIndex + 1)/$($GitCommits.Length) ($GitCommit)"
-				Enter-GHActionsLogGroup -Title "Checkout Git $GitCurrentSession."
-				Invoke-Expression -Command "git checkout $GitCommit --force --quiet"
+				[string]$GitSession = "Commit #$($GitCommitsIndex + 1)/$($GitCommits.Length) - $GitCommit"
+				Enter-GHActionsLogGroup -Title "Checkout Git commit $GitCommit."
+				try {
+					Invoke-Expression -Command "git checkout $GitCommit --force --quiet"
+				} catch {  }
 				if ($LASTEXITCODE -eq 0) {
 					Exit-GHActionsLogGroup
-					Invoke-ScanVirus -Session $GitCurrentSession
+					Invoke-ScanVirus -Session $GitSession
 				} else {
-					Write-GHActionsError -Message "Unexpected Git checkout result ``$LASTEXITCODE`` in $GitCurrentSession!"
+					Write-GHActionsError -Message "Unexpected Git checkout result ``$LASTEXITCODE`` in session `"$GitSession`"!"
 					$ConclusionIsFail = $true
 					Exit-GHActionsLogGroup
 				}
 			}
 		} else {
-			Write-GHActionsWarning -Message 'Unable to deep scan workspace due to current workspace is not a Git repository! If this is incorrect, probably Git file is broken.'
+			Write-GHActionsWarning -Message 'Unable to deep scan workspace due to it is not a Git repository! If this is incorrect, probably Git data is broken and/or invalid.'
 		}
 	}
 } else {
@@ -218,12 +249,12 @@ if ($TargetIsLocal) {
 		}
 	}
 	$TargetList | ForEach-Object -Process {
-		Enter-GHActionsLogGroup -Title "Fetch file $_."
+		Enter-GHActionsLogGroup -Title "Fetch file `"$_`"."
 		[string]$NetworkTemporaryFileFullPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath (New-Guid).Guid
 		try {
 			Invoke-WebRequest -Uri $_ -UseBasicParsing -Method Get -OutFile $NetworkTemporaryFileFullPath
 		} catch {
-			Write-GHActionsError -Message "Unable to fetch file $_!"
+			Write-GHActionsError -Message "Unable to fetch file `"$_`"!"
 			continue
 		}
 		Exit-GHActionsLogGroup
