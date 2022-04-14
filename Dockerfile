@@ -19,7 +19,7 @@ RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-
 RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"]
 RUN ["locale-gen"]
 RUN ["update-locale"]
-RUN ["pwsh", "-Command", "\$ErrorActionPreference = 'Stop'"]
+# RUN ["pwsh", "-Command", "\$ErrorActionPreference = 'Stop'"]
 RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
