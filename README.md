@@ -55,9 +55,9 @@ Require Software:
 
 ### 📥 Input
 
-#### `target`
+#### `targets`
 
-**\[Optional\]** `<string[] = "./">` Target.
+**\[Optional\]** `<string[] = "./">` Targets.
 
 - **Local (`"./"`):** Workspace.
   > **💡 Hint:**
@@ -84,7 +84,7 @@ Require Software:
 
 **\[Optional\]** `<boolean = false>` Use YARA.
 
-#### `experiment_yara_rulesfilter_list`
+#### `yara_rulesfilter_list`
 
 > **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
@@ -99,16 +99,16 @@ Loki Rules/thor-hacktools.yar
 Loki Rules/thor-webshells.yar
 ```
 
-#### `experiment_yara_rulesfilter_mode`
+#### `yara_rulesfilter_mode`
 
 > **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
 **\[Optional\]** `<string = "exclude">` YARA rules filter mode.
 
-- **`"exclude"`:** Exclude rules in input `experiment_yara_rulesfilter_list`.
-- **`"include"`:** Only include rules in input `experiment_yara_rulesfilter_list`.
+- **`"exclude"`:** Exclude rules in input `yara_rulesfilter_list`.
+- **`"include"`:** Only include rules in input `yara_rulesfilter_list`.
 
-#### `experiment_yara_warning`
+#### `yara_warning`
 
 > **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 

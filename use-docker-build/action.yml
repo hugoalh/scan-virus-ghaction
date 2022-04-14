@@ -3,8 +3,8 @@ name: "Scan Virus"
 author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
-  target:
-    description: "{string[]} Target."
+  targets:
+    description: "{string[]} Targets."
     required: false
     default: "./"
   deep:
@@ -19,7 +19,7 @@ inputs:
     description: "{boolean} Use YARA."
     required: false
     default: "false"
-  experiment_yara_rulesfilter_list:
+  yara_rulesfilter_list:
     description: "{string[]} YARA rules filter list."
     required: false
     default: |
@@ -29,14 +29,19 @@ inputs:
       Loki Rules/thor_inverse_matches.yar
       Loki Rules/thor-hacktools.yar
       Loki Rules/thor-webshells.yar
-  experiment_yara_rulesfilter_mode:
+  yara_rulesfilter_mode:
     description: "{string} YARA rules filter mode."
     required: false
     default: "exclude"
-  experiment_yara_warning:
+  yara_warning:
     description: "{boolean} Enable YARA warning."
     required: false
     default: "false"
+  target:
+    description: "{string[]} Target."
+    required: false
+    default: "./"
+    deprecationMessage: "Use `targets`!"
 runs:
   using: "docker"
   image: "../Dockerfile"

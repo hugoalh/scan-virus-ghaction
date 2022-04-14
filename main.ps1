@@ -1,3 +1,5 @@
+[string]$OriginalPreference_ErrorAction = $ErrorActionPreference
+$ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
@@ -7,17 +9,14 @@ enum FilterMode {
 	I = 1
 	In = 1
 }
-Enter-GHActionsLogGroup -Title 'System volume:'
-Write-Host -Object ((Get-PSDrive | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
-Exit-GHActionsLogGroup
-[bool]$ConclusionIsFail = $false
-[bool]$TargetIsLocal = $false
-[string[]]$TargetList = @()
+[bool]$ConclusionSetFail = $false
+[bool]$LocalTarget = $false
+[string[]]$NetworkTargets = @()
 [UInt64]$TotalScanElements = 0
-[UInt64]$TotalScanSize = 0
-[string]$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[string[]]$YARARules = Get-ChildItem -Path $YARARulesPath -Include @('*.yar', '*.yara') -Recurse -Name -File
-$YARARules = ($YARARules | Sort-Object)
+[UInt64]$TotalScanSizes = 0
+[string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
+[string[]]$YARARulesFilesAll = Get-ChildItem -Path $YARARulesRoot -Include @('*.yar', '*.yara') -Recurse -Name -File
+$YARARulesFilesAll = ($YARARulesFilesAll | Sort-Object)
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -26,20 +25,43 @@ function Test-StringIsURL {
 	$URIObject = $InputObject -as [System.URI]
 	return (($null -ne $URIObject.AbsoluteURI) -and ($InputObject -match '^https?:\/\/'))
 }
+function Write-OptimizePSList {
+	[CmdletBinding()][OutputType([void])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+	)
+	[string]$OutputObject = $InputObject -replace '(?:\r?\n)+$', ''
+	if ($OutputObject.Length -gt 0) {
+		Write-Host -Object $OutputObject
+	}
+}
+function Write-OptimizePSTable {
+	[CmdletBinding()][OutputType([void])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+	)
+	[string]$OutputObject = $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
+	if ($OutputObject.Length -gt 0) {
+		Write-Host -Object $OutputObject
+	}
+}
+Enter-GHActionsLogGroup -Title 'System volume:'
+Write-OptimizePSTable -InputObject (Get-PSDrive | Out-String)
+Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Import inputs.'
-[string]$Target = Get-GHActionsInput -Name 'target' -Require -Trim
-if ($Target -match '^\.\/$') {
-	$TargetIsLocal = $true
+[string]$Targets = (Get-GHActionsInput -Name 'targets' -Trim) ?? (Get-GHActionsInput -Name 'target' -Trim)
+if ($Targets -match '^\.\/$') {
+	$LocalTarget = $true
 } else {
-	[string[]]$TargetListRaw = $Target -split ";|\r?\n"
-	$TargetListRaw | ForEach-Object -Process {
+	[string[]]$NetworkTargetsRaw = $Targets -split ";|\r?\n"
+	$NetworkTargetsRaw | ForEach-Object -Process {
 		return $_.Trim()
 	} | Sort-Object | ForEach-Object -Process {
 		if ($_.Length -gt 0) {
 			if (Test-StringIsURL -InputObject $_) {
-				$TargetList += $_
+				$NetworkTargets += $_
 			} else {
-				Write-GHActionsWarning -Message "Input ``target``'s value ``$_`` is not a valid target!"
+				Write-GHActionsWarning -Message "Input ``targets``'s value ``$_`` is not a valid target!"
 			}
 		}
 	}
@@ -47,57 +69,60 @@ if ($Target -match '^\.\/$') {
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
-[string[]]$YARARulesFilterList = (Get-GHActionsInput -Name 'experiment_yara_rulesfilter_list' -Trim) -split ";|\r?\n"
-[FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'experiment_yara_rulesfilter_mode' -Require -Trim
-[bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'experiment_yara_warning' -Require -Trim))
-[string[]]$YARARulesFilter = @()
+[string[]]$YARARulesFilterList = (Get-GHActionsInput -Name 'yara_rulesfilter_list' -Trim) -split ";|\r?\n"
+[FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'yara_rulesfilter_mode' -Require -Trim
+[bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'yara_warning' -Require -Trim))
+[string[]]$YARARulesFilesFinal = @()
 switch ($YARARulesFilterMode.GetHashCode()) {
 	0 {
-		foreach ($YARARule in $YARARules) {
+		foreach ($YARARuleFileAll in $YARARulesFilesAll) {
 			[bool]$Pass = $true
-			foreach ($YARARuleFilterList in $YARARulesFilterList) {
-				if ($YARARule -like $YARARuleFilterList) {
+			foreach ($YARARuleFilter in $YARARulesFilterList) {
+				if ($YARARuleFileAll -like $YARARuleFilter) {
 					$Pass = $false
 				}
 			}
 			if ($Pass) {
-				$YARARulesFilter += $YARARule
+				$YARARulesFilesFinal += $YARARuleFileAll
 			}
 		}
 		break
 	}
 	1 {
-		foreach ($YARARule in $YARARules) {
+		foreach ($YARARuleFileAll in $YARARulesFilesAll) {
 			[bool]$Pass = $false
-			foreach ($YARARuleFilterList in $YARARulesFilterList) {
-				if ($YARARule -like $YARARuleFilterList) {
+			foreach ($YARARuleFilter in $YARARulesFilterList) {
+				if ($YARARuleFileAll -like $YARARuleFilter) {
 					$Pass = $true
 				}
 			}
 			if ($Pass) {
-				$YARARulesFilter += $YARARule
+				$YARARulesFilesFinal += $YARARuleFileAll
 			}
 		}
 		break
 	}
 }
-Write-Host -Object (([ordered]@{
-	TargetIsLocal = $TargetIsLocal
-	TargetList = $TargetList -join ', '
+Write-OptimizePSList -InputObject ([ordered]@{
+	Targets = ($LocalTarget ? '*Local*' : ($NetworkTargets -join ','))
 	Deep = $Deep
-	ClamAVEnable = $ClamAVEnable
-	YARAEnable = $YARAEnable
-	YARARules = $YARARulesFilter -join ', '
-	YARARulesFilterList = $YARARulesFilterList -join ', '
-	YARARulesFilterMode = $YARARulesFilterMode
-	YARAWarning = $YARAWarning
-} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
+	ClamAV_Enable = $ClamAVEnable
+	YARA_Enable = $YARAEnable
+	YARA_RulesFiles_All = $YARARulesFilesAll -join ', '
+	YARA_RulesFiles_All_Count = $YARARulesFilesAll.Count
+	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
+	YARA_RulesFilter_List_Count = $YARARulesFilterList.Count
+	YARA_RulesFilter_Mode = $YARARulesFilterMode
+	YARA_RulesFiles_Final = $YARARulesFilesFinal -join ', '
+	YARA_RulesFiles_Final_Count = $YARARulesFilesFinal.Count
+	YARA_Warning = $YARAWarning
+} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
-if (($TargetIsLocal -eq $false) -and ($TargetList.Length -eq 0)) {
-	Write-GHActionsFail -Message "Input ``target`` does not have valid target!"
+if (($LocalTarget -eq $false) -and ($NetworkTargets.Length -eq 0)) {
+	Write-GHActionsFail -Message 'Input `targets` does not have valid target!'
 }
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
-	Write-GHActionsFail -Message "No anti virus software enable!"
+	Write-GHActionsFail -Message 'No anti virus software enable!'
 }
 Enter-GHActionsLogGroup -Title 'Update system software.'
 try {
@@ -120,10 +145,10 @@ function Invoke-ScanVirus {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
-	Write-Host -Object "Begin session `"$Session`"."
+	Write-Host -Object "Begin scan session `"$Session`"."
 	[pscustomobject[]]$ElementsRaw = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
 	[pscustomobject[]]$Elements = $ElementsRaw | Sort-Object
-	$script:TotalScanElements += $Elements.Length
+	$script:TotalScanElements += $Elements.Count
 	[string[]]$ElementsListClamAV = @()
 	[string[]]$ElementsListYARA = @()
 	[pscustomobject[]]$ElementsListDisplay = @()
@@ -131,41 +156,42 @@ function Invoke-ScanVirus {
 		[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
 		[hashtable]$ElementListDisplay = @{
 			Element = $_.FullName -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
-			Flag = ($ElementIsDirectory ? 'D' : '')
+			Flags = ($ElementIsDirectory ? 'D' : '')
 		}
 		$ElementsListClamAV += $_.FullName
 		if ($ElementIsDirectory -eq $false) {
 			$ElementsListYARA += $_.FullName
-			[UInt64]$ElementSize = $_.Length
-			$ElementListDisplay.Size = $ElementSize
-			$script:TotalScanSize += $ElementSize
+			[UInt64]$ElementSizes = $_.Length
+			$ElementListDisplay.Sizes = $ElementSizes
+			$script:TotalScanSizes += $ElementSizes
 		}
 		$ElementsListDisplay += [pscustomobject]$ElementListDisplay
 	}
-	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Length):"
-	Write-Host -Object (($ElementsListDisplay | Format-Table -Property @(
-		'Element',
-		'Flag',
-		@{ Expression = 'Size'; Alignment = 'Right' }
-	) -AutoSize -Wrap | Out-String) -replace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Count):"
+	Write-OptimizePSTable -InputObject ($ElementsListDisplay | Format-Table -Property @('Element', 'Flags', @{Expression = 'Sizes'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
-	if ($Elements.Length -gt 0) {
+	if ($Elements.Count -gt 0) {
 		if ($ClamAVEnable) {
 			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
 			[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan"
+			[string[]]$ClamAVResultRaw = @()
 			$ClamAVOutput | ForEach-Object -Process {
 				if ($_ -notmatch ': OK$') {
-					Write-Host -Object ($_ -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './')
+					$ClamAVResultRaw += $_ -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
 				}
+			}
+			[string]$ClamAVResult = ($ClamAVResultRaw -join "`n").Trim()
+			if ($ClamAVResult.Length -gt 0) {
+				Write-Host -Object $ClamAVResult
 			}
 			if ($LASTEXITCODE -eq 1) {
 				Write-GHActionsError -Message "Found issue in session `"$Session`" via ClamAV!"
-				$script:ConclusionIsFail = $true
+				$script:ConclusionSetFail = $true
 			} elseif ($LASTEXITCODE -gt 1) {
 				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in session `"$Session`"!"
-				$script:ConclusionIsFail = $true
+				$script:ConclusionSetFail = $true
 			}
 			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListClamAVPath -Force -Confirm:$false
@@ -173,56 +199,56 @@ function Invoke-ScanVirus {
 		if ($YARAEnable) {
 			[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
-			[hashtable]$YARAResult = @{}
+			[hashtable]$YARAResultRaw = @{}
 			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
-			foreach ($YARARuleFilter in $YARARulesFilter) {
-				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesPath -ChildPath $YARARuleFilter)`" `"$ElementsListYARAPath`""
+			foreach ($YARARuleFileFinal in $YARARulesFilesFinal) {
+				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARuleFileFinal)`" `"$ElementsListYARAPath`""
 				$YARAOutput | ForEach-Object -Process {
 					if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
-						Write-GHActionsDebug -Message $_
-						[string[]]$Line = $_ -split "(?<=^.+?) "
-						[string]$Rule, [string]$Element = $Line
+						Write-GHActionsDebug -Message "$YARARuleFileFinal/$_"
+						[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) "
 						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
-						if ($null -eq $YARAResult[$Element]) {
-							$YARAResult[$Element] = @()
+						if ($null -eq $YARAResultRaw[$Element]) {
+							$YARAResultRaw[$Element] = @()
 						}
-						$YARAResult[$Element] += "`"$YARARuleFilter`": $Rule"
-					} else {
+						$YARAResultRaw[$Element] += "$YARARuleFileFinal/$Rule"
+					} elseif ($_.Length -gt 0) {
 						Write-Host -Object $_
 					}
 				}
 				if ($LASTEXITCODE -gt 0) {
-					Write-GHActionsError -Message "Unexpected YARA `"$YARARuleFilter`" result ``$LASTEXITCODE`` in session `"$Session`"!"
-					$script:ConclusionIsFail = $true
+					Write-GHActionsError -Message "Unexpected YARA `"$YARARuleFileFinal`" result ``$LASTEXITCODE`` in session `"$Session`"!"
+					$script:ConclusionSetFail = $true
 				}
 			}
-			if ($YARAResult.Count -gt 0) {
-				$YARAResult.GetEnumerator() | ForEach-Object -Process {
+			if ($YARAResultRaw.Count -gt 0) {
+				[hashtable]$YARAResult = [ordered]@{}
+				$YARAResultRaw.GetEnumerator() | Sort-Object -Property 'Name' | ForEach-Object -Process {
 					$YARAResult[$_.Name] = $_.Value -join ', '
 				}
-				Write-Host -Object (($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String) -replace '(?:\r?\n)+$', '')
-				Write-GHActionsError -Message "Found issue in $Session via YARA!"
-				$script:ConclusionIsFail = $true
+				Write-OptimizePSList -InputObject ($YARAResult | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
+				Write-GHActionsError -Message "Found issue in session `"$Session`" via YARA!"
+				$script:ConclusionSetFail = $true
 			}
 			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
 		}
 	}
-	Write-Host -Object "End session $Session."
+	Write-Host -Object "End scan session $Session."
 }
-if ($TargetIsLocal) {
+if ($LocalTarget) {
 	Invoke-ScanVirus -Session 'Current'
 	if ($Deep) {
 		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
 			[string[]]$GitCommits = Invoke-Expression -Command 'git --no-pager log --all --format=%H --reflog --reverse'
-			if ($GitCommits.Length -le 1) {
-				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Length) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
+			if ($GitCommits.Count -le 1) {
+				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 			}
-			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Length; $GitCommitsIndex++) {
+			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 				[string]$GitCommit = $GitCommits[$GitCommitsIndex]
-				[string]$GitSession = "Commit #$($GitCommitsIndex + 1)/$($GitCommits.Length) - $GitCommit"
-				Enter-GHActionsLogGroup -Title "Checkout Git commit $GitCommit."
+				[string]$GitSession = "Commit #$($GitCommitsIndex + 1)/$($GitCommits.Count) - $GitCommit"
+				Enter-GHActionsLogGroup -Title "Git checkout for session `"$GitSession`"."
 				try {
 					Invoke-Expression -Command "git checkout $GitCommit --force --quiet"
 				} catch {  }
@@ -231,7 +257,7 @@ if ($TargetIsLocal) {
 					Invoke-ScanVirus -Session $GitSession
 				} else {
 					Write-GHActionsError -Message "Unexpected Git checkout result ``$LASTEXITCODE`` in session `"$GitSession`"!"
-					$ConclusionIsFail = $true
+					$ConclusionSetFail = $true
 					Exit-GHActionsLogGroup
 				}
 			}
@@ -248,7 +274,7 @@ if ($TargetIsLocal) {
 			Remove-Item -Path (Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_) -Recurse -Force -Confirm:$false
 		}
 	}
-	$TargetList | ForEach-Object -Process {
+	$NetworkTargets | ForEach-Object -Process {
 		Enter-GHActionsLogGroup -Title "Fetch file `"$_`"."
 		[string]$NetworkTemporaryFileFullPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath (New-Guid).Guid
 		try {
@@ -262,14 +288,22 @@ if ($TargetIsLocal) {
 		Remove-Item -Path $NetworkTemporaryFileFullPath -Force -Confirm:$false
 	}
 }
-Write-Host -Object "Total scan elements: $TotalScanElements"
-Write-Host -Object "Total scan size: $($TotalScanSize / 1TB) TB // $($TotalScanSize / 1GB) GB // $($TotalScanSize / 1MB) MB // $($TotalScanSize / 1KB) KB // $TotalScanSize B"
+Enter-GHActionsLogGroup -Title "Statistics:"
+Write-OptimizePSTable -InputObject ([ordered]@{
+	TotalScanElements = $TotalScanElements
+	TotalScanSizes_B = "$TotalScanSizes  B"
+	TotalScanSizes_KB = "$($TotalScanSizes / 1KB) KB"
+	TotalScanSizes_MB = "$($TotalScanSizes / 1MB) MB"
+	TotalScanSizes_GB = "$($TotalScanSizes / 1GB) GB"
+	TotalScanSizes_TB = "$($TotalScanSizes / 1TB) TB"
+} | Format-Table -Property @('Name', @{Expression = 'Value'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GHActionsLogGroup
 }
-if ($ConclusionIsFail) {
+$ErrorActionPreference = $OriginalPreference_ErrorAction
+if ($ConclusionSetFail) {
 	exit 1
 }
 exit 0
