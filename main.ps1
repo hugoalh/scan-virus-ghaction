@@ -82,6 +82,12 @@ switch ($YARARulesFilterMode.GetHashCode()) {
 					$Pass = $false
 				}
 			}
+			if (
+				($YARARuleFileAll -like 'index.yar') -or
+				($YARARuleFileAll -like 'index.yara')
+			) {
+				$Pass = $false
+			}
 			if ($Pass) {
 				$YARARulesFilesFinal += $YARARuleFileAll
 			}

@@ -23,12 +23,8 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 
 - [ClamAV](https://www.clamav.net)
   > ClamAV (by [Cisco](https://www.cisco.com)) is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
-- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara)
+- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara) ([Rules List](./yara-rules.md))
   > YARA (by [VirusTotal](https://www.virustotal.com)) is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
-
-  > **Rules List:**
-  >
-  > - [blacktop](https://github.com/blacktop/docker-yara/tree/master/w-rules/rules)
 
 ### ⚠ Disclaimer
 
