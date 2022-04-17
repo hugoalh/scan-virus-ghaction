@@ -1,7 +1,25 @@
-[string]$YARARulesPath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[string]$YARARulesCompilePath = Join-Path -Path $YARARulesPath -ChildPath 'compile'
-[string]$YARARulesSourcePath = Join-Path -Path $YARARulesPath -ChildPath 'source'
-[string[]]$YARARulesSource = Get-ChildItem -Path $YARARulesSourcePath -Include @('*.yar', '*.yara') -Recurse -Name -File
-$YARARulesSource | ForEach-Object -Process {
-	Invoke-Expression -Command "yarac --no-warnings `"$(Join-Path -Path $YARARulesSourcePath -ChildPath $_)`" `"$(Join-Path -Path $YARARulesCompilePath -ChildPath ($_.ToLower() -replace '[^a-zA-Z\d\s_-]+', '' -replace '[\s_]+', '-' -replace '\.yara?$', '.yarac'))`"" -ErrorAction Stop
+[hashtable[]]$YARARulesSourceRepositories = @(
+	@{
+		Name = 'blacktop'
+		URL = 'https://github.com/blacktop/docker-yara.git'
+		Branch = 'master'
+		Index = 'w-rules/rules/index.yar'
+	}
+	@{
+		Name = 'yara-community'
+		URL = 'https://github.com/Yara-Rules/rules.git'
+		Branch = 'master'
+		Index = 'index.yar'
+	}
+)
+
+[string]$OriginalPreference_ErrorAction = $ErrorActionPreference
+$ErrorActionPreference = 'Stop'
+[string]$YARARulesSourcePath = Join-Path -Path '/tmp' -ChildPath (New-Guid).Guid
+[string]$YARARulesCompilePath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules' -AdditionalChildPath 'compile'
+$YARARulesSourceRepositories | ForEach-Object -Process {
+	[string]$YARARuleSourceRepositoryLocal = Join-Path -Path $YARARulesSourcePath -ChildPath $_.Name
+	Invoke-Expression -Command "git clone --branch `"$($_.Branch)`" --quiet --recurse-submodules `"$($_.URL)`" `"$YARARuleSourceRepositoryLocal`""
+	Invoke-Expression -Command "yarac --no-warnings `"$(Join-Path -Path $YARARuleSourceRepositoryLocal -ChildPath $_.Index)`" `"$(Join-Path -Path $YARARulesCompilePath -ChildPath "$($_.Name).yarac")`""
 }
+$ErrorActionPreference = $OriginalPreference_ErrorAction

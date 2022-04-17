@@ -26,17 +26,13 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -S
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 
-FROM blacktop/yara:w-rules AS get-yara-rules
-
-# FROM debian:11 AS extract-yara-rules
-# COPY --from=setup / /
-# COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules/source
-# COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
-# RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
+FROM debian:11 AS extract-yara-rules
+COPY --from=setup / /
+COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
+RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
 
 FROM debian:11 AS main
 COPY --from=setup / /
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
-# COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/compile /opt/hugoalh/scan-virus-ghaction/yara-rules
-COPY --from=get-yara-rules /rules /opt/hugoalh/scan-virus-ghaction/yara-rules
+COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/compile /opt/hugoalh/scan-virus-ghaction/yara-rules
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
