@@ -15,7 +15,7 @@ enum FilterMode {
 [UInt64]$TotalScanElements = 0
 [UInt64]$TotalScanSizes = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[string[]]$YARARulesFilesAll = Get-ChildItem -Path $YARARulesRoot -Include @('*.yar', '*.yara') -Recurse -Name -File
+[string[]]$YARARulesFilesAll = Get-ChildItem -Path $YARARulesRoot -Include '*.yarac' -Recurse -Name -File
 $YARARulesFilesAll = ($YARARulesFilesAll | Sort-Object)
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
@@ -81,12 +81,6 @@ switch ($YARARulesFilterMode.GetHashCode()) {
 				if ($YARARuleFileAll -like $YARARuleFilter) {
 					$Pass = $false
 				}
-			}
-			if (
-				($YARARuleFileAll -like 'index.yar') -or
-				($YARARuleFileAll -like 'index.yara')
-			) {
-				$Pass = $false
 			}
 			if ($Pass) {
 				$YARARulesFilesFinal += $YARARuleFileAll
@@ -208,22 +202,23 @@ function Invoke-ScanVirus {
 			[hashtable]$YARAResultRaw = @{}
 			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
 			foreach ($YARARuleFileFinal in $YARARulesFilesFinal) {
-				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARuleFileFinal)`" `"$ElementsListYARAPath`""
+				[string]$YARARuleFileName = $YARARuleFileFinal -replace '\.yarac$', ''
+				[string[]]$YARAOutput = Invoke-Expression -Command "yara --compiled-rules --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARuleFileFinal)`" `"$ElementsListYARAPath`""
 				$YARAOutput | ForEach-Object -Process {
 					if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
-						Write-GHActionsDebug -Message "$YARARuleFileFinal/$_"
+						Write-GHActionsDebug -Message "$YARARuleFileName/$_"
 						[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) "
 						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
 						if ($null -eq $YARAResultRaw[$Element]) {
 							$YARAResultRaw[$Element] = @()
 						}
-						$YARAResultRaw[$Element] += "$YARARuleFileFinal/$Rule"
+						$YARAResultRaw[$Element] += "$YARARuleFileName/$Rule"
 					} elseif ($_.Length -gt 0) {
 						Write-Host -Object $_
 					}
 				}
 				if ($LASTEXITCODE -gt 0) {
-					Write-GHActionsError -Message "Unexpected YARA `"$YARARuleFileFinal`" result ``$LASTEXITCODE`` in session `"$Session`"!"
+					Write-GHActionsError -Message "Unexpected YARA `"$YARARuleFileName`" result ``$LASTEXITCODE`` in session `"$Session`"!"
 					$script:ConclusionSetFail = $true
 				}
 			}
