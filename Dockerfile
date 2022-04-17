@@ -1,7 +1,7 @@
 FROM debian:11 AS extract-powershell
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.2/powershell-7.2.2-linux-x64.tar.gz /tmp/powershell-7.2.2-linux-x64.tar.gz
-RUN ["mkdir", "-p", "/opt/microsoft/powershell/7"]
+RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
 RUN ["tar", "zxf", "/tmp/powershell-7.2.2-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
 FROM debian:11 AS setup
@@ -11,7 +11,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
 COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
-RUN ["chmod", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
+RUN ["chmod", "--verbose", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
 RUN ["apt-get", "--assume-yes", "upgrade"]

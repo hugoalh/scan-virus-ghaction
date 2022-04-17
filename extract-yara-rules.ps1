@@ -19,7 +19,7 @@ $ErrorActionPreference = 'Stop'
 [string]$YARARulesCompilePath = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules' -AdditionalChildPath 'compile'
 $YARARulesSourceRepositories | ForEach-Object -Process {
 	[string]$YARARuleSourceRepositoryLocal = Join-Path -Path $YARARulesSourcePath -ChildPath $_.Name
-	Invoke-Expression -Command "git clone --branch `"$($_.Branch)`" --quiet --recurse-submodules `"$($_.URL)`" `"$YARARuleSourceRepositoryLocal`""
-	Invoke-Expression -Command "yarac --no-warnings `"$(Join-Path -Path $YARARuleSourceRepositoryLocal -ChildPath $_.Index)`" `"$(Join-Path -Path $YARARulesCompilePath -ChildPath "$($_.Name).yarac")`""
+	Invoke-Expression -Command "git clone --branch `"$($_.Branch)`" --recurse-submodules --verbose `"$($_.URL)`" `"$YARARuleSourceRepositoryLocal`""
+	Invoke-Expression -Command "yarac `"$(Join-Path -Path $YARARuleSourceRepositoryLocal -ChildPath $_.Index)`" `"$(Join-Path -Path $YARARulesCompilePath -ChildPath "$($_.Name).yarac")`""
 }
 $ErrorActionPreference = $OriginalPreference_ErrorAction
