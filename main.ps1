@@ -15,8 +15,8 @@ enum FilterMode {
 [UInt64]$TotalScanElements = 0
 [UInt64]$TotalScanSizes = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[string[]]$YARARulesFilesAll = Get-ChildItem -Path $YARARulesRoot -Include '*.yarac' -Recurse -Name -File
-$YARARulesFilesAll = ($YARARulesFilesAll | Sort-Object)
+[string[]]$YARARulesIndexRaw = Get-Content -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Encoding UTF8NoBOM
+[pscustomobject[]]$YARARulesIndex = ConvertFrom-Csv -InputObject $YARARulesIndexRaw[1..$YARARulesIndexRaw.Count] -Delimiter "`t" -Header ($YARARulesIndexRaw[0] -split "`t")
 function Test-StringIsURL {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -72,32 +72,32 @@ if ($Targets -match '^\.\/$') {
 [string[]]$YARARulesFilterList = (Get-GHActionsInput -Name 'yara_rulesfilter_list' -Trim) -split ";|\r?\n"
 [FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'yara_rulesfilter_mode' -Require -Trim
 [bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'yara_warning' -Require -Trim))
-[string[]]$YARARulesFilesFinal = @()
+[pscustomobject[]]$YARARulesFinal = @()
 switch ($YARARulesFilterMode.GetHashCode()) {
 	0 {
-		foreach ($YARARuleFileAll in $YARARulesFilesAll) {
+		foreach ($YARARule in $YARARulesIndex) {
 			[bool]$Pass = $true
 			foreach ($YARARuleFilter in $YARARulesFilterList) {
-				if ($YARARuleFileAll -like $YARARuleFilter) {
+				if ($YARARule.Name -like $YARARuleFilter) {
 					$Pass = $false
 				}
 			}
 			if ($Pass) {
-				$YARARulesFilesFinal += $YARARuleFileAll
+				$YARARulesFinal += $YARARule
 			}
 		}
 		break
 	}
 	1 {
-		foreach ($YARARuleFileAll in $YARARulesFilesAll) {
+		foreach ($YARARule in $YARARulesIndex) {
 			[bool]$Pass = $false
 			foreach ($YARARuleFilter in $YARARulesFilterList) {
-				if ($YARARuleFileAll -like $YARARuleFilter) {
+				if ($YARARule.Name -like $YARARuleFilter) {
 					$Pass = $true
 				}
 			}
 			if ($Pass) {
-				$YARARulesFilesFinal += $YARARuleFileAll
+				$YARARulesFinal += $YARARule
 			}
 		}
 		break
@@ -108,13 +108,13 @@ Write-OptimizePSList -InputObject ([ordered]@{
 	Deep = $Deep
 	ClamAV_Enable = $ClamAVEnable
 	YARA_Enable = $YARAEnable
-	YARA_RulesFiles_All = $YARARulesFilesAll -join ', '
-	YARA_RulesFiles_All_Count = $YARARulesFilesAll.Count
-	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
-	YARA_RulesFilter_List_Count = $YARARulesFilterList.Count
-	YARA_RulesFilter_Mode = $YARARulesFilterMode
-	YARA_RulesFiles_Final = $YARARulesFilesFinal -join ', '
-	YARA_RulesFiles_Final_Count = $YARARulesFilesFinal.Count
+	YARA_Rules_All = $YARARulesIndex.Name -join ', '
+	YARA_Rules_All_Count = ($YARARulesIndex.Name).Count
+	YARA_Rules_Filter_List = $YARARulesFilterList -join ', '
+	YARA_Rules_Filter_List_Count = $YARARulesFilterList.Count
+	YARA_Rules_Filter_Mode = $YARARulesFilterMode
+	YARA_Rules_Final = $YARARulesFinal.Name -join ', '
+	YARA_Rules_Final_Count = ($YARARulesFinal.Name).Count
 	YARA_Warning = $YARAWarning
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
@@ -187,7 +187,7 @@ function Invoke-ScanVirus {
 				Write-Host -Object $ClamAVResult
 			}
 			if ($LASTEXITCODE -eq 1) {
-				Write-GHActionsError -Message "Found issue in session `"$Session`" via ClamAV!"
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV!"
 				$script:ConclusionSetFail = $true
 			} elseif ($LASTEXITCODE -gt 1) {
 				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in session `"$Session`"!"
@@ -201,24 +201,23 @@ function Invoke-ScanVirus {
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
 			[hashtable]$YARAResultRaw = @{}
 			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
-			foreach ($YARARuleFileFinal in $YARARulesFilesFinal) {
-				[string]$YARARuleFileName = $YARARuleFileFinal -replace '\.yarac$', ''
-				[string[]]$YARAOutput = Invoke-Expression -Command "yara --compiled-rules --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARuleFileFinal)`" `"$ElementsListYARAPath`""
+			foreach ($YARARule in $YARARulesFinal) {
+				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
 				$YARAOutput | ForEach-Object -Process {
 					if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
-						Write-GHActionsDebug -Message "$YARARuleFileName/$_"
+						Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
 						[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) "
 						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", './'
 						if ($null -eq $YARAResultRaw[$Element]) {
 							$YARAResultRaw[$Element] = @()
 						}
-						$YARAResultRaw[$Element] += "$YARARuleFileName/$Rule"
+						$YARAResultRaw[$Element] += "$($YARARule.Name)/$Rule"
 					} elseif ($_.Length -gt 0) {
 						Write-Host -Object $_
 					}
 				}
 				if ($LASTEXITCODE -gt 0) {
-					Write-GHActionsError -Message "Unexpected YARA `"$YARARuleFileName`" result ``$LASTEXITCODE`` in session `"$Session`"!"
+					Write-GHActionsError -Message "Unexpected YARA `"$($YARARule.Name)`" result ``$LASTEXITCODE`` in session `"$Session`"!"
 					$script:ConclusionSetFail = $true
 				}
 			}
@@ -228,7 +227,7 @@ function Invoke-ScanVirus {
 					$YARAResult[$_.Name] = $_.Value -join ', '
 				}
 				Write-OptimizePSList -InputObject ($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
-				Write-GHActionsError -Message "Found issue in session `"$Session`" via YARA!"
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA!"
 				$script:ConclusionSetFail = $true
 			}
 			Exit-GHActionsLogGroup

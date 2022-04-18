@@ -22,13 +22,7 @@ inputs:
   yara_rulesfilter_list:
     description: "{string[]} YARA rules filter list."
     required: false
-    default: |
-      Loki Rules/apt_scanbox_deeppanda.yar
-      Loki Rules/crime_malumpos.yar
-      Loki Rules/general_cloaking.yar
-      Loki Rules/thor_inverse_matches.yar
-      Loki Rules/thor-hacktools.yar
-      Loki Rules/thor-webshells.yar
+    default: ""
   yara_rulesfilter_mode:
     description: "{string} YARA rules filter mode."
     required: false

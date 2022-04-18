@@ -4,7 +4,7 @@ ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.2/powershell
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
 RUN ["tar", "zxf", "/tmp/powershell-7.2.2-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
-FROM debian:11 AS setup
+FROM debian:11 AS main
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
@@ -25,14 +25,5 @@ RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbos
 RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
-
-FROM debian:11 AS extract-yara-rules
-COPY --from=setup / /
-COPY extract-yara-rules.ps1 /opt/hugoalh/scan-virus-ghaction/
-RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/extract-yara-rules.ps1"]
-
-FROM debian:11 AS main
-COPY --from=setup / /
-COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
-COPY --from=extract-yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/compile /opt/hugoalh/scan-virus-ghaction/yara-rules
+COPY main.ps1 yara-rules /opt/hugoalh/scan-virus-ghaction/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]

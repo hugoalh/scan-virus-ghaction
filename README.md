@@ -22,9 +22,9 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 ### 🛡 Anti Virus Software
 
 - [ClamAV](https://www.clamav.net)
-  > ClamAV (by [Cisco](https://www.cisco.com)) is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
-- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara) ([Rules List](./yara-rules.md))
-  > YARA (by [VirusTotal](https://www.virustotal.com)) is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
+  > ClamAV, by [Cisco](https://www.cisco.com), is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
+- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara) ([Rules List][yara-rules-list])
+  > YARA, by [VirusTotal](https://www.virustotal.com), is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
 
 ### ⚠ Disclaimer
 
@@ -59,13 +59,7 @@ Require Software:
 
 **\[Optional\]** `<string[] = "./">` Targets.
 
-- **Local (`"./"`):** Workspace.
-  > **💡 Hint:**
-  >
-  > Suitable for:
-  >
-  > - previously checkouted repository via `actions/checkout`
-  > - previously prepared files to workspace
+- **Local (`"./"`):** Workspace, for previously checkouted repository via [`actions/checkout`](https://github.com/actions/checkout), or previously prepared files to workspace.
 - **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or per line.
   > **⚠ Important:**
   >
@@ -82,24 +76,15 @@ Require Software:
 
 #### `yara_enable`
 
-**\[Optional\]** `<boolean = false>` Use YARA.
+> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
-> **💡 Hint:** This is recommended to keep as disable due to YARA can throw many false positives.
+**\[Optional\]** `<boolean = false>` Use YARA.
 
 #### `yara_rulesfilter_list`
 
 > **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
-**\[Optional\]** `<string[]>` YARA rules filter list, separate each rule file with semicolon (`;`) or per line; Support wildcards; Default values are:
-
-```yml
-Loki Rules/apt_scanbox_deeppanda.yar
-Loki Rules/crime_malumpos.yar
-Loki Rules/general_cloaking.yar
-Loki Rules/thor_inverse_matches.yar
-Loki Rules/thor-hacktools.yar
-Loki Rules/thor-webshells.yar
-```
+**\[Optional\]** `<string[] = "">` YARA rules filter list, by [rules list][yara-rules-list]'s name, separate each rule with semicolon (`;`) or per line, support wildcards.
 
 #### `yara_rulesfilter_mode`
 
@@ -116,7 +101,7 @@ Loki Rules/thor-webshells.yar
 
 **\[Optional\]** `<boolean = false>` Enable YARA warning.
 
-> **💡 Hint:** This is recommended to keep as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these in most cases.
+> **💡 Hint:** This is recommended to keep as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
 
 ### 📤 Output
 
@@ -143,3 +128,5 @@ jobs:
 #### GitHub Actions
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
+
+[yara-rules-list]: ./yara-rules/index.tsv
