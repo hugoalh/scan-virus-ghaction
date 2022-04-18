@@ -10,7 +10,7 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
-COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
+COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powershell/7/
 RUN ["chmod", "--verbose", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
@@ -25,6 +25,6 @@ RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbos
 RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
-COPY main.ps1 /opt/hugoalh/scan-virus-ghaction
-COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules
+COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
+COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
