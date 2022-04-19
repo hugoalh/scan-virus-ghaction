@@ -66,9 +66,16 @@ Require Software:
   > - Each files is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
   > - Require a clean workspace.
 
+When this input is network, will ignore inputs:
+
+- `clamav_filesfilter_list`
+- `clamav_filesfilter_mode`
+- `yara_filesfilter_list`
+- `yara_filesfilter_mode`
+
 #### `deep`
 
-**\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits.
+**\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits. When this input is `false`, will ignore input `git_reversesession`.
 
 #### `git_reversesession`
 
@@ -83,11 +90,11 @@ Require Software:
 
 #### `clamav_filesfilter_list`
 
-**\[Optional\]** `<string[] = "">` ClamAV files filter list, by regular expression, separate each target with semicolon (`;`) or per line. When input `targets` is network, this input is ignore.
+**\[Optional\]** `<string[] = "">` ClamAV files filter list, by regular expression, separate each target with semicolon (`;`) or per line.
 
 #### `clamav_filesfilter_mode`
 
-**\[Optional\]** `<string = "exclude">` ClamAV files filter mode. When input `targets` is network, this input is ignore.
+**\[Optional\]** `<string = "exclude">` ClamAV files filter mode.
 
 - **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
 - **`"include"`:** Only include files in input `clamav_filesfilter_list`.
@@ -106,11 +113,11 @@ Require Software:
 
 #### `yara_filesfilter_list`
 
-**\[Optional\]** `<string[] = "">` YARA files filter list, by regular expression, separate each target with semicolon (`;`) or per line. When input `targets` is network, this input is ignore.
+**\[Optional\]** `<string[] = "">` YARA files filter list, by regular expression, separate each target with semicolon (`;`) or per line.
 
 #### `yara_filesfilter_mode`
 
-**\[Optional\]** `<string = "exclude">` YARA files filter mode. When input `targets` is network, this input is ignore.
+**\[Optional\]** `<string = "exclude">` YARA files filter mode.
 
 - **`"exclude"`:** Exclude files in input `yara_filesfilter_list`.
 - **`"include"`:** Only include files in input `yara_filesfilter_list`.

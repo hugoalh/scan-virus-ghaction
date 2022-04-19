@@ -192,14 +192,20 @@ function Invoke-ScanVirusSession {
 			$ElementListDisplay.Sizes = $ElementSizes
 			$script:TotalSizesAll += $ElementSizes
 		}
-		if (Test-InputFilter -Target $ElementName -FilterList $ClamAVFilesFilterList -FilterMode $ClamAVFilesFilterMode) {
+		if (
+			($LocalTarget -eq $false) -or
+			(Test-InputFilter -Target $ElementName -FilterList $ClamAVFilesFilterList -FilterMode $ClamAVFilesFilterMode)
+		) {
 			$ElementsListClamAV += $_.FullName
 			$ElementListDisplay.Flags += 'C'
 			if ($ElementIsDirectory -eq $false) {
 				$script:TotalSizesClamAV += $ElementSizes
 			}
 		}
-		if (($ElementIsDirectory -eq $false) -and (Test-InputFilter -Target $ElementName -FilterList $YARAFilesFilterList -FilterMode $YARAFilesFilterMode)) {
+		if (($ElementIsDirectory -eq $false) -and (
+			($LocalTarget -eq $false) -or
+			(Test-InputFilter -Target $ElementName -FilterList $YARAFilesFilterList -FilterMode $YARAFilesFilterMode)
+		)) {
 			$ElementsListYARA += $_.FullName
 			$ElementListDisplay.Flags += 'Y'
 			$script:TotalSizesYARA += $ElementSizes
