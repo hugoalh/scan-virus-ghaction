@@ -45,7 +45,7 @@ function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][string[]]$FilterList,
+		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][AllowNull()][string[]]$FilterList,
 		[Parameter(Mandatory = $true, Position = 2)][FilterMode]$FilterMode
 	)
 	foreach ($Filter in $FilterList) {
