@@ -107,9 +107,11 @@ if ($Targets -match '^\.[\/\\]$') {
 }
 $NetworkTargets = $NetworkTargets | Sort-Object
 [bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
+[bool]$GitReverseSession = [bool]::Parse((Get-GHActionsInput -Name 'git_reversesession' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [string[]]$ClamAVFilesFilterList = Get-GHActionsInputFilterList -Name 'clamav_filesfilter_list'
 [FilterMode]$ClamAVFilesFilterMode = Get-GHActionsInput -Name 'clamav_filesfilter_mode' -Require -Trim
+[bool]$ClamAVMultiScan = [bool]::Parse((Get-GHActionsInput -Name 'clamav_multiscan' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
 [string[]]$YARAFilesFilterList = Get-GHActionsInputFilterList -Name 'yara_filesfilter_list'
 [FilterMode]$YARAFilesFilterMode = Get-GHActionsInput -Name 'yara_filesfilter_mode' -Require -Trim
@@ -123,10 +125,12 @@ Write-OptimizePSList -InputObject ([ordered]@{
 	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
 	Targets_Count = $LocalTarget ? 1 : ($NetworkTargets.Count)
 	Deep = $Deep
+	Git_ReverseSession = $GitReverseSession
 	ClamAV_Enable = $ClamAVEnable
 	ClamAV_Files_Filter_List = $ClamAVFilesFilterList -join ', '
 	ClamAV_Files_Filter_Count = $ClamAVFilesFilterList.Count
 	ClamAV_Files_Filter_Mode = $ClamAVFilesFilterMode
+	ClamAV_MultiScan = $ClamAVMultiScan
 	YARA_Enable = $YARAEnable
 	YARA_Files_Filter_List = $YARAFilesFilterList -join ', '
 	YARA_Files_Filter_Count = $YARAFilesFilterList.Count
@@ -214,7 +218,7 @@ function Invoke-ScanVirusSession {
 			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-			[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`" --multiscan"
+			[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`"$($ClamAVMultiScan ? ' --multiscan' : '')"
 			[string[]]$ClamAVResultRaw = @()
 			$ClamAVOutput | ForEach-Object -Process {
 				if ($_ -notmatch ': OK$') {
@@ -280,13 +284,13 @@ if ($LocalTarget) {
 	if ($Deep) {
 		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
-			[string[]]$GitCommits = Invoke-Expression -Command 'git --no-pager log --all --format=%H --reflog --reverse'
+			[string[]]$GitCommits = Invoke-Expression -Command "git --no-pager log --all --format=%H --reflog$($GitReverseSession ? '' : ' --reverse')"
 			if ($GitCommits.Count -le 1) {
 				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 				[string]$GitCommit = $GitCommits[$GitCommitsIndex]
-				[string]$GitSession = "Commit #$($GitCommitsIndex + 1)/$($GitCommits.Count) - $GitCommit"
+				[string]$GitSession = "Commit #$($GitReverseSession ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count) - $GitCommit"
 				Enter-GHActionsLogGroup -Title "Git checkout for session `"$GitSession`"."
 				try {
 					Invoke-Expression -Command "git checkout $GitCommit --force --quiet"

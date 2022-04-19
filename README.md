@@ -70,6 +70,13 @@ Require Software:
 
 **\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits.
 
+#### `git_reversesession`
+
+**\[Optional\]** `<boolean = false>` Reverse Git session.
+
+- **`false`:** From oldest to newest.
+- **`true`:** From newest to oldest.
+
 #### `clamav_enable`
 
 **\[Optional\]** `<boolean = true>` Use ClamAV.
@@ -84,6 +91,12 @@ Require Software:
 
 - **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
 - **`"include"`:** Only include files in input `clamav_filesfilter_list`.
+
+#### `clamav_multiscan`
+
+**\[Optional\]** `<boolean = true>` Use ClamAV "multiscan" mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+
+> **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `yara_enable`
 
@@ -117,7 +130,7 @@ Require Software:
 
 **\[Optional\]** `<boolean = false>` Enable YARA warning.
 
-> **⚠ Important:** This is recommended to keep as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
+> **⚠ Important:** It is recommended to keep this as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
 
 ### 📤 Output
 
