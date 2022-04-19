@@ -255,11 +255,11 @@ function Invoke-ScanVirusSession {
 				if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
 					Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
 					[string]$Rule, [string]$Element = $_ -split '(?<=^.+?) '
+					$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", ''
 					[string]$YARARuleName = "$($YARARule.Name)/$Rule"
 					if (($YARARulesFilterMode.GetHashCode() -eq 0) -and ((Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) -eq $false)) {
 						Write-GHActionsDebug -Message '  > Skip'
 					} else {
-						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", ''
 						if ($null -eq $YARAResultRaw[$Element]) {
 							$YARAResultRaw[$Element] = @()
 						}
