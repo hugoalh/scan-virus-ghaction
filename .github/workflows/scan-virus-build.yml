@@ -59,5 +59,7 @@ jobs:
           yara_rulesfilter_list: |
             ^blacktop\/peertopeer>Dockerfile$
             ^yara-community\/capabilities\/spreading_file>\.gitignore$
+            ^yara-community\/maldocs\/powershell>\.github\/workflows\/scan-virus-build\.yml$
             ^yara-community\/maldocs\/powershell>Dockerfile$
+            ^yara-community\/maldocs\/powershell>README\.md$
           yara_warning: "true"

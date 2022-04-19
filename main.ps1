@@ -256,7 +256,7 @@ function Invoke-ScanVirusSession {
 					Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
 					[string]$Rule, [string]$Element = $_ -split '(?<=^.+?) '
 					[string]$YARARuleName = "$($YARARule.Name)/$Rule"
-					if (($YARARulesFilterMode.GetHashCode() -eq 0) -and (Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode)) {
+					if (($YARARulesFilterMode.GetHashCode() -eq 0) -and ((Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) -eq $false)) {
 						Write-GHActionsDebug -Message '  > Skip'
 					} else {
 						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", ''
