@@ -24,7 +24,7 @@ enum FilterMode {
 function Format-GHActionsInputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+		[Parameter(Mandatory = $true, Position = 0)][AllowEmptyString()][string]$InputObject
 	)
 	[string[]]$Raw = $InputObject -split ";|\r?\n"
 	[string[]]$Result = $Raw | ForEach-Object -Process {
@@ -45,7 +45,7 @@ function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[Parameter(Mandatory = $true, Position = 1)][string[]]$FilterList,
+		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][string[]]$FilterList,
 		[Parameter(Mandatory = $true, Position = 2)][FilterMode]$FilterMode
 	)
 	foreach ($Filter in $FilterList) {
