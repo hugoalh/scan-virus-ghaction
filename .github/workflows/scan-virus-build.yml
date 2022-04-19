@@ -47,5 +47,10 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
           deep: "${{needs.parse-inputs.outputs.deep}}"
+          clamav_filesfilter_list: |
+            ^yara-rules\/
           yara_enable: "true"
+          yara_filesfilter_list: |
+            ^\.git\/
+            ^yara-rules\/
           yara_warning: "true"

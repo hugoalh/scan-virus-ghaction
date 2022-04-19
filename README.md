@@ -22,9 +22,9 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 ### 🛡 Anti Virus Software
 
 - [ClamAV](https://www.clamav.net)
-  > ClamAV, by [Cisco](https://www.cisco.com), is an open source anti-virus engine for detecting trojans, viruses, malware & other malicious threats.
+  > ClamAV, by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malware, and other malicious threats.
 - **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara) ([Rules List][yara-rules-list])
-  > YARA, by [VirusTotal](https://www.virustotal.com), is a tool aimed at (but not limited to) helping malware researchers to identify and classify malware samples.
+  > YARA, by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
 
 ### ⚠ Disclaimer
 
@@ -32,12 +32,12 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ### 🌟 Feature
 
-- 4% to 96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
+- 4\~96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
 - Ability to scan other things, not limited to only Git repository.
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.6.0 based; To view other tag's/version's documentation, please visit the [tag/version list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.6.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
@@ -60,7 +60,7 @@ Require Software:
 **\[Optional\]** `<string[] = "./">` Targets.
 
 - **Local (`"./"`):** Workspace, for previously checkouted repository via [`actions/checkout`](https://github.com/actions/checkout), or previously prepared files to workspace.
-- **Network:** Fetch files from network to workspace, separate each URL with semicolon (`;`) or per line.
+- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with semicolon (`;`) or per line.
   > **⚠ Important:**
   >
   > - Each files is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
@@ -74,21 +74,39 @@ Require Software:
 
 **\[Optional\]** `<boolean = true>` Use ClamAV.
 
-#### `yara_enable`
+#### `clamav_filesfilter_list`
 
-> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
+**\[Optional\]** `<string[] = "">` ClamAV files filter list, by regular expression, separate each target with semicolon (`;`) or per line. When input `targets` is network, this input is ignore.
+
+#### `clamav_filesfilter_mode`
+
+**\[Optional\]** `<string = "exclude">` ClamAV files filter mode. When input `targets` is network, this input is ignore.
+
+- **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
+- **`"include"`:** Only include files in input `clamav_filesfilter_list`.
+
+#### `yara_enable`
 
 **\[Optional\]** `<boolean = false>` Use YARA.
 
+> **⚠ Important:** This is disable by default due to YARA can throw many false positives in most cases.
+
+#### `yara_filesfilter_list`
+
+**\[Optional\]** `<string[] = "">` YARA files filter list, by regular expression, separate each target with semicolon (`;`) or per line. When input `targets` is network, this input is ignore.
+
+#### `yara_filesfilter_mode`
+
+**\[Optional\]** `<string = "exclude">` YARA files filter mode. When input `targets` is network, this input is ignore.
+
+- **`"exclude"`:** Exclude files in input `yara_filesfilter_list`.
+- **`"include"`:** Only include files in input `yara_filesfilter_list`.
+
 #### `yara_rulesfilter_list`
 
-> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
-
-**\[Optional\]** `<string[] = "">` YARA rules filter list, by [rules list][yara-rules-list]'s name, separate each rule with semicolon (`;`) or per line, support wildcards.
+**\[Optional\]** `<string[] = "">` YARA rules filter list, by regular expression and [rules list][yara-rules-list]'s name, separate each rule with semicolon (`;`) or per line.
 
 #### `yara_rulesfilter_mode`
-
-> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
 
 **\[Optional\]** `<string = "exclude">` YARA rules filter mode.
 
@@ -97,11 +115,9 @@ Require Software:
 
 #### `yara_warning`
 
-> **🧪 Experiment:** This input is in experiment, and maybe change in any time.
-
 **\[Optional\]** `<boolean = false>` Enable YARA warning.
 
-> **💡 Hint:** This is recommended to keep as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
+> **⚠ Important:** This is recommended to keep as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
 
 ### 📤 Output
 

@@ -15,10 +15,26 @@ inputs:
     description: "{boolean} Use ClamAV."
     required: false
     default: "true"
+  clamav_filesfilter_list:
+    description: "{string[]} ClamAV files filter list."
+    required: false
+    default: ""
+  clamav_filesfilter_mode:
+    description: "{string} ClamAV files filter mode."
+    required: false
+    default: "exclude"
   yara_enable:
     description: "{boolean} Use YARA."
     required: false
     default: "false"
+  yara_filesfilter_list:
+    description: "{string[]} YARA files filter list."
+    required: false
+    default: ""
+  yara_filesfilter_mode:
+    description: "{string} YARA files filter mode."
+    required: false
+    default: "exclude"
   yara_rulesfilter_list:
     description: "{string[]} YARA rules filter list."
     required: false
