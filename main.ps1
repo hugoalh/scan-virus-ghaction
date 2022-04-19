@@ -329,49 +329,49 @@ if ($LocalTarget) {
 }
 Enter-GHActionsLogGroup -Title "Statistics:"
 Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
-	@{
+	[pscustomobject]@{
 		Name = 'TotalElements_Count'
 		All = $TotalElementsAll
 		ClamAV = $TotalElementsClamAV
 		YARA = $TotalElementsYARA
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalElements_Percentage'
 		All = $null
 		ClamAV = $TotalElementsClamAV / $TotalElementsAll * 100
 		YARA = $TotalElementsYARA / $TotalElementsAll * 100
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalSizes_B'
 		All = $TotalSizesAll
 		ClamAV = $TotalSizesClamAV
 		YARA = $TotalSizesYARA
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalSizes_KB'
 		All = $TotalSizesAll / 1KB
 		ClamAV = $TotalSizesClamAV / 1KB
 		YARA = $TotalSizesYARA / 1KB
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalSizes_MB'
 		All = $TotalSizesAll / 1MB
 		ClamAV = $TotalSizesClamAV / 1MB
 		YARA = $TotalSizesYARA / 1MB
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalSizes_GB'
 		All = $TotalSizesAll / 1GB
 		ClamAV = $TotalSizesClamAV / 1GB
 		YARA = $TotalSizesYARA / 1GB
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalSizes_TB'
 		All = $TotalSizesAll / 1TB
 		ClamAV = $TotalSizesClamAV / 1TB
 		YARA = $TotalSizesYARA / 1TB
 	},
-	@{
+	[pscustomobject]@{
 		Name = 'TotalSizes_Percentage'
 		All = $null
 		ClamAV = $TotalSizesClamAV / $TotalSizesAll * 100

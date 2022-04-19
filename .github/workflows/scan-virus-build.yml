@@ -49,8 +49,11 @@ jobs:
           deep: "${{needs.parse-inputs.outputs.deep}}"
           clamav_filesfilter_list: |
             ^yara-rules\/
+            ^yara-rules$
           yara_enable: "true"
           yara_filesfilter_list: |
             ^\.git\/
+            ^\.git$
             ^yara-rules\/
+            ^yara-rules$
           yara_warning: "true"
