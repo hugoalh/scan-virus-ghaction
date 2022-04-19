@@ -56,4 +56,8 @@ jobs:
             ^\.git$
             ^yara-rules\/
             ^yara-rules$
+          yara_rulesfilter_list: |
+            ^blacktop\/peertopeer>Dockerfile$
+            ^yara-community\/capabilities\/spreading_file>\.gitignore$
+            ^yara-community\/maldocs\/powershell>Dockerfile$
           yara_warning: "true"

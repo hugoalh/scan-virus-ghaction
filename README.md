@@ -90,7 +90,7 @@ When this input is network, will ignore inputs:
 
 #### `clamav_filesfilter_list`
 
-**\[Optional\]** `<string[] = "">` ClamAV files filter list, by regular expression, separate each target with semicolon (`;`) or per line.
+**\[Optional\]** `<string[] = "">` ClamAV files filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions), separate each target with semicolon (`;`) or per line.
 
 #### `clamav_filesfilter_mode`
 
@@ -113,7 +113,7 @@ When this input is network, will ignore inputs:
 
 #### `yara_filesfilter_list`
 
-**\[Optional\]** `<string[] = "">` YARA files filter list, by regular expression, separate each target with semicolon (`;`) or per line.
+**\[Optional\]** `<string[] = "">` YARA files filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions), separate each target with semicolon (`;`) or per line.
 
 #### `yara_filesfilter_mode`
 
@@ -124,7 +124,22 @@ When this input is network, will ignore inputs:
 
 #### `yara_rulesfilter_list`
 
-**\[Optional\]** `<string[] = "">` YARA rules filter list, by regular expression and [rules list][yara-rules-list]'s name, separate each rule with semicolon (`;`) or per line.
+**\[Optional\]** `<string[] = "">` YARA rules filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [rules list][yara-rules-list]'s name, separate each rule with semicolon (`;`) or per line.
+
+To filter specifically, separate main rule and sub-rule with forward slash (`/`) (i.e.: backward slash and forward slash (`\/`) for regular expressions), and sub-rule and file with right angle bracket (`>`). For full pattern:
+
+```
+^<Main>\/<Sub>><File>$
+```
+
+For example with main rule is `foo`, sub-rule is `bar`, file is `goob`:
+
+| **Pattern** | **Example** |
+|:-:|:-:|
+| Main + Sub | `^foo\/bar` |
+| Main + File | `^foo\/.+>goob$` |
+| Sub + File | `\/bar>goob$` |
+| Main + Sub + File | `^foo\/bar>goob$` |
 
 #### `yara_rulesfilter_mode`
 
@@ -138,6 +153,18 @@ When this input is network, will ignore inputs:
 **\[Optional\]** `<boolean = false>` Enable YARA warning.
 
 > **⚠ Important:** It is recommended to keep this as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
+
+#### PowerShell Regular Expressions
+
+[Regular expressions in PowerShell](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions) is slightly different to others, forward slash (`/`) does not need at the start and end of the regular expressions.
+
+Also, when defining the regular expressions, it is important to note that the target is considered valid if the regular expression matches anywhere within the target. For example, the regular expression `p` will match any target with a "p" in it, such as "apple" not just a target that is simply "p". Therefore, it is usually less confusing, as a matter of course, to surround the regular expression in `^...$` form (e.g.: `^p$`), unless there is a good reason not to do so.
+
+| **JavaScript** | **PowerShell** |
+|:-:|:-:|
+| `/p/` | `p` |
+| `/^foo/` | `^foo` |
+| `/\//` | `\/` |
 
 ### 📤 Output
 

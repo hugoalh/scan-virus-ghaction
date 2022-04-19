@@ -219,69 +219,72 @@ function Invoke-ScanVirusSession {
 	Enter-GHActionsLogGroup -Title "Elements ($Session) - $($Elements.Count):"
 	Write-OptimizePSTable -InputObject ($ElementsListDisplay | Format-Table -Property @('Element', 'Flags', @{Expression = 'Sizes'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
-	if ($Elements.Count -gt 0) {
-		if ($ClamAVEnable) {
-			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
-			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
-			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-			[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`"$($ClamAVMultiScan ? ' --multiscan' : '')"
-			[string[]]$ClamAVResultRaw = @()
-			$ClamAVOutput | ForEach-Object -Process {
-				if ($_ -notmatch ': OK$') {
-					$ClamAVResultRaw += $_ -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", ''
-				}
+	if ($ClamAVEnable -and ($ElementsListClamAV.Count -gt 0)) {
+		[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
+		Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
+		Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
+		[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`"$($ClamAVMultiScan ? ' --multiscan' : '')"
+		[string[]]$ClamAVResultRaw = @()
+		$ClamAVOutput | ForEach-Object -Process {
+			if ($_ -notmatch ': OK$') {
+				$ClamAVResultRaw += $_ -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", ''
 			}
-			[string]$ClamAVResult = ($ClamAVResultRaw -join "`n").Trim()
-			if ($ClamAVResult.Length -gt 0) {
-				Write-Host -Object $ClamAVResult
-			}
-			if ($LASTEXITCODE -eq 1) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV!"
-				$script:ConclusionSetFail = $true
-			} elseif ($LASTEXITCODE -gt 1) {
-				Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in session `"$Session`"!"
-				$script:ConclusionSetFail = $true
-			}
-			Exit-GHActionsLogGroup
-			Remove-Item -Path $ElementsListClamAVPath -Force -Confirm:$false
 		}
-		if ($YARAEnable) {
-			[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
-			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
-			[hashtable]$YARAResultRaw = @{}
-			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
-			foreach ($YARARule in $YARARulesFinal) {
-				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
-				$YARAOutput | ForEach-Object -Process {
-					if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
-						Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
-						[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) "
+		[string]$ClamAVResult = ($ClamAVResultRaw -join "`n").Trim()
+		if ($ClamAVResult.Length -gt 0) {
+			Write-Host -Object $ClamAVResult
+		}
+		if ($LASTEXITCODE -eq 1) {
+			Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV!"
+			$script:ConclusionSetFail = $true
+		} elseif ($LASTEXITCODE -gt 1) {
+			Write-GHActionsError -Message "Unexpected ClamAV result ``$LASTEXITCODE`` in session `"$Session`"!"
+			$script:ConclusionSetFail = $true
+		}
+		Exit-GHActionsLogGroup
+		Remove-Item -Path $ElementsListClamAVPath -Force -Confirm:$false
+	}
+	if ($YARAEnable -and ($ElementsListYARA.Count -gt 0)) {
+		[string]$ElementsListYARAPath = (New-TemporaryFile).FullName
+		Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
+		[hashtable]$YARAResultRaw = @{}
+		Enter-GHActionsLogGroup -Title "YARA result ($Session):"
+		foreach ($YARARule in $YARARulesFinal) {
+			[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
+			$YARAOutput | ForEach-Object -Process {
+				if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
+					Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
+					[string]$Rule, [string]$Element = $_ -split '(?<=^.+?) '
+					[string]$YARARuleName = "$($YARARule.Name)/$Rule"
+					if (($YARARulesFilterMode.GetHashCode() -eq 0) -and (Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode)) {
+						Write-GHActionsDebug -Message '  > Skip'
+					} else {
 						$Element = $Element -replace "$([regex]::Escape($env:GITHUB_WORKSPACE))\/", ''
 						if ($null -eq $YARAResultRaw[$Element]) {
 							$YARAResultRaw[$Element] = @()
 						}
-						$YARAResultRaw[$Element] += "$($YARARule.Name)/$Rule"
-					} elseif ($_.Length -gt 0) {
-						Write-Host -Object $_
+						$YARAResultRaw[$Element] += $YARARuleName
 					}
-				}
-				if ($LASTEXITCODE -gt 0) {
-					Write-GHActionsError -Message "Unexpected YARA `"$($YARARule.Name)`" result ``$LASTEXITCODE`` in session `"$Session`"!"
-					$script:ConclusionSetFail = $true
+				} elseif ($_.Length -gt 0) {
+					Write-Host -Object $_
 				}
 			}
-			if ($YARAResultRaw.Count -gt 0) {
-				[hashtable]$YARAResult = @{}
-				$YARAResultRaw.GetEnumerator() | ForEach-Object -Process {
-					$YARAResult[$_.Name] = ($_.Value | Sort-Object) -join ', '
-				}
-				Write-OptimizePSList -InputObject ($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA!"
+			if ($LASTEXITCODE -gt 0) {
+				Write-GHActionsError -Message "Unexpected YARA `"$($YARARule.Name)`" result ``$LASTEXITCODE`` in session `"$Session`"!"
 				$script:ConclusionSetFail = $true
 			}
-			Exit-GHActionsLogGroup
-			Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
 		}
+		if ($YARAResultRaw.Count -gt 0) {
+			[hashtable]$YARAResult = @{}
+			$YARAResultRaw.GetEnumerator() | ForEach-Object -Process {
+				$YARAResult[$_.Name] = ($_.Value | Sort-Object) -join ', '
+			}
+			Write-OptimizePSList -InputObject ($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
+			Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA!"
+			$script:ConclusionSetFail = $true
+		}
+		Exit-GHActionsLogGroup
+		Remove-Item -Path $ElementsListYARAPath -Force -Confirm:$false
 	}
 	Write-Host -Object "End of session $Session."
 }
