@@ -253,7 +253,7 @@ function Invoke-ScanVirusSession {
 		[hashtable]$YARAResultRaw = @{}
 		Enter-GHActionsLogGroup -Title "YARA result ($Session):"
 		foreach ($YARARule in $YARARulesFinal) {
-			[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? ' --no-warnings ' : ' ')`"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
+			[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
 			$YARAOutput | ForEach-Object -Process {
 				if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
 					Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
