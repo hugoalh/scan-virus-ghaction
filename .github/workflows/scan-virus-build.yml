@@ -18,6 +18,10 @@ on:
         description: "{boolean} Scan deeper."
         required: false
         default: "true"
+      git_reversesession:
+        description: "{boolean} Reverse Git session."
+        required: false
+        default: "false"
 jobs:
   parse-inputs:
     name: "(Parse Inputs)"
@@ -25,14 +29,20 @@ jobs:
     steps:
       - run: |
           [string]$Deep = '${{github.event.inputs.deep}}'
+          [string]$GitReverseSession = '${{github.event.inputs.git_reversesession}}'
           if ($Deep.Length -eq 0) {
             $Deep = 'false'
           }
+          if ($GitReverseSession.Length -eq 0) {
+            $GitReverseSession = 'false'
+          }
           Write-Host -Object "::set-output name=deep::$Deep"
+          Write-Host -Object "::set-output name=git_reversesession::$GitReverseSession"
         id: "parser"
         shell: "pwsh"
     outputs:
       deep: "${{steps.parser.outputs.deep}}"
+      git_reversesession: "${{steps.parser.outputs.git_reversesession}}"
   scan-virus:
     name: "Scan Virus"
     runs-on: "ubuntu-latest"
@@ -47,6 +57,7 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
           deep: "${{needs.parse-inputs.outputs.deep}}"
+          git_reversesession: "${{needs.parse-inputs.outputs.git_reversesession}}"
           clamav_filesfilter_list: |
             ^yara-rules\/
             ^yara-rules$

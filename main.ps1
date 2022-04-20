@@ -89,8 +89,11 @@ function Write-OptimizePSTable {
 		Write-Host -Object $OutputObject
 	}
 }
-Enter-GHActionsLogGroup -Title 'System volume:'
-Write-OptimizePSTable -InputObject (Get-PSDrive | Out-String)
+Enter-GHActionsLogGroup -Title 'System disk:'
+Invoke-Expression -Command 'df'
+Exit-GHActionsLogGroup
+Enter-GHActionsLogGroup -Title 'System memory:'
+Invoke-Expression -Command 'free'
 Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = (Get-GHActionsInput -Name 'targets' -Trim) ?? (Get-GHActionsInput -Name 'target' -Trim)
