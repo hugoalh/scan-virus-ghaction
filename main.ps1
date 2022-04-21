@@ -126,14 +126,6 @@ $NetworkTargets = $NetworkTargets | Sort-Object
 [pscustomobject[]]$YARARulesFinal = $YARARulesIndex | Where-Object -FilterScript {
 	Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
 } | Sort-Object -Property 'Name'
-Write-OptimizePSList -InputObject ([ordered]@{
-	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
-	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
-	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
-	YARA_RulesAll_List = $YARARulesIndex.Name -join ', '
-	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
-	YARA_RulesFinal_List = $YARARulesFinal.Name -join ', '
-} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Write-OptimizePSTable -InputObject ([ordered]@{
 	Targets_Count = $LocalTarget ? 1 : ($NetworkTargets.Count)
 	Git_Deep = $GitDeep
@@ -150,7 +142,18 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 	YARA_RulesFilter_Mode = $YARARulesFilterMode
 	YARA_RulesFinal_Count = $YARARulesFinal.Count
 	YARA_ToolWarning = $YARAToolWarning
-} | Format-Table -AutoSize -Wrap | Out-String)
+} | Format-Table -Property @(
+	'Name',
+	@{Expression = 'Value'; Alignment = 'Right'}
+) -AutoSize -Wrap | Out-String)
+Write-OptimizePSList -InputObject ([ordered]@{
+	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
+	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
+	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
+	YARA_RulesAll_List = $YARARulesIndex.Name -join ', '
+	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
+	YARA_RulesFinal_List = $YARARulesFinal.Name -join ', '
+} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
 if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
 	Write-GHActionsFail -Message 'Input `targets` does not have valid target!'
@@ -356,11 +359,6 @@ if ($LocalTarget) {
 	}
 }
 Enter-GHActionsLogGroup -Title "Statistics:"
-Write-OptimizePSList -InputObject ([ordered]@{
-	Fails_ClamAV = $FailsClamAV -join ', '
-	Fails_YARA = $FailsYARA -join ', '
-	Fails_Other = $FailsOther -join ', '
-} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 [UInt64]$TotalFailsAll = $FailsClamAV.Count + $FailsOther.Count + $FailsYARA.Count
 Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
 	[pscustomobject]@{
@@ -412,12 +410,6 @@ Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
 		YARA = $TotalSizesYARA / 1GB
 	},
 	[pscustomobject]@{
-		Name = 'TotalSizes_TB'
-		All = $TotalSizesAll / 1TB
-		ClamAV = $TotalSizesClamAV / 1TB
-		YARA = $TotalSizesYARA / 1TB
-	},
-	[pscustomobject]@{
 		Name = 'TotalSizes_Percentage'
 		ClamAV = $TotalSizesClamAV / $TotalSizesAll * 100
 		YARA = $TotalSizesYARA / $TotalSizesAll * 100
@@ -429,6 +421,11 @@ Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
 	@{Expression = 'YARA'; Alignment = 'Right'}
 	@{Expression = 'Other'; Alignment = 'Right'}
 ) -AutoSize -Wrap | Out-String)
+Write-OptimizePSList -InputObject ([ordered]@{
+	Fails_ClamAV = $FailsClamAV -join ', '
+	Fails_YARA = $FailsYARA -join ', '
+	Fails_Other = $FailsOther -join ', '
+} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
 if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
