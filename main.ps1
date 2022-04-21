@@ -383,9 +383,9 @@ Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
 	},
 	[pscustomobject]@{
 		Name = 'TotalFails_Percentage'
-		ClamAV = $FailsClamAV.Count / $TotalFailsAll * 100
-		YARA = $FailsYARA.Count / $TotalFailsAll * 100
-		Other = $FailsOther.Count / $TotalFailsAll * 100
+		ClamAV = ($TotalFailsAll -eq 0) ? 0 : ($FailsClamAV.Count / $TotalFailsAll * 100)
+		YARA = ($TotalFailsAll -eq 0) ? 0 : ($FailsYARA.Count / $TotalFailsAll * 100)
+		Other = ($TotalFailsAll -eq 0) ? 0 : ($FailsOther.Count / $TotalFailsAll * 100)
 	},
 	[pscustomobject]@{
 		Name = 'TotalSizes_B'
