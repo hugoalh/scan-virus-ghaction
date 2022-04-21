@@ -73,7 +73,7 @@ When this input is network, will ignore inputs:
 - `yara_filesfilter_list`
 - `yara_filesfilter_mode`
 
-#### `deep`
+#### `git_deep`
 
 **\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits. When this input is `false`, will ignore input `git_reversesession`.
 
@@ -148,9 +148,9 @@ For example with main rule is `foo`, sub-rule is `bar`, file is `goob`:
 - **`"exclude"`:** Exclude rules in input `yara_rulesfilter_list`.
 - **`"include"`:** Only include rules in input `yara_rulesfilter_list`.
 
-#### `yara_warning`
+#### `yara_toolwarning`
 
-**\[Optional\]** `<boolean = false>` Enable YARA warning.
+**\[Optional\]** `<boolean = false>` Enable YARA tool warning.
 
 > **⚠ Important:** It is recommended to keep this as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
 

@@ -7,8 +7,8 @@ inputs:
     description: "{string[]} Targets."
     required: false
     default: "./"
-  deep:
-    description: "{boolean} Scan deeper."
+  git_deep:
+    description: "{boolean} Scan deeper for Git repository."
     required: false
     default: "false"
   git_reversesession:
@@ -51,15 +51,10 @@ inputs:
     description: "{string} YARA rules filter mode."
     required: false
     default: "exclude"
-  yara_warning:
-    description: "{boolean} Enable YARA warning."
+  yara_toolwarning:
+    description: "{boolean} Enable YARA tool warning."
     required: false
     default: "false"
-  target:
-    description: "{string[]} Target."
-    required: false
-    default: "./"
-    deprecationMessage: "Use `targets`!"
 runs:
   using: "docker"
   image: "../Dockerfile"

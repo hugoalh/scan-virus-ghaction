@@ -96,7 +96,7 @@ Enter-GHActionsLogGroup -Title 'System memory:'
 Invoke-Expression -Command 'free'
 Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Import inputs.'
-[string]$Targets = (Get-GHActionsInput -Name 'targets' -Trim) ?? (Get-GHActionsInput -Name 'target' -Trim)
+[string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.[\/\\]$') {
 	$LocalTarget = $true
 } else {
@@ -109,7 +109,7 @@ if ($Targets -match '^\.[\/\\]$') {
 	}
 }
 $NetworkTargets = $NetworkTargets | Sort-Object
-[bool]$Deep = [bool]::Parse((Get-GHActionsInput -Name 'deep' -Require -Trim))
+[bool]$GitDeep = [bool]::Parse((Get-GHActionsInput -Name 'git_deep' -Require -Trim))
 [bool]$GitReverseSession = [bool]::Parse((Get-GHActionsInput -Name 'git_reversesession' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [string[]]$ClamAVFilesFilterList = Get-GHActionsInputFilterList -Name 'clamav_filesfilter_list'
@@ -120,32 +120,32 @@ $NetworkTargets = $NetworkTargets | Sort-Object
 [FilterMode]$YARAFilesFilterMode = Get-GHActionsInput -Name 'yara_filesfilter_mode' -Require -Trim
 [string[]]$YARARulesFilterList = Get-GHActionsInputFilterList -Name 'yara_rulesfilter_list'
 [FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'yara_rulesfilter_mode' -Require -Trim
-[bool]$YARAWarning = [bool]::Parse((Get-GHActionsInput -Name 'yara_warning' -Require -Trim))
+[bool]$YARAToolWarning = [bool]::Parse((Get-GHActionsInput -Name 'yara_toolwarning' -Require -Trim))
 [pscustomobject[]]$YARARulesFinal = $YARARulesIndex | Where-Object -FilterScript {
 	Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
 } | Sort-Object -Property 'Name'
 Write-OptimizePSList -InputObject ([ordered]@{
 	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
 	Targets_Count = $LocalTarget ? 1 : ($NetworkTargets.Count)
-	Deep = $Deep
+	Git_Deep = $GitDeep
 	Git_ReverseSession = $GitReverseSession
 	ClamAV_Enable = $ClamAVEnable
-	ClamAV_Files_Filter_List = $ClamAVFilesFilterList -join ', '
-	ClamAV_Files_Filter_Count = $ClamAVFilesFilterList.Count
-	ClamAV_Files_Filter_Mode = $ClamAVFilesFilterMode
+	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
+	ClamAV_FilesFilter_Count = $ClamAVFilesFilterList.Count
+	ClamAV_FilesFilter_Mode = $ClamAVFilesFilterMode
 	ClamAV_MultiScan = $ClamAVMultiScan
 	YARA_Enable = $YARAEnable
-	YARA_Files_Filter_List = $YARAFilesFilterList -join ', '
-	YARA_Files_Filter_Count = $YARAFilesFilterList.Count
-	YARA_Files_Filter_Mode = $YARAFilesFilterMode
-	YARA_Rules_All_List = $YARARulesIndex.Name -join ', '
-	YARA_Rules_All_Count = $YARARulesIndex.Count
-	YARA_Rules_Filter_List = $YARARulesFilterList -join ', '
-	YARA_Rules_Filter_Count = $YARARulesFilterList.Count
-	YARA_Rules_Filter_Mode = $YARARulesFilterMode
-	YARA_Rules_Final_List = $YARARulesFinal.Name -join ', '
-	YARA_Rules_Final_Count = $YARARulesFinal.Count
-	YARA_Warning = $YARAWarning
+	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
+	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
+	YARA_FilesFilter_Mode = $YARAFilesFilterMode
+	YARA_RulesAll_List = $YARARulesIndex.Name -join ', '
+	YARA_RulesAll_Count = $YARARulesIndex.Count
+	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
+	YARA_RulesFilter_Count = $YARARulesFilterList.Count
+	YARA_RulesFilter_Mode = $YARARulesFilterMode
+	YARA_RulesFinal_List = $YARARulesFinal.Name -join ', '
+	YARA_RulesFinal_Count = $YARARulesFinal.Count
+	YARA_ToolWarning = $YARAToolWarning
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
 if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
@@ -253,7 +253,7 @@ function Invoke-ScanVirusSession {
 		[hashtable]$YARAResultRaw = @{}
 		Enter-GHActionsLogGroup -Title "YARA result ($Session):"
 		foreach ($YARARule in $YARARulesFinal) {
-			[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
+			[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAToolWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
 			$YARAOutput | ForEach-Object -Process {
 				if ($_ -match "^.+? $([regex]::Escape($env:GITHUB_WORKSPACE))\/.+$") {
 					Write-GHActionsDebug -Message "$($YARARule.Name)/$_"
@@ -293,7 +293,7 @@ function Invoke-ScanVirusSession {
 }
 if ($LocalTarget) {
 	Invoke-ScanVirusSession -Session 'Current'
-	if ($Deep) {
+	if ($GitDeep) {
 		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
 			[string[]]$GitCommits = Invoke-Expression -Command "git --no-pager log --all --format=%H --reflog$($GitReverseSession ? '' : ' --reverse')"

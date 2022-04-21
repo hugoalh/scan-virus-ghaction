@@ -3,44 +3,44 @@ name: "Scan Virus - Specify NPM Packages"
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: "{string} Target."
+      targets:
+        description: "{string[]} Targets."
         required: true
-      cache:
-        description: "{boolean} Cache data."
-        required: false
-        default: "true"
 jobs:
   parse-inputs:
     name: "(Parse Inputs)"
     runs-on: "ubuntu-latest"
     steps:
       - run: |
-          [string[]]$NPMPackages = '${{github.event.inputs.target}}'.Trim() -split '[\s,;]+'
+          [string]$OriginalPreference_ErrorAction = $ErrorActionPreference
+          $ErrorActionPreference = 'Stop'
+          [string[]]$NPMPackagesRaw = '${{github.event.inputs.targets}}' -split ";|\r?\n"
+          [string[]]$NPMPackages = $NPMPackagesRaw | ForEach-Object -Process {
+            return $_.Trim()
+          } | Where-Object -FilterScript {
+            return ($_.Length -gt 0)
+          }
           [string[]]$NPMPackagesURL = @()
           foreach ($NPMPackage in $NPMPackages) {
-            [string]$NPMPackageName = $NPMPackage -replace '^(?:https?:\/\/)?(?:www\.)?npmjs\.com\/package\/', ''
-            $NPMRegistryResponse = $null
             try {
-              $NPMRegistryResponse = Invoke-WebRequest -Method Get -Uri "https://registry.npmjs.org/$NPMPackageName" -UseBasicParsing
+              ((Invoke-WebRequest -Method Get -Uri "https://registry.npmjs.org/$NPMPackage" -UseBasicParsing).Content | ConvertFrom-Json -Depth 100).versions.PSObject.Properties | ForEach-Object -Process {
+                $NPMPackagesURL += $_.Value.dist.tarball
+              }
             } catch {
-              Write-Warning -Message "NPM package ``$PackageName``` not found!`n$($_.Exception.Message)"
+              Write-Warning -Message "NPM package ``$NPMPackage``` not found!`n$($_.Exception.Message)"
               continue
             }
-            [pscustomobject]$NPMPackageContent = $NPMRegistryResponse.Content | ConvertFrom-Json -Depth 100 -ErrorAction Stop
-            $NPMPackageContent.versions.PSObject.Properties | ForEach-Object -Process {
-              $NPMPackagesURL += $_.Value.dist.tarball
-            }
           }
-          if ($NPMPackagesURL.Length -gt 0) {
-            Write-Host -Object "::set-output name=target::$($NPMPackagesURL -join ";")"
+          if ($NPMPackagesURL.Count -gt 0) {
+            Write-Host -Object "::set-output name=targets::$($NPMPackagesURL -join ";")"
           } else {
             throw 'No URL resolved!'
           }
+          $ErrorActionPreference = $OriginalPreference_ErrorAction
         id: "parser"
         shell: "pwsh"
     outputs:
-      target: "${{steps.parser.outputs.target}}"
+      targets: "${{steps.parser.outputs.targets}}"
   scan-virus-specify-npm-packages:
     name: "Scan Virus - Specify NPM Packages"
     runs-on: "ubuntu-latest"
@@ -50,5 +50,4 @@ jobs:
       - name: "Scan NPM Packages"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
-          target: "${{needs.parse-inputs.outputs.target}}"
-          cache: "${{github.event.inputs.cache}}"
+          targets: "${{needs.parse-inputs.outputs.targets}}"

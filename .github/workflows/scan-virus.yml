@@ -3,8 +3,8 @@ name: "Scan Virus"
 on:
   workflow_dispatch:
     inputs:
-      deep:
-        description: "{boolean} Scan deeper."
+      git_deep:
+        description: "{boolean} Scan deeper for Git repository."
         required: false
         default: "true"
       git_reversesession:
@@ -23,7 +23,7 @@ jobs:
       - name: "Scan Repository"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
-          deep: "${{github.event.inputs.deep}}"
+          git_deep: "${{github.event.inputs.git_deep}}"
           git_reversesession: "${{github.event.inputs.git_reversesession}}"
           clamav_filesfilter_list: |
             ^yara-rules\/
@@ -37,7 +37,6 @@ jobs:
           yara_rulesfilter_list: |
             ^blacktop\/peertopeer>Dockerfile$
             ^yara-community\/capabilities\/spreading_file>\.gitignore$
-            ^yara-community\/maldocs\/powershell>\.github\/workflows\/scan-virus-build\.yml$
-            ^yara-community\/maldocs\/powershell>\.github\/workflows\/scan-virus\.yml$
+            ^yara-community\/maldocs\/powershell>\.github\/workflows\/scan-virus.*?\.yml$
             ^yara-community\/maldocs\/powershell>Dockerfile$
             ^yara-community\/maldocs\/powershell>README\.md$
