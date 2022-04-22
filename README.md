@@ -34,6 +34,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 - 4\~96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
 - Ability to scan other things, not limited to only Git repository.
+- Files filter to scan specify directories and/or files.
 
 ## 📚 Documentation
 
