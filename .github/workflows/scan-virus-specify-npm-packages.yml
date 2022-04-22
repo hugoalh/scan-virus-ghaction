@@ -27,12 +27,12 @@ jobs:
                 $NPMPackagesURL += $_.Value.dist.tarball
               }
             } catch {
-              Write-Warning -Message "NPM package ``$NPMPackage``` not found!`n$($_.Exception.Message)"
+              Write-Warning -Message "NPM package ``$NPMPackage`` not found!`n$($_.Exception.Message)"
               continue
             }
           }
           if ($NPMPackagesURL.Count -gt 0) {
-            Write-Host -Object "::set-output name=targets::$($NPMPackagesURL -join ";")"
+            Write-Host -Object "::set-output name=targets::$($NPMPackagesURL -join ';')"
           } else {
             throw 'No URL resolved!'
           }

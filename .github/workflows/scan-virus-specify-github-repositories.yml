@@ -1,0 +1,53 @@
+# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: "Scan Virus - Specify GitHub Repositories"
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "{string[]} Targets."
+        required: true
+jobs:
+  parse-inputs:
+    name: "(Parse Inputs)"
+    runs-on: "ubuntu-latest"
+    steps:
+      - run: |
+          [string]$OriginalPreference_ErrorAction = $ErrorActionPreference
+          $ErrorActionPreference = 'Stop'
+          [string[]]$GitHubRepositoriesRaw = '${{github.event.inputs.targets}}' -split ";|\r?\n"
+          [string[]]$GitHubRepositories = $GitHubRepositoriesRaw | ForEach-Object -Process {
+            return $_.Trim()
+          } | Where-Object -FilterScript {
+            return ($_.Length -gt 0)
+          }
+          if ($GitHubRepositories.Count -gt 0) {
+            Write-Host -Object "::set-output name=targets::{`"repositories`":[`"$($GitHubRepositories -join '","')`"]}"
+          } else {
+            throw 'No repository resolved!'
+          }
+          $ErrorActionPreference = $OriginalPreference_ErrorAction
+        id: "parser"
+        shell: "pwsh"
+    outputs:
+      targets: "${{steps.parser.outputs.targets}}"
+  scan-virus-specify-github-repositories:
+    name: "${{matrix.repositories}}"
+    runs-on: "ubuntu-latest"
+    needs:
+      - "parse-inputs"
+    strategy:
+      matrix: "${{fromJSON(needs.parse-inputs.outputs.targets)}}"
+      fail-fast: false
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.0.1"
+        with:
+          repository: "${{matrix.repositories}}"
+          token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
+          fetch-depth: 0
+      - name: "Scan Virus"
+        uses: "hugoalh/scan-virus-ghaction@main"
+        with:
+          git_deep: "true"
+          git_reversesession: "true"
+          yara_enable: "true"

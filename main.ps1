@@ -358,6 +358,11 @@ if ($LocalTarget) {
 		Remove-Item -Path $NetworkTemporaryFileFullPath -Force -Confirm:$false
 	}
 }
+if ($ClamAVEnable) {
+	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
+	Get-Process -Name '*clamd*' | Stop-Process
+	Exit-GHActionsLogGroup
+}
 Enter-GHActionsLogGroup -Title "Statistics:"
 [UInt64]$TotalFailsAll = $FailsClamAV.Count + $FailsOther.Count + $FailsYARA.Count
 Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
@@ -369,8 +374,8 @@ Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
 	},
 	[pscustomobject]@{
 		Name = 'TotalElements_Percentage'
-		ClamAV = $TotalElementsClamAV / $TotalElementsAll * 100
-		YARA = $TotalElementsYARA / $TotalElementsAll * 100
+		ClamAV = ($TotalElementsAll -eq 0) ? 0 : ($TotalElementsClamAV / $TotalElementsAll * 100)
+		YARA = ($TotalElementsAll -eq 0) ? 0 : ($TotalElementsYARA / $TotalElementsAll * 100)
 	},
 	[pscustomobject]@{
 		Name = 'TotalFails_Count'
@@ -418,20 +423,17 @@ Write-OptimizePSTable -InputObject ([pscustomobject[]]@(
 	'Name',
 	@{Expression = 'All'; Alignment = 'Right'},
 	@{Expression = 'ClamAV'; Alignment = 'Right'},
-	@{Expression = 'YARA'; Alignment = 'Right'}
+	@{Expression = 'YARA'; Alignment = 'Right'},
 	@{Expression = 'Other'; Alignment = 'Right'}
 ) -AutoSize -Wrap | Out-String)
-Write-OptimizePSList -InputObject ([ordered]@{
-	Fails_ClamAV = $FailsClamAV -join ', '
-	Fails_YARA = $FailsYARA -join ', '
-	Fails_Other = $FailsOther -join ', '
-} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
-Exit-GHActionsLogGroup
-if ($ClamAVEnable) {
-	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
-	Get-Process -Name '*clamd*' | Stop-Process
-	Exit-GHActionsLogGroup
+if ($TotalFailsAll -gt 0) {
+	Write-OptimizePSList -InputObject ([ordered]@{
+		Fails_ClamAV = $FailsClamAV -join ', '
+		Fails_YARA = $FailsYARA -join ', '
+		Fails_Other = $FailsOther -join ', '
+	} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 }
+Exit-GHActionsLogGroup
 $ErrorActionPreference = $OriginalPreference_ErrorAction
 if ($TotalFailsAll -gt 0) {
 	exit 1
