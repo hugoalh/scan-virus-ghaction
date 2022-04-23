@@ -9,6 +9,7 @@ enum FilterMode {
 	I = 1
 	In = 1
 }
+[string]$ClamAVSignaturesIgnoreFilePath = '/var/lib/clamav/ignore_list.ign2'
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
@@ -165,9 +166,6 @@ if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 	Write-GHActionsFail -Message 'No anti virus software enable!'
 }
-if ($ClamAVSignaturesIgnore.Count -gt 0) {
-	Set-Content -Path '/var/lib/clamav/ignore_list.ign2' -Value ($ClamAVSignaturesIgnore -join "`n") -NoNewline -Encoding UTF8NoBOM
-}
 Enter-GHActionsLogGroup -Title 'Update system software.'
 try {
 	Invoke-Expression -Command 'apt-get --assume-yes update'
@@ -180,6 +178,9 @@ if ($ClamAVEnable) {
 		Invoke-Expression -Command 'freshclam'
 	} catch {  }
 	Exit-GHActionsLogGroup
+	if ($ClamAVSignaturesIgnore.Count -gt 0) {
+		Set-Content -Path $ClamAVSignaturesIgnoreFilePath -Value ($ClamAVSignaturesIgnore -join "`n") -NoNewline -Encoding UTF8NoBOM
+	}
 	Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
 	Invoke-Expression -Command 'clamd'
 	Exit-GHActionsLogGroup
@@ -370,6 +371,9 @@ if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GHActionsLogGroup
+	if ($ClamAVSignaturesIgnore.Count -gt 0) {
+		Remove-Item -Path $ClamAVSignaturesIgnoreFilePath -Force -Confirm:$false
+	}
 }
 Enter-GHActionsLogGroup -Title "Statistics:"
 [UInt64]$TotalIssuesAll = $IssuesClamAV.Count + $IssuesOther.Count + $IssuesYARA.Count
