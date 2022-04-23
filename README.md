@@ -34,7 +34,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 - 4\~96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
 - Ability to scan other things, not limited to only Git repository.
-- Files filter to scan specify directories and/or files.
+- Files filter to scan specify directories and/or files or not.
 
 ## 📚 Documentation
 
@@ -99,6 +99,17 @@ When this input is network, will ignore inputs:
 
 - **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
 - **`"include"`:** Only include files in input `clamav_filesfilter_list`.
+
+#### `clamav_signaturesignore`
+
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each rule with semicolon (`;`) or per line.
+
+> **⚠ Important:**
+>
+> - It is not recommended to use this due to ClamAV rarely throw false positives in most cases.
+> - Rules must be exactly the same in order to ignore.
+> - This is unable to filter rules with specify directories and/or files.
+> - This is unable to only include specify rules.
 
 #### `clamav_multiscan`
 

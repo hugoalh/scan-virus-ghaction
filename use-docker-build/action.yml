@@ -27,6 +27,10 @@ inputs:
     description: "{string} ClamAV files filter mode."
     required: false
     default: "exclude"
+  clamav_signaturesignore:
+    description: "{string[]} Ignore individual ClamAV signatures."
+    required: false
+    default: ""
   clamav_multiscan:
     description: "{boolean} Use ClamAV multiscan mode."
     required: false
