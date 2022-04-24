@@ -100,7 +100,7 @@ When this input is network, will ignore inputs:
 - **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
 - **`"include"`:** Only include files in input `clamav_filesfilter_list`.
 
-#### `clamav_signaturesignore`
+#### `clamav_signaturesignore_custom`
 
 **(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each rule with semicolon (`;`) or per line.
 

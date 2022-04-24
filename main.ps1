@@ -93,12 +93,6 @@ function Write-OptimizePSTable {
 		Write-Host -Object $OutputObject
 	}
 }
-Enter-GHActionsLogGroup -Title 'System disk:'
-Invoke-Expression -Command 'df'
-Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'System memory:'
-Invoke-Expression -Command 'free'
-Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
@@ -118,7 +112,7 @@ $NetworkTargets = $NetworkTargets | Sort-Object
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [string[]]$ClamAVFilesFilterList = Get-GHActionsInputFilterList -Name 'clamav_filesfilter_list'
 [FilterMode]$ClamAVFilesFilterMode = Get-GHActionsInput -Name 'clamav_filesfilter_mode' -Require -Trim
-[string[]]$ClamAVSignaturesIgnore = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore'
+[string[]]$ClamAVSignaturesIgnoreCustom = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_custom'
 [bool]$ClamAVMultiScan = [bool]::Parse((Get-GHActionsInput -Name 'clamav_multiscan' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
 [string[]]$YARAFilesFilterList = Get-GHActionsInputFilterList -Name 'yara_filesfilter_list'
@@ -136,7 +130,7 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 	ClamAV_Enable = $ClamAVEnable
 	ClamAV_FilesFilter_Count = $ClamAVFilesFilterList.Count
 	ClamAV_FilesFilter_Mode = $ClamAVFilesFilterMode
-	ClamAV_SignaturesIgnore_Count = $ClamAVSignaturesIgnore.Count
+	ClamAV_SignaturesIgnore_Count = $ClamAVSignaturesIgnoreCustom.Count
 	ClamAV_MultiScan = $ClamAVMultiScan
 	YARA_Enable = $YARAEnable
 	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
@@ -153,7 +147,7 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 Write-OptimizePSList -InputObject ([ordered]@{
 	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
 	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
-	ClamAV_SignaturesIgnore_List = $ClamAVSignaturesIgnore -join ', '
+	ClamAV_SignaturesIgnore_List = $ClamAVSignaturesIgnoreCustom -join ', '
 	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
 	YARA_RulesAll_List = $YARARulesIndex.Name -join ', '
 	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
@@ -178,8 +172,8 @@ if ($ClamAVEnable) {
 		Invoke-Expression -Command 'freshclam'
 	} catch {  }
 	Exit-GHActionsLogGroup
-	if ($ClamAVSignaturesIgnore.Count -gt 0) {
-		Set-Content -Path $ClamAVSignaturesIgnoreFilePath -Value ($ClamAVSignaturesIgnore -join "`n") -NoNewline -Encoding UTF8NoBOM
+	if ($ClamAVSignaturesIgnoreCustom.Count -gt 0) {
+		Set-Content -Path $ClamAVSignaturesIgnoreFilePath -Value ($ClamAVSignaturesIgnoreCustom -join "`n") -NoNewline -Encoding UTF8NoBOM
 	}
 	Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
 	Invoke-Expression -Command 'clamd'
@@ -256,7 +250,7 @@ function Invoke-ScanVirusSession {
 					$ClamAVResultRaw += $_ -replace "^\s*$RegExp_GHActionsWorkspaceRoot", ''
 				}
 			}
-			[string]$ClamAVResult = $ClamAVResultRaw -join "`n"
+			[string]$ClamAVResult = $ClamAVResultRaw -join "`n" -replace '^\s*\n', ''
 			if ($ClamAVResult.Length -gt 0) {
 				Write-Host -Object $ClamAVResult
 			}
@@ -371,7 +365,7 @@ if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GHActionsLogGroup
-	if ($ClamAVSignaturesIgnore.Count -gt 0) {
+	if ($ClamAVSignaturesIgnoreCustom.Count -gt 0) {
 		Remove-Item -Path $ClamAVSignaturesIgnoreFilePath -Force -Confirm:$false
 	}
 }
