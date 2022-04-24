@@ -59,13 +59,15 @@ jobs:
           git_deep: "${{needs.parse-inputs.outputs.git_deep}}"
           git_reversesession: "${{needs.parse-inputs.outputs.git_reversesession}}"
           clamav_filesfilter_list: |
-            ^yara-rules\/
+            ^yara-rules\/blacktop
+            ^yara-rules\/yara-community
             ^yara-rules$
           yara_enable: "true"
           yara_filesfilter_list: |
             ^\.git\/
             ^\.git$
-            ^yara-rules\/
+            ^yara-rules\/blacktop
+            ^yara-rules\/yara-community
             ^yara-rules$
           yara_rulesfilter_list: |
             ^blacktop\/peertopeer>Dockerfile$

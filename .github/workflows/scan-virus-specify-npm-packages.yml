@@ -51,3 +51,4 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           targets: "${{needs.parse-inputs.outputs.targets}}"
+          yara_enable: "true"

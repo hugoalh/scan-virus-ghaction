@@ -160,7 +160,7 @@ if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 	Write-GHActionsFail -Message 'No anti virus software enable!'
 }
-Enter-GHActionsLogGroup -Title 'Update system software.'
+Enter-GHActionsLogGroup -Title 'Update software.'
 try {
 	Invoke-Expression -Command 'apt-get --assume-yes update'
 	Invoke-Expression -Command 'apt-get --assume-yes upgrade'
