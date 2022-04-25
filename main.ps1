@@ -9,22 +9,6 @@ enum FilterMode {
 	I = 1
 	In = 1
 }
-[string]$ClamAVSignaturesIgnoreFilePath = '/var/lib/clamav/ignore_list.ign2'
-[string[]]$IssuesClamAV = @()
-[string[]]$IssuesOther = @()
-[string[]]$IssuesYARA = @()
-[bool]$LocalTarget = $false
-[string[]]$NetworkTargets = @()
-[string]$RegExp_GHActionsWorkspaceRoot = "$([regex]::Escape($env:GITHUB_WORKSPACE))\/"
-[UInt64]$TotalElementsAll = 0
-[UInt64]$TotalElementsClamAV = 0
-[UInt64]$TotalElementsYARA = 0
-[UInt64]$TotalSizesAll = 0
-[UInt64]$TotalSizesClamAV = 0
-[UInt64]$TotalSizesYARA = 0
-[string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[string[]]$YARARulesIndexRaw = Get-Content -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Encoding UTF8NoBOM
-[pscustomobject[]]$YARARulesIndex = ConvertFrom-Csv -InputObject $YARARulesIndexRaw[1..$YARARulesIndexRaw.Count] -Delimiter "`t" -Header ($YARARulesIndexRaw[0] -split "`t")
 function Format-GHActionsInputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
@@ -42,6 +26,14 @@ function Get-GHActionsInputFilterList {
 		[Parameter(Mandatory = $true, Position = 0)][string]$Name
 	)
 	return Format-GHActionsInputList -InputObject (Get-GHActionsInput -Name $Name -Trim)
+}
+function Import-TSV {
+	[CmdletBinding()][OutputType([pscustomobject[]])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$Path
+	)
+	[string[]]$Raw = Get-Content -Path $Path -Encoding UTF8NoBOM
+	return ConvertFrom-Csv -InputObject $Raw[1..$Raw.Count] -Delimiter "`t" -Header ($Raw[0] -split "`t")
 }
 function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
@@ -91,6 +83,25 @@ function Write-OptimizePSTable {
 		Write-Host -Object $OutputObject
 	}
 }
+[string]$ClamAVSignaturesIgnoreFilePath = '/var/lib/clamav/ignore_list.ign2'
+[string]$ClamAVSignaturesIgnoreRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore'
+[pscustomobject[]]$ClamAVSignaturesIgnoreIndex = Import-TSV -Path (Join-Path -Path $ClamAVSignaturesIgnoreRoot -ChildPath 'index.tsv')
+[string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
+[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Import-TSV -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
+[string[]]$IssuesClamAV = @()
+[string[]]$IssuesOther = @()
+[string[]]$IssuesYARA = @()
+[bool]$LocalTarget = $false
+[string[]]$NetworkTargets = @()
+[string]$RegExp_GHActionsWorkspaceRoot = "$([regex]::Escape($env:GITHUB_WORKSPACE))\/"
+[UInt64]$TotalElementsAll = 0
+[UInt64]$TotalElementsClamAV = 0
+[UInt64]$TotalElementsYARA = 0
+[UInt64]$TotalSizesAll = 0
+[UInt64]$TotalSizesClamAV = 0
+[UInt64]$TotalSizesYARA = 0
+[string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
+[pscustomobject[]]$YARARulesIndex = Import-TSV -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
