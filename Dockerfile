@@ -15,7 +15,7 @@ RUN ["chmod", "--verbose", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
 RUN ["apt-get", "--assume-yes", "upgrade"]
-RUN ["apt-get", "--assume-yes", "install", "apt-utils", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "git", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "yara", "zlib1g"]
+RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "git", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "yara", "zlib1g"]
 RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"]
 RUN ["locale-gen"]
 RUN ["update-locale"]
@@ -24,7 +24,6 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -Scope 'AllUsers'
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
-RUN ["clamconf"]
 RUN ["freshclam", "--verbose"]
 COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
 COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
