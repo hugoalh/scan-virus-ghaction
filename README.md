@@ -60,7 +60,7 @@ Require Software:
 
 **\[Optional\]** `<string[] = "./">` Targets.
 
-- **Local (`"./"`):** Workspace, for previously checkouted repository via [`actions/checkout`](https://github.com/actions/checkout), or previously prepared files to workspace.
+- **Local (`"./"`):** Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action.
 - **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with semicolon (`;`) or per line.
   > **⚠ Important:**
   >
@@ -87,7 +87,25 @@ When this input is network, will ignore inputs:
 
 #### `clamav_enable`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV.
+**\[Optional\]** `<boolean = true>` Use ClamAV. When this input is `false`, will ignore inputs:
+
+- `clamav_daemon`
+- `clamav_filesfilter_list`
+- `clamav_filesfilter_mode`
+- `clamav_multiscan`
+- `clamav_reloadpersession`
+- `clamav_signaturesignore_custom`
+- `clamav_signaturesignore_presets`
+- `clamav_subcursive`
+
+#### `clamav_daemon`
+
+**(>= v0.6.1) \[Optional\]** `<boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
+
+- `clamav_multiscan`
+- `clamav_reloadpersession`
+
+> **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `clamav_filesfilter_list`
 
@@ -100,6 +118,18 @@ When this input is network, will ignore inputs:
 - **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
 - **`"include"`:** Only include files in input `clamav_filesfilter_list`.
 
+#### `clamav_multiscan`
+
+**\[Optional\]** `<boolean = true>` Use ClamAV "multiscan" mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+
+> **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
+
+#### `clamav_reloadpersession`
+
+**(>= v0.6.1) \[Optional\]** `<boolean = false>` Reload ClamAV per session.
+
+> **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
+
 #### `clamav_signaturesignore_custom`
 
 **(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each rule with semicolon (`;`) or per line.
@@ -111,15 +141,29 @@ When this input is network, will ignore inputs:
 > - This is unable to filter rules with specify directories and/or files.
 > - This is unable to only include specify rules.
 
-#### `clamav_multiscan`
+#### `clamav_signaturesignore_presets`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV "multiscan" mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][[clamav-signatures-ignore-list], separate each preset with semicolon (`;`) or per line.
 
-> **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
+> **⚠ Important:**
+>
+> - It is not recommended to use this due to ClamAV rarely throw false positives in most cases.
+> - This is unable to filter rules with specify directories and/or files.
+> - This is unable to only include specify rules.
+
+#### `clamav_subcursive`
+
+**(>= v0.6.1) \[Optional\]** `<boolean = true>` Scan directories subcursively. If there has issues at the input `clamav_filesfilter_list`, try to disable this first before report the issues!
 
 #### `yara_enable`
 
-**\[Optional\]** `<boolean = false>` Use YARA.
+**\[Optional\]** `<boolean = false>` Use YARA. When this input is `false`, will ignore inputs:
+
+- `yara_filesfilter_list`
+- `yara_filesfilter_mode`
+- `yara_rulesfilter_list`
+- `yara_rulesfilter_mode`
+- `yara_toolwarning`
 
 > **⚠ Important:** This is disable by default due to YARA can throw many false positives in most cases.
 
@@ -136,7 +180,7 @@ When this input is network, will ignore inputs:
 
 #### `yara_rulesfilter_list`
 
-**\[Optional\]** `<string[] = "">` YARA rules filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [rules list][yara-rules-list]'s name, separate each rule with semicolon (`;`) or per line.
+**\[Optional\]** `<string[] = "">` YARA rules filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [rules list][yara-rules-list], separate each rule with semicolon (`;`) or per line.
 
 To filter specifically, separate main rule and sub-rule with forward slash (`/`) (i.e.: backward slash and forward slash (`\/`) for regular expressions), and sub-rule and file with right angle bracket (`>`). For full pattern:
 
@@ -204,4 +248,6 @@ jobs:
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
 
+[clamav-signatures-ignore-list]: ./clamav-signatures-ignore/index.tsv
+[clamav-unofficial-signatures-list]: ./clamav-signatures-ignore/index.tsv
 [yara-rules-list]: ./yara-rules/index.tsv

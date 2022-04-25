@@ -19,6 +19,10 @@ inputs:
     description: "{boolean} Use ClamAV."
     required: false
     default: "true"
+  clamav_daemon:
+    description: "{boolean} Use ClamAV daemon."
+    required: false
+    default: "true"
   clamav_filesfilter_list:
     description: "{string[]} ClamAV files filter list."
     required: false
@@ -27,12 +31,24 @@ inputs:
     description: "{string} ClamAV files filter mode."
     required: false
     default: "exclude"
+  clamav_multiscan:
+    description: "{boolean} Use ClamAV multiscan mode."
+    required: false
+    default: "true"
+  clamav_reloadpersession:
+    description: "{boolean} Reload ClamAV per session."
+    required: false
+    default: "false"
   clamav_signaturesignore_custom:
     description: "{string[]} Ignore individual ClamAV signatures."
     required: false
     default: ""
-  clamav_multiscan:
-    description: "{boolean} Use ClamAV multiscan mode."
+  clamav_signaturesignore_presets:
+    description: "{string[]} Ignore ClamAV signatures by presets list."
+    required: false
+    default: ""
+  clamav_subcursive:
+    description: "{boolean} Scan directories subcursively."
     required: false
     default: "true"
   yara_enable:

@@ -30,13 +30,11 @@ function Format-GHActionsInputList {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][AllowEmptyString()][string]$InputObject
 	)
-	[string[]]$Raw = $InputObject -split ";|\r?\n"
-	[string[]]$Result = $Raw | ForEach-Object -Process {
+	return [string[]]($InputObject -split ";|\r?\n") | ForEach-Object -Process {
 		return $_.Trim()
 	} | Where-Object -FilterScript {
 		return ($_.Length -gt 0)
 	}
-	return $Result
 }
 function Get-GHActionsInputFilterList {
 	[CmdletBinding()][OutputType([string[]])]
@@ -110,10 +108,14 @@ $NetworkTargets = $NetworkTargets | Sort-Object
 [bool]$GitDeep = [bool]::Parse((Get-GHActionsInput -Name 'git_deep' -Require -Trim))
 [bool]$GitReverseSession = [bool]::Parse((Get-GHActionsInput -Name 'git_reversesession' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
+[bool]$ClamAVDaemon = [bool]::Parse((Get-GHActionsInput -Name 'clamav_daemon' -Require -Trim))
 [string[]]$ClamAVFilesFilterList = Get-GHActionsInputFilterList -Name 'clamav_filesfilter_list'
 [FilterMode]$ClamAVFilesFilterMode = Get-GHActionsInput -Name 'clamav_filesfilter_mode' -Require -Trim
-[string[]]$ClamAVSignaturesIgnoreCustom = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_custom'
 [bool]$ClamAVMultiScan = [bool]::Parse((Get-GHActionsInput -Name 'clamav_multiscan' -Require -Trim))
+[bool]$ClamAVReloadPerSession = [bool]::Parse((Get-GHActionsInput -Name 'clamav_reloadpersession' -Require -Trim))
+[string[]]$ClamAVSignaturesIgnoreCustom = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_custom'
+[string[]]$ClamAVSignaturesIgnorePresets = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_presets'
+[bool]$ClamAVSubcursive = [bool]::Parse((Get-GHActionsInput -Name 'clamav_subcursive' -Require -Trim))
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
 [string[]]$YARAFilesFilterList = Get-GHActionsInputFilterList -Name 'yara_filesfilter_list'
 [FilterMode]$YARAFilesFilterMode = Get-GHActionsInput -Name 'yara_filesfilter_mode' -Require -Trim
@@ -128,10 +130,14 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 	Git_Deep = $GitDeep
 	Git_ReverseSession = $GitReverseSession
 	ClamAV_Enable = $ClamAVEnable
+	ClamAV_Daemon = $ClamAVDaemon
 	ClamAV_FilesFilter_Count = $ClamAVFilesFilterList.Count
 	ClamAV_FilesFilter_Mode = $ClamAVFilesFilterMode
-	ClamAV_SignaturesIgnore_Count = $ClamAVSignaturesIgnoreCustom.Count
 	ClamAV_MultiScan = $ClamAVMultiScan
+	ClamAV_ReloadPerSession = $ClamAVReloadPerSession
+	ClamAV_SignaturesIgnore_Custom_Count = $ClamAVSignaturesIgnoreCustom.Count
+	ClamAV_SignaturesIgnore_Presets_Count = $ClamAVSignaturesIgnorePresets.Count
+	ClamAV_Subcursive = $ClamAVSubcursive
 	YARA_Enable = $YARAEnable
 	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
 	YARA_FilesFilter_Mode = $YARAFilesFilterMode
@@ -147,7 +153,8 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 Write-OptimizePSList -InputObject ([ordered]@{
 	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
 	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
-	ClamAV_SignaturesIgnore_List = $ClamAVSignaturesIgnoreCustom -join ', '
+	ClamAV_SignaturesIgnore_Custom_List = $ClamAVSignaturesIgnoreCustom -join ', '
+	ClamAV_SignaturesIgnore_Presets_List = $ClamAVSignaturesIgnorePresets -join ', '
 	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
 	YARA_RulesAll_List = $YARARulesIndex.Name -join ', '
 	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
@@ -185,19 +192,18 @@ function Invoke-ScanVirusSession {
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
 	Write-Host -Object "Begin of session `"$Session`"."
-	[pscustomobject[]]$ElementsRaw = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
+	[pscustomobject[]]$Elements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
 	if (
-		($null -eq $ElementsRaw) -or
-		($ElementsRaw.Count -eq 0)
+		($null -eq $Elements) -or
+		($Elements.Count -eq 0)
 	) {
 		Write-GHActionsError -Message "Unable to scan session `"$Session`" due to it is empty! If this is incorrect, probably someone forgot to put files in there."
 		$script:IssuesOther += $Session
 	} else {
-		[pscustomobject[]]$Elements = $ElementsRaw | Sort-Object
 		[string[]]$ElementsListClamAV = @()
 		[string[]]$ElementsListYARA = @()
 		[pscustomobject[]]$ElementsListDisplay = @()
-		$Elements | ForEach-Object {
+		$Elements | Sort-Object | ForEach-Object {
 			[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
 			[string]$ElementName = $_.FullName -replace "^$RegExp_GHActionsWorkspaceRoot", ''
 			[UInt64]$ElementSizes = $_.Length
@@ -242,9 +248,9 @@ function Invoke-ScanVirusSession {
 			[string]$ElementsListClamAVPath = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListClamAVPath -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "ClamAV result ($Session):"
-			[string[]]$ClamAVResultRaw = @()
 			[string[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list `"$ElementsListClamAVPath`"$($ClamAVMultiScan ? ' --multiscan' : '')"
 			[uint]$ClamAVExitCode = $LASTEXITCODE
+			[string[]]$ClamAVResultRaw = @()
 			$ClamAVOutput | ForEach-Object -Process {
 				if ($_ -notmatch ': OK$') {
 					$ClamAVResultRaw += $_ -replace "^\s*$RegExp_GHActionsWorkspaceRoot", ''

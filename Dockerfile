@@ -25,6 +25,5 @@ RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbos
 RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
-COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
-COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
+COPY clamav-signatures-ignore clamav-unofficial-signatures main.ps1 yara-rules /opt/hugoalh/scan-virus-ghaction/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
