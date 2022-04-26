@@ -127,13 +127,14 @@ $NetworkTargets = $NetworkTargets | Sort-Object
 [string[]]$ClamAVSignaturesIgnoreCustom = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_custom'
 [string[]]$ClamAVSignaturesIgnorePresets = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_presets'
 [bool]$ClamAVSubcursive = [bool]::Parse((Get-GHActionsInput -Name 'clamav_subcursive' -Require -Trim))
+[string[]]$ClamAVUnofficialSignatures = Get-GHActionsInputFilterList -Name 'clamav_unofficialsignatures'
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
 [string[]]$YARAFilesFilterList = Get-GHActionsInputFilterList -Name 'yara_filesfilter_list'
 [FilterMode]$YARAFilesFilterMode = Get-GHActionsInput -Name 'yara_filesfilter_mode' -Require -Trim
 [string[]]$YARARulesFilterList = Get-GHActionsInputFilterList -Name 'yara_rulesfilter_list'
 [FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'yara_rulesfilter_mode' -Require -Trim
 [bool]$YARAToolWarning = [bool]::Parse((Get-GHActionsInput -Name 'yara_toolwarning' -Require -Trim))
-[pscustomobject[]]$YARARulesFinal = $YARARulesIndex | Where-Object -FilterScript {
+[pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript {
 	Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
 } | Sort-Object -Property 'Name'
 Write-OptimizePSTable -InputObject ([ordered]@{
@@ -152,10 +153,10 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 	YARA_Enable = $YARAEnable
 	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
 	YARA_FilesFilter_Mode = $YARAFilesFilterMode
-	YARA_RulesAll_Count = $YARARulesIndex.Count
+	YARA_RulesIndex_Count = $YARARulesIndex.Count
 	YARA_RulesFilter_Count = $YARARulesFilterList.Count
 	YARA_RulesFilter_Mode = $YARARulesFilterMode
-	YARA_RulesFinal_Count = $YARARulesFinal.Count
+	YARA_RulesApply_Count = $YARARulesApply.Count
 	YARA_ToolWarning = $YARAToolWarning
 } | Format-Table -Property @(
 	'Name',
@@ -167,9 +168,9 @@ Write-OptimizePSList -InputObject ([ordered]@{
 	ClamAV_SignaturesIgnore_Custom_List = $ClamAVSignaturesIgnoreCustom -join ', '
 	ClamAV_SignaturesIgnore_Presets_List = $ClamAVSignaturesIgnorePresets -join ', '
 	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
-	YARA_RulesAll_List = $YARARulesIndex.Name -join ', '
+	YARA_RulesIndex_List = $YARARulesIndex.Name -join ', '
 	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
-	YARA_RulesFinal_List = $YARARulesFinal.Name -join ', '
+	YARA_RulesApply_List = $YARARulesApply.Name -join ', '
 } | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
 Exit-GHActionsLogGroup
 if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
@@ -286,8 +287,8 @@ function Invoke-ScanVirusSession {
 			Set-Content -Path $ElementsListYARAPath -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "YARA result ($Session):"
 			[hashtable]$YARAResultRaw = @{}
-			foreach ($YARARule in $YARARulesFinal) {
-				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAToolWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Entrypoint)`" `"$ElementsListYARAPath`""
+			foreach ($YARARule in $YARARulesApply) {
+				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAToolWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Location)`" `"$ElementsListYARAPath`""
 				if ($LASTEXITCODE -eq 0) {
 					$YARAOutput | ForEach-Object -Process {
 						if ($_ -match "^.+? $RegExp_GHActionsWorkspaceRoot.+$") {

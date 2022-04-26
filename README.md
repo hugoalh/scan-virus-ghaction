@@ -132,28 +132,36 @@ When this input is network, will ignore inputs:
 
 #### `clamav_signaturesignore_custom`
 
-**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each rule with semicolon (`;`) or per line.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each signature with semicolon (`;`) or per line.
 
 > **⚠ Important:**
 >
 > - It is not recommended to use this due to ClamAV rarely throw false positives in most cases.
-> - Rules must be exactly the same in order to ignore.
-> - This is unable to filter rules with specify directories and/or files.
-> - This is unable to only include specify rules.
+> - Signatures must be exactly the same in order to ignore.
+> - This is unable to filter signatures with specify directories and/or files.
+> - This is unable to only include specify signatures.
 
 #### `clamav_signaturesignore_presets`
 
-**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][[clamav-signatures-ignore-list], separate each preset with semicolon (`;`) or per line.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][clamav-signatures-ignore-list], separate each preset with semicolon (`;`) or per line.
 
 > **⚠ Important:**
 >
 > - It is not recommended to use this due to ClamAV rarely throw false positives in most cases.
-> - This is unable to filter rules with specify directories and/or files.
-> - This is unable to only include specify rules.
+> - This is unable to filter presets with specify directories and/or files.
+> - This is unable to only include specify presets.
 
 #### `clamav_subcursive`
 
-**(>= v0.6.1) \[Optional\]** `<boolean = true>` Scan directories subcursively. If there has issues at the input `clamav_filesfilter_list`, try to disable this first before report the issues!
+**(>= v0.6.1) \[Optional\]** `<boolean = true>` Scan directories subcursively.
+
+> **⚠ Important:** If there has issues at the input `clamav_filesfilter_list`, try to disable this first before report the issues!
+
+#### `clamav_unofficialsignatures`
+
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [signatures list][clamav-unofficial-signatures-list], separate each rule with semicolon (`;`) or per line.
+
+> **⚠ Important:** It is not recommended to use this due to ClamAV official signature is less false positives in most cases.
 
 #### `yara_enable`
 

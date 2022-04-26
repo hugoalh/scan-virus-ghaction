@@ -1,4 +1,4 @@
-Name	Description	Entrypoint	Source
+Name	Description	Location	Source
 bofhland/cracked-url	Spam URLs.	bofhland/cracked-url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_cracked_URL.ndb
 bofhland/malware-attach	Malware hashes.	bofhland/malware-attach.hdb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_attach.hdb
 bofhland/malware-url	Malware URLs.	bofhland/malware-url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_URL.ndb

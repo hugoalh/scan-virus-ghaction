@@ -1,4 +1,4 @@
-Name	Description	Entrypoint	Source
+Name	Description	Location	Source
 blacktop		blacktop/index.yar	https://github.com/blacktop/docker-yara.git
 yara-community/anti-debug_anti-vm	Detection of anti-debug and anti-virtualization techniques used by malware to evade automated analysis.	yara-community/antidebug_antivm_index.yar	https://github.com/Yara-Rules/rules.git
 yara-community/capabilities	Detect capabilities that do not fit into any of the other categories; They are useful to know for analysis but may not be malicious indicators on their own.	yara-community/capabilities_index.yar	https://github.com/Yara-Rules/rules.git
