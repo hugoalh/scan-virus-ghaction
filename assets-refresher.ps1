@@ -24,7 +24,7 @@ function Read-HostChoice {
 	}
 }
 [string[]]$Assets = @(
-	'clamav-signatures-ignore',
+	'clamav-signatures-ignore-presets',
 	'clamav-unofficial-signatures'
 )
 foreach ($Asset in $Assets) {

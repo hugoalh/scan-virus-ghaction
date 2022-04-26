@@ -85,8 +85,8 @@ function Write-OptimizePSTable {
 }
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [string]$ClamAVSignaturesIgnoreFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
-[string]$ClamAVSignaturesIgnoreRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore'
-[pscustomobject[]]$ClamAVSignaturesIgnoreIndex = Import-TSV -Path (Join-Path -Path $ClamAVSignaturesIgnoreRoot -ChildPath 'index.tsv')
+[string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
+[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Import-TSV -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv')
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
 [pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Import-TSV -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
 [string[]]$IssuesClamAV = @()
@@ -104,7 +104,7 @@ function Write-OptimizePSTable {
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
 [pscustomobject[]]$YARARulesIndex = Import-TSV -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
 Enter-GHActionsLogGroup -Title 'Assets index:'
-Write-OptimizePSTable -InputObject (Get-ChildItem -Path @($ClamAVDatabaseRoot, $ClamAVSignaturesIgnoreRoot, $ClamAVUnofficialSignaturesIndex, $YARARulesRoot) -Exclude 'index.tsv' -Recurse -Force | Sort-Object | Format-Table -Property @('FullPath', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+Write-OptimizePSTable -InputObject (Get-ChildItem -Path @($ClamAVDatabaseRoot, $ClamAVSignaturesIgnorePresetsRoot, $ClamAVUnofficialSignaturesRoot, $YARARulesRoot) -Exclude 'index.tsv' -Recurse -Force | Sort-Object | Format-Table -Property @('FullPath', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim

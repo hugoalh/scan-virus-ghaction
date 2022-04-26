@@ -143,7 +143,7 @@ When this input is network, will ignore inputs:
 
 #### `clamav_signaturesignore_presets`
 
-**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][clamav-signatures-ignore-list], separate each preset with semicolon (`;`) or per line.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][clamav-signatures-ignore-presets-list], separate each preset with semicolon (`;`) or per line.
 
 > **⚠ Important:**
 >
@@ -256,6 +256,6 @@ jobs:
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
 
-[clamav-signatures-ignore-list]: ./clamav-signatures-ignore/index.tsv
-[clamav-unofficial-signatures-list]: ./clamav-signatures-ignore/index.tsv
+[clamav-signatures-ignore-presets-list]: ./clamav-signatures-ignore-presets/index.tsv
+[clamav-unofficial-signatures-list]: ./clamav-unofficial-signatures/index.tsv
 [yara-rules-list]: ./yara-rules/index.tsv
