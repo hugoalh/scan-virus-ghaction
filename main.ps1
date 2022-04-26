@@ -83,7 +83,8 @@ function Write-OptimizePSTable {
 		Write-Host -Object $OutputObject
 	}
 }
-[string]$ClamAVSignaturesIgnoreFilePath = '/var/lib/clamav/ignore_list.ign2'
+[string]$ClamAVDatabaseRoot = '/var/lib/clamav'
+[string]$ClamAVSignaturesIgnoreFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnoreRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore'
 [pscustomobject[]]$ClamAVSignaturesIgnoreIndex = Import-TSV -Path (Join-Path -Path $ClamAVSignaturesIgnoreRoot -ChildPath 'index.tsv')
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
@@ -102,6 +103,9 @@ function Write-OptimizePSTable {
 [UInt64]$TotalSizesYARA = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
 [pscustomobject[]]$YARARulesIndex = Import-TSV -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
+Enter-GHActionsLogGroup -Title 'Assets index:'
+Write-OptimizePSTable -InputObject (Get-ChildItem -Path @($ClamAVDatabaseRoot, $ClamAVSignaturesIgnoreRoot, $ClamAVUnofficialSignaturesIndex, $YARARulesRoot) -Exclude 'index.tsv' -Recurse -Force | Sort-Object | Format-Table -Property @('FullPath', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+Exit-GHActionsLogGroup
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
