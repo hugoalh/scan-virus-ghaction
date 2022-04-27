@@ -23,10 +23,13 @@ RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["clamconf", "--generate-config=freshclam.conf"]
+RUN ["clamconf", "--generate-config=clamd.conf"]
+RUN ["clamconf", "--generate-config=clamav-milter.conf"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 COPY clamav-signatures-ignore-presets /opt/hugoalh/scan-virus-ghaction/clamav-signatures-ignore-presets/
 COPY clamav-unofficial-signatures /opt/hugoalh/scan-virus-ghaction/clamav-unofficial-signatures/
-COPY main.ps1 /opt/hugoalh/scan-virus-ghaction/
+COPY main.ps1 utilities.psm1 /opt/hugoalh/scan-virus-ghaction/
 COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]

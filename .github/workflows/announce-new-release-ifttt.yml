@@ -1,4 +1,3 @@
-# $<Schema>$ https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 name: "Announce New Release - IFTTT"
 on:
   release:

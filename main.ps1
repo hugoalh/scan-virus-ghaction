@@ -1,6 +1,7 @@
 [string]$OriginalPreference_ErrorAction = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utilities.psm1') -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
 	E = 0
@@ -9,7 +10,7 @@ enum FilterMode {
 	I = 1
 	In = 1
 }
-function Format-GHActionsInputList {
+function Format-InputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][AllowEmptyString()][string]$InputObject
@@ -18,28 +19,20 @@ function Format-GHActionsInputList {
 		return $_.Trim()
 	} | Where-Object -FilterScript {
 		return ($_.Length -gt 0)
-	}
+	} | Sort-Object -Unique -CaseSensitive
 }
-function Get-GHActionsInputFilterList {
+function Get-InputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Name
 	)
-	return Format-GHActionsInputList -InputObject (Get-GHActionsInput -Name $Name -Trim)
-}
-function Import-TSV {
-	[CmdletBinding()][OutputType([pscustomobject[]])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Path
-	)
-	[string[]]$Raw = Get-Content -Path $Path -Encoding UTF8NoBOM
-	return ConvertFrom-Csv -InputObject $Raw[1..$Raw.Count] -Delimiter "`t" -Header ($Raw[0] -split "`t")
+	return Format-InputList -InputObject (Get-GHActionsInput -Name $Name -Trim)
 }
 function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][AllowNull()][string[]]$FilterList,
+		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][string[]]$FilterList,
 		[Parameter(Mandatory = $true, Position = 2)][FilterMode]$FilterMode
 	)
 	foreach ($Filter in $FilterList) {
@@ -84,11 +77,11 @@ function Write-OptimizePSTable {
 	}
 }
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
-[string]$ClamAVSignaturesIgnoreFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
+[string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
-[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Import-TSV -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv')
+[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv')
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
-[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Import-TSV -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
+[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
@@ -102,16 +95,27 @@ function Write-OptimizePSTable {
 [UInt64]$TotalSizesClamAV = 0
 [UInt64]$TotalSizesYARA = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[pscustomobject[]]$YARARulesIndex = Import-TSV -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
-Enter-GHActionsLogGroup -Title 'Assets index:'
-Write-OptimizePSTable -InputObject (Get-ChildItem -Path @($ClamAVDatabaseRoot, $ClamAVSignaturesIgnorePresetsRoot, $ClamAVUnofficialSignaturesRoot, $YARARulesRoot) -Exclude 'index.tsv' -Recurse -Force | Sort-Object | Format-Table -Property @('FullPath', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+[pscustomobject[]]$YARARulesIndex = Get-TSVTable -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
+<#
+Enter-GHActionsLogGroup -Title 'ClamAV database index:'
+Write-OptimizePSTable -InputObject (Get-ChildItem -Path $ClamAVDatabaseRoot -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 Exit-GHActionsLogGroup
+Enter-GHActionsLogGroup -Title 'ClamAV signatures ignore presets index:'
+Write-OptimizePSTable -InputObject (Get-ChildItem -Path $ClamAVSignaturesIgnorePresetsRoot -Include '*.ign2' -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+Exit-GHActionsLogGroup
+Enter-GHActionsLogGroup -Title 'ClamAV unofficial signatures index:'
+Write-OptimizePSTable -InputObject (Get-ChildItem -Path $ClamAVUnofficialSignaturesRoot -Include @('*.cbc', '*.cdb', '*.gdb', '*.hdb', '*.hdu', '*.hsb', '*.hsu', '*.idb', '*.ldb', '*.ldu', '*.mdb', '*.mdu', '*.msb', '*.msu', '*.ndb', '*.ndu', '*.pdb', '*.wdb') -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+Exit-GHActionsLogGroup
+Enter-GHActionsLogGroup -Title 'YARA rules index:'
+Write-OptimizePSTable -InputObject (Get-ChildItem -Path $YARARulesRoot -Include @('*.yar', '*.yara') -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+Exit-GHActionsLogGroup
+#>
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
 	$LocalTarget = $true
 } else {
-	Format-GHActionsInputList -InputObject $Targets | ForEach-Object -Process {
+	Format-InputList -InputObject $Targets | ForEach-Object -Process {
 		if (Test-StringIsURL -InputObject $_) {
 			$NetworkTargets += $_
 		} else {
@@ -119,23 +123,33 @@ if ($Targets -match '^\.\/$') {
 		}
 	}
 }
-$NetworkTargets = $NetworkTargets | Sort-Object
 [bool]$GitDeep = [bool]::Parse((Get-GHActionsInput -Name 'git_deep' -Require -Trim))
 [bool]$GitReverseSession = [bool]::Parse((Get-GHActionsInput -Name 'git_reversesession' -Require -Trim))
 [bool]$ClamAVEnable = [bool]::Parse((Get-GHActionsInput -Name 'clamav_enable' -Require -Trim))
 [bool]$ClamAVDaemon = [bool]::Parse((Get-GHActionsInput -Name 'clamav_daemon' -Require -Trim))
-[string[]]$ClamAVFilesFilterList = Get-GHActionsInputFilterList -Name 'clamav_filesfilter_list'
+[string[]]$ClamAVFilesFilterList = Get-InputList -Name 'clamav_filesfilter_list'
 [FilterMode]$ClamAVFilesFilterMode = Get-GHActionsInput -Name 'clamav_filesfilter_mode' -Require -Trim
 [bool]$ClamAVMultiScan = [bool]::Parse((Get-GHActionsInput -Name 'clamav_multiscan' -Require -Trim))
 [bool]$ClamAVReloadPerSession = [bool]::Parse((Get-GHActionsInput -Name 'clamav_reloadpersession' -Require -Trim))
-[string[]]$ClamAVSignaturesIgnoreCustom = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_custom'
-[string[]]$ClamAVSignaturesIgnorePresets = Get-GHActionsInputFilterList -Name 'clamav_signaturesignore_presets'
+[string[]]$ClamAVSignaturesIgnoreCustom = Get-InputList -Name 'clamav_signaturesignore_custom'
+[string[]]$ClamAVSignaturesIgnorePresets = Get-InputList -Name 'clamav_signaturesignore_presets'
+[pscustomobject[]]$ClamAVSignaturesIgnorePresetsApply = $ClamAVSignaturesIgnorePresetsIndex | Where-Object -FilterScript {
+	Test-InputFilter -Target $_.Name -FilterList $ClamAVSignaturesIgnorePresets -FilterMode 'Include'
+} | Sort-Object -Property 'Name'
+[string[]]$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnoreCustom
+$ClamAVSignaturesIgnorePresetsApply | ForEach-Object -Process {
+	$ClamAVSignaturesIgnore += Get-Content -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath $_.Location) -Encoding UTF8NoBOM
+}
+$ClamAVSignaturesIgnore | Sort-Object -Unique -CaseSensitive
 [bool]$ClamAVSubcursive = [bool]::Parse((Get-GHActionsInput -Name 'clamav_subcursive' -Require -Trim))
-[string[]]$ClamAVUnofficialSignatures = Get-GHActionsInputFilterList -Name 'clamav_unofficialsignatures'
+[string[]]$ClamAVUnofficialSignatures = Get-InputList -Name 'clamav_unofficialsignatures'
+[pscustomobject[]]$ClamAVUnofficialSignaturesApply = $ClamAVUnofficialSignaturesIndex | Where-Object -FilterScript {
+	Test-InputFilter -Target $_.Name -FilterList $ClamAVUnofficialSignatures -FilterMode 'Include'
+} | Sort-Object -Property 'Name'
 [bool]$YARAEnable = [bool]::Parse((Get-GHActionsInput -Name 'yara_enable' -Require -Trim))
-[string[]]$YARAFilesFilterList = Get-GHActionsInputFilterList -Name 'yara_filesfilter_list'
+[string[]]$YARAFilesFilterList = Get-InputList -Name 'yara_filesfilter_list'
 [FilterMode]$YARAFilesFilterMode = Get-GHActionsInput -Name 'yara_filesfilter_mode' -Require -Trim
-[string[]]$YARARulesFilterList = Get-GHActionsInputFilterList -Name 'yara_rulesfilter_list'
+[string[]]$YARARulesFilterList = Get-InputList -Name 'yara_rulesfilter_list'
 [FilterMode]$YARARulesFilterMode = Get-GHActionsInput -Name 'yara_rulesfilter_mode' -Require -Trim
 [bool]$YARAToolWarning = [bool]::Parse((Get-GHActionsInput -Name 'yara_toolwarning' -Require -Trim))
 [pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript {
@@ -167,7 +181,7 @@ Write-OptimizePSTable -InputObject ([ordered]@{
 	@{Expression = 'Value'; Alignment = 'Right'}
 ) -AutoSize -Wrap | Out-String)
 Write-OptimizePSList -InputObject ([ordered]@{
-	Targets_List = $LocalTarget ? '{Local}' : ($NetworkTargets -join ',')
+	Targets_List = $LocalTarget ? 'Local' : ($NetworkTargets -join ',')
 	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
 	ClamAV_SignaturesIgnore_Custom_List = $ClamAVSignaturesIgnoreCustom -join ', '
 	ClamAV_SignaturesIgnore_Presets_List = $ClamAVSignaturesIgnorePresets -join ', '
@@ -196,7 +210,7 @@ if ($ClamAVEnable) {
 	} catch {  }
 	Exit-GHActionsLogGroup
 	if ($ClamAVSignaturesIgnoreCustom.Count -gt 0) {
-		Set-Content -Path $ClamAVSignaturesIgnoreFilePath -Value ($ClamAVSignaturesIgnoreCustom -join "`n") -NoNewline -Encoding UTF8NoBOM
+		Set-Content -Path $ClamAVSignaturesIgnoreFileFullName -Value ($ClamAVSignaturesIgnoreCustom -join "`n") -NoNewline -Encoding UTF8NoBOM
 	}
 	Enter-GHActionsLogGroup -Title 'Start ClamAV daemon.'
 	Invoke-Expression -Command 'clamd'
@@ -388,7 +402,7 @@ if ($ClamAVEnable) {
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GHActionsLogGroup
 	if ($ClamAVSignaturesIgnoreCustom.Count -gt 0) {
-		Remove-Item -Path $ClamAVSignaturesIgnoreFilePath -Force -Confirm:$false
+		Remove-Item -Path $ClamAVSignaturesIgnoreFileFullName -Force -Confirm:$false
 	}
 }
 Enter-GHActionsLogGroup -Title "Statistics:"
