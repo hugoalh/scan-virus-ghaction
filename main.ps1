@@ -80,8 +80,10 @@ function Write-OptimizePSTable {
 [string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
 [pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv')
+Write-GHActionsDebug -Message ($ClamAVSignaturesIgnorePresetsIndex | Format-List | Out-String)
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
 [pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
+Write-GHActionsDebug -Message ($ClamAVUnofficialSignaturesIndex | Format-List | Out-String)
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
