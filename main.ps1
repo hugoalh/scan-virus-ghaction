@@ -32,7 +32,7 @@ function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][string[]]$FilterList,
+		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][AllowNull()][string[]]$FilterList,
 		[Parameter(Mandatory = $true, Position = 2)][FilterMode]$FilterMode
 	)
 	foreach ($Filter in $FilterList) {
@@ -80,10 +80,8 @@ function Write-OptimizePSTable {
 [string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
 [pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv')
-Write-GHActionsDebug -Message ($ClamAVSignaturesIgnorePresetsIndex | Format-List | Out-String)
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
 [pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
-Write-GHActionsDebug -Message ($ClamAVUnofficialSignaturesIndex | Format-List | Out-String)
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
@@ -98,20 +96,6 @@ Write-GHActionsDebug -Message ($ClamAVUnofficialSignaturesIndex | Format-List | 
 [UInt64]$TotalSizesYARA = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
 [pscustomobject[]]$YARARulesIndex = Get-TSVTable -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
-<#
-Enter-GHActionsLogGroup -Title 'ClamAV database index:'
-Write-OptimizePSTable -InputObject (Get-ChildItem -Path $ClamAVDatabaseRoot -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
-Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'ClamAV signatures ignore presets index:'
-Write-OptimizePSTable -InputObject (Get-ChildItem -Path $ClamAVSignaturesIgnorePresetsRoot -Include '*.ign2' -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
-Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'ClamAV unofficial signatures index:'
-Write-OptimizePSTable -InputObject (Get-ChildItem -Path $ClamAVUnofficialSignaturesRoot -Include @('*.cbc', '*.cdb', '*.gdb', '*.hdb', '*.hdu', '*.hsb', '*.hsu', '*.idb', '*.ldb', '*.ldu', '*.mdb', '*.mdu', '*.msb', '*.msu', '*.ndb', '*.ndu', '*.pdb', '*.wdb') -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
-Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'YARA rules index:'
-Write-OptimizePSTable -InputObject (Get-ChildItem -Path $YARARulesRoot -Include @('*.yar', '*.yara') -Recurse -File | Sort-Object | Format-Table -Property @('FullName', 'Mode', @{Expression = 'Length'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
-Exit-GHActionsLogGroup
-#>
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
@@ -157,41 +141,36 @@ $ClamAVSignaturesIgnore | Sort-Object -Unique -CaseSensitive
 [pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript {
 	Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
 } | Sort-Object -Property 'Name'
-Write-OptimizePSTable -InputObject ([ordered]@{
+Write-OptimizePSList -InputObject ([pscustomobject]@{
+	Targets_List = $LocalTarget ? 'Local' : ($NetworkTargets -join ',')
 	Targets_Count = $LocalTarget ? 1 : ($NetworkTargets.Count)
 	Git_Deep = $GitDeep
 	Git_ReverseSession = $GitReverseSession
 	ClamAV_Enable = $ClamAVEnable
 	ClamAV_Daemon = $ClamAVDaemon
+	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
 	ClamAV_FilesFilter_Count = $ClamAVFilesFilterList.Count
 	ClamAV_FilesFilter_Mode = $ClamAVFilesFilterMode
 	ClamAV_MultiScan = $ClamAVMultiScan
 	ClamAV_ReloadPerSession = $ClamAVReloadPerSession
+	ClamAV_SignaturesIgnore_Custom_List = $ClamAVSignaturesIgnoreCustom -join ', '
 	ClamAV_SignaturesIgnore_Custom_Count = $ClamAVSignaturesIgnoreCustom.Count
+	ClamAV_SignaturesIgnore_Presets_List = $ClamAVSignaturesIgnorePresets -join ', '
 	ClamAV_SignaturesIgnore_Presets_Count = $ClamAVSignaturesIgnorePresets.Count
 	ClamAV_Subcursive = $ClamAVSubcursive
 	YARA_Enable = $YARAEnable
+	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
 	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
 	YARA_FilesFilter_Mode = $YARAFilesFilterMode
+	YARA_RulesIndex_List = $YARARulesIndex.Name -join ', '
 	YARA_RulesIndex_Count = $YARARulesIndex.Count
+	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
 	YARA_RulesFilter_Count = $YARARulesFilterList.Count
 	YARA_RulesFilter_Mode = $YARARulesFilterMode
+	YARA_RulesApply_List = $YARARulesApply.Name -join ', '
 	YARA_RulesApply_Count = $YARARulesApply.Count
 	YARA_ToolWarning = $YARAToolWarning
-} | Format-Table -Property @(
-	'Name',
-	@{Expression = 'Value'; Alignment = 'Right'}
-) -AutoSize -Wrap | Out-String)
-Write-OptimizePSList -InputObject ([ordered]@{
-	Targets_List = $LocalTarget ? 'Local' : ($NetworkTargets -join ',')
-	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
-	ClamAV_SignaturesIgnore_Custom_List = $ClamAVSignaturesIgnoreCustom -join ', '
-	ClamAV_SignaturesIgnore_Presets_List = $ClamAVSignaturesIgnorePresets -join ', '
-	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
-	YARA_RulesIndex_List = $YARARulesIndex.Name -join ', '
-	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
-	YARA_RulesApply_List = $YARARulesApply.Name -join ', '
-} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
+} | Format-List | Out-String)
 Exit-GHActionsLogGroup
 if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
 	Write-GHActionsFail -Message 'Input `targets` does not have valid target!'
