@@ -105,7 +105,15 @@ When this input is network, will ignore inputs:
 - `clamav_multiscan`
 - `clamav_reloadpersession`
 
-> **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
+> **⚠ Important:**
+>
+> - It is recommended to keep this as enable to have a shorter scanning duration.
+> - When this input is `false`, will have limitations to protect the system against DoS attacks:
+>   - Extract and scan at most 25 MB from each archive.
+>   - Extract and scan at most 100 MB from each scanned file.
+>   - Extract at most 10000 files from each scanned file (when this is an archive, a document or another kind of container).
+>   - Maximum 15 depth directories are scanned.
+>   - Maximum 16 archive recursion levels.
 
 #### `clamav_filesfilter_list`
 
