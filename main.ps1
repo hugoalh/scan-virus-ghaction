@@ -483,7 +483,6 @@ if ($ClamAVEnable -and $ClamAVDaemon) {
 	Enter-GHActionsLogGroup -Title 'Stop ClamAV daemon.'
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GHActionsLogGroup
-	
 }
 if ($RequireCleanUpFiles.Count -gt 0) {
 	$RequireCleanUpFiles | ForEach-Object -Process {
