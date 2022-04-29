@@ -102,12 +102,16 @@ Enter-GHActionsLogGroup -Title 'Import inputs.'
 if ($Targets -match '^\.\/$') {
 	$LocalTarget = $true
 } else {
+	[string[]]$TargetsInvalid = @()
 	Format-InputList -InputObject $Targets | ForEach-Object -Process {
 		if (Test-StringIsURL -InputObject $_) {
 			$NetworkTargets += $_
 		} else {
-			Write-GHActionsWarning -Message "Input ``targets``'s value ``$_`` is not a valid target!"
+			$TargetsInvalid += $_
 		}
+	}
+	if ($TargetsInvalid.Count -gt 0) {
+		Write-GHActionsWarning -Message "Input ``targets`` included invalid targets: $($TargetsInvalid -join ', ')"
 	}
 }
 [bool]$GitDeep = [bool]::Parse((Get-GHActionsInput -Name 'git_deep' -Require -Trim))
@@ -137,8 +141,6 @@ if ($Targets -match '^\.\/$') {
 [pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript {
 	Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
 } | Sort-Object -Property 'Name'
-Exit-GHActionsLogGroup
-Enter-GHActionsLogGroup -Title 'Inputs:'
 Write-OptimizePSFormatDisplay -InputObject ([pscustomobject]@{
 	Targets_List = $LocalTarget ? 'Local' : ($NetworkTargets -join ', ')
 	Targets_Count = $LocalTarget ? 1 : $NetworkTargets.Count
@@ -160,13 +162,9 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject]@{
 	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
 	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
 	YARA_FilesFilter_Mode = $YARAFilesFilterMode
-	YARA_RulesIndex_List = $YARARulesIndex.Name -join ', '
-	YARA_RulesIndex_Count = $YARARulesIndex.Count
 	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
 	YARA_RulesFilter_Count = $YARARulesFilterList.Count
 	YARA_RulesFilter_Mode = $YARARulesFilterMode
-	YARA_RulesApply_List = $YARARulesApply.Name -join ', '
-	YARA_RulesApply_Count = $YARARulesApply.Count
 	YARA_ToolWarning = $YARAToolWarning
 } | Format-List | Out-String)
 Exit-GHActionsLogGroup
@@ -182,7 +180,7 @@ if ($ClamAVEnable) {
 	$ClamAVSignaturesIgnorePresetsIndex | ForEach-Object -Process {
 		[string]$ClamAVSignaturesIgnorePresetFullName = Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath $_.Location
 		[bool]$ClamAVSignaturesIgnorePresetExist = Test-Path -Path $ClamAVSignaturesIgnorePresetFullName
-		[bool]$ClamAVSignaturesIgnorePresetApply = $_ -in $ClamAVSignaturesIgnorePresetsApply.Name
+		[bool]$ClamAVSignaturesIgnorePresetApply = $_.Name -in $ClamAVSignaturesIgnorePresetsApply.Name
 		[hashtable]$ClamAVSignaturesIgnorePresetDisplay = @{
 			Name = $_.Name
 			Exist = $ClamAVSignaturesIgnorePresetExist
@@ -216,7 +214,7 @@ if ($ClamAVEnable) {
 	$ClamAVUnofficialSignaturesIndex | ForEach-Object -Process {
 		[string]$ClamAVUnofficialSignatureFullName = Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath $_.Location
 		[bool]$ClamAVUnofficialSignatureExist = Test-Path -Path $ClamAVUnofficialSignatureFullName
-		[bool]$ClamAVUnofficialSignatureApply = $_ -in $ClamAVUnofficialSignaturesApply.Name
+		[bool]$ClamAVUnofficialSignatureApply = $_.Name -in $ClamAVUnofficialSignaturesApply.Name
 		[hashtable]$ClamAVUnofficialSignatureDisplay = @{
 			Name = $_.Name
 			Exist = $ClamAVUnofficialSignatureExist
@@ -242,7 +240,7 @@ if ($YARAEnable) {
 	$YARARulesIndex | ForEach-Object -Process {
 		[string]$YARARuleFullName = Join-Path -Path $YARARulesRoot -ChildPath $_.Location
 		[bool]$YARARuleExist = Test-Path -Path $YARARuleFullName
-		[bool]$YARARuleApply = $_ -in $YARARulesApply.Name
+		[bool]$YARARuleApply = $_.Name -in $YARARulesApply.Name
 		[hashtable]$YARARuleDisplay = @{
 			Name = $_.Name
 			Exist = $YARARuleExist
@@ -307,11 +305,11 @@ function Invoke-ScanVirusSession {
 				$script:TotalSizesAll += $ElementSizes
 			}
 			if ($ClamAVEnable -and (
-				($LocalTarget -eq $false) -or
-				(Test-InputFilter -Target $ElementName -FilterList $ClamAVFilesFilterList -FilterMode $ClamAVFilesFilterMode)
-			) -and (
 				($ElementIsDirectory -and $ClamAVSubcursive) -or
 				($ElementIsDirectory -eq $false)
+			) -and (
+				($LocalTarget -eq $false) -or
+				(Test-InputFilter -Target $ElementName -FilterList $ClamAVFilesFilterList -FilterMode $ClamAVFilesFilterMode)
 			)) {
 				$ElementsListClamAV += $_.FullName
 				$ElementListDisplay.Flags += 'C'
