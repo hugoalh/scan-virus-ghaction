@@ -490,7 +490,7 @@ if ($RequireCleanUpFiles.Count -gt 0) {
 	}
 }
 Enter-GHActionsLogGroup -Title "Statistics:"
-[UInt64]$TotalIssuesAll = $IssuesClamAV.Count + $IssuesOther.Count + $IssuesYARA.Count
+[UInt64]$TotalIssues = $IssuesClamAV.Count + $IssuesOther.Count + $IssuesYARA.Count
 Write-OptimizePSFormatDisplay -InputObject ([pscustomobject[]]@(
 	[pscustomobject]@{
 		Name = 'TotalElements_Count'
@@ -505,16 +505,16 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject[]]@(
 	},
 	[pscustomobject]@{
 		Name = 'TotalIssues_Count'
-		All = $TotalIssuesAll
+		All = $TotalIssues
 		ClamAV = $IssuesClamAV.Count
 		YARA = $IssuesYARA.Count
 		Other = $IssuesOther.Count
 	},
 	[pscustomobject]@{
 		Name = 'TotalIssues_Percentage'
-		ClamAV = ($TotalIssuesAll -eq 0) ? 0 : ($IssuesClamAV.Count / $TotalIssuesAll * 100)
-		YARA = ($TotalIssuesAll -eq 0) ? 0 : ($IssuesYARA.Count / $TotalIssuesAll * 100)
-		Other = ($TotalIssuesAll -eq 0) ? 0 : ($IssuesOther.Count / $TotalIssuesAll * 100)
+		ClamAV = ($TotalIssues -eq 0) ? 0 : ($IssuesClamAV.Count / $TotalIssues * 100)
+		YARA = ($TotalIssues -eq 0) ? 0 : ($IssuesYARA.Count / $TotalIssues * 100)
+		Other = ($TotalIssues -eq 0) ? 0 : ($IssuesOther.Count / $TotalIssues * 100)
 	},
 	[pscustomobject]@{
 		Name = 'TotalSizes_B'
@@ -552,16 +552,18 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject[]]@(
 	@{Expression = 'YARA'; Alignment = 'Right'},
 	@{Expression = 'Other'; Alignment = 'Right'}
 ) -AutoSize -Wrap | Out-String)
-if ($TotalIssuesAll -gt 0) {
-	Write-OptimizePSListGroup -InputObject ([ordered]@{
-		Issues_ClamAV = $IssuesClamAV -join ', '
-		Issues_YARA = $IssuesYARA -join ', '
-		Issues_Other = $IssuesOther -join ', '
-	} | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
-}
 Exit-GHActionsLogGroup
+if ($TotalIssues -gt 0) {
+	Enter-GHActionsLogGroup -Title "Issues:"
+	Write-OptimizePSFormatDisplay -InputObject ([pscustomobject]@{
+		ClamAV = $IssuesClamAV -join ', '
+		YARA = $IssuesYARA -join ', '
+		Other = $IssuesOther -join ', '
+	} | Format-List | Out-String)
+	Exit-GHActionsLogGroup
+}
 $ErrorActionPreference = $ErrorActionOriginalPreference
-if ($TotalIssuesAll -gt 0) {
+if ($TotalIssues -gt 0) {
 	exit 1
 }
 exit 0
