@@ -347,7 +347,7 @@ function Invoke-ScanVirusSession {
 		$script:TotalElementsAll += $Elements.Count
 		$script:TotalElementsClamAV += $ElementsListClamAV.Count
 		$script:TotalElementsYARA += $ElementsListYARA.Count
-		Enter-GHActionsLogGroup -Title "Elements of session `"$Session`" (E:$($Elements.Count); FC: $($ElementsListClamAV.Count); FD: $ElementsIsDirectoryCount; FY: $($ElementsListYARA.Count)):"
+		Enter-GHActionsLogGroup -Title "Elements of session `"$Session`" (E: $($Elements.Count); FC: $($ElementsListClamAV.Count); FD: $ElementsIsDirectoryCount; FY: $($ElementsListYARA.Count)):"
 		Write-OptimizePSFormatDisplay -InputObject ($ElementsListDisplay | Format-Table -Property @('Element', 'Flags', @{Expression = 'Sizes'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 		Exit-GHActionsLogGroup
 		if ($ClamAVEnable -and ($ElementsListClamAV.Count -gt 0)) {
