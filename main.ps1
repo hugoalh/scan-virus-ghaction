@@ -229,7 +229,7 @@ if ($ClamAVEnable) {
 		if ($ClamAVUnofficialSignatureExist) {
 			if ($ClamAVUnofficialSignatureApply) {
 				[string]$ClamAVUnofficialSignatureDestination = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -replace '\/', '_')
-				Copy-Item -Path $ClamAVUnofficialSignatureFullName -Destination $ClamAVUnofficialSignatureDestination
+				Copy-Item -Path $ClamAVUnofficialSignatureFullName -Destination $ClamAVUnofficialSignatureDestination -Confirm:$false
 				$RequireCleanUpFiles += $ClamAVUnofficialSignatureDestination
 			}
 		} else {
