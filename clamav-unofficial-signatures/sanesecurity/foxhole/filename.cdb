@@ -2610,3 +2610,6 @@ Sanesecurity.Foxhole.Zip_epw1:CL_TYPE_ZIP:*:adjure-.{0,5}\.doc$:*:*:1:1:*:*
 Sanesecurity.Foxhole.Zip_epw2:CL_TYPE_ZIP:*:form\.doc$:*:*:1:1:*:*
 Sanesecurity.Foxhole.Zip_epw3:CL_TYPE_ZIP:*:lectronic form\.doc$:*:*:1:1:*:*
 Sanesecurity.Foxhole.Rar_fs2620:CL_TYPE_RAR:*:(?i)_crypted\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_lnk_pw:CL_TYPE_ZIP:*:\.lnk$:*:*:1:1:*:*
+Sanesecurity.Foxhole.Rar_fs2621:CL_TYPE_RAR:*:(?i)^company profile\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs2622:CL_TYPE_RAR:*:(?i)^rfq\.exe$:*:*:*:1:*:*
