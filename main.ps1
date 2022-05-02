@@ -1,7 +1,7 @@
 [string]$ErrorActionOriginalPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utilities.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'get-csv.psm1') -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
 	E = 0
@@ -15,11 +15,7 @@ function Format-InputList {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][AllowEmptyString()][string]$InputObject
 	)
-	return [string[]]($InputObject -split ";|\r?\n") | ForEach-Object -Process {
-		return $_.Trim()
-	} | Where-Object -FilterScript {
-		return ($_.Length -gt 0)
-	} | Sort-Object -Unique -CaseSensitive
+	return [string[]]($InputObject -split ";|\r?\n") | ForEach-Object -Process { return $_.Trim() } | Where-Object -FilterScript { return ($_.Length -gt 0) } | Sort-Object -Unique -CaseSensitive
 }
 function Get-InputList {
 	[CmdletBinding()][OutputType([string[]])]
@@ -79,9 +75,9 @@ function Write-OptimizePSListGroup {
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
-[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv')
+[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-Csv -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') -Delimiter "`t"
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
-[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-TSVTable -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv')
+[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-Csv -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
@@ -96,7 +92,7 @@ function Write-OptimizePSListGroup {
 [UInt64]$TotalSizesClamAV = 0
 [UInt64]$TotalSizesYARA = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[pscustomobject[]]$YARARulesIndex = Get-TSVTable -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv')
+[pscustomobject[]]$YARARulesIndex = Get-Csv -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 Enter-GHActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GHActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
@@ -165,15 +161,9 @@ if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 	Write-GHActionsFail -Message 'No anti virus software enable!'
 }
-[pscustomobject[]]$ClamAVSignaturesIgnorePresetsApply = $ClamAVSignaturesIgnorePresetsIndex | Where-Object -FilterScript {
-	Test-InputFilter -Target $_.Name -FilterList $ClamAVSignaturesIgnorePresets -FilterMode 'Include'
-} | Sort-Object -Property 'Name'
-[pscustomobject[]]$ClamAVUnofficialSignaturesApply = $ClamAVUnofficialSignaturesIndex | Where-Object -FilterScript {
-	Test-InputFilter -Target $_.Name -FilterList $ClamAVUnofficialSignatures -FilterMode 'Include'
-} | Sort-Object -Property 'Name'
-[pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript {
-	Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
-} | Sort-Object -Property 'Name'
+[pscustomobject[]]$ClamAVSignaturesIgnorePresetsApply = $ClamAVSignaturesIgnorePresetsIndex | Where-Object -FilterScript { Test-InputFilter -Target $_.Name -FilterList $ClamAVSignaturesIgnorePresets -FilterMode 'Include' } | Sort-Object -Property 'Name'
+[pscustomobject[]]$ClamAVUnofficialSignaturesApply = $ClamAVUnofficialSignaturesIndex | Where-Object -FilterScript { Test-InputFilter -Target $_.Name -FilterList $ClamAVUnofficialSignatures -FilterMode 'Include' } | Sort-Object -Property 'Name'
+[pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript { Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode } | Sort-Object -Property 'Name'
 if ($ClamAVEnable) {
 	[string[]]$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnoreCustom
 	[pscustomobject[]]$ClamAVSignaturesIgnorePresetsDisplay = @()
@@ -200,13 +190,13 @@ if ($ClamAVEnable) {
 		Write-GHActionsWarning -Message "Some of the ClamAV signatures ignore presets are indexed but not exist: $($ClamAVSignaturesIgnorePresetsInvalid -join ', ')"
 	}
 	Enter-GHActionsLogGroup -Title "ClamAV signatures ignore presets index (I: $($ClamAVSignaturesIgnorePresetsIndex.Count); A: $($ClamAVSignaturesIgnorePresetsApply.Count); S: $($ClamAVSignaturesIgnorePresetsApply.Count - $ClamAVSignaturesIgnorePresetsInvalid.Count)):"
-	Write-OptimizePSFormatDisplay -InputObject ($ClamAVSignaturesIgnorePresetsDisplay | Format-Table -Property @('Name', @{Expression = 'Exist'; Alignment = 'Right'}, @{Expression = 'Apply'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+	Write-OptimizePSFormatDisplay -InputObject ($ClamAVSignaturesIgnorePresetsDisplay | Format-Table -Property @(
+		'Name',
+		@{ Expression = 'Exist'; Alignment = 'Right' },
+		@{ Expression = 'Apply'; Alignment = 'Right' }
+	) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
-	$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnore | ForEach-Object -Process {
-		return $_.Trim()
-	} | Where-Object -FilterScript {
-		return ($_.Length -gt 0)
-	} | Sort-Object -Unique -CaseSensitive
+	$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnore | ForEach-Object -Process { return $_.Trim() } | Where-Object -FilterScript { return ($_.Length -gt 0) } | Sort-Object -Unique -CaseSensitive
 	Enter-GHActionsLogGroup -Title "ClamAV signatures ignore ($($ClamAVSignaturesIgnore.Count)):"
 	if ($ClamAVSignaturesIgnore.Count -gt 0) {
 		Write-Host -Object ($ClamAVSignaturesIgnore -join ', ')
@@ -240,7 +230,11 @@ if ($ClamAVEnable) {
 		Write-GHActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist: $($ClamAVUnofficialSignaturesInvalid -join ', ')"
 	}
 	Enter-GHActionsLogGroup -Title "ClamAV unofficial signatures index (I: $($ClamAVUnofficialSignaturesIndex.Count); A: $($ClamAVUnofficialSignaturesApply.Count); S: $($ClamAVUnofficialSignaturesApply.Count - $ClamAVUnofficialSignaturesInvalid.Count)):"
-	Write-OptimizePSFormatDisplay -InputObject ($ClamAVUnofficialSignaturesDisplay | Format-Table -Property @('Name', @{Expression = 'Exist'; Alignment = 'Right'}, @{Expression = 'Apply'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+	Write-OptimizePSFormatDisplay -InputObject ($ClamAVUnofficialSignaturesDisplay | Format-Table -Property @(
+		'Name',
+		@{ Expression = 'Exist'; Alignment = 'Right' },
+		@{ Expression = 'Apply'; Alignment = 'Right' }
+	) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
 }
 if ($YARAEnable) {
@@ -258,14 +252,17 @@ if ($YARAEnable) {
 		$YARARulesDisplay += [pscustomobject]$YARARuleDisplay
 		if ($YARARuleExist -eq $false) {
 			$YARARulesInvalid += $_.Name
-			
 		}
 	}
 	if ($YARARulesInvalid.Count -gt 0) {
 		Write-GHActionsWarning -Message "Some of the YARA rules are indexed but not exist: $($YARARulesInvalid -join ', ')"
 	}
 	Enter-GHActionsLogGroup -Title "YARA rules index (I: $($YARARulesIndex.Count); A: $($YARARulesApply.Count); S: $($YARARulesApply.Count - $YARARulesInvalid.Count)):"
-	Write-OptimizePSFormatDisplay -InputObject ($YARARulesDisplay | Format-Table -Property @('Name', @{Expression = 'Exist'; Alignment = 'Right'}, @{Expression = 'Apply'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+	Write-OptimizePSFormatDisplay -InputObject ($YARARulesDisplay | Format-Table -Property @(
+		'Name',
+		@{ Expression = 'Exist'; Alignment = 'Right' },
+		@{ Expression = 'Apply'; Alignment = 'Right' }
+	) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
 }
 Enter-GHActionsLogGroup -Title 'Update software.'
@@ -348,7 +345,11 @@ function Invoke-ScanVirusSession {
 		$script:TotalElementsClamAV += $ElementsListClamAV.Count
 		$script:TotalElementsYARA += $ElementsListYARA.Count
 		Enter-GHActionsLogGroup -Title "Elements of session `"$Session`" (E: $($Elements.Count); FC: $($ElementsListClamAV.Count); FD: $ElementsIsDirectoryCount; FY: $($ElementsListYARA.Count)):"
-		Write-OptimizePSFormatDisplay -InputObject ($ElementsListDisplay | Format-Table -Property @('Element', 'Flags', @{Expression = 'Sizes'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
+		Write-OptimizePSFormatDisplay -InputObject ($ElementsListDisplay | Format-Table -Property @(
+			'Element',
+			'Flags',
+			@{ Expression = 'Sizes'; Alignment = 'Right' }
+		) -AutoSize -Wrap | Out-String)
 		Exit-GHActionsLogGroup
 		if ($ClamAVEnable -and ($ElementsListClamAV.Count -gt 0)) {
 			[string]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
@@ -547,10 +548,10 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject[]]@(
 	}
 ) | Format-Table -Property @(
 	'Name',
-	@{Expression = 'All'; Alignment = 'Right'},
-	@{Expression = 'ClamAV'; Alignment = 'Right'},
-	@{Expression = 'YARA'; Alignment = 'Right'},
-	@{Expression = 'Other'; Alignment = 'Right'}
+	@{ Expression = 'All'; Alignment = 'Right' },
+	@{ Expression = 'ClamAV'; Alignment = 'Right' },
+	@{ Expression = 'YARA'; Alignment = 'Right' },
+	@{ Expression = 'Other'; Alignment = 'Right' }
 ) -AutoSize -Wrap | Out-String)
 Exit-GHActionsLogGroup
 if ($TotalIssues -gt 0) {
