@@ -1,4 +1,4 @@
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utilities.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'get-csv.psm1') -Scope 'Local'
 function Read-HostChoice {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -22,7 +22,7 @@ function Read-HostChoice {
 )
 foreach ($Asset in $Assets) {
 	[string]$AssetRoot = Join-Path -Path $PSScriptRoot -ChildPath $Asset
-	[pscustomobject[]]$AssetIndex = Get-TSVTable -Path (Join-Path -Path $AssetRoot -ChildPath 'index.tsv')
+	[pscustomobject[]]$AssetIndex = Get-Csv -Path (Join-Path -Path $AssetRoot -ChildPath 'index.tsv') -Delimiter "`t"
 	foreach ($Item in $AssetIndex) {
 		[string]$OutFileFullName = Join-Path -Path $AssetRoot -ChildPath $Item.Location
 		if (
