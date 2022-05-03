@@ -24,6 +24,13 @@ function Get-InputList {
 	)
 	return Format-InputList -InputObject (Get-GHActionsInput -Name $Name -Trim)
 }
+function Optimize-PSFormatDisplay {
+	[CmdletBinding()][OutputType([string])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+	)
+	return $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
+}
 function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -57,17 +64,7 @@ function Write-OptimizePSFormatDisplay {
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
 	)
-	[string]$OutputObject = $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
-	if ($OutputObject.Length -gt 0) {
-		Write-Host -Object $OutputObject
-	}
-}
-function Write-OptimizePSListGroup {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
-	)
-	[string]$OutputObject = $InputObject -replace '(?:\r?\n)+$', ''
+	[string]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
 	if ($OutputObject.Length -gt 0) {
 		Write-Host -Object $OutputObject
 	}
@@ -364,20 +361,25 @@ function Invoke-ScanVirusSession {
 			[string[]]$ClamAVOutput = Invoke-Expression -Command $ClamAVExpression
 			[uint]$ClamAVExitCode = $LASTEXITCODE
 			[string[]]$ClamAVResultRaw = @()
-			$ClamAVOutput | ForEach-Object -Process {
-				if ($_ -notmatch ': OK$') {
-					$ClamAVResultRaw += $_ -replace "^\s*$RegExpGHActionsWorkspaceRoot", ''
+			[string[]]$ClamAVSummaryRaw = @()
+			for ($ClamAVOutputLineIndex = 0; $ClamAVOutputLineIndex -lt $ClamAVOutput.Count; $ClamAVOutputLineIndex++) {
+				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex]
+				if ($ClamAVOutputLineContent -match '^\s*-+\s*SCAN SUMMARY\s*-+\s*$') {
+					$ClamAVSummaryRaw = $ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)]
+					break
+				} elseif ($ClamAVOutputLineContent -match '^\s*$') {
+					continue
+				} elseif ($ClamAVOutputLineContent -notmatch ': OK$') {
+					$ClamAVResultRaw += $ClamAVOutputLineContent -replace "^\s*$RegExpGHActionsWorkspaceRoot", ''
 				}
 			}
-			[string]$ClamAVResult = $ClamAVResultRaw -join "`n" -replace '^\s*\n', ''
-			if ($ClamAVResult.Length -gt 0) {
-				Write-Host -Object $ClamAVResult
-			}
+			Write-Host -Object ($ClamAVSummaryRaw -join "`n")
+			[string]$ClamAVResult = $ClamAVResultRaw -join "`n"
 			if ($ClamAVExitCode -eq 1) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV!"
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV!`n$ClamAVResult"
 				$script:IssuesClamAV += $Session
 			} elseif ($ClamAVExitCode -gt 1) {
-				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`"!"
+				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`"!`n$ClamAVResult"
 				$script:IssuesClamAV += $Session
 			}
 			Exit-GHActionsLogGroup
@@ -414,12 +416,13 @@ function Invoke-ScanVirusSession {
 				}
 			}
 			if ($YARAResultRaw.Count -gt 0) {
-				[hashtable]$YARAResult = @{}
-				$YARAResultRaw.GetEnumerator() | ForEach-Object -Process {
-					$YARAResult[$_.Name] = ($_.Value | Sort-Object) -join ', '
-				}
-				Write-OptimizePSListGroup -InputObject ($YARAResult.GetEnumerator() | Sort-Object -Property 'Name' | Format-List -Property 'Value' -GroupBy 'Name' | Out-String)
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA!"
+				[string]$YARAResult = $YARAResultRaw.GetEnumerator() | ForEach-Object -Process {
+					return [pscustomobject]@{
+						Element = $_.Name
+						Rules = ($_.Value | Sort-Object) -join ', '
+					}
+				} | Sort-Object -Property 'Element' | Format-List | Out-String
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA!`n$(Optimize-PSFormatDisplay -InputObject $YARAResult)"
 				$script:IssuesYARA += $Session
 			}
 			Exit-GHActionsLogGroup
