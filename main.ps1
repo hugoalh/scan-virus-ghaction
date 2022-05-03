@@ -417,10 +417,11 @@ function Invoke-ScanVirusSession {
 			}
 			if ($YARAResult.Count -gt 0) {
 				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA:`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
+					[string[]]$ElementRules = $_.Value | Sort-Object -Unique
 					return [pscustomobject]@{
 						Element = $_.Name
-						Rules_List = ($_.Value | Sort-Object) -join ', '
-						Rules_Count = ($_.Value).Count
+						Rules_List = $ElementRules -join ', '
+						Rules_Count = $ElementRules.Count
 					}
 				} | Sort-Object -Property 'Element' | Format-List | Out-String))"
 				$script:IssuesYARA += $Session
