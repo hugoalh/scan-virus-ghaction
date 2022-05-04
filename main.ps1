@@ -411,13 +411,13 @@ function Invoke-ScanVirusSession {
 							[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) $RegExpGHActionsWorkspaceRoot"
 							[string]$YARARuleName = "$($YARARule.Name)/$Rule"
 							Write-GHActionsDebug -Message "$YARARuleName>$Element"
-							if ((Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) -eq $false) {
-								Write-GHActionsDebug -Message '  > Skip'
-							} else {
+							if (Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) {
 								if ($null -eq $YARAResult[$Element]) {
 									$YARAResult[$Element] = @()
 								}
 								$YARAResult[$Element] += $YARARuleName
+							} else {
+								Write-GHActionsDebug -Message '  > Skip'
 							}
 						} elseif ($_.Length -gt 0) {
 							Write-Host -Object $_
