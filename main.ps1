@@ -104,7 +104,7 @@ if ($Targets -match '^\.\/$') {
 		}
 	}
 	if ($TargetsInvalid.Count -gt 0) {
-		Write-GHActionsWarning -Message "Input ``targets`` included invalid targets: $($TargetsInvalid -join ', ')"
+		Write-GHActionsWarning -Message "Input ``targets`` included invalid targets ($($TargetsInvalid.Count)): $($TargetsInvalid -join ', ')"
 	}
 }
 [bool]$GitDeep = [bool]::Parse((Get-GHActionsInput -Name 'git_deep' -Require -Trim))
@@ -183,10 +183,10 @@ if ($ClamAVEnable) {
 			$ClamAVSignaturesIgnorePresetsInvalid += $_.Name
 		}
 	}
-	if ($ClamAVSignaturesIgnorePresetsInvalid.Count -gt 0) {
-		Write-GHActionsWarning -Message "Some of the ClamAV signatures ignore presets are indexed but not exist: $($ClamAVSignaturesIgnorePresetsInvalid -join ', ')"
-	}
 	Enter-GHActionsLogGroup -Title "ClamAV signatures ignore presets index (I: $($ClamAVSignaturesIgnorePresetsIndex.Count); A: $($ClamAVSignaturesIgnorePresetsApply.Count); S: $($ClamAVSignaturesIgnorePresetsApply.Count - $ClamAVSignaturesIgnorePresetsInvalid.Count)):"
+	if ($ClamAVSignaturesIgnorePresetsInvalid.Count -gt 0) {
+		Write-GHActionsWarning -Message "Some of the ClamAV signatures ignore presets are indexed but not exist ($($ClamAVSignaturesIgnorePresetsInvalid.Count)): $($ClamAVSignaturesIgnorePresetsInvalid -join ', ')"
+	}
 	Write-OptimizePSFormatDisplay -InputObject ($ClamAVSignaturesIgnorePresetsDisplay | Format-Table -Property @(
 		'Name',
 		@{ Expression = 'Exist'; Alignment = 'Right' },
@@ -223,10 +223,10 @@ if ($ClamAVEnable) {
 			$ClamAVUnofficialSignaturesInvalid += $_.Name
 		}
 	}
-	if ($ClamAVUnofficialSignaturesInvalid.Count -gt 0) {
-		Write-GHActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist: $($ClamAVUnofficialSignaturesInvalid -join ', ')"
-	}
 	Enter-GHActionsLogGroup -Title "ClamAV unofficial signatures index (I: $($ClamAVUnofficialSignaturesIndex.Count); A: $($ClamAVUnofficialSignaturesApply.Count); S: $($ClamAVUnofficialSignaturesApply.Count - $ClamAVUnofficialSignaturesInvalid.Count)):"
+	if ($ClamAVUnofficialSignaturesInvalid.Count -gt 0) {
+		Write-GHActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist ($($ClamAVUnofficialSignaturesInvalid.Count)): $($ClamAVUnofficialSignaturesInvalid -join ', ')"
+	}
 	Write-OptimizePSFormatDisplay -InputObject ($ClamAVUnofficialSignaturesDisplay | Format-Table -Property @(
 		'Name',
 		@{ Expression = 'Exist'; Alignment = 'Right' },
@@ -251,10 +251,10 @@ if ($YARAEnable) {
 			$YARARulesInvalid += $_.Name
 		}
 	}
-	if ($YARARulesInvalid.Count -gt 0) {
-		Write-GHActionsWarning -Message "Some of the YARA rules are indexed but not exist: $($YARARulesInvalid -join ', ')"
-	}
 	Enter-GHActionsLogGroup -Title "YARA rules index (I: $($YARARulesIndex.Count); A: $($YARARulesApply.Count); S: $($YARARulesApply.Count - $YARARulesInvalid.Count)):"
+	if ($YARARulesInvalid.Count -gt 0) {
+		Write-GHActionsWarning -Message "Some of the YARA rules are indexed but not exist ($($YARARulesInvalid.Count)): $($YARARulesInvalid -join ', ')"
+	}
 	Write-OptimizePSFormatDisplay -InputObject ($YARARulesDisplay | Format-Table -Property @(
 		'Name',
 		@{ Expression = 'Exist'; Alignment = 'Right' },
@@ -360,26 +360,39 @@ function Invoke-ScanVirusSession {
 			}
 			[string[]]$ClamAVOutput = Invoke-Expression -Command $ClamAVExpression
 			[uint]$ClamAVExitCode = $LASTEXITCODE
-			[string[]]$ClamAVResultRaw = @()
-			[string[]]$ClamAVSummary = @()
+			[string[]]$ClamAVResultErrorRaw = @()
+			[string[]]$ClamAVResultFoundRaw = @()
 			for ($ClamAVOutputLineIndex = 0; $ClamAVOutputLineIndex -lt $ClamAVOutput.Count; $ClamAVOutputLineIndex++) {
 				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex]
-				if ($ClamAVOutputLineContent -match '^\s*-+\s*SCAN SUMMARY\s*-+\s*$') {
-					$ClamAVSummary = $ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)]
+				if ($ClamAVOutputLineContent -cmatch '^\s*[-=]+ SCAN SUMMARY [-=]+\s*$') {
+					Write-Host -Object ($ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)] -join "`n")
 					break
-				} elseif ($ClamAVOutputLineContent -match '^\s*$') {
+				}
+				if (
+					($ClamAVOutputLineContent -cmatch ': OK$') -or
+					($ClamAVOutputLineContent -match '^\s*$')
+				) {
 					continue
-				} elseif ($ClamAVOutputLineContent -notmatch ': OK$') {
-					$ClamAVResultRaw += $ClamAVOutputLineContent -replace "^\s*$RegExpGHActionsWorkspaceRoot", ''
+				}
+				if ($ClamAVOutputLineContent -cmatch ': .+ FOUND$') {
+					$ClamAVResultFoundRaw += $ClamAVOutputLineContent -replace "^\s*$RegExpGHActionsWorkspaceRoot", ''
+				} else {
+					$ClamAVResultErrorRaw += $ClamAVOutputLineContent -replace "^\s*$RegExpGHActionsWorkspaceRoot", ''
 				}
 			}
-			Write-Host -Object ($ClamAVSummary -join "`n")
-			[string]$ClamAVResult = ($ClamAVResultRaw | Sort-Object -Unique) -join "`n"
-			if ($ClamAVExitCode -eq 1) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV:`n$ClamAVResult"
+			[string]$ClamAVResultError = $ClamAVResultErrorRaw -join "`n"
+			[string]$ClamAVResultFound = ($ClamAVResultFoundRaw | Sort-Object -Unique -CaseSensitive) -join "`n"
+			if (
+				($ClamAVExitCode -eq 1) -or
+				($ClamAVResultFound.Length -gt 0)
+			) {
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV:$(($ClamAVResultError.Length -gt 0) ? "`n$ClamAVResultError" : '')`n$ClamAVResultFound"
 				$script:IssuesClamAV += $Session
-			} elseif ($ClamAVExitCode -gt 1) {
-				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`":`n$ClamAVResult"
+			} elseif (
+				($ClamAVExitCode -gt 1) -or
+				($ClamAVResultError.Length -gt 0)
+			) {
+				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`":`n$ClamAVResultError$(($ClamAVResultFound.Length -gt 0) ? "`n$ClamAVResultFound" : '')"
 				$script:IssuesClamAV += $Session
 			}
 			Exit-GHActionsLogGroup
@@ -417,7 +430,7 @@ function Invoke-ScanVirusSession {
 			}
 			if ($YARAResult.Count -gt 0) {
 				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA:`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
-					[string[]]$ElementRules = $_.Value | Sort-Object -Unique
+					[string[]]$ElementRules = $_.Value | Sort-Object -Unique -CaseSensitive
 					return [pscustomobject]@{
 						Element = $_.Name
 						Rules_List = $ElementRules -join ', '
