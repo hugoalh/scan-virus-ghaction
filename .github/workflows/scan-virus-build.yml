@@ -64,6 +64,8 @@ jobs:
           #   ^clamav-unofficial-signatures\/(?!index\.tsv).+$
           #   ^yara-rules$
           #   ^yara-rules\/(?!index\.tsv).+$
+          clamav_unofficialsignatures: |
+            ^.+$
           yara_enable: "true"
           # yara_filesfilter_list: |
           #   ^\.git(?:\/|$)
