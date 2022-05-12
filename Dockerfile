@@ -31,5 +31,6 @@ RUN ["freshclam", "--verbose"]
 COPY clamav-signatures-ignore-presets /opt/hugoalh/scan-virus-ghaction/clamav-signatures-ignore-presets/
 COPY clamav-unofficial-signatures /opt/hugoalh/scan-virus-ghaction/clamav-unofficial-signatures/
 COPY get-csv.psm1 main.ps1 /opt/hugoalh/scan-virus-ghaction/
+COPY summary /opt/hugoalh/scan-virus-ghaction/summary/
 COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
