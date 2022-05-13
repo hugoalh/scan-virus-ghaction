@@ -3,11 +3,13 @@ ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.3/powershell-7.2.3-linux-x64.tar.gz /tmp/powershell-7.2.3-linux-x64.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
 RUN ["tar", "--extract", "--file=/tmp/powershell-7.2.3-linux-x64.tar.gz", "--directory=/opt/microsoft/powershell/7", "--gzip", "--verbose"]
+RUN ["ls", "--all", "--no-group", "--recursive", "/opt/microsoft/powershell/7"]
 
 FROM debian:11 AS extract-assets
 ADD https://github.com/hugoalh/scan-virus-ghaction-assets/archive/refs/heads/main.tar.gz /tmp/scan-virus-ghaction-assets.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/tmp/scan-virus-ghaction-assets"]
 RUN ["tar", "--extract", "--file=/tmp/scan-virus-ghaction-assets.tar.gz", "--directory=/tmp/scan-virus-ghaction-assets", "--gzip", "--verbose"]
+RUN ["ls", "--all", "--no-group", "--recursive", "/tmp/scan-virus-ghaction-assets"]
 
 FROM debian:11 AS main
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
@@ -16,6 +18,7 @@ ENV LC_ALL=en_US.UTF-8
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
 COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powershell/7/
+RUN ["ls", "--all", "--no-group", "--recursive", "/opt/microsoft/powershell/7"]
 RUN ["chmod", "--verbose", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
@@ -39,4 +42,5 @@ COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-a
 COPY get-csv.psm1 main.ps1 /opt/hugoalh/scan-virus-ghaction/
 COPY summary /opt/hugoalh/scan-virus-ghaction/summary/
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
+RUN ["ls", "--all", "--no-group", "--recursive", "/opt/hugoalh/scan-virus-ghaction"]
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
