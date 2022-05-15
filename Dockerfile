@@ -38,7 +38,8 @@ COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/clamav-signatures-ignore-presets /opt/hugoalh/scan-virus-ghaction/clamav-signatures-ignore-presets/
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/clamav-unofficial-signatures /opt/hugoalh/scan-virus-ghaction/clamav-unofficial-signatures/
-COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/assets-metadata.json /opt/hugoalh/scan-virus-ghaction/assets-metadata.json
+COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/_compatibility.txt.txt /opt/hugoalh/scan-virus-ghaction/_compatibility.txt.txt
+COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/_timestamp.txt /opt/hugoalh/scan-virus-ghaction/_timestamp.txt
 COPY get-csv.psm1 get-gitcommits.psm1 main.ps1 test-stringisurl.psm1 /opt/hugoalh/scan-virus-ghaction/
 COPY summary /opt/hugoalh/scan-virus-ghaction/summary/
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
