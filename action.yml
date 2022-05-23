@@ -7,11 +7,11 @@ inputs:
     required: false
     default: "./"
   git_deep:
-    description: "{boolean} Scan deeper for Git repository."
+    description: "{boolean} Scan deeper for Git repository by each commits."
     required: false
     default: "false"
-  git_reversesession:
-    description: "{boolean} Reverse Git session."
+  git_reverse:
+    description: "{boolean} Reverse sort order of Git commits."
     required: false
     default: "false"
   clamav_enable:
@@ -73,14 +73,14 @@ inputs:
   yara_rulesfilter_mode:
     description: "{string} YARA rules filter mode."
     required: false
-    default: "exclude"
+    default: "include"
   yara_toolwarning:
     description: "{boolean} Enable YARA tool warning."
     required: false
     default: "false"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.6.2"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.7.0"
 branding:
   icon: "shield"
   color: "red"
