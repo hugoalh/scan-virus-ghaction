@@ -22,31 +22,9 @@ on:
         required: false
         default: "false"
 jobs:
-  parse-inputs:
-    name: "(Parse Inputs)"
-    runs-on: "ubuntu-latest"
-    steps:
-      - run: |
-          [string]$GitDeep = '${{github.event.inputs.git_deep}}'
-          [string]$GitReverseSession = '${{github.event.inputs.git_reversesession}}'
-          if ($GitDeep.Length -eq 0) {
-            $GitDeep = 'false'
-          }
-          if ($GitReverseSession.Length -eq 0) {
-            $GitReverseSession = 'false'
-          }
-          Write-Host -Object "::set-output name=git_deep::$GitDeep"
-          Write-Host -Object "::set-output name=git_reversesession::$GitReverseSession"
-        id: "parser"
-        shell: "pwsh"
-    outputs:
-      git_deep: "${{steps.parser.outputs.git_deep}}"
-      git_reversesession: "${{steps.parser.outputs.git_reversesession}}"
   scan-virus:
     name: "Scan Virus"
     runs-on: "ubuntu-latest"
-    needs:
-      - "parse-inputs"
     steps:
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.0.2"
@@ -55,30 +33,8 @@ jobs:
       - name: "Scan Repository"
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
-          git_deep: "${{needs.parse-inputs.outputs.git_deep}}"
-          git_reversesession: "${{needs.parse-inputs.outputs.git_reversesession}}"
-          # clamav_filesfilter_list: |
-          #   ^clamav-signatures-ignore-presets$
-          #   ^clamav-signatures-ignore-presets\/(?!index\.tsv).+$
-          #   ^clamav-unofficial-signatures$
-          #   ^clamav-unofficial-signatures\/(?!index\.tsv).+$
-          #   ^yara-rules$
-          #   ^yara-rules\/(?!index\.tsv).+$
+          git_deep: "${{github.event.inputs.git_deep || 'false'}}"
+          git_reversesession: "${{github.event.inputs.git_reversesession || 'false'}}"
           clamav_unofficialsignatures: |
             ^.+$
           yara_enable: "true"
-          # yara_filesfilter_list: |
-          #   ^\.git(?:\/|$)
-          #   ^clamav-signatures-ignore-presets$
-          #   ^clamav-signatures-ignore-presets\/(?!index\.tsv).+$
-          #   ^clamav-unofficial-signatures$
-          #   ^clamav-unofficial-signatures\/(?!index\.tsv).+$
-          #   ^yara-rules$
-          #   ^yara-rules\/(?!index\.tsv).+$
-          # yara_rulesfilter_list: |
-          #   ^blacktop\/peertopeer>Dockerfile$
-          #   ^yara-community\/capabilities\/spreading_file>\.gitignore$
-          #   ^yara-community\/maldocs\/powershell>\.github\/workflows\/scan-virus.*?\.yml$
-          #   ^yara-community\/maldocs\/powershell>Dockerfile$
-          #   ^yara-community\/maldocs\/powershell>README\.md$
-          # yara_toolwarning: "true"
