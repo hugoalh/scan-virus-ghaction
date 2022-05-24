@@ -1,45 +1,17 @@
 [string]$ErrorActionOriginalPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
-Import-Module -Name @(
-	'hugoalh.GitHubActionsToolkit',
-	(Join-Path -Path $PSScriptRoot -ChildPath 'assets.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'csv.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-job-summary.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1')
-) -Scope 'Local'
-enum FilterMode {
-	Exclude = 0
-	E = 0
-	Ex = 0
-	Include = 1
-	I = 1
-	In = 1
-}
-function Format-InputList {
-	[CmdletBinding()][OutputType([string[]])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][AllowEmptyString()][string]$InputObject
-	)
-	return [string[]]($InputObject -split ';|\r?\n') | ForEach-Object -Process {
-		return $_.Trim()
-	} | Where-Object -FilterScript {
-		return ($_.Length -gt 0)
-	} | Sort-Object -Unique -CaseSensitive
-}
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'assets.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'csv.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-step-summary.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1') -Scope 'Local'
 function Get-InputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Name
 	)
 	return Format-InputList -InputObject (Get-GitHubActionsInput -Name $Name -Trim)
-}
-function Optimize-PSFormatDisplay {
-	[CmdletBinding()][OutputType([string])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
-	)
-	return $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
 }
 function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
@@ -61,28 +33,19 @@ function Test-InputFilter {
 		1 { return $false }
 	}
 }
-function Write-OptimizePSFormatDisplay {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
-	)
-	[string]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
-	if ($OutputObject.Length -gt 0) {
-		Write-Host -Object $OutputObject
-	}
-}
+[string]$AssetRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
-[string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
+[string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $AssetRoot -ChildPath 'clamav-signatures-ignore-presets'
 [pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') -Delimiter "`t"
-[string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
+[string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $AssetRoot -ChildPath 'clamav-unofficial-signatures'
 [pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
 [bool]$LocalTarget = $false
 [string[]]$NetworkTargets = @()
-[string]$RegExpGitHubActionsWorkspaceRoot = "$([regex]::Escape($env:GITHUB_WORKSPACE))\/"
+[string]$GitHubActionsWorkspaceRootRegularExpression = "$([regex]::Escape($env:GITHUB_WORKSPACE))\/"
 [string[]]$RequireCleanUpFiles = @()
 [UInt64]$TotalElementsAll = 0
 [UInt64]$TotalElementsClamAV = 0
@@ -90,10 +53,11 @@ function Write-OptimizePSFormatDisplay {
 [UInt64]$TotalSizesAll = 0
 [UInt64]$TotalSizesClamAV = 0
 [UInt64]$TotalSizesYARA = 0
-[string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
+[string]$YARARulesRoot = Join-Path -Path $AssetRoot -ChildPath 'yara-rules'
 [pscustomobject[]]$YARARulesIndex = Get-Csv -LiteralPath (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
-[string]$Targets = Get-GitHubActionsInput -Name 'targets' -Trim
+[ValidatePattern('^.+$')][string]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Require -Trim
+[string]$Targets = Get-GitHubActionsInput -Name 'targets' -Require -Trim
 if ($Targets -match '^\.\/$') {
 	$LocalTarget = $true
 } else {
@@ -314,7 +278,7 @@ function Invoke-ScanVirusSession {
 		[uint]$ElementsIsDirectoryCount = 0
 		$Elements | Sort-Object | ForEach-Object -Process {
 			[bool]$ElementIsDirectory = Test-Path -LiteralPath $_.FullName -PathType 'Container'
-			[string]$ElementName = $_.FullName -replace "^$RegExpGitHubActionsWorkspaceRoot", ''
+			[string]$ElementName = $_.FullName -replace "^$GitHubActionsWorkspaceRootRegularExpression", ''
 			[UInt64]$ElementSizes = $_.Length
 			[hashtable]$ElementListDisplay = @{
 				Element = $ElementName
@@ -377,7 +341,7 @@ function Invoke-ScanVirusSession {
 			[string[]]$ClamAVResultError = @()
 			[hashtable]$ClamAVResultFound = @{}
 			for ($ClamAVOutputLineIndex = 0; $ClamAVOutputLineIndex -lt $ClamAVOutput.Count; $ClamAVOutputLineIndex++) {
-				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex] -replace "^$RegExpGitHubActionsWorkspaceRoot", ''
+				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex] -replace "^$GitHubActionsWorkspaceRootRegularExpression", ''
 				if ($ClamAVOutputLineContent -match '^[-=]+ SCAN SUMMARY [-=]+$') {
 					Write-Host -Object ($ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)] -join "`n")
 					break
@@ -433,8 +397,8 @@ function Invoke-ScanVirusSession {
 				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAToolWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Location)`" `"$ElementsListYARAFullName`""
 				if ($LASTEXITCODE -eq 0) {
 					$YARAOutput | ForEach-Object -Process {
-						if ($_ -match "^.+? $RegExpGitHubActionsWorkspaceRoot.+$") {
-							[string]$Rule, [string]$IssueElement = $_ -split "(?<=^.+?) $RegExpGitHubActionsWorkspaceRoot"
+						if ($_ -match "^.+? $GitHubActionsWorkspaceRootRegularExpression.+$") {
+							[string]$Rule, [string]$IssueElement = $_ -split "(?<=^.+?) $GitHubActionsWorkspaceRootRegularExpression"
 							[string]$YARARuleName = "$($YARARule.Name)/$Rule"
 							[string]$YARAElementIssue = "$YARARuleName>$IssueElement"
 							Write-GitHubActionsDebug -Message $YARAElementIssue

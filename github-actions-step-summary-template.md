@@ -1,4 +1,4 @@
-# Scan Virus (GitHub Action) - Job Summary
+# Scan Virus (GitHub Action) - Step Summary
 
 ## Metadata
 
@@ -12,17 +12,29 @@
 >
 > - If this action was terminated by manually, timeout, or unexpectedly, some of the contents maybe incorrect.
 > - Sessions which are clean and successful will not display at here.
-> - If all sessions are clean and successful, this job summary will not display.
-> - This job summary maybe trimed due to the limit sizes for maximum 1 MB.
+> - If all sessions are clean and successful, this step summary will not display.
+> - This step summary maybe trimed due to the limit sizes for maximum 1 MB.
 
 ## Annotations
 
-<!-- annotations.item -->
+### Errors
 
-## Sessions' Unfinished
+<!-- errors.item -->
+
+### Warnings
+
+<!-- warnings.item -->
+
+### Informations
+
+<!-- informations.item -->
+
+## Sessions
+
+### Unfinished
 
 <!-- sessions.unfinished.item -->
 
-## Sessions' Issues
+### Issues
 
 <!-- sessions.issues.item -->
