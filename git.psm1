@@ -1,8 +1,5 @@
 [hashtable]$GitCommitsPropertyToken = @{ Name = 'CommitHash'; Placeholder = '%H' }
 [hashtable[]]$GitCommitsProperties = @(
-	@{ Name = 'AbbreviatedCommitHash'; Placeholder = '%h' },
-	@{ Name = 'AbbreviatedParentHashes'; Placeholder = '%p'; IsArray = $true },
-	@{ Name = 'AbbreviatedTreeHash'; Placeholder = '%t' },
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Type = [datetime] },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
@@ -27,7 +24,7 @@
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )
-[string]$GitExpressionDelimiter = ' '
+[string]$GitExpressionDelimiter = ': '
 [string]$GitExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
 [string]$GitExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
 function Get-GitCommits {
@@ -56,20 +53,22 @@ function Get-GitCommits {
 		} else {
 			[string[]]$Results = Invoke-Expression -Command ($GitExpressionSingleLine -f "$($GitCommitsPropertyToken.Placeholder)$($GitExpressionDelimiter)$($GitCommitsProperty.Placeholder)")
 			if ($GitCommits.Count -ne $Results.Count) {
-				throw 'Git database was modified during process!'
+				Write-Error -Message 'Git database was modified during process!' -Category 'ResourceUnavailable' -ErrorId 'Git.DatabaseModifiedOnRead'
+				return @()
 			}
 			for ($ResultsIndex = 0; $ResultsIndex -lt $Results.Count; $ResultsIndex++) {
 				[string[]]$ResultRaw = $Results[$ResultsIndex] -split [regex]::Escape($GitExpressionDelimiter)
 				[string]$ResultToken = $ResultRaw[0]
 				[string[]]$ResultContentRaw = $ResultRaw[1..(($ResultRaw.Count -gt 1) ? ($ResultRaw.Count - 1) : 1)]
 				if ($GitCommits[$ResultsIndex][$GitCommitsPropertyToken.Name] -ne $ResultToken) {
-					throw 'Git database was modified during process!'
+					Write-Error -Message 'Git database was modified during process!' -Category 'ResourceUnavailable' -ErrorId 'Git.DatabaseModifiedOnRead'
+					return @()
 				}
 				$ResultContent = $null
 				if ($GitCommitsProperty.IsArray) {
 					$ResultContent = $ResultContentRaw
 				} elseif ($null -ne $GitCommitsProperty.Type) {
-					$ResultContent = $ResultContentRaw -join $GitExpressionDelimiter -as $GitCommitsProperty.Type
+					$ResultContent = ($ResultContentRaw -join $GitExpressionDelimiter) -as $GitCommitsProperty.Type
 				} else {
 					$ResultContent = $ResultContentRaw -join $GitExpressionDelimiter
 				}

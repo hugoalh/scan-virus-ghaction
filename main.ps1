@@ -2,8 +2,11 @@
 $ErrorActionPreference = 'Stop'
 Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
+	(Join-Path -Path $PSScriptRoot -ChildPath 'assets.psm1'),
 	(Join-Path -Path $PSScriptRoot -ChildPath 'csv.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'test-stringisurl.psm1')
+	(Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1'),
+	(Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-job-summary.psm1'),
+	(Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1')
 ) -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
