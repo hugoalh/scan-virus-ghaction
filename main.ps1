@@ -6,6 +6,7 @@ Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'csv.psm1') -Scope
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-step-summary.psm1') -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1') -Scope 'Local'
+Initialize-StepSummary
 function Get-InputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
@@ -56,8 +57,8 @@ function Test-InputFilter {
 [string]$YARARulesRoot = Join-Path -Path $AssetRoot -ChildPath 'yara-rules'
 [pscustomobject[]]$YARARulesIndex = Get-Csv -LiteralPath (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
-[ValidatePattern('^.+$')][string]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Require -Trim
-[string]$Targets = Get-GitHubActionsInput -Name 'targets' -Require -Trim
+[ValidatePattern('^.+$')][string]$InputListDelimiter = Get-Input -Name 'input_listdelimiter'
+[string]$Targets = Get-Input -Name 'targets'
 if ($Targets -match '^\.\/$') {
 	$LocalTarget = $true
 } else {
@@ -577,6 +578,7 @@ if ($TotalIssues -gt 0) {
 	} | Format-List | Out-String)
 	Exit-GitHubActionsLogGroup
 }
+Optimize-StepSummary
 $ErrorActionPreference = $ErrorActionOriginalPreference
 if ($TotalIssues -gt 0) {
 	exit 1

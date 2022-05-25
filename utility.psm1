@@ -1,4 +1,5 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-step-summary.psm1') -Scope 'Local'
 function Format-InputList {
 	[CmdletBinding()][OutputType([string[]])]
 	param (
@@ -18,8 +19,9 @@ function Get-Input {
 	)
 	$Result = Get-GitHubActionsInput -Name $Name -Trim
 	if ($null -eq $Result) {
-		Write-TeeError
+		return Write-TeeFail -Message "Input ``$Name`` is not defined!"
 	}
+	return $Result
 }
 function Optimize-PSFormatDisplay {
 	[CmdletBinding()][OutputType([string])]
@@ -47,12 +49,23 @@ function Write-OptimizePSFormatDisplay {
 	)
 	[string]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
 	if ($OutputObject.Length -gt 0) {
-		Write-Host -Object $OutputObject
+		return Write-Host -Object $OutputObject
 	}
+	return
+}
+function Write-TeeFail {
+	[CmdletBinding()][OutputType([void])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
+	)
+	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.errors.item' -Value $Message
+	Optimize-StepSummary
+	return Write-GitHubActionsFail -Message $Message
 }
 Export-ModuleMember -Function @(
 	'Format-InputList',
 	'Optimize-PSFormatDisplay',
 	'Test-StringIsURL',
-	'Write-OptimizePSFormatDisplay'
+	'Write-OptimizePSFormatDisplay',
+	'Write-TeeFail'
 )

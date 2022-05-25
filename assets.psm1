@@ -12,13 +12,13 @@ function Update-GitHubActionScanVirusAssets {
 	[datetime]$LocalTimestamp = Get-Date -Date (Get-Content -LiteralPath $LocalTimestampFullName -Raw -Encoding 'UTF8NoBOM' -ErrorAction 'SilentlyContinue') -AsUTC
 	[datetime]$RemoteTimestamp = Get-Date -Date (Invoke-WebRequest -Uri $RemoteTimestampFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get') -AsUTC
 	if ($RemoteTimestamp -gt $LocalTimestamp) {
-		Invoke-WebRequest -Uri $RemotePackageFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' -OutFile $RemotePackageToLocalFileFullName
-		New-Item -Path $RemotePackageExtractRoot -ItemType 'Directory' -Force -Confirm:$false
-		Invoke-Expression -Command "tar --extract --file=`"$RemotePackageToLocalFileFullName`" --directory=`"$RemotePackageExtractRoot`" --gzip"
-		Remove-Item -LiteralPath $RemotePackageToLocalFileFullName -Force -Confirm:$false
-		Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$false
-		Move-Item -LiteralPath $RemotePackageOutBranchRoot -Destination $LocalRoot -Confirm:$false
-		Remove-Item -LiteralPath $RemotePackageExtractRoot -Recurse -Force -Confirm:$false
+		Invoke-WebRequest -Uri $RemotePackageFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' -OutFile $RemotePackageToLocalFileFullName | Out-Null
+		New-Item -Path $RemotePackageExtractRoot -ItemType 'Directory' -Force -Confirm:$false | Out-Null
+		Invoke-Expression -Command "tar --extract --file=`"$RemotePackageToLocalFileFullName`" --directory=`"$RemotePackageExtractRoot`" --gzip" | Out-Null
+		Remove-Item -LiteralPath $RemotePackageToLocalFileFullName -Force -Confirm:$false | Out-Null
+		Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$false | Out-Null
+		Move-Item -LiteralPath $RemotePackageOutBranchRoot -Destination $LocalRoot -Confirm:$false | Out-Null
+		Remove-Item -LiteralPath $RemotePackageExtractRoot -Recurse -Force -Confirm:$false | Out-Null
 	}
 }
 Export-ModuleMember -Function 'Update-GitHubActionScanVirusAssets'

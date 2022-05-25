@@ -1,6 +1,6 @@
 # Scan Virus (GitHub Action) - Step Summary
 
-## Metadata
+## 🔍 Metadata
 
 - **Job ID:** `<!-- metadata.job.id -->`
 - **Run ID:** `<!-- metadata.run.id -->`
@@ -15,19 +15,19 @@
 > - If all sessions are clean and successful, this step summary will not display.
 > - This step summary maybe trimed due to the limit sizes for maximum 1 MB.
 
-## Annotations
+## 🔔 Annotations
 
-### Errors
+### ❌ Errors
 
-<!-- errors.item -->
+<!-- annotations.errors.item -->
 
-### Warnings
+### ⚠ Warnings
 
-<!-- warnings.item -->
+<!-- annotations.warnings.item -->
 
-### Informations
+### ℹ Informations
 
-<!-- informations.item -->
+<!-- annotations.informations.item -->
 
 ## Sessions
 
