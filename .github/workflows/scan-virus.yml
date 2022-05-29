@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@main"
+        uses: "hugoalh/scan-virus-ghaction@patch/debian-apt-get"
         with:
           git_deep: "${{github.event.inputs.git_deep}}"
           git_reversesession: "${{github.event.inputs.git_reversesession}}"
