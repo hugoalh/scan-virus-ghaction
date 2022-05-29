@@ -1,10 +1,11 @@
 FROM debian:11 AS extract-powershell
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
-ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.3/powershell-7.2.3-linux-x64.tar.gz /tmp/powershell-7.2.3-linux-x64.tar.gz
+ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.4/powershell-7.2.4-linux-x64.tar.gz /tmp/powershell-7.2.4-linux-x64.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
-RUN ["tar", "zxf", "/tmp/powershell-7.2.3-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
+RUN ["tar", "zxf", "/tmp/powershell-7.2.4-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
 FROM debian:11 AS main
+ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
@@ -15,7 +16,7 @@ RUN ["chmod", "--verbose", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
 RUN ["apt-get", "--assume-yes", "upgrade"]
-RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "git", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "yara", "zlib1g"]
+RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "git", "git-lfs", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "yara", "zlib1g"]
 RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"]
 RUN ["locale-gen"]
 RUN ["update-locale"]
