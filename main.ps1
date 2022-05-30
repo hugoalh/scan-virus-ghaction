@@ -29,7 +29,6 @@ function Test-InputFilter {
 }
 [string]$AssetRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
-[string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $AssetRoot -ChildPath 'clamav-signatures-ignore-presets'
 [pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') -Delimiter "`t"
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $AssetRoot -ChildPath 'clamav-unofficial-signatures'
@@ -53,7 +52,7 @@ if (Test-GitHubActionsIsDebug) {
 	Set-StepSummaryStatus -Message 'List environment variables'
 	Enter-GitHubActionsLogGroup -Title 'Environment variables:'
 	Get-ChildItem -LiteralPath 'Env:\' | Sort-Object -Property 'Name' | ForEach-Object -Process {
-		Write-Host -Object "$($PSStyle.Bold)$($_.Name):$($PSStyle.Reset) $($_.Value)"
+		Write-NameValue -Name $_.Name -Value $_.Value
 	}
 	Exit-GitHubActionsLogGroup
 }
@@ -63,6 +62,7 @@ Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 if ($InputListDelimiter -notmatch '^.+$') {
 	Write-FailTee -Message 'Input list delimiter must be in single line string!'
 }
+Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter
 [string]$Targets = Get-Input -Name 'targets'
 if ($Targets -match '^\.\/$') {
 	$LocalTarget = $true
@@ -76,63 +76,59 @@ if ($Targets -match '^\.\/$') {
 		}
 	}
 	if ($TargetsInvalid.Count -gt 0) {
-		Write-GitHubActionsWarning -Message "Input ``targets`` included invalid targets ($($TargetsInvalid.Count)): $($TargetsInvalid -join ', ')"
+		Write-GitHubActionsWarning -Message "Input ``targets`` contains $($TargetsInvalid.Count) invalid network target$(($TargetsInvalid.Count -eq 1) ? '' : 's'): ``$($TargetsInvalid -join '`, `')``"
 	}
 }
-if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
+Write-NameValue -Name 'Targets_List' -Value ($LocalTarget ? 'Local' : ($NetworkTargets -join ', '))
+Write-NameValue -Name 'Targets_Count' -Value ($LocalTarget ? 1 : $NetworkTargets.Count)
+if ($LocalTarget -eq $false -and $NetworkTargets.Count -eq 0) {
 	Write-FailTee -Message 'Input `targets` does not have valid target!'
 }
-[bool]$GitDeep = [bool]::Parse((Get-GitHubActionsInput -Name 'git_deep' -Require -Trim))
-[bool]$GitReverseSession = [bool]::Parse((Get-GitHubActionsInput -Name 'git_reversesession' -Require -Trim))
-[bool]$ClamAVEnable = [bool]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Require -Trim))
-[bool]$ClamAVDaemon = [bool]::Parse((Get-GitHubActionsInput -Name 'clamav_daemon' -Require -Trim))
-[string[]]$ClamAVFilesFilterList = Get-InputList -Name 'clamav_filesfilter_list'
-[FilterMode]$ClamAVFilesFilterMode = Get-GitHubActionsInput -Name 'clamav_filesfilter_mode' -Require -Trim
-[bool]$ClamAVMultiScan = [bool]::Parse((Get-GitHubActionsInput -Name 'clamav_multiscan' -Require -Trim))
-[bool]$ClamAVReloadPerSession = [bool]::Parse((Get-GitHubActionsInput -Name 'clamav_reloadpersession' -Require -Trim))
-[string[]]$ClamAVSignaturesIgnoreCustom = Get-InputList -Name 'clamav_signaturesignore_custom'
-[string[]]$ClamAVSignaturesIgnorePresets = Get-InputList -Name 'clamav_signaturesignore_presets'
-[bool]$ClamAVSubcursive = [bool]::Parse((Get-GitHubActionsInput -Name 'clamav_subcursive' -Require -Trim))
-[string[]]$ClamAVUnofficialSignatures = Get-InputList -Name 'clamav_unofficialsignatures'
-[bool]$YARAEnable = [bool]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Require -Trim))
-[string[]]$YARAFilesFilterList = Get-InputList -Name 'yara_filesfilter_list'
-[FilterMode]$YARAFilesFilterMode = Get-GitHubActionsInput -Name 'yara_filesfilter_mode' -Require -Trim
-[string[]]$YARARulesFilterList = Get-InputList -Name 'yara_rulesfilter_list'
-[FilterMode]$YARARulesFilterMode = Get-GitHubActionsInput -Name 'yara_rulesfilter_mode' -Require -Trim
-[bool]$YARAToolWarning = [bool]::Parse((Get-GitHubActionsInput -Name 'yara_toolwarning' -Require -Trim))
-Write-OptimizePSFormatDisplay -InputObject ([pscustomobject]@{
-	Targets_List = $LocalTarget ? 'Local' : ($NetworkTargets -join ', ')
-	Targets_Count = $LocalTarget ? 1 : $NetworkTargets.Count
-	Git_Deep = $GitDeep
-	Git_ReverseSession = $GitReverseSession
-	ClamAV_Enable = $ClamAVEnable
-	ClamAV_Daemon = $ClamAVDaemon
-	ClamAV_FilesFilter_List = $ClamAVFilesFilterList -join ', '
-	ClamAV_FilesFilter_Count = $ClamAVFilesFilterList.Count
-	ClamAV_FilesFilter_Mode = $ClamAVFilesFilterMode
-	ClamAV_MultiScan = $ClamAVMultiScan
-	ClamAV_ReloadPerSession = $ClamAVReloadPerSession
-	ClamAV_SignaturesIgnore_Custom_List = $ClamAVSignaturesIgnoreCustom -join ', '
-	ClamAV_SignaturesIgnore_Custom_Count = $ClamAVSignaturesIgnoreCustom.Count
-	ClamAV_SignaturesIgnore_Presets_List = $ClamAVSignaturesIgnorePresets -join ', '
-	ClamAV_SignaturesIgnore_Presets_Count = $ClamAVSignaturesIgnorePresets.Count
-	ClamAV_Subcursive = $ClamAVSubcursive
-	YARA_Enable = $YARAEnable
-	YARA_FilesFilter_List = $YARAFilesFilterList -join ', '
-	YARA_FilesFilter_Count = $YARAFilesFilterList.Count
-	YARA_FilesFilter_Mode = $YARAFilesFilterMode
-	YARA_RulesFilter_List = $YARARulesFilterList -join ', '
-	YARA_RulesFilter_Count = $YARARulesFilterList.Count
-	YARA_RulesFilter_Mode = $YARARulesFilterMode
-	YARA_ToolWarning = $YARAToolWarning
-} | Format-List | Out-String)
-Exit-GitHubActionsLogGroup
+[bool]$GitDeep = [bool]::Parse((Get-Input -Name 'git_deep' -BooleanType))
+Write-NameValue -Name 'Git_Deep' -Value $GitDeep
+[bool]$GitReverseSession = [bool]::Parse((Get-Input -Name 'git_reversesession' -BooleanType))
+Write-NameValue -Name 'Git_ReverseSession' -Value $GitReverseSession
+[bool]$ClamAVEnable = [bool]::Parse((Get-Input -Name 'clamav_enable' -BooleanType))
+Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
+[bool]$ClamAVDaemon = [bool]::Parse((Get-Input -Name 'clamav_daemon' -BooleanType))
+Write-NameValue -Name 'ClamAV_Daemon' -Value $ClamAVDaemon
+[hashtable]$ClamAVFilesFilter = Get-InputFilter -Name 'clamav_filesfilter'
+Write-NameValue -Name 'ClamAV_FilesFilter_Exclude_List' -Value ($ClamAVFilesFilter.Exclude -join ', ')
+Write-NameValue -Name 'ClamAV_FilesFilter_Exclude_Count' -Value ($ClamAVFilesFilter.Exclude).Count
+Write-NameValue -Name 'ClamAV_FilesFilter_Include_List' -Value ($ClamAVFilesFilter.Include -join ', ')
+Write-NameValue -Name 'ClamAV_FilesFilter_Include_Count' -Value ($ClamAVFilesFilter.Include).Count
+[bool]$ClamAVMultiScan = [bool]::Parse((Get-Input -Name 'clamav_multiscan' -BooleanType))
+Write-NameValue -Name 'ClamAV_MultiScan' -Value $ClamAVMultiScan
+[bool]$ClamAVReloadPerSession = [bool]::Parse((Get-Input -Name 'clamav_reloadpersession' -BooleanType))
+Write-NameValue -Name 'ClamAV_ReloadPerSession' -Value $ClamAVReloadPerSession
+[hashtable]$ClamAVSignaturesFilter = Get-InputFilter -Name 'clamav_signaturesfilter'
+Write-NameValue -Name 'ClamAV_SignaturesFilter_Exclude_List' -Value ($ClamAVSignaturesFilter.Exclude -join ', ')
+Write-NameValue -Name 'ClamAV_SignaturesFilter_Exclude_Count' -Value ($ClamAVSignaturesFilter.Exclude).Count
+Write-NameValue -Name 'ClamAV_SignaturesFilter_Include_List' -Value ($ClamAVSignaturesFilter.Include -join ', ')
+Write-NameValue -Name 'ClamAV_SignaturesFilter_Include_Count' -Value ($ClamAVSignaturesFilter.Include).Count
+[bool]$ClamAVSubcursive = [bool]::Parse((Get-Input -Name 'clamav_subcursive' -BooleanType))
+Write-NameValue -Name 'ClamAV_Subcursive' -Value $ClamAVSubcursive
+[string[]]$ClamAVUnofficialSignaturesRaw = Get-InputList -Name 'clamav_unofficialsignatures'
+Write-NameValue -Name 'ClamAV_UnofficialSignatures_Raw_List' -Value ($ClamAVUnofficialSignaturesRaw -join ', ')
+Write-NameValue -Name 'ClamAV_UnofficialSignatures_Raw_Count' -Value $ClamAVUnofficialSignaturesRaw.Count
+[bool]$YARAEnable = [bool]::Parse((Get-Input -Name 'yara_enable' -BooleanType))
+Write-NameValue -Name 'YARA_Enable' -Value $YARAEnable
+[hashtable]$YARAFilesFilter = Get-InputFilter -Name 'yara_filesfilter'
+Write-NameValue -Name 'YARA_FilesFilter_Exclude_List' -Value ($YARAFilesFilter.Exclude -join ', ')
+Write-NameValue -Name 'YARA_FilesFilter_Exclude_Count' -Value ($YARAFilesFilter.Exclude).Count
+Write-NameValue -Name 'YARA_FilesFilter_Include_List' -Value ($YARAFilesFilter.Include -join ', ')
+Write-NameValue -Name 'YARA_FilesFilter_Include_Count' -Value ($YARAFilesFilter.Include).Count
+[hashtable]$YARARulesFilter = Get-InputFilter -Name 'yara_rulesfilter'
+Write-NameValue -Name 'YARA_RulesFilter_Exclude_List' -Value ($YARARulesFilter.Exclude -join ', ')
+Write-NameValue -Name 'YARA_RulesFilter_Exclude_Count' -Value ($YARARulesFilter.Exclude).Count
+Write-NameValue -Name 'YARA_RulesFilter_Include_List' -Value ($YARARulesFilter.Include -join ', ')
+Write-NameValue -Name 'YARA_RulesFilter_Include_Count' -Value ($YARARulesFilter.Include).Count
+[bool]$YARAToolWarning = [bool]::Parse((Get-Input -Name 'yara_toolwarning' -BooleanType))
+Write-NameValue -Name 'YARA_ToolWarning' -Value $YARAToolWarning
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
-	Write-GitHubActionsFail -Message 'No anti virus software enable!'
+	Write-FailTee -Message 'No anti virus software enable!'
 }
-[pscustomobject[]]$ClamAVSignaturesIgnorePresetsApply = $ClamAVSignaturesIgnorePresetsIndex | Where-Object -FilterScript {
-	return Test-InputFilter -Target $_.Name -FilterList $ClamAVSignaturesIgnorePresets -FilterMode 'Include'
-} | Sort-Object -Property 'Name'
+Exit-GitHubActionsLogGroup
 [pscustomobject[]]$ClamAVUnofficialSignaturesApply = $ClamAVUnofficialSignaturesIndex | Where-Object -FilterScript {
 	return Test-InputFilter -Target $_.Name -FilterList $ClamAVUnofficialSignatures -FilterMode 'Include'
 } | Sort-Object -Property 'Name'

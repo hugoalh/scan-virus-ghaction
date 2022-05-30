@@ -16,6 +16,7 @@ function Initialize-StepSummary {
 	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.run.id' -Value $env:GITHUB_RUN_ID
 	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.run.number' -Value $env:GITHUB_RUN_NUMBER
 	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.run.attempt' -Value $env:GITHUB_RUN_ATTEMPT
+	return
 }
 function Optimize-StepSummary {
 	[CmdletBinding()][OutputType([void])]
