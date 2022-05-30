@@ -7,13 +7,6 @@ Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-step-summary.psm1') -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1') -Scope 'Local'
 Initialize-StepSummary
-function Get-InputList {
-	[CmdletBinding()][OutputType([string[]])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Name
-	)
-	return Format-InputList -InputObject (Get-GitHubActionsInput -Name $Name -Trim)
-}
 function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -56,15 +49,27 @@ function Test-InputFilter {
 [UInt64]$TotalSizesYARA = 0
 [string]$YARARulesRoot = Join-Path -Path $AssetRoot -ChildPath 'yara-rules'
 [pscustomobject[]]$YARARulesIndex = Get-Csv -LiteralPath (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
+if (Test-GitHubActionsIsDebug) {
+	Set-StepSummaryStatus -Message 'List environment variables'
+	Enter-GitHubActionsLogGroup -Title 'Environment variables:'
+	Get-ChildItem -LiteralPath 'Env:\' | Sort-Object -Property 'Name' | ForEach-Object -Process {
+		Write-Host -Object "$($PSStyle.Bold)$($_.Name):$($PSStyle.Reset) $($_.Value)"
+	}
+	Exit-GitHubActionsLogGroup
+}
+Set-StepSummaryStatus -Message 'Import inputs'
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
-[ValidatePattern('^.+$')][string]$InputListDelimiter = Get-Input -Name 'input_listdelimiter'
+[string]$InputListDelimiter = Get-Input -Name 'input_listdelimiter'
+if ($InputListDelimiter -notmatch '^.+$') {
+	Write-FailTee -Message 'Input list delimiter must be in single line string!'
+}
 [string]$Targets = Get-Input -Name 'targets'
 if ($Targets -match '^\.\/$') {
 	$LocalTarget = $true
 } else {
 	[string[]]$TargetsInvalid = @()
-	Format-InputList -InputObject $Targets | ForEach-Object -Process {
-		if (Test-StringIsURL -InputObject $_) {
+	Format-InputList -InputObject $Targets -Delimiter $InputListDelimiter | ForEach-Object -Process {
+		if (Test-StringIsUrl -InputObject $_) {
 			$NetworkTargets += $_
 		} else {
 			$TargetsInvalid += $_
@@ -73,6 +78,9 @@ if ($Targets -match '^\.\/$') {
 	if ($TargetsInvalid.Count -gt 0) {
 		Write-GitHubActionsWarning -Message "Input ``targets`` included invalid targets ($($TargetsInvalid.Count)): $($TargetsInvalid -join ', ')"
 	}
+}
+if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
+	Write-FailTee -Message 'Input `targets` does not have valid target!'
 }
 [bool]$GitDeep = [bool]::Parse((Get-GitHubActionsInput -Name 'git_deep' -Require -Trim))
 [bool]$GitReverseSession = [bool]::Parse((Get-GitHubActionsInput -Name 'git_reversesession' -Require -Trim))
@@ -119,9 +127,6 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject]@{
 	YARA_ToolWarning = $YARAToolWarning
 } | Format-List | Out-String)
 Exit-GitHubActionsLogGroup
-if (($LocalTarget -eq $false) -and ($NetworkTargets.Count -eq 0)) {
-	Write-GitHubActionsFail -Message 'Input `targets` does not have valid target!'
-}
 if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 	Write-GitHubActionsFail -Message 'No anti virus software enable!'
 }

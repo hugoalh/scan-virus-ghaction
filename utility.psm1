@@ -19,9 +19,17 @@ function Get-Input {
 	)
 	$Result = Get-GitHubActionsInput -Name $Name -Trim
 	if ($null -eq $Result) {
-		return Write-TeeFail -Message "Input ``$Name`` is not defined!"
+		return Write-FailTee -Message "Input ``$Name`` is not defined!"
 	}
 	return $Result
+}
+function Get-InputList {
+	[CmdletBinding()][OutputType([string[]])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$Name,
+		[Parameter(Mandatory = $true, Position = 1)][string]$Delimiter
+	)
+	return Format-InputList -InputObject (Get-Input -Name $Name) -Delimiter $Delimiter
 }
 function Optimize-PSFormatDisplay {
 	[CmdletBinding()][OutputType([string])]
@@ -30,7 +38,7 @@ function Optimize-PSFormatDisplay {
 	)
 	return $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
 }
-function Test-StringIsURL {
+function Test-StringIsUrl {
 	[CmdletBinding()][OutputType([bool])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
@@ -53,7 +61,7 @@ function Write-OptimizePSFormatDisplay {
 	}
 	return
 }
-function Write-TeeFail {
+function Write-FailTee {
 	[CmdletBinding()][OutputType([void])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
@@ -65,7 +73,7 @@ function Write-TeeFail {
 Export-ModuleMember -Function @(
 	'Format-InputList',
 	'Optimize-PSFormatDisplay',
-	'Test-StringIsURL',
+	'Test-StringIsUrl',
 	'Write-OptimizePSFormatDisplay',
-	'Write-TeeFail'
+	'Write-FailTee'
 )

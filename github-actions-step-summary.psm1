@@ -22,14 +22,9 @@ function Optimize-StepSummary {
 	param ()
 	Set-GitHubActionsStepSummary -Value ((Get-GitHubActionsStepSummary -Raw) -replace "$([regex]::Escape('<!-- ')).+?$([regex]::Escape(' -->'))", '').TrimEnd()
 	if ((Get-GitHubActionsStepSummary -Size) -gt 1MB) {
-		Set-GitHubActionsStepSummary -Value "$((Get-GitHubActionsStepSummary -Raw)[0..(1MB - $TruncateMessage.Length - 1)] -join '')$TruncateMessage"
+		Set-GitHubActionsStepSummary -Value "$((Get-GitHubActionsStepSummary -Raw).SubString(0, 1MB - $TruncateMessage.Length - 1))$TruncateMessage"
 	}
 	return
-}
-function Remove-StepSummary {
-	[CmdletBinding()][OutputType([void])]
-	param ()
-	return Remove-GitHubActionsStepSummary
 }
 function Set-StepSummaryAppendPlaceholder {
 	[CmdletBinding()][OutputType([void])]
@@ -57,7 +52,6 @@ function Set-StepSummaryStatus {
 Export-ModuleMember -Function @(
 	'Initialize-StepSummary',
 	'Optimize-StepSummary',
-	'Remove-StepSummary',
 	'Set-StepSummaryAppendPlaceholder'
 	'Set-StepSummaryMonoPlaceholder',
 	'Set-StepSummaryStatus'
