@@ -7,26 +7,6 @@ Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-step-summary.psm1') -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1') -Scope 'Local'
 Initialize-StepSummary
-function Test-InputFilter {
-	[CmdletBinding()][OutputType([bool])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][AllowNull()][string[]]$FilterList,
-		[Parameter(Mandatory = $true, Position = 2)][FilterMode]$FilterMode
-	)
-	foreach ($Filter in $FilterList) {
-		if ($Target -match $Filter) {
-			switch ($FilterMode.GetHashCode()) {
-				0 { return $false }
-				1 { return $true }
-			}
-		}
-	}
-	switch ($FilterMode.GetHashCode()) {
-		0 { return $true }
-		1 { return $false }
-	}
-}
 [string]$AssetRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $AssetRoot -ChildPath 'clamav-signatures-ignore-presets'
@@ -130,10 +110,10 @@ if ($true -notin @($ClamAVEnable, $YARAEnable)) {
 }
 Exit-GitHubActionsLogGroup
 [pscustomobject[]]$ClamAVUnofficialSignaturesApply = $ClamAVUnofficialSignaturesIndex | Where-Object -FilterScript {
-	return Test-InputFilter -Target $_.Name -FilterList $ClamAVUnofficialSignatures -FilterMode 'Include'
+	return Test-InputFilter -Target $_.Name -Include $ClamAVUnofficialSignaturesRaw
 } | Sort-Object -Property 'Name'
 [pscustomobject[]]$YARARulesApply = $YARARulesIndex | Where-Object -FilterScript {
-	return Test-InputFilter -Target $_.Name -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode
+	return Test-InputFilter -Target $_.Name -Exclude $YARARulesFilter.Exclude -Include $YARARulesFilter.Include
 } | Sort-Object -Property 'Name'
 if ($ClamAVEnable) {
 	[string[]]$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnoreCustom

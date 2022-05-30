@@ -78,6 +78,25 @@ function Optimize-PSFormatDisplay {
 	)
 	return $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
 }
+function Test-InputFilter {
+	[CmdletBinding()][OutputType([bool])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
+		[string[]]$Excludes = @(),
+		[string[]]$Includes = @()
+	)
+	foreach ($Include in $Includes) {
+		if ($Target -match $Include) {
+			return $true
+		}
+	}
+	foreach ($Exclude in $Excludes) {
+		if ($Target -match $Exclude) {
+			return $false
+		}
+	}
+	return $true
+}
 function Test-StringIsUrl {
 	[CmdletBinding()][OutputType([bool])]
 	param (
@@ -125,6 +144,7 @@ Export-ModuleMember -Function @(
 	'Get-InputFilter',
 	'Get-InputList',
 	'Optimize-PSFormatDisplay',
+	'Test-InputFilter',
 	'Test-StringIsUrl',
 	'Write-FailTee',
 	'Write-NameValue',
