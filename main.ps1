@@ -2,7 +2,6 @@
 $ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'get-csv.psm1') -Scope 'Local'
-Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'test-stringisurl.psm1') -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
 	E = 0
@@ -54,6 +53,18 @@ function Test-InputFilter {
 	switch ($FilterMode.GetHashCode()) {
 		0 { return $true }
 		1 { return $false }
+	}
+}
+function Test-StringIsURL {
+	[CmdletBinding()][OutputType([bool])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+	)
+	try {
+		$URIObject = $InputObject -as [System.URI]
+		return (($null -ne $URIObject.AbsoluteURI) -and ($InputObject -match '^https?:\/\/'))
+	} catch {
+		return $false
 	}
 }
 function Write-OptimizePSFormatDisplay {
