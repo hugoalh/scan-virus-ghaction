@@ -47,7 +47,7 @@ jobs:
       - "parse-inputs"
     steps:
       - name: "Scan NPM Packages"
-        uses: "hugoalh/scan-virus-ghaction@patch/debian-apt-get"
+        uses: "hugoalh/scan-virus-ghaction@main"
         with:
           targets: "${{needs.parse-inputs.outputs.targets}}"
           yara_enable: "true"

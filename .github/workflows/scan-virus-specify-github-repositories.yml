@@ -45,7 +45,7 @@ jobs:
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
           fetch-depth: 0
       - name: "Scan Virus"
-        uses: "hugoalh/scan-virus-ghaction@patch/debian-apt-get"
+        uses: "hugoalh/scan-virus-ghaction@main"
         with:
           git_deep: "true"
           git_reversesession: "true"
