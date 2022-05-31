@@ -361,11 +361,11 @@ function Invoke-ScanVirusSession {
 			[string[]]$ClamAVOutput = Invoke-Expression -Command $ClamAVExpression
 			[uint]$ClamAVExitCode = $LASTEXITCODE
 			[string[]]$ClamAVResultRaw = @()
-			[string[]]$ClamAVSummary = @()
+			[string[]]$ClamAVSummaryRaw = @()
 			for ($ClamAVOutputLineIndex = 0; $ClamAVOutputLineIndex -lt $ClamAVOutput.Count; $ClamAVOutputLineIndex++) {
 				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex]
 				if ($ClamAVOutputLineContent -match '^\s*-+\s*SCAN SUMMARY\s*-+\s*$') {
-					$ClamAVSummary = $ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)]
+					$ClamAVSummaryRaw = $ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)]
 					break
 				} elseif ($ClamAVOutputLineContent -match '^\s*$') {
 					continue
@@ -373,13 +373,13 @@ function Invoke-ScanVirusSession {
 					$ClamAVResultRaw += $ClamAVOutputLineContent -replace "^\s*$RegExpGHActionsWorkspaceRoot", ''
 				}
 			}
-			Write-Host -Object ($ClamAVSummary -join "`n")
-			[string]$ClamAVResult = ($ClamAVResultRaw | Sort-Object -Unique) -join "`n"
+			Write-Host -Object ($ClamAVSummaryRaw -join "`n")
+			[string]$ClamAVResult = $ClamAVResultRaw -join "`n"
 			if ($ClamAVExitCode -eq 1) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV:`n$ClamAVResult"
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV!`n$ClamAVResult"
 				$script:IssuesClamAV += $Session
 			} elseif ($ClamAVExitCode -gt 1) {
-				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`":`n$ClamAVResult"
+				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`"!`n$ClamAVResult"
 				$script:IssuesClamAV += $Session
 			}
 			Exit-GHActionsLogGroup
@@ -389,7 +389,7 @@ function Invoke-ScanVirusSession {
 			[string]$ElementsListYARAFullName = (New-TemporaryFile).FullName
 			Set-Content -Path $ElementsListYARAFullName -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GHActionsLogGroup -Title "YARA result of session `"$Session`":"
-			[hashtable]$YARAResult = @{}
+			[hashtable]$YARAResultRaw = @{}
 			foreach ($YARARule in $YARARulesApply) {
 				[string[]]$YARAOutput = Invoke-Expression -Command "yara --scan-list$($YARAToolWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YARARulesRoot -ChildPath $YARARule.Location)`" `"$ElementsListYARAFullName`""
 				if ($LASTEXITCODE -eq 0) {
@@ -401,10 +401,10 @@ function Invoke-ScanVirusSession {
 							if ((Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) -eq $false) {
 								Write-GHActionsDebug -Message '  > Skip'
 							} else {
-								if ($null -eq $YARAResult[$Element]) {
-									$YARAResult[$Element] = @()
+								if ($null -eq $YARAResultRaw[$Element]) {
+									$YARAResultRaw[$Element] = @()
 								}
-								$YARAResult[$Element] += $YARARuleName
+								$YARAResultRaw[$Element] += $YARARuleName
 							}
 						} elseif ($_.Length -gt 0) {
 							Write-Host -Object $_
@@ -415,14 +415,14 @@ function Invoke-ScanVirusSession {
 					$script:IssuesYARA += $Session
 				}
 			}
-			if ($YARAResult.Count -gt 0) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA:`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
+			if ($YARAResultRaw.Count -gt 0) {
+				[string]$YARAResult = $YARAResultRaw.GetEnumerator() | ForEach-Object -Process {
 					return [pscustomobject]@{
 						Element = $_.Name
-						Rules_List = ($_.Value | Sort-Object) -join ', '
-						Rules_Count = ($_.Value).Count
+						Rules = ($_.Value | Sort-Object) -join ', '
 					}
-				} | Sort-Object -Property 'Element' | Format-List | Out-String))"
+				} | Sort-Object -Property 'Element' | Format-List | Out-String
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA!`n$(Optimize-PSFormatDisplay -InputObject $YARAResult)"
 				$script:IssuesYARA += $Session
 			}
 			Exit-GHActionsLogGroup
