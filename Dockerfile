@@ -2,12 +2,7 @@ FROM debian:11 AS extract-powershell
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.3/powershell-7.2.3-linux-x64.tar.gz /tmp/powershell-7.2.3-linux-x64.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
-RUN ["tar", "--extract", "--file=/tmp/powershell-7.2.3-linux-x64.tar.gz", "--directory=/opt/microsoft/powershell/7", "--gzip", "--verbose"]
-
-FROM debian:11 AS extract-assets
-ADD https://github.com/hugoalh/scan-virus-ghaction-assets/archive/refs/heads/main.tar.gz /tmp/scan-virus-ghaction-assets.tar.gz
-RUN ["mkdir", "--parents", "--verbose", "/tmp/scan-virus-ghaction-assets"]
-RUN ["tar", "--extract", "--file=/tmp/scan-virus-ghaction-assets.tar.gz", "--directory=/tmp/scan-virus-ghaction-assets", "--gzip", "--verbose"]
+RUN ["tar", "zxf", "/tmp/powershell-7.2.3-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
 FROM debian:11 AS main
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
@@ -33,10 +28,9 @@ RUN ["clamconf", "--generate-config=clamd.conf"]
 RUN ["clamconf", "--generate-config=clamav-milter.conf"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
-COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/clamav-signatures-ignore-presets /opt/hugoalh/scan-virus-ghaction/clamav-signatures-ignore-presets/
-COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/clamav-unofficial-signatures /opt/hugoalh/scan-virus-ghaction/clamav-unofficial-signatures/
-COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/assets-metadata.json /opt/hugoalh/scan-virus-ghaction/assets-metadata.json
+COPY clamav-signatures-ignore-presets /opt/hugoalh/scan-virus-ghaction/clamav-signatures-ignore-presets/
+COPY clamav-unofficial-signatures /opt/hugoalh/scan-virus-ghaction/clamav-unofficial-signatures/
 COPY get-csv.psm1 main.ps1 /opt/hugoalh/scan-virus-ghaction/
 COPY summary /opt/hugoalh/scan-virus-ghaction/summary/
-COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main/yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
+COPY yara-rules /opt/hugoalh/scan-virus-ghaction/yara-rules/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]

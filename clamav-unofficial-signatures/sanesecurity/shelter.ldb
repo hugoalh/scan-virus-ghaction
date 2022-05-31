@@ -1,0 +1,49 @@
+Sanesecurity.Shelter.Phish.003_gif;Engine:81-255,Target:3;1;7777772e7570732e636f6d2f696d672f312e676966;0/http\:\/\/.*\/[a-zA-Z0-9]*\/[a-zA-Z0-9]*\.php\?id\=.*@.*\..*/is
+Sanesecurity.Shelter.Phish.004;Engine:81-255,Target:3;1;616e73696368742065696e657220726563686e756e67203c2f613e3c2f74643e3c2f74723e;0/http\:\/\/.*\/[a-zA-Z0-9]*\/[a-zA-Z0-9]*\.php\?id\=.*@.*\..*/is
+Sanesecurity.Shelter.Phish.Table.MCard;Engine:51-255,Target:4;(0>3100&1);3c5444206267436f6c6f723d334423{6}206865696768743d3344312077696474683d3344313e3c2f54443e;4d617374657263617264204575726f7065
+Sanesecurity.Shelter.Malware.JSHeur.001;Engine:51-255,Target:7;(0&1>30);61727261792e70726f746f74797065;222c20222d222c20222d222c20222d225d2e{-30}28293b
+Sanesecurity.Shelter.Malware.JSHeur.002;Engine:51-255,Target:7;(0&1>1000);3d205b777363726970745d5b305d5b5b22;222c2022
+Sanesecurity.Shelter.Malware.JSHeur.003;Engine:51-255,Target:7;(0&1>2000);3d205b737472696e672c;2c20737472696e672c20737472696e672c20
+Sanesecurity.Shelter.Malware.JSHeur.004;Engine:51-255,Target:7;(0>500);646174652C20646174652C
+Sanesecurity.Shelter.Malware.PDfHeur.001;Engine:51-255,Target:10;(0&1&2);255044462D*2F532F5552492F5552492868747470733A2F2F7777772E64726F70626F782E636F6D{-100}2E6578653F646C3D31;2F43726561746F722852414420504446292F;3D2244796E6150444620
+Sanesecurity.Shelter.Malware.JSHeur.005;Engine:51-255,Target:7;(0>200&1>200);225d5d29202b;5b305d3b
+Sanesecurity.Shelter.Malware.JSHeur.006;Engine:51-255,Target:7;(0>300&1>200);72657475726e2028;2c205b5b22
+Sanesecurity.Shelter.Malware.JSHeur.007;Engine:51-255,Target:7;(0>100&1>100);66756e6374696f6e20;5d282822
+Sanesecurity.Shelter.Malware.JSHeur.008;Engine:51-255,Target:7;(0>100&1>100);66756e6374696f6e20;2c206e756d62657228
+Sanesecurity.Shelter.Malware.JSHeur.009;Engine:51-255,FileSize:5000-25000,Target:7;(0>100&1>100);3d2066756e6374696f6e2028;29202b
+Sanesecurity.Shelter.Malware.JSHeur.010;Engine:51-255,Target:7;(0&1>200);3d206e657720616374697665786f626a6563742827777363726970742e7368656c6c27293b;76617220
+Sanesecurity.Shelter.Malware.BadMacro.PShell;Engine:51-255,Target:2;(0&1);D0CF11E0;3d206e657720616374697665786f626a65637428227368656c6c2e6170706c69636174696f6e2229*2F63::i
+Sanesecurity.Shelter.Malware.BadMacro.PShell.Cmd.012;Engine:51-255,Target:2;(0);454E636F64494E67*2E72454144746F654E6428::i
+Sanesecurity.Shelter.Malware.BadMacro.PShell2;Engine:51-255,Target:2;(0&1);D0CF11E0;2F43*26262020504F7765527368654C4C::i
+Sanesecurity.Shelter.Malware.RtfHeur.Task;Engine:51-255,Target:7;(0);696E776F72642E657865*5441536b4b494c4c202f46202f494d::i
+Sanesecurity.Shelter.Malware.BadMacro.cmdc1;Engine:51-255,Target:7;(0);3E636D64*2F63*2553797354456D724F6F54::i
+Sanesecurity.Shelter.Malware.BadMacro.cmdc2;Engine:51-255,Target:7;(0);3F6D736F2D6170706C69636174696F6E2070726F676964*2F63*53595374656D726F4F74::i
+Sanesecurity.Shelter.Malware.BadMacro.cmdc3;Engine:51-255,Target:0;(0);3C3F786D6C*3E636D64*2570524F6772616D5736343332::i
+Sanesecurity.Shelter.Malware.BadMacro.cmdc4;Engine:51-255,Target:2;(0);5C636D642E657865202F632025434F4D5350454325::i
+Sanesecurity.Shelter.Malware.BadMacro.wget1;Engine:51-255,Target:2;(0);74656D70202B*57476574*2D6F757446694C65::i
+Sanesecurity.Shelter.Malware.BadMacro.httprev;Engine:51-255,Target:2;(0);2F2F3A70747468*436F6D6D6F6E50726F6772616D5736343332::i
+Sanesecurity.Shelter.Malware.BadMacro.cm5c5;Engine:51-255,Target:2;(0);D0CF11E0*636D642E657865202F63*45786966::i
+Sanesecurity.Shelter.Malware.BadMacro.httprevps;Engine:51-255,Target:2;(0);2F2F3A707474*706F7765727368656C6C::i
+Sanesecurity.Shelter.Malware.BadMacro.httprevps2;Engine:51-255,Target:2;(0);25434F4D5350454325202F56*276578652E27*2F2F3A70747468::i
+Sanesecurity.Shelter.Malware.BadMacro.httpcmdc;Engine:51-255,Target:2;(0);5C636D642E657865202F63202550726F6772616D44617461::i
+Sanesecurity.Shelter.Malware.BadMacro.httpcmdpic;Engine:51-255,Target:2;(0);636D64*706F7765727368656C6C2E657865*4A464946::i
+Sanesecurity.Shelter.Malware.BadMacro.pshellenc;Engine:51-255,Target:2;(0);0070006F007700650072007300680065006C006C002E0065007800650020002D004E006F00500020002D004500780065006300200042007900700061007300730020002D004E006F00450078006900740020002D0045004300::i
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space;Engine:51-255,Target:3;(0>200&1);262378323030623b;636861727365743d7574662d38223e3c2f686561643e3c626f64793e
+Sanesecurity.Shelter.Phishing.Fake.Coin.wfont;Engine:51-255,Target:7;(0>200&1);3c2f666f6e743e203c666f6e7420636f6c6f723d227768697465223e;53654e536954695665::i
+Sanesecurity.Shelter.Phishing.Fake.Coin.imagev1;Engine:51-255,Target:3;(0&1);3C626F64793E3C696D67207372633D226369643A6174745F696D675F{3-8}223e3c2f626f64793e3c2f68746d6c3e;0/"cid:att_img_[0-9]{3,8}"></body></html>$/
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space1;Engine:51-255,Target:3;(0>200&1);2378323030623b;6369643a
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space2;Engine:51-255,Target:7;(0>200);2d2d3e??2623383230333b
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space3;Engine:51-255,FileSize:5000-80000,Target:7;(0>400);2623383230333b
+Sanesecurity.Shelter.Phishing.Fake.Coin.Png;Engine:51-255,FileSize:75000-90000,Target:4;(0&1=0&2=0);4d6573736167652d49443a203c{32}406d61696c2e3e*436f6e74656e742d547970653a20494d4147452f504e473b206e616d653d2250696374757265;557365722d4167656e743a;2d4d61696c6572
+Sanesecurity.Shelter.Phishing.Fake.Coin.Png2;Engine:51-255,FileSize:75000-90000,Target:4;(0&1=0&2=0);436f6e74656e742d547970653a20494d4147452f504e473b206e616d653d2250696374757265*4d6573736167652d49443a203c{32}406d61696c2e3e;557365722d4167656e743a;2d4d61696c6572
+Sanesecurity.Shelter.Phishing.Fake.Coin.ff;Engine:51-255,FileSize:10000-11000,Target:3;(0>30);3c666f6e7420636f6c6f723d22236666666666666666223e??3c2f666f6e743e
+Sanesecurity.Shelter.Phishing.Fake.Coin.imagev2;Engine:51-255,FileSize:200-500,Target:3;(0&1);3c68746d6c3e3c626f64793e3c696d67207372633d226369643a6174745f696d675f;0/<html><body><img src="cid:att_img_[0-9]{3,8}"><br/
+Sanesecurity.Shelter.Phishing.Fake.Coin.imagev3;Engine:51-255,FileSize:100-511100,Target:3;(0&1);3c7469746c653e6865696768743c2f7469746c653e3c7374796c653e2e2374656723;0/</style></head><body><img src="cid:att_img_[0-9]{3,8}"><div class="#teg#"></div></body></html>/
+Sanesecurity.Shelter.Phishing.Fake.Coin.imagev4;Engine:51-255,FileSize:100-511100,Target:3;(0&1);3e3c626f64793e3c!(2f);0/><img src="cid:att_img_[0-9]{3,8}"><[^/]/
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space4;Engine:51-255,FileSize:5000-80000,Target:7;(0>400);2623383230343b
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space5;Engine:51-255,FileSize:2000-90000,Target:7;(0>50);26233233373b
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space6;Engine:51-255,FileSize:2000-90000,Target:7;(0>50&1);2623783362;227965732122
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space7;Engine:51-255,FileSize:2000-90000,Target:7;(0>50&1>50);2623323438;26233136313b
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space8;Engine:51-255,FileSize:2000-90000,Target:7;(0>50);26233533373b
+Sanesecurity.Shelter.Phishing.Fake.Coin.0Space9;Engine:51-255,FileSize:2000-90000,Target:7;(0>50);2623323533
+Sanesecurity.Shelter.Malware.Docxternal;Engine:51-255,FileSize:100-511100,Target:0;(0&1);ffff0000ffff3c3f786d6c2076657273696f6e;0/<Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http.{0,50}\.[club|work].{0,50}" TargetMode="External"/></Relationships>/

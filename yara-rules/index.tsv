@@ -1,0 +1,13 @@
+Name	Description	Location	Source
+blacktop		blacktop/index.yar	https://github.com/blacktop/docker-yara.git
+yara-community/anti-debug_anti-vm	Detection of anti-debug and anti-virtualization techniques used by malware to evade automated analysis.	yara-community/antidebug_antivm_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/capabilities	Detect capabilities that do not fit into any of the other categories; They are useful to know for analysis but may not be malicious indicators on their own.	yara-community/capabilities_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/crypto	Detection and existence of cryptographic algorithms.	yara-community/crypto_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/cve	Identification of specific Common Vulnerabilities and Exposures (CVEs).	yara-community/cve_rules_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/email	Identification of malicious emails.	yara-community/email_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/exploit-kits	Detection and existence of Exploit Kits.	yara-community/exploit_kits_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/maldocs	Find if they have been crafted to leverage malicious code.	yara-community/maldocs_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/malware	Identification of well-known malware.	yara-community/malware_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/mobile-malware	Identification of well-known mobile malware.	yara-community/mobile_malware_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/packers	Detect well-known software packers, that can be used by malware to hide itself.	yara-community/packers_index.yar	https://github.com/Yara-Rules/rules.git
+yara-community/webshells	Identification of well-known webshells.	yara-community/webshells_index.yar	https://github.com/Yara-Rules/rules.git
