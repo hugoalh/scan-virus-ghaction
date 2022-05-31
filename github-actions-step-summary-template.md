@@ -17,17 +17,7 @@
 
 ## 🔔 Annotations
 
-### ❌ Errors
-
-<!-- annotations.errors.item -->
-
-### ⚠ Warnings
-
-<!-- annotations.warnings.item -->
-
-### ℹ Notices
-
-<!-- annotations.notices.item -->
+<!-- annotations.item -->
 
 ## Sessions
 

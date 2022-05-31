@@ -90,12 +90,15 @@ function Test-InputFilter {
 			return $true
 		}
 	}
-	foreach ($Exclude in $Excludes) {
-		if ($Target -match $Exclude) {
-			return $false
+	if ($Excludes.Count -gt 0) {
+		foreach ($Exclude in $Excludes) {
+			if ($Target -match $Exclude) {
+				return $false
+			}
 		}
+		return $true
 	}
-	return $true
+	return $false
 }
 function Test-StringIsUrl {
 	[CmdletBinding()][OutputType([bool])]
@@ -109,13 +112,21 @@ function Test-StringIsUrl {
 		return $false
 	}
 }
+function Write-ErrorTee {
+	[CmdletBinding()][OutputType([void])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
+	)
+	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **❌ Error:** $Message"
+	return Write-GitHubActionsError -Message $Message
+}
 function Write-FailTee {
 	[CmdletBinding()][OutputType([void])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
 	)
-	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.errors.item' -Value $Message
-	Set-StepSummaryStatus -Message 'Fail by issue(s)'
+	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **🛑 Fail:** $Message"
+	Set-StepSummaryStatus -Message 'Fail (by issue(s))'
 	Optimize-StepSummary
 	return Write-GitHubActionsFail -Message $Message
 }
@@ -126,6 +137,14 @@ function Write-NameValue {
 		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyString()][string]$Value
 	)
 	return Write-Host -Object "$($PSStyle.Bold)$($Name):$($PSStyle.Reset) $Value"
+}
+function Write-NoticeTee {
+	[CmdletBinding()][OutputType([void])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
+	)
+	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **ℹ Notice:** $Message"
+	return Write-GitHubActionsNotice -Message $Message
 }
 function Write-OptimizePSFormatDisplay {
 	[CmdletBinding()][OutputType([void])]
@@ -138,6 +157,14 @@ function Write-OptimizePSFormatDisplay {
 	}
 	return
 }
+function Write-WarningTee {
+	[CmdletBinding()][OutputType([void])]
+	param (
+		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
+	)
+	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **⚠ Warning:** $Message"
+	return Write-GitHubActionsWarning -Message $Message
+}
 Export-ModuleMember -Function @(
 	'Format-InputList',
 	'Get-Input',
@@ -146,7 +173,10 @@ Export-ModuleMember -Function @(
 	'Optimize-PSFormatDisplay',
 	'Test-InputFilter',
 	'Test-StringIsUrl',
+	'Write-ErrorTee',
 	'Write-FailTee',
 	'Write-NameValue',
-	'Write-OptimizePSFormatDisplay'
+	'Write-NoticeTee',
+	'Write-OptimizePSFormatDisplay',
+	'Write-WarningTee'
 )

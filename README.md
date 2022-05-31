@@ -58,11 +58,11 @@ Require Software:
 
 #### `input_listdelimiter`
 
-**\[Optional\]** `<string = ";|\r?\n">` Delimiter when input is support multiple values (i.e.: a list, most common type is `<string[]>`), by regular expression.
+**\[Optional\]** `<String = ";|\r?\n">` Delimiter when input is support multiple values (i.e.: a list, most common type is `<String[]>`), by regular expression.
 
 #### `targets`
 
-**\[Optional\]** `<string[] = "./">` Targets.
+**\[Optional\]** `<String[] = "./">` Targets.
 
 - **Local (`"./"`):** Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action.
 - **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value; Each URL assume as a session.
@@ -78,18 +78,38 @@ When this input is network, will ignore inputs:
 
 #### `git_deep`
 
-**\[Optional\]** `<boolean = false>` Scan deeper for Git repository by each commits; Each commits assume as a session. When this input is `false`, will ignore input [`git_reverse`](#git_reverse).
+**\[Optional\]** `<Boolean = false>` Scan deeper for Git repository by each commits; Each commits assume as a session. When this input is `false`, will ignore inputs:
+
+- [`git_filter`](#git_filter)
+- [`git_reverse`](#git_reverse)
+
+#### `git_filter`
+
+**\[Optional\]** `<Yaml>` Git commits filter, by YAML/YML; For each filter's properties:
+
+```yml
+mode: "exclude"
+name: "Author"
+```
+
+```yml
+with:
+  git_filter: |
+    - mode: "include"
+      name: "AuthorDate"
+      operator: "last"
+```
 
 #### `git_reverse`
 
-**\[Optional\]** `<boolean = false>` Reverse sort order (for sessions' order) of Git commits.
+**\[Optional\]** `<Boolean = false>` Reverse sort order (for sessions' order) of Git commits.
 
 - **`false`:** From oldest commit to newest commit.
 - **`true`:** From newest commit to oldest commit.
 
 #### `clamav_enable`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV. When this input is `false`, will ignore inputs:
+**\[Optional\]** `<Boolean = true>` Use ClamAV. When this input is `false`, will ignore inputs:
 
 - [`clamav_daemon`](#clamav_daemon)
 - [`clamav_filesfilter`](#clamav_filesfilter)
@@ -102,7 +122,7 @@ When this input is network, will ignore inputs:
 
 #### `clamav_daemon`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
+**\[Optional\]** `<Boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
 
 - [`clamav_multiscan`](#clamav_multiscan)
 - [`clamav_reloadpersession`](#clamav_reloadpersession)
@@ -119,23 +139,23 @@ When this input is network, will ignore inputs:
 
 #### `clamav_filesfilter`
 
-**\[Optional\]** `<string[] = "">` ClamAV files filter, by [items' filter](#Items-Filter), separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` ClamAV files filter, by [items' filter](#Items-Filter), separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value.
 
 #### `clamav_multiscan`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV multiscan mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+**\[Optional\]** `<Boolean = true>` Use ClamAV multiscan mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
 
 > **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `clamav_reloadpersession`
 
-**\[Optional\]** `<boolean = false>` Reload ClamAV per session.
+**\[Optional\]** `<Boolean = false>` Reload ClamAV per session.
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
 #### `clamav_signaturesignore_custom`
 
-**\[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each signature with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` Ignore individual ClamAV signatures, separate each signature with input [`input_listdelimiter`](#input_listdelimiter)'s value.
 
 > **⚠ Important:**
 >
@@ -146,7 +166,7 @@ When this input is network, will ignore inputs:
 
 #### `clamav_signaturesignore_presets`
 
-**\[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [ClamAV signatures ignore presets list][clamav-signatures-ignore-presets-list], separate each preset with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` Ignore ClamAV signatures by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [ClamAV signatures ignore presets list][clamav-signatures-ignore-presets-list], separate each preset with input [`input_listdelimiter`](#input_listdelimiter)'s value.
 
 > **⚠ Important:**
 >
@@ -156,19 +176,19 @@ When this input is network, will ignore inputs:
 
 #### `clamav_subcursive`
 
-**\[Optional\]** `<boolean = true>` Scan directories subcursively.
+**\[Optional\]** `<Boolean = true>` Scan directories subcursively.
 
 > **⚠ Important:** If there has issues at the input [`clamav_filesfilter`](#clamav_filesfilter), try to disable this first before report the issues!
 
 #### `clamav_unofficialsignatures`
 
-**\[Optional\]** `<string[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each rule with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each rule with input [`input_listdelimiter`](#input_listdelimiter)'s value.
 
 > **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives in most cases.
 
 #### `yara_enable`
 
-**\[Optional\]** `<boolean = false>` Use YARA. When this input is `false`, will ignore inputs:
+**\[Optional\]** `<Boolean = false>` Use YARA. When this input is `false`, will ignore inputs:
 
 - [`yara_filesfilter`](#yara_filesfilter)
 - [`yara_rulesfilter`](#yara_rulesfilter)
@@ -178,11 +198,11 @@ When this input is network, will ignore inputs:
 
 #### `yara_filesfilter`
 
-**\[Optional\]** `<string[] = "">` YARA files filter, by [items' filter](#Items-Filter), separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` YARA files filter, by [items' filter](#Items-Filter), separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value.
 
 #### `yara_rulesfilter`
 
-**\[Optional\]** `<string[] = "">` YARA rules filter, by [items' filter](#Items-Filter) and [YARA rules list][yara-rules-list], separate each rule with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` YARA rules filter, by [items' filter](#Items-Filter) and [YARA rules list][yara-rules-list], separate each rule with input [`input_listdelimiter`](#input_listdelimiter)'s value.
 
 To filter specifically, separate main rule and sub-rule with forward slash (`/`) (i.e.: backward slash and forward slash (`\/`) for regular expressions), and sub-rule and file with right angle bracket (`>`). For full pattern:
 
@@ -201,7 +221,7 @@ For example with main rule is `foo`, sub-rule is `bar`, file is `goob`:
 
 #### `yara_toolwarning`
 
-**\[Optional\]** `<boolean = false>` Enable YARA tool warning.
+**\[Optional\]** `<Boolean = false>` Enable YARA tool warning.
 
 > **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while user-end does not need these informations in most cases.
 
