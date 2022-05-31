@@ -440,16 +440,16 @@ function Invoke-ScanVirusSession {
 				if ($LASTEXITCODE -eq 0) {
 					$YARAOutput | ForEach-Object -Process {
 						if ($_ -match "^.+? $RegExpGitHubActionsWorkspaceRoot.+$") {
-							[string]$Rule, [string]$IssueElement = $_ -split "(?<=^.+?) $RegExpGitHubActionsWorkspaceRoot"
+							[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) $RegExpGitHubActionsWorkspaceRoot"
 							[string]$YARARuleName = "$($YARARule.Name)/$Rule"
-							[string]$YARAElementIssue = "$YARARuleName>$IssueElement"
+							[string]$YARAElementIssue = "$YARARuleName>$Element"
 							Write-GitHubActionsDebug -Message $YARAElementIssue
 							if (Test-InputFilter -Target $YARAElementIssue -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) {
-								if ($null -eq $YARAResult[$IssueElement]) {
-									$YARAResult[$IssueElement] = @()
+								if ($null -eq $YARAResult[$Element]) {
+									$YARAResult[$Element] = @()
 								}
-								if ($YARARuleName -notin $YARAResult[$IssueElement]) {
-									$YARAResult[$IssueElement] += $YARARuleName
+								if ($YARARuleName -notin $YARAResult[$Element]) {
+									$YARAResult[$Element] += $YARARuleName
 								}
 							} else {
 								Write-GitHubActionsDebug -Message '  > Skip'
