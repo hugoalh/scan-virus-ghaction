@@ -80,9 +80,9 @@ function Write-OptimizePSFormatDisplay {
 [string]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [string]$ClamAVSignaturesIgnoreFileFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath 'ignore_list.ign2'
 [string]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-signatures-ignore-presets'
-[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') -Delimiter "`t"
+[pscustomobject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-Csv -Path (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') -Delimiter "`t"
 [string]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'clamav-unofficial-signatures'
-[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') -Delimiter "`t"
+[pscustomobject[]]$ClamAVUnofficialSignaturesIndex = Get-Csv -Path (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 [string[]]$IssuesClamAV = @()
 [string[]]$IssuesOther = @()
 [string[]]$IssuesYARA = @()
@@ -97,7 +97,7 @@ function Write-OptimizePSFormatDisplay {
 [UInt64]$TotalSizesClamAV = 0
 [UInt64]$TotalSizesYARA = 0
 [string]$YARARulesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'yara-rules'
-[pscustomobject[]]$YARARulesIndex = Get-Csv -LiteralPath (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
+[pscustomobject[]]$YARARulesIndex = Get-Csv -Path (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [string]$Targets = Get-GitHubActionsInput -Name 'targets' -Trim
 if ($Targets -match '^\.\/$') {
@@ -181,7 +181,7 @@ if ($ClamAVEnable) {
 	[string[]]$ClamAVSignaturesIgnorePresetsInvalid = @()
 	$ClamAVSignaturesIgnorePresetsIndex | ForEach-Object -Process {
 		[string]$ClamAVSignaturesIgnorePresetFullName = Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath $_.Location
-		[bool]$ClamAVSignaturesIgnorePresetExist = Test-Path -LiteralPath $ClamAVSignaturesIgnorePresetFullName
+		[bool]$ClamAVSignaturesIgnorePresetExist = Test-Path -Path $ClamAVSignaturesIgnorePresetFullName
 		[bool]$ClamAVSignaturesIgnorePresetApply = $_.Name -in $ClamAVSignaturesIgnorePresetsApply.Name
 		[hashtable]$ClamAVSignaturesIgnorePresetDisplay = @{
 			Name = $_.Name
@@ -191,7 +191,7 @@ if ($ClamAVEnable) {
 		$ClamAVSignaturesIgnorePresetsDisplay += [pscustomobject]$ClamAVSignaturesIgnorePresetDisplay
 		if ($ClamAVSignaturesIgnorePresetExist) {
 			if ($ClamAVSignaturesIgnorePresetApply) {
-				$ClamAVSignaturesIgnore += Get-Content -LiteralPath $ClamAVSignaturesIgnorePresetFullName -Encoding 'UTF8NoBOM'
+				$ClamAVSignaturesIgnore += Get-Content -Path $ClamAVSignaturesIgnorePresetFullName -Encoding UTF8NoBOM
 			}
 		} else {
 			$ClamAVSignaturesIgnorePresetsInvalid += $_.Name
@@ -215,7 +215,7 @@ if ($ClamAVEnable) {
 	Enter-GitHubActionsLogGroup -Title "ClamAV signatures ignore ($($ClamAVSignaturesIgnore.Count)):"
 	if ($ClamAVSignaturesIgnore.Count -gt 0) {
 		Write-Host -Object ($ClamAVSignaturesIgnore -join ', ')
-		Set-Content -LiteralPath $ClamAVSignaturesIgnoreFileFullName -Value ($ClamAVSignaturesIgnore -join "`n") -Confirm:$false -NoNewline -Encoding 'UTF8NoBOM'
+		Set-Content -Path $ClamAVSignaturesIgnoreFileFullName -Value ($ClamAVSignaturesIgnore -join "`n") -NoNewline -Encoding UTF8NoBOM
 		$RequireCleanUpFiles += $ClamAVSignaturesIgnoreFileFullName
 	}
 	Exit-GitHubActionsLogGroup
@@ -223,7 +223,7 @@ if ($ClamAVEnable) {
 	[string[]]$ClamAVUnofficialSignaturesInvalid = @()
 	$ClamAVUnofficialSignaturesIndex | ForEach-Object -Process {
 		[string]$ClamAVUnofficialSignatureFullName = Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath $_.Location
-		[bool]$ClamAVUnofficialSignatureExist = Test-Path -LiteralPath $ClamAVUnofficialSignatureFullName
+		[bool]$ClamAVUnofficialSignatureExist = Test-Path -Path $ClamAVUnofficialSignatureFullName
 		[bool]$ClamAVUnofficialSignatureApply = $_.Name -in $ClamAVUnofficialSignaturesApply.Name
 		[hashtable]$ClamAVUnofficialSignatureDisplay = @{
 			Name = $_.Name
@@ -234,7 +234,7 @@ if ($ClamAVEnable) {
 		if ($ClamAVUnofficialSignatureExist) {
 			if ($ClamAVUnofficialSignatureApply) {
 				[string]$ClamAVUnofficialSignatureDestination = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -replace '\/', '_')
-				Copy-Item -LiteralPath $ClamAVUnofficialSignatureFullName -Destination $ClamAVUnofficialSignatureDestination -Confirm:$false
+				Copy-Item -Path $ClamAVUnofficialSignatureFullName -Destination $ClamAVUnofficialSignatureDestination -Confirm:$false
 				$RequireCleanUpFiles += $ClamAVUnofficialSignatureDestination
 			}
 		} else {
@@ -257,7 +257,7 @@ if ($YARAEnable) {
 	[string[]]$YARARulesInvalid = @()
 	$YARARulesIndex | ForEach-Object -Process {
 		[string]$YARARuleFullName = Join-Path -Path $YARARulesRoot -ChildPath $_.Location
-		[bool]$YARARuleExist = Test-Path -LiteralPath $YARARuleFullName
+		[bool]$YARARuleExist = Test-Path -Path $YARARuleFullName
 		[bool]$YARARuleApply = $_.Name -in $YARARulesApply.Name
 		[hashtable]$YARARuleDisplay = @{
 			Name = $_.Name
@@ -304,7 +304,7 @@ function Invoke-ScanVirusSession {
 		[Parameter(Mandatory = $true, Position = 0)][string]$Session
 	)
 	Write-Host -Object "Begin of session `"$Session`"."
-	[pscustomobject[]]$Elements = Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Recurse -Force
+	[pscustomobject[]]$Elements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Force
 	if (
 		($null -eq $Elements) -or
 		($Elements.Count -eq 0)
@@ -319,7 +319,7 @@ function Invoke-ScanVirusSession {
 		[pscustomobject[]]$ElementsListDisplay = @()
 		[uint]$ElementsIsDirectoryCount = 0
 		$Elements | Sort-Object | ForEach-Object -Process {
-			[bool]$ElementIsDirectory = Test-Path -LiteralPath $_.FullName -PathType 'Container'
+			[bool]$ElementIsDirectory = Test-Path -Path $_.FullName -PathType Container
 			[string]$ElementName = $_.FullName -replace "^$RegExpGitHubActionsWorkspaceRoot", ''
 			[UInt64]$ElementSizes = $_.Length
 			[hashtable]$ElementListDisplay = @{
@@ -370,7 +370,7 @@ function Invoke-ScanVirusSession {
 		Exit-GitHubActionsLogGroup
 		if ($ClamAVEnable -and ($ElementsListClamAV.Count -gt 0)) {
 			[string]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
-			Set-Content -LiteralPath $ElementsListClamAVFullName -Value ($ElementsListClamAV -join "`n") -Confirm:$false -NoNewline -Encoding 'UTF8NoBOM'
+			Set-Content -Path $ElementsListClamAVFullName -Value ($ElementsListClamAV -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GitHubActionsLogGroup -Title "ClamAV result of session `"$Session`":"
 			[string]$ClamAVExpression = ''
 			if ($ClamAVDaemon) {
@@ -428,11 +428,11 @@ function Invoke-ScanVirusSession {
 				}
 			}
 			Exit-GitHubActionsLogGroup
-			Remove-Item -LiteralPath $ElementsListClamAVFullName -Force -Confirm:$false
+			Remove-Item -Path $ElementsListClamAVFullName -Force -Confirm:$false
 		}
 		if ($YARAEnable -and ($ElementsListYARA.Count -gt 0)) {
 			[string]$ElementsListYARAFullName = (New-TemporaryFile).FullName
-			Set-Content -LiteralPath $ElementsListYARAFullName -Value ($ElementsListYARA -join "`n") -Confirm:$false -NoNewline -Encoding 'UTF8NoBOM'
+			Set-Content -Path $ElementsListYARAFullName -Value ($ElementsListYARA -join "`n") -NoNewline -Encoding UTF8NoBOM
 			Enter-GitHubActionsLogGroup -Title "YARA result of session `"$Session`":"
 			[hashtable]$YARAResult = @{}
 			foreach ($YARARule in $YARARulesApply) {
@@ -479,7 +479,7 @@ function Invoke-ScanVirusSession {
 				}
 			}
 			Exit-GitHubActionsLogGroup
-			Remove-Item -LiteralPath $ElementsListYARAFullName -Force -Confirm:$false
+			Remove-Item -Path $ElementsListYARAFullName -Force -Confirm:$false
 		}
 	}
 	Write-Host -Object "End of session `"$Session`"."
@@ -487,7 +487,7 @@ function Invoke-ScanVirusSession {
 if ($LocalTarget) {
 	Invoke-ScanVirusSession -Session 'Current'
 	if ($GitDeep) {
-		if (Test-Path -LiteralPath (Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath '.git') -PathType 'Container') {
+		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
 			[string[]]$GitCommits = [string[]](Invoke-Expression -Command "git --no-pager log --all --format=%H$($GitReverseSession ? '' : ' --reverse')") | Select-Object -Unique
 			if ($GitCommits.Count -le 1) {
@@ -516,11 +516,13 @@ if ($LocalTarget) {
 		}
 	}
 } else {
-	[pscustomobject[]]$UselessElements = Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Recurse -Force
+	[string[]]$UselessElements = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Force -Name
 	if ($UselessElements.Count -gt 0) {
 		Write-GitHubActionsWarning -Message 'Require a clean workspace when target is network!'
 		Write-Host -Object 'Clean workspace.'
-		$UselessElements | Remove-Item -Force -Confirm:$false
+		$UselessElements | ForEach-Object -Process {
+			Remove-Item -Path (Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $_) -Recurse -Force -Confirm:$false
+		}
 	}
 	$NetworkTargets | ForEach-Object -Process {
 		Enter-GitHubActionsLogGroup -Title "Fetch file `"$_`"."
@@ -533,7 +535,7 @@ if ($LocalTarget) {
 		}
 		Exit-GitHubActionsLogGroup
 		Invoke-ScanVirusSession -Session $_
-		Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$false
+		Remove-Item -Path $NetworkTemporaryFileFullPath -Force -Confirm:$false
 	}
 }
 if ($ClamAVEnable -and $ClamAVDaemon) {
@@ -543,7 +545,7 @@ if ($ClamAVEnable -and $ClamAVDaemon) {
 }
 if ($RequireCleanUpFiles.Count -gt 0) {
 	$RequireCleanUpFiles | ForEach-Object -Process {
-		Remove-Item -LiteralPath $_ -Force -Confirm:$false
+		Remove-Item -Path $_ -Force -Confirm:$false
 	}
 }
 Enter-GitHubActionsLogGroup -Title 'Statistics:'
