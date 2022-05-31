@@ -450,12 +450,12 @@ if ($LocalTarget) {
 	if ($GitDeep) {
 		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
-			[string[]]$GitCommits = [string[]](Invoke-Expression -Command "git --no-pager log --all --format=%H$($GitReverseSession ? '' : ' --reverse')") | Select-Object -Unique
+			[string[]]$GitCommits = [string[]](Invoke-Expression -Command "git --no-pager log --all --format=`"%aI %cI %H`"$($GitReverseSession ? '' : ' --reverse')") | Select-Object -Unique
 			if ($GitCommits.Count -le 1) {
 				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run ________`` cannot apply the modified workflow!)"
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
-				[string]$GitCommitHash = $GitCommits[$GitCommitsIndex]
+				[datetime]$GitCommitAuthorTimestamp, [datetime]$GitCommitCommitterTimestamp, [string]$GitCommitHash = $GitCommits[$GitCommitsIndex] -split ' '
 				[string]$GitSession = "Commit $GitCommitHash (#$($GitReverseSession ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
 				Enter-GHActionsLogGroup -Title "Git checkout for session `"$GitSession`"."
 				try {
