@@ -432,16 +432,16 @@ if ($LocalTarget) {
 	if ($GitDeep) {
 		if (Test-Path -Path '.\.git') {
 			Write-Host -Object 'Import Git information.'
-			[string[]]$GitCommits = [string[]](Invoke-Expression -Command "git --no-pager log --all --format=`"%aI %cI %H`"$($GitReverseSession ? '' : ' --reverse')") | Select-Object -Unique
+			[string[]]$GitCommits = Invoke-Expression -Command "git --no-pager log --all --format=%H --reflog$($GitReverseSession ? '' : ' --reverse')"
 			if ($GitCommits.Count -le 1) {
-				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run ________`` cannot apply the modified workflow!)"
+				Write-GHActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run all jobs`` or ``Re-run this workflow`` cannot apply the modified workflow!)"
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
-				[datetime]$GitCommitAuthorTimestamp, [datetime]$GitCommitCommitterTimestamp, [string]$GitCommitHash = $GitCommits[$GitCommitsIndex] -split ' '
-				[string]$GitSession = "Commit $GitCommitHash (#$($GitReverseSession ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
+				[string]$GitCommit = $GitCommits[$GitCommitsIndex]
+				[string]$GitSession = "Commit #$($GitReverseSession ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count) - $GitCommit"
 				Enter-GHActionsLogGroup -Title "Git checkout for session `"$GitSession`"."
 				try {
-					Invoke-Expression -Command "git checkout $GitCommitHash --force --quiet"
+					Invoke-Expression -Command "git checkout $GitCommit --force --quiet"
 				} catch {  }
 				if ($LASTEXITCODE -eq 0) {
 					Exit-GHActionsLogGroup
