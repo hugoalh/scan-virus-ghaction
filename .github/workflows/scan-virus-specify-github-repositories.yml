@@ -49,3 +49,4 @@ jobs:
         with:
           git_deep: "true"
           git_reversesession: "true"
+          yara_enable: "true"

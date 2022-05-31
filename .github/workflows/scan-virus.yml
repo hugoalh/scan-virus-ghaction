@@ -31,3 +31,18 @@ jobs:
             ^clamav-unofficial-signatures\/(?!index\.tsv).+$
             ^yara-rules$
             ^yara-rules\/(?!index\.tsv).+$
+          yara_enable: "true"
+          yara_filesfilter_list: |
+            ^\.git(?:\/|$)
+            ^clamav-signatures-ignore-presets$
+            ^clamav-signatures-ignore-presets\/(?!index\.tsv).+$
+            ^clamav-unofficial-signatures$
+            ^clamav-unofficial-signatures\/(?!index\.tsv).+$
+            ^yara-rules$
+            ^yara-rules\/(?!index\.tsv).+$
+          yara_rulesfilter_list: |
+            ^blacktop\/peertopeer>Dockerfile$
+            ^yara-community\/capabilities\/spreading_file>\.gitignore$
+            ^yara-community\/maldocs\/powershell>\.github\/workflows\/scan-virus.*?\.yml$
+            ^yara-community\/maldocs\/powershell>Dockerfile$
+            ^yara-community\/maldocs\/powershell>README\.md$

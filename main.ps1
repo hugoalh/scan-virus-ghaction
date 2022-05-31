@@ -1,10 +1,8 @@
 [string]$ErrorActionOriginalPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
-Import-Module -Name @(
-	'hugoalh.GitHubActionsToolkit',
-	(Join-Path -Path $PSScriptRoot -ChildPath 'csv.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'test-stringisurl.psm1')
-) -Scope 'Local'
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'get-csv.psm1') -Scope 'Local'
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'test-stringisurl.psm1') -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
 	E = 0

@@ -23,7 +23,7 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 
 - [ClamAV](https://www.clamav.net)
   > ClamAV, by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malware, and other malicious threats.
-- [YARA](http://virustotal.github.io/yara) ([Rules List][yara-rules-list])
+- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara) ([Rules List][yara-rules-list])
   > YARA, by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
 
 ### ⚠ Disclaimer
@@ -38,7 +38,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.7.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.6.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
@@ -61,7 +61,7 @@ Require Software:
 **\[Optional\]** `<string[] = "./">` Targets.
 
 - **Local (`"./"`):** Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action.
-- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with semicolon (`;`) or per line; Each URL assume as a session.
+- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with semicolon (`;`) or per line.
   > **⚠ Important:**
   >
   > - Each files is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
@@ -76,14 +76,14 @@ When this input is network, will ignore inputs:
 
 #### `git_deep`
 
-**\[Optional\]** `<boolean = false>` Scan deeper for Git repository by each commits; Each commits assume as a session. When this input is `false`, will ignore input `git_reverse`.
+**\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits. When this input is `false`, will ignore input `git_reversesession`.
 
-#### `git_reverse`
+#### `git_reversesession`
 
-**\[Optional\]** `<boolean = false>` Reverse sort order (for sessions' order) of Git commits.
+**\[Optional\]** `<boolean = false>` Reverse Git session.
 
-- **`false`:** From oldest commit to newest commit.
-- **`true`:** From newest commit to oldest commit.
+- **`false`:** From oldest to newest.
+- **`true`:** From newest to oldest.
 
 #### `clamav_enable`
 
@@ -97,11 +97,10 @@ When this input is network, will ignore inputs:
 - `clamav_signaturesignore_custom`
 - `clamav_signaturesignore_presets`
 - `clamav_subcursive`
-- `clamav_unofficialsignatures`
 
 #### `clamav_daemon`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
+**(>= v0.6.1) \[Optional\]** `<boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
 
 - `clamav_multiscan`
 - `clamav_reloadpersession`
@@ -129,19 +128,19 @@ When this input is network, will ignore inputs:
 
 #### `clamav_multiscan`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV multiscan mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+**\[Optional\]** `<boolean = true>` Use ClamAV "multiscan" mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
 
 > **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `clamav_reloadpersession`
 
-**\[Optional\]** `<boolean = false>` Reload ClamAV per session.
+**(>= v0.6.1) \[Optional\]** `<boolean = false>` Reload ClamAV per session.
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
 #### `clamav_signaturesignore_custom`
 
-**\[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each signature with semicolon (`;`) or per line.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each signature with semicolon (`;`) or per line.
 
 > **⚠ Important:**
 >
@@ -152,7 +151,7 @@ When this input is network, will ignore inputs:
 
 #### `clamav_signaturesignore_presets`
 
-**\[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][clamav-signatures-ignore-presets-list], separate each preset with semicolon (`;`) or per line.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][clamav-signatures-ignore-presets-list], separate each preset with semicolon (`;`) or per line.
 
 > **⚠ Important:**
 >
@@ -162,13 +161,13 @@ When this input is network, will ignore inputs:
 
 #### `clamav_subcursive`
 
-**\[Optional\]** `<boolean = true>` Scan directories subcursively.
+**(>= v0.6.1) \[Optional\]** `<boolean = true>` Scan directories subcursively.
 
 > **⚠ Important:** If there has issues at the input `clamav_filesfilter_list`, try to disable this first before report the issues!
 
 #### `clamav_unofficialsignatures`
 
-**\[Optional\]** `<string[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [signatures list][clamav-unofficial-signatures-list], separate each rule with semicolon (`;`) or per line.
+**(>= v0.6.1) \[Optional\]** `<string[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [signatures list][clamav-unofficial-signatures-list], separate each rule with semicolon (`;`) or per line.
 
 > **⚠ Important:** It is not recommended to use this due to ClamAV official signature is less false positives in most cases.
 
@@ -216,7 +215,7 @@ For example with main rule is `foo`, sub-rule is `bar`, file is `goob`:
 
 #### `yara_rulesfilter_mode`
 
-**\[Optional\]** `<string = "include">` YARA rules filter mode.
+**\[Optional\]** `<string = "exclude">` YARA rules filter mode.
 
 - **`"exclude"`:** Exclude rules in input `yara_rulesfilter_list`.
 - **`"include"`:** Only include rules in input `yara_rulesfilter_list`.
@@ -256,7 +255,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.7.0"
+        uses: "hugoalh/scan-virus-ghaction@v0.6.0"
 ```
 
 ### Guide
@@ -265,6 +264,6 @@ jobs:
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
 
-[clamav-signatures-ignore-presets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-signatures-ignore-presets/index.tsv
-[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-unofficial-signatures/index.tsv
-[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/yara-rules/index.tsv
+[clamav-signatures-ignore-presets-list]: ./clamav-signatures-ignore-presets/index.tsv
+[clamav-unofficial-signatures-list]: ./clamav-unofficial-signatures/index.tsv
+[yara-rules-list]: ./yara-rules/index.tsv
