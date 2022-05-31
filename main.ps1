@@ -306,9 +306,7 @@ function Invoke-ScanVirusSession {
 		($Elements.Count -eq 0)
 	) {
 		Write-GHActionsError -Message "Unable to scan session `"$Session`" due to it is empty! If this is incorrect, probably someone forgot to put files in there."
-		if ($Session -notin $script:IssuesOther) {
-			$script:IssuesOther += $Session
-		}
+		$script:IssuesOther += $Session
 	} else {
 		[string[]]$ElementsListClamAV = @()
 		[string[]]$ElementsListYARA = @()
@@ -379,7 +377,7 @@ function Invoke-ScanVirusSession {
 			[string[]]$ClamAVResultError = @()
 			[hashtable]$ClamAVResultFound = @{}
 			for ($ClamAVOutputLineIndex = 0; $ClamAVOutputLineIndex -lt $ClamAVOutput.Count; $ClamAVOutputLineIndex++) {
-				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex] -replace "^$RegExpGHActionsWorkspaceRoot", ''
+				[string]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex]
 				if ($ClamAVOutputLineContent -match '^[-=]+ SCAN SUMMARY [-=]+$') {
 					Write-Host -Object ($ClamAVOutput[$ClamAVOutputLineIndex..($ClamAVOutput.Count - 1)] -join "`n")
 					break
@@ -391,9 +389,8 @@ function Invoke-ScanVirusSession {
 					continue
 				}
 				if ($ClamAVOutputLineContent -match ': .+ FOUND$') {
-					[string]$ClamAVElementIssue = $ClamAVOutputLineContent -replace ' FOUND$', ''
-					Write-GHActionsDebug -Message $ClamAVElementIssue
-					[string]$Element, [string]$Signature = $ClamAVElementIssue -split '(?<=^.+?): '
+					[string]$Element, [string]$SignatureRaw = $ClamAVOutputLineContent -replace "^$RegExpGHActionsWorkspaceRoot", '' -split ': (?=.+ FOUND$)'
+					[string]$Signature = ($SignatureRaw -replace ' FOUND$', '').Trim()
 					if ($null -eq $ClamAVResultFound[$Element]) {
 						$ClamAVResultFound[$Element] = @()
 					}
@@ -401,27 +398,23 @@ function Invoke-ScanVirusSession {
 						$ClamAVResultFound[$Element] += $Signature
 					}
 				} else {
-					$ClamAVResultError += $ClamAVOutputLineContent
+					$ClamAVResultError += $ClamAVOutputLineContent -replace "^$RegExpGHActionsWorkspaceRoot", ''
 				}
 			}
 			if ($ClamAVResultFound.Count -gt 0) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV ($($ClamAVResultFound.Count)):`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVResultFound.GetEnumerator() | ForEach-Object -Process {
-					[string[]]$IssueSignatures = $_.Value | Sort-Object -Unique -CaseSensitive
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via ClamAV:`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVResultFound.GetEnumerator() | ForEach-Object -Process {
+					[string[]]$Signatures = $_.Value | Sort-Object -Unique -CaseSensitive
 					return [pscustomobject]@{
 						Element = $_.Name
-						Signatures_List = $IssueSignatures -join ', '
-						Signatures_Count = $IssueSignatures.Count
+						Signatures_List = $Signatures -join ', '
+						Signatures_Count = $Signatures.Count
 					}
 				} | Sort-Object -Property 'Element' | Format-List | Out-String))"
-				if ($Session -notin $script:IssuesClamAV) {
-					$script:IssuesClamAV += $Session
-				}
+				$script:IssuesClamAV += $Session
 			}
 			if ($ClamAVResultError.Count -gt 0) {
 				Write-GHActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$Session`":`n$($ClamAVResultError -join "`n")"
-				if ($Session -notin $script:IssuesClamAV) {
-					$script:IssuesClamAV += $Session
-				}
+				$script:IssuesClamAV += $Session
 			}
 			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListClamAVFullName -Force -Confirm:$false
@@ -438,9 +431,8 @@ function Invoke-ScanVirusSession {
 						if ($_ -match "^.+? $RegExpGHActionsWorkspaceRoot.+$") {
 							[string]$Rule, [string]$Element = $_ -split "(?<=^.+?) $RegExpGHActionsWorkspaceRoot"
 							[string]$YARARuleName = "$($YARARule.Name)/$Rule"
-							[string]$YARAElementIssue = "$YARARuleName>$Element"
-							Write-GHActionsDebug -Message $YARAElementIssue
-							if (Test-InputFilter -Target $YARAElementIssue -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) {
+							Write-GHActionsDebug -Message "$YARARuleName>$Element"
+							if (Test-InputFilter -Target "$YARARuleName>$Element" -FilterList $YARARulesFilterList -FilterMode $YARARulesFilterMode) {
 								if ($null -eq $YARAResult[$Element]) {
 									$YARAResult[$Element] = @()
 								}
@@ -456,23 +448,19 @@ function Invoke-ScanVirusSession {
 					}
 				} else {
 					Write-GHActionsError -Message "Unexpected YARA `"$($YARARule.Name)`" result ``$LASTEXITCODE`` in session `"$Session`"!`n$YARAOutput"
-					if ($Session -notin $script:IssuesYARA) {
-						$script:IssuesYARA += $Session
-					}
+					$script:IssuesYARA += $Session
 				}
 			}
 			if ($YARAResult.Count -gt 0) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA $($YARAResult.Count):`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
-					[string[]]$IssueRules = $_.Value | Sort-Object -Unique -CaseSensitive
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA:`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
+					[string[]]$ElementRules = $_.Value | Sort-Object -Unique -CaseSensitive
 					return [pscustomobject]@{
 						Element = $_.Name
-						Rules_List = $IssueRules -join ', '
-						Rules_Count = $IssueRules.Count
+						Rules_List = $ElementRules -join ', '
+						Rules_Count = $ElementRules.Count
 					}
 				} | Sort-Object -Property 'Element' | Format-List | Out-String))"
-				if ($Session -notin $script:IssuesYARA) {
-					$script:IssuesYARA += $Session
-				}
+				$script:IssuesYARA += $Session
 			}
 			Exit-GHActionsLogGroup
 			Remove-Item -Path $ElementsListYARAFullName -Force -Confirm:$false
@@ -491,7 +479,7 @@ if ($LocalTarget) {
 			}
 			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 				[string]$GitCommitHash = $GitCommits[$GitCommitsIndex]
-				[string]$GitSession = "Commit Hash $GitCommitHash (#$($GitReverseSession ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
+				[string]$GitSession = "Commit $GitCommitHash (#$($GitReverseSession ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
 				Enter-GHActionsLogGroup -Title "Git checkout for session `"$GitSession`"."
 				try {
 					Invoke-Expression -Command "git checkout $GitCommitHash --force --quiet"
@@ -501,9 +489,7 @@ if ($LocalTarget) {
 					Invoke-ScanVirusSession -Session $GitSession
 				} else {
 					Write-GHActionsError -Message "Unexpected Git checkout result ``$LASTEXITCODE`` in session `"$GitSession`"!"
-					if ($GitSession -notin $IssuesOther) {
-						$IssuesOther += $GitSession
-					}
+					$IssuesOther += $GitSession
 					Exit-GHActionsLogGroup
 				}
 			}
