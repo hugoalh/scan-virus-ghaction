@@ -53,7 +53,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
+        uses: "hugoalh/scan-virus-ghaction/use-docker-build@patch/debian-apt-get"
         with:
           git_deep: "${{needs.parse-inputs.outputs.git_deep}}"
           git_reversesession: "${{needs.parse-inputs.outputs.git_reversesession}}"
