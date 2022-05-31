@@ -207,11 +207,7 @@ if ($ClamAVEnable) {
 		@{ Expression = 'Apply'; Alignment = 'Right' }
 	) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
-	$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnore | ForEach-Object -Process {
-		return $_.Trim()
-	} | Where-Object -FilterScript {
-		return ($_.Length -gt 0)
-	} | Sort-Object -Unique -CaseSensitive
+	$ClamAVSignaturesIgnore = $ClamAVSignaturesIgnore | ForEach-Object -Process { return $_.Trim() } | Where-Object -FilterScript { return ($_.Length -gt 0) } | Sort-Object -Unique -CaseSensitive
 	Enter-GHActionsLogGroup -Title "ClamAV signatures ignore ($($ClamAVSignaturesIgnore.Count)):"
 	if ($ClamAVSignaturesIgnore.Count -gt 0) {
 		Write-Host -Object ($ClamAVSignaturesIgnore -join ', ')
@@ -466,7 +462,7 @@ function Invoke-ScanVirusSession {
 				}
 			}
 			if ($YARAResult.Count -gt 0) {
-				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA ($($YARAResult.Count)):`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
+				Write-GHActionsError -Message "Found issues in session `"$Session`" via YARA $($YARAResult.Count):`n$(Optimize-PSFormatDisplay -InputObject ($YARAResult.GetEnumerator() | ForEach-Object -Process {
 					[string[]]$IssueRules = $_.Value | Sort-Object -Unique -CaseSensitive
 					return [pscustomobject]@{
 						Element = $_.Name
@@ -563,14 +559,14 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject[]]@(
 		YARA = ($TotalElementsAll -eq 0) ? 0 : ($TotalElementsYARA / $TotalElementsAll * 100)
 	},
 	[pscustomobject]@{
-		Name = 'TotalIssuesSessions_Count'
+		Name = 'TotalIssues_Count'
 		All = $TotalIssues
 		ClamAV = $IssuesClamAV.Count
 		YARA = $IssuesYARA.Count
 		Other = $IssuesOther.Count
 	},
 	[pscustomobject]@{
-		Name = 'TotalIssuesSessions_Percentage'
+		Name = 'TotalIssues_Percentage'
 		ClamAV = ($TotalIssues -eq 0) ? 0 : ($IssuesClamAV.Count / $TotalIssues * 100)
 		YARA = ($TotalIssues -eq 0) ? 0 : ($IssuesYARA.Count / $TotalIssues * 100)
 		Other = ($TotalIssues -eq 0) ? 0 : ($IssuesOther.Count / $TotalIssues * 100)
@@ -613,7 +609,7 @@ Write-OptimizePSFormatDisplay -InputObject ([pscustomobject[]]@(
 ) -AutoSize -Wrap | Out-String)
 Exit-GHActionsLogGroup
 if ($TotalIssues -gt 0) {
-	Enter-GHActionsLogGroup -Title 'Issues sessions:'
+	Enter-GHActionsLogGroup -Title 'Issues:'
 	Write-OptimizePSFormatDisplay -InputObject ([pscustomobject]@{
 		ClamAV = $IssuesClamAV -join ', '
 		YARA = $IssuesYARA -join ', '
