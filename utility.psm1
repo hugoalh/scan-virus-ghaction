@@ -82,23 +82,32 @@ function Test-InputFilter {
 	[CmdletBinding()][OutputType([bool])]
 	param (
 		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[string[]]$Excludes = @(),
-		[string[]]$Includes = @()
+		[string[]]$Exclude = @(),
+		[string[]]$Include = @(),
+		[switch]$IncludeUseLogicAnd
 	)
-	foreach ($Include in $Includes) {
-		if ($Target -match $Include) {
-			return $true
-		}
-	}
-	if ($Excludes.Count -gt 0) {
-		foreach ($Exclude in $Excludes) {
-			if ($Target -match $Exclude) {
-				return $false
-			}
-		}
+	if ($Exclude.Count -eq 0 -and $Include.Count -eq 0) {
 		return $true
 	}
-	return $false
+	[uint]$IsExclude = 0
+	[uint]$IsInclude = 0
+	foreach ($Item in $Exclude) {
+		if ($Target -match $Item) {
+			$IsExclude += 1
+		}
+	}
+	foreach ($Item in $Include) {
+		if ($Target -match $Item) {
+			$IsInclude += 1
+		}
+	}
+	if ($Exclude.Count -eq 0) {
+		return ($IncludeUseLogicAnd ? ($Include.Count -eq $IsInclude) : ($IsInclude -gt 0))
+	}
+	if ($Include.Count -eq 0) {
+		return ($IsExclude -eq 0)
+	}
+	return ($IsInclude -gt 0)
 }
 function Test-StringIsUrl {
 	[CmdletBinding()][OutputType([bool])]

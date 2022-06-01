@@ -7,16 +7,11 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 [string]$MetadataStatusEnd = "$($PlaceholderStart)metadata.status.end$PlaceholderEnd"
 [string]$MetadataStatusStart = "$($PlaceholderStart)metadata.status.start$PlaceholderEnd"
 [string]$MetadataStatusRegularExpression = "$([regex]::Escape($MetadataStatusEnd))``.+?``$([regex]::Escape($MetadataStatusStart))"
-[string]$TruncateMessage = "`n`n*... (Truncated)*"
+[string]$TruncateMessage = "`n`n*... (Truncated)*`n"
 function Initialize-StepSummary {
 	[CmdletBinding()][OutputType([void])]
 	param ()
-	Get-Content -LiteralPath $TemplateFullName -Raw -Encoding 'UTF8NoBOM' | Set-GitHubActionsStepSummary
-	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.job.id' -Value $env:GITHUB_JOB
-	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.run.id' -Value $env:GITHUB_RUN_ID
-	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.run.number' -Value $env:GITHUB_RUN_NUMBER
-	Write-StepSummaryMonoPlaceholder -Placeholder 'metadata.run.attempt' -Value $env:GITHUB_RUN_ATTEMPT
-	return
+	return (Get-Content -LiteralPath $TemplateFullName -Raw -Encoding 'UTF8NoBOM' | Set-GitHubActionsStepSummary)
 }
 function Optimize-StepSummary {
 	[CmdletBinding()][OutputType([void])]
