@@ -3,71 +3,72 @@ author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
   input_listdelimiter:
-    description: "{string} Delimiter when input is support multiple values."
+    description: "{String} Delimiter when input is support multiple values."
     required: false
     default: ";|\\r?\\n"
   targets:
-    description: "{string[]} Targets."
+    description: "{String[]} Targets."
     required: false
     default: "./"
   git_deep:
-    description: "{boolean} Scan deeper for Git repository by each commits."
+    description: "{Boolean} Scan deeper for Git repository by each commits."
     required: false
     default: "false"
   git_reverse:
-    description: "{boolean} Reverse sort order of Git commits."
+    description: "{Boolean} Reverse sort order of Git commits."
     required: false
     default: "false"
   clamav_enable:
-    description: "{boolean} Use ClamAV."
+    description: "{Boolean} Use ClamAV."
     required: false
     default: "true"
   clamav_daemon:
-    description: "{boolean} Use ClamAV daemon."
+    description: "{Boolean} Use ClamAV daemon."
     required: false
     default: "true"
   clamav_filesfilter:
-    description: "{string[]} ClamAV files filter."
+    description: "{String[]} ClamAV files filter."
     required: false
     default: ""
   clamav_multiscan:
-    description: "{boolean} Use ClamAV multiscan mode."
+    description: "{Boolean} Use ClamAV multiscan mode."
     required: false
     default: "true"
   clamav_reloadpersession:
-    description: "{boolean} Reload ClamAV per session."
+    description: "{Boolean} Reload ClamAV per session."
     required: false
     default: "false"
-  clamav_signaturesignore_custom:
-    description: "{string[]} Ignore individual ClamAV signatures."
-    required: false
-    default: ""
-  clamav_signaturesignore_presets:
-    description: "{string[]} Ignore ClamAV signatures by presets list."
+  clamav_resultsfilter:
+    description: "{String[]} ClamAV results filter."
     required: false
     default: ""
   clamav_subcursive:
-    description: "{boolean} Scan directories subcursively."
+    description: "{Boolean} Scan directories subcursively."
     required: false
     default: "true"
   clamav_unofficialsignatures:
-    description: "{string[]} ClamAV unofficial signatures."
+    description: "{String[]} Use ClamAV unofficial signatures."
     required: false
-    default: ""
+    default: |
+      -^.+$
   yara_enable:
-    description: "{boolean} Use YARA."
+    description: "{Boolean} Use YARA."
     required: false
     default: "false"
   yara_filesfilter:
-    description: "{string[]} YARA files filter."
+    description: "{String[]} YARA files filter."
     required: false
     default: ""
-  yara_rulesfilter:
-    description: "{string[]} YARA rules filter."
+  yara_resultsfilter:
+    description: "{String[]} YARA results filter."
+    required: false
+    default: ""
+  yara_rules:
+    description: "{String[]} Use YARA rules."
     required: false
     default: ""
   yara_toolwarning:
-    description: "{boolean} Enable YARA tool warning."
+    description: "{Boolean} Enable YARA tool warning."
     required: false
     default: "false"
 runs:

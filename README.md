@@ -21,10 +21,10 @@ A GitHub Action to scan virus (including malicious files and malware) in the Git
 
 ### 🛡 Anti Virus Software
 
-- [ClamAV](https://www.clamav.net) ([Unofficial Signatures List][clamav-unofficial-signatures-list])
-  > ClamAV, by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malware, and other malicious threats.
-- [YARA](http://virustotal.github.io/yara) ([Rules List][yara-rules-list])
-  > YARA, by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
+- **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malware, and other malicious threats.
+  - [Unofficial Signatures List][clamav-unofficial-signatures-list]
+- **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
+  - [Rules List][yara-rules-list]
 
 ### ⚠ Disclaimer
 
@@ -65,40 +65,20 @@ Require Software:
 **\[Optional\]** `<String[] = "./">` Targets.
 
 - **Local (`"./"`):** Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action.
-- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value; Each URL assume as a session.
+- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Each URL assumes as a session.
   > **⚠ Important:**
   >
-  > - Each files is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
+  > - Each file is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
   > - Require a clean workspace.
 
-When this input is network, will ignore inputs:
+When this input is network target, will ignore inputs:
 
 - [`clamav_filesfilter`](#clamav_filesfilter)
 - [`yara_filesfilter`](#yara_filesfilter)
 
 #### `git_deep`
 
-**\[Optional\]** `<Boolean = false>` Scan deeper for Git repository by each commits; Each commits assume as a session. When this input is `false`, will ignore inputs:
-
-- [`git_filter`](#git_filter)
-- [`git_reverse`](#git_reverse)
-
-#### `git_filter`
-
-**\[Optional\]** `<Yaml>` Git commits filter, by YAML/YML; For each filter's properties:
-
-```yml
-mode: "exclude"
-name: "Author"
-```
-
-```yml
-with:
-  git_filter: |
-    - mode: "include"
-      name: "AuthorDate"
-      operator: "last"
-```
+**\[Optional\]** `<Boolean = false>` Scan deeper for Git repository by each commits; Each commit assumes as a session. When this input is `false`, will ignore input [`git_reverse`](#git_reverse).
 
 #### `git_reverse`
 
@@ -115,8 +95,7 @@ with:
 - [`clamav_filesfilter`](#clamav_filesfilter)
 - [`clamav_multiscan`](#clamav_multiscan)
 - [`clamav_reloadpersession`](#clamav_reloadpersession)
-- [`clamav_signaturesignore_custom`](#clamav_signaturesignore_custom)
-- [`clamav_signaturesignore_presets`](#clamav_signaturesignore_presets)
+- [`clamav_resultsfilter`](#clamav_resultsfilter)
 - [`clamav_subcursive`](#clamav_subcursive)
 - [`clamav_unofficialsignatures`](#clamav_unofficialsignatures)
 
@@ -139,7 +118,9 @@ with:
 
 #### `clamav_filesfilter`
 
-**\[Optional\]** `<String[] = "">` ClamAV files filter, by [items' filter](#Items-Filter), separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` ClamAV files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+
+> **⚠ Important:** If this acts weird, try to disable input [`clamav_subcursive`](#clamav_subcursive) first before report the issues!
 
 #### `clamav_multiscan`
 
@@ -153,98 +134,111 @@ with:
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
-#### `clamav_signaturesignore_custom`
+#### `clamav_resultsfilter`
 
-**\[Optional\]** `<String[] = "">` Ignore individual ClamAV signatures, separate each signature with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` ClamAV results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
-> **⚠ Important:**
->
-> - It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
-> - Signatures must be exactly the same in order to ignore.
-> - This is unable to filter signatures with specify directories and/or files.
-> - This is unable to only include specify signatures.
-
-#### `clamav_signaturesignore_presets`
-
-**\[Optional\]** `<String[] = "">` Ignore ClamAV signatures by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [ClamAV signatures ignore presets list][clamav-signatures-ignore-presets-list], separate each preset with input [`input_listdelimiter`](#input_listdelimiter)'s value.
-
-> **⚠ Important:**
->
-> - It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
-> - This is unable to filter presets with specify directories and/or files.
-> - This is unable to only include specify presets.
+> **⚠ Important:** It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
 
 #### `clamav_subcursive`
 
 **\[Optional\]** `<Boolean = true>` Scan directories subcursively.
 
-> **⚠ Important:** If there has issues at the input [`clamav_filesfilter`](#clamav_filesfilter), try to disable this first before report the issues!
+> **⚠ Important:** If input [`clamav_filesfilter`](#clamav_filesfilter) acts weird, try to disable this first before report the issues!
 
 #### `clamav_unofficialsignatures`
 
-**\[Optional\]** `<String[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each rule with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "-^.+$">` Use ClamAV unofficial signatures, by [filter syntax](#Filter-Syntax) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
-> **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives in most cases.
+> **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives than official signatures in most cases.
 
 #### `yara_enable`
 
 **\[Optional\]** `<Boolean = false>` Use YARA. When this input is `false`, will ignore inputs:
 
 - [`yara_filesfilter`](#yara_filesfilter)
-- [`yara_rulesfilter`](#yara_rulesfilter)
+- [`yara_resultsfilter`](#yara_resultsfilter)
+- [`yara_rules`](#yara_rules)
 - [`yara_toolwarning`](#yara_toolwarning)
 
-> **⚠ Important:** This is disable by default due to YARA rules can have many false positives in most cases.
+> **⚠ Important:** It is not recommended to use this due to YARA rules can have many false positives in most cases.
 
 #### `yara_filesfilter`
 
-**\[Optional\]** `<String[] = "">` YARA files filter, by [items' filter](#Items-Filter), separate each target with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` YARA files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
-#### `yara_rulesfilter`
+#### `yara_resultsfilter`
 
-**\[Optional\]** `<String[] = "">` YARA rules filter, by [items' filter](#Items-Filter) and [YARA rules list][yara-rules-list], separate each rule with input [`input_listdelimiter`](#input_listdelimiter)'s value.
+**\[Optional\]** `<String[] = "">` YARA results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
-To filter specifically, separate main rule and sub-rule with forward slash (`/`) (i.e.: backward slash and forward slash (`\/`) for regular expressions), and sub-rule and file with right angle bracket (`>`). For full pattern:
+#### `yara_rules`
 
-```
-^<Main>\/<Sub>><File>$
-```
-
-For example with main rule is `foo`, sub-rule is `bar`, file is `goob`:
-
-| **Pattern** | **Example** |
-|:-:|:-:|
-| Main + Sub | `^foo\/bar` |
-| Main + File | `^foo\/.+>goob$` |
-| Sub + File | `\/bar>goob$` |
-| Main + Sub + File | `^foo\/bar>goob$` |
+**\[Optional\]** `<String[] = "">` Use YARA rules, by [filter syntax](#Filter-Syntax) and [YARA rules list][yara-rules-list], separate each rule with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 #### `yara_toolwarning`
 
 **\[Optional\]** `<Boolean = false>` Enable YARA tool warning.
 
-> **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while user-end does not need these informations in most cases.
+> **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while client does not need these informations in most cases.
 
-#### Items' Filter
+#### Filter Syntax
 
-> **⚠ Important:** Items' filter is exclusive for this action, and maybe different to others.
+> **⚠ Important:** Filter syntax is modified for this action, and maybe different to others.
 
-Items' filter is based on [PowerShell regular expressions](#PowerShell-Regular-Expressions) with additional filter symbol as prefix, behaviour similar to Glob pattern, include filter will have higher priority than exclude filter.
+Filter syntax is based on Glob and [PowerShell regular expressions](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions) with additional modifications, behaviour similar to Glob pattern, include filter will have higher priority than exclude filter.
 
-To create an exclude filter, use hyphen/minus (`-`) as prefix; To create an include filter, use add/plus (`+`) as prefix; Filters with incorrect filter symbol are invalid.
-
-For example, to exclude any items end with `o` but need to include `foo`:
+To create an exclude filter, use hyphen/minus (`-`) as prefix; To create an include filter, use add/plus (`+`) as prefix; Filters with incorrect prefix or missing prefix are invalid. For example, to create filters which exclude any items end with `o` but need to include `foo`:
 
 ```
 -o$
 +^foo$
 ```
 
-#### PowerShell Regular Expressions
+Different sort orders will not cause differences, so this is also the same:
 
-[Regular expressions in PowerShell](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions) is slightly different to others, forward slash (`/`) does not need at the start and end of the regular expressions.
+```
++^foo$
+-o$
+```
 
-Also, when defining the regular expressions, it is important to note that the target is considered valid if the regular expression matches anywhere within the target. For example, the regular expression `p` will match any target with a "p" in it, such as "apple" not just a target that is simply "p". Therefore, it is usually less confusing, as a matter of course, to surround the regular expression in `^...$` form (e.g.: `^p$`), unless there is a good reason not to do so.
+When defining the regular expressions, forward slash (`/`) does not need at the start and end of the regular expressions; Also it is important to note that the target is considered valid if the regular expression matches anywhere within the target. For example, the regular expression `p` will match any target with a "p" in it, such as "apple" not just a target that is simply "p". Therefore, it is usually less confusing, as a matter of course, to surround the regular expression in `^...$` form (e.g.: `^p$`), unless there is a good reason not to do so.
+
+For inputs [`clamav_resultsfilter`](#clamav_resultsfilter) and [`yara_resultsfilter`](#yara_resultsfilter), these inputs use additional syntax to help for filter results by directories/files, rules/signatures, and sessions.
+
+| **Full Pattern:** | **Rules/Signatures** | `>` | **Directories/Files** | `>` | **Sessions** |
+|--:|:-:|:-:|:-:|:-:|:-:|
+| **[`clamav_resultsfilter`](#clamav_resultsfilter)** | Platform`.`Category`.`Name`-`SignatureID`-`Revision\* |  | Path`/`To`/`File`.`Extension |  | `Current` ***or*** Git Commit Hash |
+| **[`yara_resultsfilter`](#yara_resultsfilter)** | IndexName`/`RuleName |  | Path`/`To`/`File`.`Extension |  | `Current` ***or*** Git Commit Hash |
+
+**\*:** ClamAV unofficial signatures maybe not follow this recommended signatures name pattern.
+
+For example, to create filters which exclude ClamAV signature `JavaScript.Test.Something`, YARA index name is `github/octokit` and rule name is `foo-bar`, file is `hyper.mjs`, and session is `Current`:
+
+```yml
+# Rules/Signatures only
+-^JavaScript\.Test\.Something>
+-^github\/octokit\/foo-bar>
+
+# Directories/Files only (recommended to use inputs `clamav_filesfilter` and `yara_filesfilter` for better efficiency)
+-^.+?>hyper\.mjs> #OR
+->hyper\.mjs>.+$ #OR
+
+# Sessions only
+-^.+?>.+?>Current$ #OR
+->Current$ #OR
+
+# Rules/Signatures + Directories/Files
+-^JavaScript\.Test\.Something>hyper\.mjs>
+-^github\/octokit\/foo-bar>hyper\.mjs>
+
+# Rules/Signatures + Sessions
+-^JavaScript\.Test\.Something>.+?>Current$
+-^github\/octokit\/foo-bar>.+?>Current$
+
+# Rules/Signatures + Directories/Files + Sessions
+-^JavaScript\.Test\.Something>hyper\.mjs>Current$
+-^github\/octokit\/foo-bar>hyper\.mjs>Current$
+```
 
 ### 📤 Output
 
@@ -259,7 +253,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.0.0"
+        uses: "actions/checkout@v3.0.2"
         with:
           fetch-depth: 0
       - name: "Scan Repository"

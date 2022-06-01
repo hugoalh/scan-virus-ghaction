@@ -14,11 +14,11 @@ on:
   workflow_dispatch:
     inputs:
       git_deep:
-        description: "{boolean} Scan deeper for Git repository."
+        description: "{Boolean} Scan deeper for Git repository."
         required: false
         default: "true"
-      git_reversesession:
-        description: "{boolean} Reverse Git session."
+      git_reverse:
+        description: "{Boolean} Reverse Git session."
         required: false
         default: "false"
 jobs:
@@ -34,7 +34,7 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction/use-docker-build@main"
         with:
           git_deep: "${{github.event.inputs.git_deep || 'false'}}"
-          git_reversesession: "${{github.event.inputs.git_reversesession || 'false'}}"
+          git_reverse: "${{github.event.inputs.git_reverse || 'false'}}"
           clamav_unofficialsignatures: |
-            ^.+$
+            +^.+$
           yara_enable: "true"

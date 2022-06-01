@@ -3,11 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       git_deep:
-        description: "{boolean} Scan deeper for Git repository."
+        description: "{Boolean} Scan deeper for Git repository."
         required: false
         default: "true"
-      git_reversesession:
-        description: "{boolean} Reverse Git session."
+      git_reverse:
+        description: "{Boolean} Reverse Git session."
         required: false
         default: "false"
 jobs:
@@ -23,11 +23,4 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           git_deep: "${{github.event.inputs.git_deep}}"
-          git_reversesession: "${{github.event.inputs.git_reversesession}}"
-          clamav_filesfilter_list: |
-            ^clamav-signatures-ignore-presets$
-            ^clamav-signatures-ignore-presets\/(?!index\.tsv).+$
-            ^clamav-unofficial-signatures$
-            ^clamav-unofficial-signatures\/(?!index\.tsv).+$
-            ^yara-rules$
-            ^yara-rules\/(?!index\.tsv).+$
+          git_reverse: "${{github.event.inputs.git_reverse}}"

@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       targets:
-        description: "{string[]} Targets."
+        description: "{String[]} Targets."
         required: true
 jobs:
   parse-inputs:
@@ -48,4 +48,4 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           git_deep: "true"
-          git_reversesession: "true"
+          git_reverse: "true"

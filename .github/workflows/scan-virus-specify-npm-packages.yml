@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       targets:
-        description: "{string[]} Targets."
+        description: "{String[]} Targets."
         required: true
 jobs:
   parse-inputs:
