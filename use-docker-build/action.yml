@@ -3,29 +3,29 @@ author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
   input_listdelimiter:
-    description: "{String} Delimiter when input is support multiple values."
+    description: "{RegEx} Delimiter when input is type of list (i.e.: array)."
     required: false
     default: ";|\\r?\\n"
   targets:
-    description: "{String[]} Targets."
+    description: "{Uri[]} Targets."
     required: false
-    default: "./"
-  git_deep:
-    description: "{Boolean} Scan deeper for Git repository by each commits."
+    default: ""
+  git_integrate:
+    description: "{Boolean} Integrate with Git to scan every commits; Require workspace is a Git repository."
     required: false
-    default: "false"
+    default: "False"
   git_reverse:
-    description: "{Boolean} Reverse sort order of Git commits."
+    description: "{Boolean} Reverse scan order of Git commits."
     required: false
-    default: "false"
+    default: "False"
   clamav_enable:
     description: "{Boolean} Use ClamAV."
     required: false
-    default: "true"
+    default: "True"
   clamav_daemon:
     description: "{Boolean} Use ClamAV daemon."
     required: false
-    default: "true"
+    default: "True"
   clamav_filesfilter:
     description: "{String[]} ClamAV files filter."
     required: false
@@ -33,11 +33,11 @@ inputs:
   clamav_multiscan:
     description: "{Boolean} Use ClamAV multiscan mode."
     required: false
-    default: "true"
+    default: "True"
   clamav_reloadpersession:
     description: "{Boolean} Reload ClamAV per session."
     required: false
-    default: "false"
+    default: "False"
   clamav_resultsfilter:
     description: "{String[]} ClamAV results filter."
     required: false
@@ -45,7 +45,7 @@ inputs:
   clamav_subcursive:
     description: "{Boolean} Scan directories subcursively."
     required: false
-    default: "true"
+    default: "True"
   clamav_unofficialsignatures:
     description: "{String[]} Use ClamAV unofficial signatures."
     required: false
@@ -54,7 +54,7 @@ inputs:
   yara_enable:
     description: "{Boolean} Use YARA."
     required: false
-    default: "false"
+    default: "False"
   yara_filesfilter:
     description: "{String[]} YARA files filter."
     required: false
@@ -70,7 +70,7 @@ inputs:
   yara_toolwarning:
     description: "{Boolean} Enable YARA tool warning."
     required: false
-    default: "false"
+    default: "False"
 runs:
   using: "docker"
   image: "../Dockerfile"

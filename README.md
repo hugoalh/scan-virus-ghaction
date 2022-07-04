@@ -17,11 +17,11 @@
 
 ## 📝 Description
 
-A GitHub Action to scan virus (including malicious files and malware) in the GitHub Action workspace.
+A GitHub Action to scan virus (including malicious file and malware) in the GitHub Action workspace.
 
 ### 🛡 Anti Virus Software
 
-- **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malware, and other malicious threats.
+- **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
   - [Unofficial Signatures List][clamav-unofficial-signatures-list]
 - **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
   - [Rules List][yara-rules-list]
@@ -47,7 +47,7 @@ jobs:
   job_id:
     runs-on: "ubuntu-________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction@<tag/version>"
+      - uses: "hugoalh/scan-virus-ghaction@<Tag/Version>"
 ```
 
 Require Software:
@@ -56,40 +56,46 @@ Require Software:
 
 ### 📥 Input
 
+> **ℹ Notice:** All inputs are optional.
+
 #### `input_listdelimiter`
 
-**\[Optional\]** `<String = ";|\r?\n">` Delimiter when input is support multiple values (i.e.: a list, most common type is `<String[]>`), by regular expression.
+`<RegEx = ";|\r?\n">` Delimiter when input is type of list (i.e.: array).
 
 #### `targets`
 
-**\[Optional\]** `<String[] = "./">` Targets.
+`<Uri[]>` Targets.
 
-- **Local (`"./"`):** Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action.
-- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Each URL assumes as a session.
-  > **⚠ Important:**
-  >
-  > - Each file is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
-  > - Require a clean workspace.
+| **Type** | **Description** |
+|:-:|:--|
+| Local (Default) | Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action. |
+| Network | Fetch files from network to workspace, by HTTP/HTTPS URI, separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
 
-When this input is network target, will ignore inputs:
+When this input is defined (i.e.: network type), will ignore inputs:
 
 - [`clamav_filesfilter`](#clamav_filesfilter)
+- [`git_integrate`](#git_integrate)
+- [`git_reverse`](#git_reverse)
 - [`yara_filesfilter`](#yara_filesfilter)
 
-#### `git_deep`
+#### `git_integrate`
 
-**\[Optional\]** `<Boolean = false>` Scan deeper for Git repository by each commits; Each commit assumes as a session. When this input is `false`, will ignore input [`git_reverse`](#git_reverse).
+`<Boolean = False>` Integrate with Git to scan every commits; Require workspace is a Git repository.
+
+When this input is `False`, will ignore input [`git_reverse`](#git_reverse).
 
 #### `git_reverse`
 
-**\[Optional\]** `<Boolean = false>` Reverse sort order (for sessions' order) of Git commits.
+`<Boolean = False>` Reverse scan order of Git commits.
 
-- **`false`:** From oldest commit to newest commit.
-- **`true`:** From newest commit to oldest commit.
+- **`False`:** From oldest commit to newest commit.
+- **`True`:** From newest commit to oldest commit.
 
 #### `clamav_enable`
 
-**\[Optional\]** `<Boolean = true>` Use ClamAV. When this input is `false`, will ignore inputs:
+`<Boolean = True>` Use ClamAV.
+
+When this input is `False`, will ignore inputs:
 
 - [`clamav_daemon`](#clamav_daemon)
 - [`clamav_filesfilter`](#clamav_filesfilter)
@@ -101,7 +107,9 @@ When this input is network target, will ignore inputs:
 
 #### `clamav_daemon`
 
-**\[Optional\]** `<Boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
+`<Boolean = True>` Use ClamAV daemon.
+
+When this input is `False`, will ignore inputs:
 
 - [`clamav_multiscan`](#clamav_multiscan)
 - [`clamav_reloadpersession`](#clamav_reloadpersession)
@@ -109,7 +117,7 @@ When this input is network target, will ignore inputs:
 > **⚠ Important:**
 >
 > - It is recommended to keep this as enable to have a shorter scanning duration.
-> - When this input is `false`, will have limitations to protect the system against DoS attacks:
+> - When this input is `False`, will have limitations to protect the system against DoS attacks:
 >   - Extract and scan at most 25 MB from each archive.
 >   - Extract and scan at most 100 MB from each scanned file.
 >   - Extract at most 10000 files from each scanned file (when this is an archive, a document or another kind of container).
@@ -118,43 +126,45 @@ When this input is network target, will ignore inputs:
 
 #### `clamav_filesfilter`
 
-**\[Optional\]** `<String[] = "">` ClamAV files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<String[]>` ClamAV files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 > **⚠ Important:** If this acts weird, try to disable input [`clamav_subcursive`](#clamav_subcursive) first before report the issues!
 
 #### `clamav_multiscan`
 
-**\[Optional\]** `<Boolean = true>` Use ClamAV multiscan mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+`<Boolean = True>` Use ClamAV multiscan mode; ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
 
 > **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `clamav_reloadpersession`
 
-**\[Optional\]** `<Boolean = false>` Reload ClamAV per session.
+`<Boolean = False>` Reload ClamAV per session.
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
 #### `clamav_resultsfilter`
 
-**\[Optional\]** `<String[] = "">` ClamAV results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<String[]>` ClamAV results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 > **⚠ Important:** It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
 
 #### `clamav_subcursive`
 
-**\[Optional\]** `<Boolean = true>` Scan directories subcursively.
+`<Boolean = True>` Scan directories subcursively.
 
 > **⚠ Important:** If input [`clamav_filesfilter`](#clamav_filesfilter) acts weird, try to disable this first before report the issues!
 
 #### `clamav_unofficialsignatures`
 
-**\[Optional\]** `<String[] = "-^.+$">` Use ClamAV unofficial signatures, by [filter syntax](#Filter-Syntax) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<String[] = "-^.+$">` Use ClamAV unofficial signatures, by [filter syntax](#Filter-Syntax) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial signatures are not in use.
 
 > **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives than official signatures in most cases.
 
 #### `yara_enable`
 
-**\[Optional\]** `<Boolean = false>` Use YARA. When this input is `false`, will ignore inputs:
+`<Boolean = False>` Use YARA.
+
+When this input is `False`, will ignore inputs:
 
 - [`yara_filesfilter`](#yara_filesfilter)
 - [`yara_resultsfilter`](#yara_resultsfilter)
@@ -165,19 +175,19 @@ When this input is network target, will ignore inputs:
 
 #### `yara_filesfilter`
 
-**\[Optional\]** `<String[] = "">` YARA files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<String[]>` YARA files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 #### `yara_resultsfilter`
 
-**\[Optional\]** `<String[] = "">` YARA results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<String[]>` YARA results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 #### `yara_rules`
 
-**\[Optional\]** `<String[] = "">` Use YARA rules, by [filter syntax](#Filter-Syntax) and [YARA rules list][yara-rules-list], separate each rule with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<String[]>` Use YARA rules, by [filter syntax](#Filter-Syntax) and [YARA rules list][yara-rules-list], separate each rule with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 #### `yara_toolwarning`
 
-**\[Optional\]** `<Boolean = false>` Enable YARA tool warning.
+`<Boolean = False>` Enable YARA tool warning.
 
 > **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while client does not need these informations in most cases.
 
@@ -220,12 +230,14 @@ For example, to create filters which exclude ClamAV signature `JavaScript.Test.S
 -^github\/octokit\/foo-bar>
 
 # Directories/Files only (recommended to use inputs `clamav_filesfilter` and `yara_filesfilter` for better efficiency)
--^.+?>hyper\.mjs> #OR
-->hyper\.mjs>.+$ #OR
+# (Either)
+-^.+?>hyper\.mjs>
+->hyper\.mjs>.+$
 
 # Sessions only
--^.+?>.+?>Current$ #OR
-->Current$ #OR
+# (Either)
+-^.+?>.+?>Current$
+->Current$
 
 # Rules/Signatures + Directories/Files
 -^JavaScript\.Test\.Something>hyper\.mjs>
