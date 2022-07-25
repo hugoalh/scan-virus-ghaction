@@ -1,65 +1,69 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-[string]$CompatibilityName = '_compatibility.txt'
-[string]$TimestampName = '_timestamp.txt'
-[string]$LocalAssetsOutdatedMessage = 'This is fine, but local assets maybe outdated.'
-[string]$LocalRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
-[string]$LocalCompatibilityFullName = Join-Path -Path $LocalRoot -ChildPath $CompatibilityName
-[string]$LocalTimestampFullName = Join-Path -Path $LocalRoot -ChildPath $TimestampName
-[string]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
-[string]$RemotePackageExtractRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote'
-[string]$RemotePackageOutBranchRoot = Join-Path -Path $RemotePackageExtractRoot -ChildPath 'scan-virus-ghaction-assets-main'
-[string]$RemotePackageToLocalFileFullName = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote.tar.gz'
-[string]$RemotePackageFullName = "$RemoteRoot/archive/refs/heads/main.tar.gz"
-[string]$RemoteCompatibilityFullName = "$RemoteRoot/raw/main/$CompatibilityName"
-[string]$RemoteTimestampFullName = "$RemoteRoot/raw/main/$TimestampName"
-function Update-GitHubActionScanVirusAssets {
-	[CmdletBinding()][OutputType([void])]
-	param ()
-	try {
-		[uint]$LocalCompatibility = [uint]::Parse((Get-Content -LiteralPath $LocalCompatibilityFullName -Raw -Encoding 'UTF8NoBOM'))
-	} catch {
-		return Write-GitHubActionsNotice -Message "Unable to get local assets' compatibility in order to update local assets! $LocalAssetsOutdatedMessage"
+[String]$MetadataName = 'metadata.json'
+[String]$LocalAssetsOutdatedMessage = 'This is fine, but local assets maybe outdated.'
+[String]$LocalRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
+[String]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
+[String]$RemotePackageFullName = "$RemoteRoot/archive/refs/heads/main.tar.gz"
+[String]$RemotePackageExtractRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote'
+[String]$RemotePackageOutBranchRoot = Join-Path -Path $RemotePackageExtractRoot -ChildPath 'scan-virus-ghaction-assets-main'
+[String]$RemotePackageToLocalFileFullName = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote.tar.gz'
+Function Update-GitHubActionScanVirusAssets {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Try {
+		[PSCustomObject]$LocalMetadata = (Get-Content -LiteralPath (Join-Path -Path $LocalRoot -ChildPath $MetadataName) -Raw -Encoding 'UTF8NoBOM' | ConvertFrom-Json -Depth 100)
+	} Catch {
+		Write-GitHubActionsFail -Message "Unable to get local assets' metadata in order to update local assets!"
+		Return
 	}
-	try {
-		[uint]$RemoteCompatibility = [uint]::Parse((Invoke-WebRequest -Uri $RemoteCompatibilityFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get'))
-	} catch {
-		return Write-GitHubActionsNotice -Message "Unable to get remote assets' compatibility in order to update local assets! $LocalAssetsOutdatedMessage"
+	Try {
+		[PSCustomObject]$RemoteMetadata = (Invoke-WebRequest -Uri "$RemoteRoot/raw/main/$MetadataName" -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' | ConvertFrom-Json -Depth 100)
+	} Catch {
+		Write-GitHubActionsNotice -Message "Unable to get remote assets' metadata in order to update local assets! $LocalAssetsOutdatedMessage"
+		Return
 	}
-	if ($RemoteCompatibility -ne $LocalCompatibility) {
-		return Write-GitHubActionsNotice -Message "Unable to update local assets without issues due to local assets' compatibility and remote assets' compatibility are not match! $LocalAssetsOutdatedMessage"
-	}
-	try {
-		[datetime]$LocalTimestamp = Get-Date -Date (Get-Content -LiteralPath $LocalTimestampFullName -Raw -Encoding 'UTF8NoBOM') -AsUTC
-	} catch {
-		return Write-GitHubActionsNotice -Message "Unable to get local assets' timestamp in order to update local assets! $LocalAssetsOutdatedMessage"
-	}
-	try {
-		[datetime]$RemoteTimestamp = Get-Date -Date (Invoke-WebRequest -Uri $RemoteTimestampFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get') -AsUTC
-	} catch {
-		return Write-GitHubActionsNotice -Message "Unable to get remote assets' timestamp in order to update local assets! $LocalAssetsOutdatedMessage"
-	}
-	if ($RemoteTimestamp -gt $LocalTimestamp) {
-		try {
-			Invoke-WebRequest -Uri $RemotePackageFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' -OutFile $RemotePackageToLocalFileFullName
-		} catch {
-			return Write-GitHubActionsNotice -Message "Unable to download remote assets package! $LocalAssetsOutdatedMessage"
+	Try {
+		If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
+			Throw
 		}
-		try {
-			New-Item -Path $RemotePackageExtractRoot -ItemType 'Directory' -Force -Confirm:$false | Out-Null
-			Invoke-Expression -Command "tar --extract --file=`"$RemotePackageToLocalFileFullName`" --directory=`"$RemotePackageExtractRoot`" --gzip" | Out-Null
-			Remove-Item -LiteralPath $RemotePackageToLocalFileFullName -Force -Confirm:$false | Out-Null
-		} catch {
-			return Write-GitHubActionsNotice -Message "Unable to extract remote assets package! $LocalAssetsOutdatedMessage"
-		}
-		try {
-			Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$false | Out-Null
-			Move-Item -LiteralPath $RemotePackageOutBranchRoot -Destination $LocalRoot -Confirm:$false | Out-Null
-			Remove-Item -LiteralPath $RemotePackageExtractRoot -Recurse -Force -Confirm:$false | Out-Null
-		} catch {
-			return Write-GitHubActionsFail -Message 'Unable to update local assets due to I/O issues!'
-		}
-		return Write-Host -Object 'Local assets is now up to date.'
+	} Catch {
+		Write-GitHubActionsNotice -Message "Unable to safely update local assets due to local assets' compatibility and remote assets' compatibility are not match! $LocalAssetsOutdatedMessage"
+		Return
 	}
-	return Write-Host -Object 'Local assets is already up to date.'
+	Try {
+		If ((Get-Date -Date $RemoteMetadata.Timestamp -AsUTC) -igt (Get-Date -Date $LocalMetadata.Timestamp -AsUTC)) {
+			Try {
+				Invoke-WebRequest -Uri $RemotePackageFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' -OutFile $RemotePackageToLocalFileFullName
+			} Catch {
+				Write-GitHubActionsNotice -Message "Unable to download remote assets package! $LocalAssetsOutdatedMessage"
+				Return
+			}
+			Try {
+				New-Item -Path $RemotePackageExtractRoot -ItemType 'Directory' -Force -Confirm:$False | Out-Null
+				Invoke-Expression -Command "tar --extract --file=`"$RemotePackageToLocalFileFullName`" --directory=`"$RemotePackageExtractRoot`" --gzip" | Out-Null
+				Remove-Item -LiteralPath $RemotePackageToLocalFileFullName -Force -Confirm:$False
+			} Catch {
+				Write-GitHubActionsNotice -Message "Unable to extract remote assets package! $LocalAssetsOutdatedMessage"
+				Return
+			}
+			Try {
+				Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$False
+				Move-Item -LiteralPath $RemotePackageOutBranchRoot -Destination $LocalRoot -Confirm:$False
+				Remove-Item -LiteralPath $RemotePackageExtractRoot -Recurse -Force -Confirm:$False
+			} Catch {
+				Write-GitHubActionsFail -Message 'Unable to update local assets due to file system issues!'
+				Return
+			}
+			Write-Host -Object 'Local assets is now up to date.'
+		} Else {
+			Write-Host -Object 'Local assets is already up to date.'
+		}
+	} Catch {
+		Write-GitHubActionsNotice -Message "Unable to get local assets' timestamp and/or remote assets' timestamp! $LocalAssetsOutdatedMessage"
+		Return
+	}
 }
-Export-ModuleMember -Function 'Update-GitHubActionScanVirusAssets'
+Export-ModuleMember -Function @(
+	'Update-GitHubActionScanVirusAssets'
+)

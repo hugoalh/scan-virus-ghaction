@@ -5,17 +5,23 @@ inputs:
   input_listdelimiter:
     description: "{RegEx} Delimiter when input is type of list (i.e.: array)."
     required: false
-    default: ";|\\r?\\n"
+    default: ",|;|\\r?\\n"
+  input_tableparser:
+    description: "{String} Paser to use when input is type of table."
+    required: false
+    default: "yaml"
   targets:
     description: "{Uri[]} Targets."
     required: false
-    default: ""
   git_integrate:
     description: "{Boolean} Integrate with Git to scan every commits; Require workspace is a Git repository."
     required: false
     default: "False"
+  git_ignores:
+    description: "{Table<{String:RegEx}>} Git ignores (for commits)."
+    required: false
   git_reverse:
-    description: "{Boolean} Reverse scan order of Git commits."
+    description: "{Boolean} Reverse scan order of the Git commits."
     required: false
     default: "False"
   clamav_enable:
@@ -26,10 +32,9 @@ inputs:
     description: "{Boolean} Use ClamAV daemon."
     required: false
     default: "True"
-  clamav_filesfilter:
-    description: "{String[]} ClamAV files filter."
+  clamav_ignores:
+    description: "{Table<{String:RegEx}>} ClamAV ignores."
     required: false
-    default: ""
   clamav_multiscan:
     description: "{Boolean} Use ClamAV multiscan mode."
     required: false
@@ -38,42 +43,30 @@ inputs:
     description: "{Boolean} Reload ClamAV per session."
     required: false
     default: "False"
-  clamav_resultsfilter:
-    description: "{String[]} ClamAV results filter."
-    required: false
-    default: ""
   clamav_subcursive:
     description: "{Boolean} Scan directories subcursively."
     required: false
     default: "True"
   clamav_unofficialsignatures:
-    description: "{String[]} Use ClamAV unofficial signatures."
+    description: "{RegEx[]} Use ClamAV unofficial signatures."
     required: false
-    default: |
-      -^.+$
   yara_enable:
     description: "{Boolean} Use YARA."
     required: false
     default: "False"
-  yara_filesfilter:
-    description: "{String[]} YARA files filter."
+  yara_ignores:
+    description: "{Table<{String:RegEx}>} YARA ignores."
     required: false
-    default: ""
-  yara_resultsfilter:
-    description: "{String[]} YARA results filter."
-    required: false
-    default: ""
   yara_rules:
-    description: "{String[]} Use YARA rules."
+    description: "{RegEx[]} Use YARA rules."
     required: false
-    default: ""
   yara_toolwarning:
     description: "{Boolean} Enable YARA tool warning."
     required: false
     default: "False"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.7.0"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.10.0"
 branding:
   icon: "shield"
   color: "red"

@@ -1,178 +1,147 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'github-actions-step-summary.psm1') -Scope 'Local'
-function Format-InputList {
-	[CmdletBinding()][OutputType([string[]])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][AllowEmptyString()][string]$InputObject,
-		[Parameter(Mandatory = $true, Position = 1)][string]$Delimiter
+Function Format-InputList {
+	[CmdletBinding()]
+	[OutputType([String[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][String]$InputObject,
+		[Parameter(Mandatory = $True, Position = 1)][String]$Delimiter
 	)
-	return [string[]]($InputObject -split $Delimiter) | ForEach-Object -Process {
-		return $_.Trim()
+	Return [String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
+		Return $_.Trim()
 	} | Where-Object -FilterScript {
-		return ($_.Length -gt 0)
+		Return ($_.Length -igt 0)
 	} | Sort-Object -Unique -CaseSensitive
 }
-function Get-Input {
-	[CmdletBinding()][OutputType([string])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Name,
-		[switch]$AllowEmptyValue,
-		[switch]$BooleanType
+Function Get-Input {
+	[CmdletBinding()]
+	[OutputType([String])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
+		[Switch]$AllowEmptyValue,
+		[Switch]$BooleanType
 	)
 	$Result = Get-GitHubActionsInput -Name $Name -Trim
-	if ($AllowEmptyValue) {
-		if ($null -eq $Result) {
+	If ($AllowEmptyValue) {
+		If ($Null -ieq $Result) {
 			$Result = ''
 		}
-		return $Result
+		Return $Result
 	}
-	if (
-		$null -eq $Result -or
-		$Result.Length -eq 0
+	If (
+		$Null -ieq $Result -or
+		$Result.Length -ieq 0
 	) {
-		return Write-FailTee -Message "Input ``$Name`` is not defined!"
+		Return Write-FailTee -Message "Input ``$Name`` is not defined!"
 	}
-	if ($BooleanType -and $Result -inotin @([bool]::FalseString, [bool]::TrueString)) {
-		return Write-FailTee -Message "Input ``$Name`` must be type of boolean!"
+	If ($BooleanType -and $Result -inotin @([Boolean]::FalseString, [Boolean]::TrueString)) {
+		Return Write-FailTee -Message "Input ``$Name`` must be type of boolean!"
 	}
-	return $Result
+	Return $Result
 }
-function Get-InputFilter {
-	[CmdletBinding()][OutputType([hashtable])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Name,
-		[Parameter(Mandatory = $true, Position = 1)][string]$Delimiter
+Function Get-InputFilter {
+	[CmdletBinding()]
+	[OutputType([Hashtable])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
+		[Parameter(Mandatory = $True, Position = 1)][String]$Delimiter
 	)
-	[string[]]$Result = Get-InputList -Name $Name -Delimiter $Delimiter
-	[string[]]$FilterInvalid = @()
-	[hashtable]$OutputObject = @{
+	[String[]]$Result = Get-InputList -Name $Name -Delimiter $Delimiter
+	[String[]]$FilterInvalid = @()
+	[Hashtable]$OutputObject = @{
 		Exclude = @()
 		Include = @()
 	}
-	$Result | ForEach-Object -Process {
-		if ($_.StartsWith('-')) {
-			$OutputObject.Exclude += $_.Substring(1)
-		} elseif ($_.StartsWith('+')) {
-			$OutputObject.Include += $_.Substring(1)
-		} else {
-			$FilterInvalid += $_
+	ForEach ($Item In $Result) {
+		If ($Item.StartsWith('-')) {
+			$OutputObject.Exclude += $Item.Substring(1)
+		} ElseIf ($Item.StartsWith('+')) {
+			$OutputObject.Include += $Item.Substring(1)
+		} Else {
+			$FilterInvalid += $Item
 		}
 	}
-	if ($FilterInvalid.Count -gt 0) {
+	If ($FilterInvalid.Count -gt 0) {
 		Write-GitHubActionsWarning -Message "Input ``$Name`` contains $($FilterInvalid.Count) invalid filter$(($FilterInvalid.Count -eq 1) ? '' : 's'): ``$($FilterInvalid -join '`, `')``"
 	}
-	return $OutputObject
+	Return $OutputObject
 }
-function Get-InputList {
-	[CmdletBinding()][OutputType([string[]])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Name,
-		[Parameter(Mandatory = $true, Position = 1)][string]$Delimiter
+Function Get-InputList {
+	[CmdletBinding()]
+	[OutputType([String[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
+		[Parameter(Mandatory = $True, Position = 1)][String]$Delimiter
 	)
-	return Format-InputList -InputObject (Get-Input -Name $Name -AllowEmptyValue) -Delimiter $Delimiter
+	Return Format-InputList -InputObject (Get-Input -Name $Name -AllowEmptyValue) -Delimiter $Delimiter
 }
-function Optimize-PSFormatDisplay {
-	[CmdletBinding()][OutputType([string])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+Function Optimize-PSFormatDisplay {
+	[CmdletBinding()]
+	[OutputType([String])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$InputObject
 	)
-	return $InputObject -replace '^(?:\r?\n)+|(?:\r?\n)+$', ''
+	Return ($InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '')
 }
-function Test-InputFilter {
-	[CmdletBinding()][OutputType([bool])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$Target,
-		[string[]]$Exclude = @(),
-		[string[]]$Include = @(),
-		[switch]$IncludeUseLogicAnd
+Function Test-InputFilter {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Target,
+		[String[]]$Exclude = @(),
+		[String[]]$Include = @(),
+		[Switch]$IncludeUseLogicAnd
 	)
-	if ($Exclude.Count -eq 0 -and $Include.Count -eq 0) {
-		return $true
+	If ($Exclude.Count -ieq 0 -and $Include.Count -ieq 0) {
+		Return $True
 	}
-	[uint]$IsExclude = 0
-	[uint]$IsInclude = 0
-	foreach ($Item in $Exclude) {
-		if ($Target -match $Item) {
+	[UInt32]$IsExclude = 0
+	[UInt32]$IsInclude = 0
+	ForEach ($Item In $Exclude) {
+		If ($Target -imatch $Item) {
 			$IsExclude += 1
 		}
 	}
-	foreach ($Item in $Include) {
-		if ($Target -match $Item) {
+	ForEach ($Item In $Include) {
+		If ($Target -imatch $Item) {
 			$IsInclude += 1
 		}
 	}
-	if ($Exclude.Count -eq 0) {
-		return ($IncludeUseLogicAnd ? ($Include.Count -eq $IsInclude) : ($IsInclude -gt 0))
+	If ($Exclude.Count -ieq 0) {
+		Return ($IncludeUseLogicAnd ? ($Include.Count -ieq $IsInclude) : ($IsInclude -igt 0))
 	}
-	if ($Include.Count -eq 0) {
-		return ($IsExclude -eq 0)
+	If ($Include.Count -ieq 0) {
+		Return ($IsExclude -ieq 0)
 	}
-	return ($IsInclude -gt 0)
+	Return ($IsInclude -igt 0)
 }
-function Test-StringIsUrl {
-	[CmdletBinding()][OutputType([bool])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
+Function Test-StringIsUri {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][Uri]$InputObject
 	)
-	try {
-		$URIObject = $InputObject -as [System.URI]
-		return ($null -ne $URIObject.AbsoluteURI -and $InputObject -match '^https?:\/\/')
-	} catch {
-		return $false
+	Return ($Null -ine $InputObject.AbsoluteURI -and $InputObject.Scheme -imatch '^https?$')
+}
+Function Write-NameValue {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Key')][String]$Name,
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyString()][String]$Value
+	)
+	Write-Host -Object "$($PSStyle.Bold)$($Name):$($PSStyle.Reset) $Value"
+}
+Function Write-OptimizePSFormatDisplay {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+	)
+	[String]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
+	If ($OutputObject.Length -igt 0) {
+		Write-Host -Object $OutputObject
 	}
-}
-function Write-ErrorTee {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
-	)
-	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **❌ Error:** $Message"
-	return Write-GitHubActionsError -Message $Message
-}
-function Write-FailTee {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
-	)
-	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **🛑 Fail:** $Message"
-	Set-StepSummaryStatus -Message 'Fail (by issue(s))'
-	Optimize-StepSummary
-	return Write-GitHubActionsFail -Message $Message
-}
-function Write-NameValue {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][Alias('Key')][string]$Name,
-		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyString()][string]$Value
-	)
-	return Write-Host -Object "$($PSStyle.Bold)$($Name):$($PSStyle.Reset) $Value"
-}
-function Write-NoticeTee {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
-	)
-	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **ℹ Notice:** $Message"
-	return Write-GitHubActionsNotice -Message $Message
-}
-function Write-OptimizePSFormatDisplay {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][string]$InputObject
-	)
-	[string]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
-	if ($OutputObject.Length -gt 0) {
-		return Write-Host -Object $OutputObject
-	}
-	return
-}
-function Write-WarningTee {
-	[CmdletBinding()][OutputType([void])]
-	param (
-		[Parameter(Mandatory = $true, Position = 0)][Alias('Content')][string]$Message
-	)
-	Set-StepSummaryAppendPlaceholder -Placeholder 'annotations.item' -Value "- **⚠ Warning:** $Message"
-	return Write-GitHubActionsWarning -Message $Message
 }
 Export-ModuleMember -Function @(
 	'Format-InputList',
@@ -182,10 +151,6 @@ Export-ModuleMember -Function @(
 	'Optimize-PSFormatDisplay',
 	'Test-InputFilter',
 	'Test-StringIsUrl',
-	'Write-ErrorTee',
-	'Write-FailTee',
 	'Write-NameValue',
-	'Write-NoticeTee',
-	'Write-OptimizePSFormatDisplay',
-	'Write-WarningTee'
+	'Write-OptimizePSFormatDisplay'
 )

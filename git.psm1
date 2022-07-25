@@ -1,10 +1,10 @@
-[hashtable]$GitCommitsPropertyToken = @{ Name = 'CommitHash'; Placeholder = '%H' }
-[hashtable[]]$GitCommitsProperties = @(
-	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Type = [datetime] },
+[Hashtable]$GitCommitsPropertyToken = @{ Name = 'CommitHash'; Placeholder = '%H' }
+[Hashtable[]]$GitCommitsProperties = @(
+	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Type = [DateTime] },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
-	@{ Name = 'Body'; Placeholder = '%b'; IsMultipleLine = $true },
-	@{ Name = 'CommitterDate'; Placeholder = '%cI'; Type = [datetime] },
+	@{ Name = 'Body'; Placeholder = '%b'; IsMultipleLine = $True },
+	@{ Name = 'CommitterDate'; Placeholder = '%cI'; Type = [DateTime] },
 	@{ Name = 'CommitterEmail'; Placeholder = '%ce' },
 	@{ Name = 'CommitterName'; Placeholder = '%cn' },
 	@{ Name = 'Encoding'; Placeholder = '%e' },
@@ -14,8 +14,8 @@
 	@{ Name = 'GPGSignatureSigner'; Placeholder = '%GS' },
 	@{ Name = 'GPGSignatureStatus'; Placeholder = '%G?' },
 	@{ Name = 'GPGSignatureTrustLevel'; Placeholder = '%GP' },
-	@{ Name = 'Notes'; Placeholder = '%N'; IsMultipleLine = $true },
-	@{ Name = 'ParentHashes'; Placeholder = '%P'; IsArray = $true },
+	@{ Name = 'Notes'; Placeholder = '%N'; IsMultipleLine = $True },
+	@{ Name = 'ParentHashes'; Placeholder = '%P'; IsArray = $True },
 	@{ Name = 'ReflogIdentityEmail'; Placeholder = '%ge' },
 	@{ Name = 'ReflogIdentityName'; Placeholder = '%gn' },
 	@{ Name = 'ReflogSelector'; Placeholder = '%gD' },
@@ -24,60 +24,49 @@
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )
-[string]$GitExpressionDelimiter = ': '
-[string]$GitExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
-[string]$GitExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
-function Get-GitCommits {
-	[CmdletBinding()][OutputType([pscustomobject[]])]
-	param (
-		[ValidatePattern('^.+$')][string[]]$Filter = @('^.+$')
-	)
-	[hashtable[]]$GitCommits = [string[]](Invoke-Expression -Command ($GitExpressionSingleLine -f $GitCommitsPropertyToken.Placeholder)) | ForEach-Object -Process {
-		return @{ "$($GitCommitsPropertyToken.Name)" = $_ }
+[String]$GitExpressionDelimiter = ': '
+[String]$GitExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
+[String]$GitExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
+Function Get-GitCommits {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject[]])]
+	Param ()
+	[Hashtable[]]$GitCommits = [String[]](Invoke-Expression -Command ($GitExpressionSingleLine -f $GitCommitsPropertyToken.Placeholder)) | ForEach-Object -Process {
+		Return @{ "$($GitCommitsPropertyToken.Name)" = $_ }
 	}
-	foreach ($GitCommitsProperty in $GitCommitsProperties) {
-		[bool]$FilterIsMatch = $false
-		foreach ($Item in $Filter) {
-			if ($GitCommitsProperty -match $Item) {
-				$FilterIsMatch = $true
-				break
+	ForEach ($GitCommitsProperty In $GitCommitsProperties) {
+		If ($GitCommitsProperty.IsMultipleLine) {
+			For ($GitCommitIndex = 0; $GitCommitIndex -ilt $GitCommits.Count; $GitCommitIndex++) {
+				$GitCommits[$GitCommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitExpressionMultipleLine -f @($GitCommits[$GitCommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
 			}
-		}
-		if ($FilterIsMatch -eq $false) {
-			continue
-		}
-		if ($GitCommitsProperty.IsMultipleLine) {
-			for ($GitCommitIndex = 0; $GitCommitIndex -lt $GitCommits.Count; $GitCommitIndex++) {
-				$GitCommits[$GitCommitIndex][$GitCommitsProperty.Name] = [string[]](Invoke-Expression -Command ($GitExpressionMultipleLine -f @($GitCommits[$GitCommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -replace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
-			}
-		} else {
-			[string[]]$Results = Invoke-Expression -Command ($GitExpressionSingleLine -f "$($GitCommitsPropertyToken.Placeholder)$($GitExpressionDelimiter)$($GitCommitsProperty.Placeholder)")
-			if ($GitCommits.Count -ne $Results.Count) {
+		} Else {
+			[String[]]$Results = Invoke-Expression -Command ($GitExpressionSingleLine -f "$($GitCommitsPropertyToken.Placeholder)$($GitExpressionDelimiter)$($GitCommitsProperty.Placeholder)")
+			If ($GitCommits.Count -ine $Results.Count) {
 				Write-Error -Message 'Git database was modified during process!' -Category 'ResourceUnavailable' -ErrorId 'Git.DatabaseModifiedOnRead'
-				return @()
+				Return @()
 			}
-			for ($ResultsIndex = 0; $ResultsIndex -lt $Results.Count; $ResultsIndex++) {
-				[string[]]$ResultRaw = $Results[$ResultsIndex] -split [regex]::Escape($GitExpressionDelimiter)
-				[string]$ResultToken = $ResultRaw[0]
-				[string[]]$ResultContentRaw = $ResultRaw[1..(($ResultRaw.Count -gt 1) ? ($ResultRaw.Count - 1) : 1)]
-				if ($GitCommits[$ResultsIndex][$GitCommitsPropertyToken.Name] -ne $ResultToken) {
+			For ($ResultsIndex = 0; $ResultsIndex -ilt $Results.Count; $ResultsIndex++) {
+				[String[]]$ResultRaw = $Results[$ResultsIndex] -isplit [RegEx]::Escape($GitExpressionDelimiter)
+				[String]$ResultToken = $ResultRaw[0]
+				[String[]]$ResultContent = $ResultRaw[1..(($ResultRaw.Count -igt 1) ? ($ResultRaw.Count - 1) : 1)]
+				If ($GitCommits[$ResultsIndex][$GitCommitsPropertyToken.Name] -ine $ResultToken) {
 					Write-Error -Message 'Git database was modified during process!' -Category 'ResourceUnavailable' -ErrorId 'Git.DatabaseModifiedOnRead'
-					return @()
+					Return @()
 				}
-				$ResultContent = $null
-				if ($GitCommitsProperty.IsArray) {
-					$ResultContent = $ResultContentRaw
-				} elseif ($null -ne $GitCommitsProperty.Type) {
-					$ResultContent = ($ResultContentRaw -join $GitExpressionDelimiter) -as $GitCommitsProperty.Type
-				} else {
-					$ResultContent = $ResultContentRaw -join $GitExpressionDelimiter
+				If ($GitCommitsProperty.IsArray) {
+					$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = $ResultContent
+				} ElseIf ($Null -ine $GitCommitsProperty.Type) {
+					$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = ($ResultContent -join $GitExpressionDelimiter) -as $GitCommitsProperty.Type
+				} Else {
+					$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = $ResultContent -join $GitExpressionDelimiter
 				}
-				$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = $ResultContent
 			}
 		}
 	}
-	return ($GitCommits | ForEach-Object -Process {
-		return [pscustomobject]$_
+	Return ($GitCommits | ForEach-Object -Process {
+		Return [PSCustomObject]$_
 	})
 }
-Export-ModuleMember -Function 'Get-GitCommits'
+Export-ModuleMember -Function @(
+	'Get-GitCommits'
+)

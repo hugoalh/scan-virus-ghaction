@@ -9,7 +9,7 @@
 [![GitHub Forks](https://img.shields.io/github/forks/hugoalh/scan-virus-ghaction?label=Forks&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/network/members)
 ![GitHub Languages](https://img.shields.io/github/languages/count/hugoalh/scan-virus-ghaction?label=Languages&logo=github&logoColor=ffffff&style=flat-square)
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square)](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
-[![License](https://img.shields.io/static/v1?label=License&message=MIT&color=brightgreen&style=flat-square)](./LICENSE.md)
+[![License](https://img.shields.io/static/v1?label=License&message=MIT&style=flat-square)](./LICENSE.md)
 
 | **Release** | **Latest** (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) | **Pre** (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) |
 |:-:|:-:|:-:|
@@ -38,21 +38,21 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.7.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.10.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
 ```yml
 jobs:
   job_id:
-    runs-on: "ubuntu-________"
+    runs-on: "________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction@<Tag/Version>"
+      - uses: "hugoalh/scan-virus-ghaction________@<Tag/Version>"
 ```
 
-Require Software:
-
-- Docker
+|  | **`jobs.job_id.runs-on`** | **`jobs.job_id.steps[*].uses`** | **Require Software** |
+|:-:|:-:|:-:|:-:|
+| **Default** | `ubuntu-________` | *None* | Docker |
 
 ### 📥 Input
 
@@ -60,7 +60,40 @@ Require Software:
 
 #### `input_listdelimiter`
 
-`<RegEx = ";|\r?\n">` Delimiter when input is type of list (i.e.: array).
+`<RegEx = ",|;|\r?\n">` Delimiter when input is type of list (i.e.: array), by regular expression.
+
+#### `input_tableparser`
+
+`<String = "yaml">` Paser to use when input is type of table:
+
+- `csv`
+  ```csv
+  bar,foo
+  5,10
+  10,20
+  ```
+- `csv-kv-singleline`
+  ```
+  bar=5,foo=10;bar=10,foo=20
+  ```
+- `csv-kv-multipleline`
+  ```
+  bar=5,foo=10
+  bar=10,foo=20
+  ```
+- `tsv`
+  ```tsv
+  bar	foo
+  5	10
+  10	20
+  ```
+- `yaml`/`yml`
+  ```yml
+  - bar: 5
+    foo: 10
+  - bar: 10
+    foo: 20
+  ```
 
 #### `targets`
 
@@ -68,25 +101,64 @@ Require Software:
 
 | **Type** | **Description** |
 |:-:|:--|
-| Local (Default) | Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action. |
-| Network | Fetch files from network to workspace, by HTTP/HTTPS URI, separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
+| Local (Default) | Workspace, for prepared files to the workspace in the same job before this action (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)). |
+| Network | Fetch files from network to the workspace, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
 
 When this input is defined (i.e.: network type), will ignore inputs:
 
-- [`clamav_filesfilter`](#clamav_filesfilter)
 - [`git_integrate`](#git_integrate)
+- [`git_ignores`](#git_ignores)
 - [`git_reverse`](#git_reverse)
-- [`yara_filesfilter`](#yara_filesfilter)
 
 #### `git_integrate`
 
 `<Boolean = False>` Integrate with Git to scan every commits; Require workspace is a Git repository.
 
-When this input is `False`, will ignore input [`git_reverse`](#git_reverse).
+When this input is `False`, will ignore inputs:
+
+- [`git_ignores`](#git_ignores)
+- [`git_reverse`](#git_reverse)
+
+#### `git_ignores`
+
+`<Table<{String:RegEx}>>` Git ignores (for commits), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
+
+Git commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties (i.e.: keys) are available (properties which have not listed in here are not supported):
+
+- `AuthorDate` (ISO8601 UTC (end with `Z`))
+- `AuthorEmail`
+- `AuthorName`
+- `Body`
+- `CommitHash`
+- `CommitterDate` (ISO8601 UTC (end with `Z`))
+- `CommitterEmail`
+- `CommitterName`
+- `Encoding`
+- `GPGSignatureKey`
+- `GPGSignatureKeyFingerprint`
+- `GPGSignaturePrimaryKeyFingerprint`
+- `GPGSignatureSigner`
+- `GPGSignatureStatus`
+- `GPGSignatureTrustLevel`
+- `Notes`
+- `ReflogIdentityEmail`
+- `ReflogIdentityName`
+- `ReflogSelector`
+- `ReflogSubject`
+- `ShortenedReflogSelector`
+- `Subject`
+- `TreeHash`
+
+Example:
+
+```yml
+- AuthorName: ^octokit$
+  CommitterName: ^octokit$
+```
 
 #### `git_reverse`
 
-`<Boolean = False>` Reverse scan order of Git commits.
+`<Boolean = False>` Reverse scan order of the Git commits.
 
 - **`False`:** From oldest commit to newest commit.
 - **`True`:** From newest commit to oldest commit.
@@ -98,10 +170,9 @@ When this input is `False`, will ignore input [`git_reverse`](#git_reverse).
 When this input is `False`, will ignore inputs:
 
 - [`clamav_daemon`](#clamav_daemon)
-- [`clamav_filesfilter`](#clamav_filesfilter)
+- [`clamav_ignores`](#clamav_ignores)
 - [`clamav_multiscan`](#clamav_multiscan)
 - [`clamav_reloadpersession`](#clamav_reloadpersession)
-- [`clamav_resultsfilter`](#clamav_resultsfilter)
 - [`clamav_subcursive`](#clamav_subcursive)
 - [`clamav_unofficialsignatures`](#clamav_unofficialsignatures)
 
@@ -124,11 +195,27 @@ When this input is `False`, will ignore inputs:
 >   - Maximum 15 depth directories are scanned.
 >   - Maximum 16 archive recursion levels.
 
-#### `clamav_filesfilter`
+#### `clamav_ignores`
 
-`<String[]>` ClamAV files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<Table<{String:RegEx}>>` ClamAV ignores (for files, sessions, and/or signatures), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
 
-> **⚠ Important:** If this acts weird, try to disable input [`clamav_subcursive`](#clamav_subcursive) first before report the issues!
+Available properties (i.e.: keys):
+
+- `Path` (Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension))
+- `Session` (`Current`, Git commit hash, or HTTP/HTTPS URI)
+- `Signature` (Platform`.`Category`.`Name`-`SignatureID`-`Revision)
+
+Example:
+
+```yml
+- Path: ^node_modules
+```
+
+> **⚠ Important:**
+>
+> - If this acts weird, try to disable input [`clamav_subcursive`](#clamav_subcursive) first before report the issues!
+> - It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
+> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 
 #### `clamav_multiscan`
 
@@ -142,21 +229,15 @@ When this input is `False`, will ignore inputs:
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
-#### `clamav_resultsfilter`
-
-`<String[]>` ClamAV results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
-
-> **⚠ Important:** It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
-
 #### `clamav_subcursive`
 
 `<Boolean = True>` Scan directories subcursively.
 
-> **⚠ Important:** If input [`clamav_filesfilter`](#clamav_filesfilter) acts weird, try to disable this first before report the issues!
+> **⚠ Important:** If input [`clamav_ignores`](#clamav_ignores) acts weird, try to disable this first before report the issues!
 
 #### `clamav_unofficialsignatures`
 
-`<String[] = "-^.+$">` Use ClamAV unofficial signatures, by [filter syntax](#Filter-Syntax) and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial signatures are not in use.
+`<RegEx[]>` Use ClamAV unofficial signatures, by regular expression and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial signatures are not in use.
 
 > **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives than official signatures in most cases.
 
@@ -166,91 +247,37 @@ When this input is `False`, will ignore inputs:
 
 When this input is `False`, will ignore inputs:
 
-- [`yara_filesfilter`](#yara_filesfilter)
-- [`yara_resultsfilter`](#yara_resultsfilter)
+- [`yara_ignores`](#yara_ignores)
 - [`yara_rules`](#yara_rules)
 - [`yara_toolwarning`](#yara_toolwarning)
 
 > **⚠ Important:** It is not recommended to use this due to YARA rules can have many false positives in most cases.
 
-#### `yara_filesfilter`
+#### `yara_ignores`
 
-`<String[]>` YARA files filter, by [filter syntax](#Filter-Syntax), separate each target with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<Table<{String:RegEx}>>` YARA ignores (for files, rules, and/or sessions), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
 
-#### `yara_resultsfilter`
+Available properties (i.e.: keys):
 
-`<String[]>` YARA results filter, by [filter syntax](#Filter-Syntax), separate each condition with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+- `Path` (Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension))
+- `Rule` (Index`/`RuleName)
+- `Session` (`Current`, Git commit hash, or HTTP/HTTPS URI)
+
+Example:
+
+```yml
+- Path: ^node_modules
+```
 
 #### `yara_rules`
 
-`<String[]>` Use YARA rules, by [filter syntax](#Filter-Syntax) and [YARA rules list][yara-rules-list], separate each rule with [input list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+`<RegEx[]>` Use YARA rules, by regular expression and [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the rules are not in use.
 
 #### `yara_toolwarning`
 
 `<Boolean = False>` Enable YARA tool warning.
 
 > **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while client does not need these informations in most cases.
-
-#### Filter Syntax
-
-> **⚠ Important:** Filter syntax is modified for this action, and maybe different to others.
-
-Filter syntax is based on Glob and [PowerShell regular expressions](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions) with additional modifications, behaviour similar to Glob pattern, include filter will have higher priority than exclude filter.
-
-To create an exclude filter, use hyphen/minus (`-`) as prefix; To create an include filter, use add/plus (`+`) as prefix; Filters with incorrect prefix or missing prefix are invalid. For example, to create filters which exclude any items end with `o` but need to include `foo`:
-
-```
--o$
-+^foo$
-```
-
-Different sort orders will not cause differences, so this is also the same:
-
-```
-+^foo$
--o$
-```
-
-When defining the regular expressions, forward slash (`/`) does not need at the start and end of the regular expressions; Also it is important to note that the target is considered valid if the regular expression matches anywhere within the target. For example, the regular expression `p` will match any target with a "p" in it, such as "apple" not just a target that is simply "p". Therefore, it is usually less confusing, as a matter of course, to surround the regular expression in `^...$` form (e.g.: `^p$`), unless there is a good reason not to do so.
-
-For inputs [`clamav_resultsfilter`](#clamav_resultsfilter) and [`yara_resultsfilter`](#yara_resultsfilter), these inputs use additional syntax to help for filter results by directories/files, rules/signatures, and sessions.
-
-| **Full Pattern:** | **Rules/Signatures** | `>` | **Directories/Files** | `>` | **Sessions** |
-|--:|:-:|:-:|:-:|:-:|:-:|
-| **[`clamav_resultsfilter`](#clamav_resultsfilter)** | Platform`.`Category`.`Name`-`SignatureID`-`Revision\* |  | Path`/`To`/`File`.`Extension |  | `Current` ***or*** Git Commit Hash |
-| **[`yara_resultsfilter`](#yara_resultsfilter)** | IndexName`/`RuleName |  | Path`/`To`/`File`.`Extension |  | `Current` ***or*** Git Commit Hash |
-
-**\*:** ClamAV unofficial signatures maybe not follow this recommended signatures name pattern.
-
-For example, to create filters which exclude ClamAV signature `JavaScript.Test.Something`, YARA index name is `github/octokit` and rule name is `foo-bar`, file is `hyper.mjs`, and session is `Current`:
-
-```yml
-# Rules/Signatures only
--^JavaScript\.Test\.Something>
--^github\/octokit\/foo-bar>
-
-# Directories/Files only (recommended to use inputs `clamav_filesfilter` and `yara_filesfilter` for better efficiency)
-# (Either)
--^.+?>hyper\.mjs>
-->hyper\.mjs>.+$
-
-# Sessions only
-# (Either)
--^.+?>.+?>Current$
-->Current$
-
-# Rules/Signatures + Directories/Files
--^JavaScript\.Test\.Something>hyper\.mjs>
--^github\/octokit\/foo-bar>hyper\.mjs>
-
-# Rules/Signatures + Sessions
--^JavaScript\.Test\.Something>.+?>Current$
--^github\/octokit\/foo-bar>.+?>Current$
-
-# Rules/Signatures + Directories/Files + Sessions
--^JavaScript\.Test\.Something>hyper\.mjs>Current$
--^github\/octokit\/foo-bar>hyper\.mjs>Current$
-```
 
 ### 📤 Output
 
@@ -269,7 +296,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.7.0"
+        uses: "hugoalh/scan-virus-ghaction@v0.10.0"
 ```
 
 ### Guide
@@ -278,6 +305,5 @@ jobs:
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
 
-[clamav-signatures-ignore-presets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-signatures-ignore-presets/index.tsv
 [clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-unofficial-signatures/index.tsv
 [yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/yara-rules/index.tsv
