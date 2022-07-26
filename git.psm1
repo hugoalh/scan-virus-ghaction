@@ -1,9 +1,9 @@
-[Hashtable]$GitCommitsPropertyToken = @{ Name = 'CommitHash'; Placeholder = '%H' }
-[Hashtable[]]$GitCommitsProperties = @(
+[Hashtable[]]$CommitsProperties = @(
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Type = [DateTime] },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
 	@{ Name = 'Body'; Placeholder = '%b'; IsMultipleLine = $True },
+	@{ Name = 'CommitHash'; Placeholder = '%H'; AsIndex = $True },
 	@{ Name = 'CommitterDate'; Placeholder = '%cI'; Type = [DateTime] },
 	@{ Name = 'CommitterEmail'; Placeholder = '%ce' },
 	@{ Name = 'CommitterName'; Placeholder = '%cn' },
@@ -24,49 +24,62 @@
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )
-[String]$GitExpressionDelimiter = ': '
-[String]$GitExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
-[String]$GitExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
-Function Get-GitCommits {
+[String]$ExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
+[String]$ExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
+Function Get-GitCommitsInformation {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param ()
-	[Hashtable[]]$GitCommits = [String[]](Invoke-Expression -Command ($GitExpressionSingleLine -f $GitCommitsPropertyToken.Placeholder)) | ForEach-Object -Process {
-		Return @{ "$($GitCommitsPropertyToken.Name)" = $_ }
+	[String[]]$DatabaseFilesFullNames = (Get-ChildItem -LiteralPath (Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath '.git') -Recurse -Force -File | Select-Object -ExpandProperty 'FullName')
+	Try {
+		[Object[]]$DatabaseFilesLocks = ($DatabaseFilesFullNames | ForEach-Object -Process {
+			Return [System.IO.File]::Open($_, 'Open', 'Read', 'Read')
+		})
+	} Catch {
+		Write-Error -Message 'Unable to lock Git database!' -Category 'OperationStopped'
+		Throw
 	}
-	ForEach ($GitCommitsProperty In $GitCommitsProperties) {
-		If ($GitCommitsProperty.IsMultipleLine) {
-			For ($GitCommitIndex = 0; $GitCommitIndex -ilt $GitCommits.Count; $GitCommitIndex++) {
-				$GitCommits[$GitCommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitExpressionMultipleLine -f @($GitCommits[$GitCommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
+	Try {
+		[PSCustomObject]$PropertyToken = ($CommitsProperties | Where-Object -FilterScript {
+			Return ($_.AsIndex -ieq $True)
+		})[0]
+		[Hashtable[]]$OutputObject = [String[]](Invoke-Expression -Command ($ExpressionSingleLine -f $PropertyToken.Placeholder)) | ForEach-Object -Process {
+			Return @{ "$($PropertyToken.Name)" = $_ }
+		}
+		ForEach ($CommitsProperty In $CommitsProperties) {
+			If ($CommitsProperty.Name -ieq $PropertyToken.Name) {
+				Continue
 			}
-		} Else {
-			[String[]]$Results = Invoke-Expression -Command ($GitExpressionSingleLine -f "$($GitCommitsPropertyToken.Placeholder)$($GitExpressionDelimiter)$($GitCommitsProperty.Placeholder)")
-			If ($GitCommits.Count -ine $Results.Count) {
-				Write-Error -Message 'Git database was modified during process!' -Category 'ResourceUnavailable' -ErrorId 'Git.DatabaseModifiedOnRead'
-				Return @()
-			}
-			For ($ResultsIndex = 0; $ResultsIndex -ilt $Results.Count; $ResultsIndex++) {
-				[String[]]$ResultRaw = $Results[$ResultsIndex] -isplit [RegEx]::Escape($GitExpressionDelimiter)
-				[String]$ResultToken = $ResultRaw[0]
-				[String[]]$ResultContent = $ResultRaw[1..(($ResultRaw.Count -igt 1) ? ($ResultRaw.Count - 1) : 1)]
-				If ($GitCommits[$ResultsIndex][$GitCommitsPropertyToken.Name] -ine $ResultToken) {
-					Write-Error -Message 'Git database was modified during process!' -Category 'ResourceUnavailable' -ErrorId 'Git.DatabaseModifiedOnRead'
-					Return @()
+			If ($CommitsProperty.IsMultipleLine) {
+				For ($CommitIndex = 0; $CommitIndex -ilt $OutputObject.Count; $CommitIndex++) {
+					$OutputObject[$CommitIndex][$CommitsProperty.Name] = [String[]](Invoke-Expression -Command ($ExpressionMultipleLine -f @($Result[$CommitIndex][$PropertyToken.Name], $CommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
 				}
-				If ($GitCommitsProperty.IsArray) {
-					$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = $ResultContent
-				} ElseIf ($Null -ine $GitCommitsProperty.Type) {
-					$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = ($ResultContent -join $GitExpressionDelimiter) -as $GitCommitsProperty.Type
-				} Else {
-					$GitCommits[$ResultsIndex][$GitCommitsProperty.Name] = $ResultContent -join $GitExpressionDelimiter
+			} Else {
+				[String[]]$Results = Invoke-Expression -Command ($ExpressionSingleLine -f $CommitsProperty.Placeholder)
+				For ($ResultsIndex = 0; $ResultsIndex -ilt $Results.Count; $ResultsIndex++) {
+					[String]$Result = $Results[$ResultsIndex]
+					If ($CommitsProperty.IsArray) {
+						$OutputObject[$ResultsIndex][$CommitsProperty.Name] = $Result -isplit ' '
+					} ElseIf ($Null -ine $CommitsProperty.Type) {
+						$OutputObject[$ResultsIndex][$CommitsProperty.Name] = $Result -as $CommitsProperty.Type
+					} Else {
+						$OutputObject[$ResultsIndex][$CommitsProperty.Name] = $Result
+					}
 				}
 			}
 		}
+		Return ($OutputObject | ForEach-Object -Process {
+			Return [PSCustomObject]$_
+		})
+	} Catch {
+		Write-Error -Message "Unexpected Git database error! $_" -Category 'OperationStopped'
+		Throw
+	} Finally {
+		$DatabaseFilesLocks | ForEach-Object -Process {
+			$_.Close() | Out-Null
+		}
 	}
-	Return ($GitCommits | ForEach-Object -Process {
-		Return [PSCustomObject]$_
-	})
 }
 Export-ModuleMember -Function @(
-	'Get-GitCommits'
+	'Get-GitCommitsInformation'
 )

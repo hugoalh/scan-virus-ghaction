@@ -5,7 +5,6 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 [String]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
 [String]$RemotePackageFullName = "$RemoteRoot/archive/refs/heads/main.tar.gz"
 [String]$RemotePackageExtractRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote'
-[String]$RemotePackageOutBranchRoot = Join-Path -Path $RemotePackageExtractRoot -ChildPath 'scan-virus-ghaction-assets-main'
 [String]$RemotePackageToLocalFileFullName = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote.tar.gz'
 Function Update-GitHubActionScanVirusAssets {
 	[CmdletBinding()]
@@ -15,26 +14,22 @@ Function Update-GitHubActionScanVirusAssets {
 		[PSCustomObject]$LocalMetadata = (Get-Content -LiteralPath (Join-Path -Path $LocalRoot -ChildPath $MetadataName) -Raw -Encoding 'UTF8NoBOM' | ConvertFrom-Json -Depth 100)
 	} Catch {
 		Write-GitHubActionsFail -Message "Unable to get local assets' metadata in order to update local assets!"
-		Return
+		Throw
 	}
 	Try {
-		[PSCustomObject]$RemoteMetadata = (Invoke-WebRequest -Uri "$RemoteRoot/raw/main/$MetadataName" -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' | ConvertFrom-Json -Depth 100)
+		$RemoteMetadata = (Invoke-WebRequest -Uri "$RemoteRoot/raw/main/$MetadataName" -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 5 -RetryIntervalSec 5 -Method 'Get' | ConvertFrom-Json -Depth 100)
 	} Catch {
 		Write-GitHubActionsNotice -Message "Unable to get remote assets' metadata in order to update local assets! $LocalAssetsOutdatedMessage"
 		Return
 	}
-	Try {
-		If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
-			Throw
-		}
-	} Catch {
+	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
 		Write-GitHubActionsNotice -Message "Unable to safely update local assets due to local assets' compatibility and remote assets' compatibility are not match! $LocalAssetsOutdatedMessage"
 		Return
 	}
 	Try {
 		If ((Get-Date -Date $RemoteMetadata.Timestamp -AsUTC) -igt (Get-Date -Date $LocalMetadata.Timestamp -AsUTC)) {
 			Try {
-				Invoke-WebRequest -Uri $RemotePackageFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 3 -RetryIntervalSec 5 -Method 'Get' -OutFile $RemotePackageToLocalFileFullName
+				Invoke-WebRequest -Uri $RemotePackageFullName -UseBasicParsing -MaximumRedirection 5 -MaximumRetryCount 5 -RetryIntervalSec 5 -Method 'Get' -OutFile $RemotePackageToLocalFileFullName
 			} Catch {
 				Write-GitHubActionsNotice -Message "Unable to download remote assets package! $LocalAssetsOutdatedMessage"
 				Return
@@ -49,11 +44,11 @@ Function Update-GitHubActionScanVirusAssets {
 			}
 			Try {
 				Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$False
-				Move-Item -LiteralPath $RemotePackageOutBranchRoot -Destination $LocalRoot -Confirm:$False
+				Move-Item -LiteralPath (Join-Path -Path $RemotePackageExtractRoot -ChildPath 'scan-virus-ghaction-assets-main') -Destination $LocalRoot -Confirm:$False
 				Remove-Item -LiteralPath $RemotePackageExtractRoot -Recurse -Force -Confirm:$False
 			} Catch {
 				Write-GitHubActionsFail -Message 'Unable to update local assets due to file system issues!'
-				Return
+				Throw
 			}
 			Write-Host -Object 'Local assets is now up to date.'
 		} Else {
