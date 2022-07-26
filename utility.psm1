@@ -1,10 +1,69 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Function ConvertFrom-Csvm {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
+	)
+	[PSCustomObject[]]$OutputObject = @()
+	ForEach ($Row In $InputObject) {
+		[String[]]$Columns = @()
+		If ($Row -imatch ',') {
+			[String[]]$HeaderTemporary = @(0..($Matches.Count)) | ForEach-Object -Process {
+				Return ((New-Guid).Guid -ireplace '-', '')
+			}
+			[PSCustomObject[]]$RowRaw = ConvertFrom-Csv -InputObject $InputObject -Delimiter ',' -Header $HeaderTemporary
+			ForEach ($Line In $RowRaw) {
+				ForEach ($Header In $HeaderTemporary) {
+					$Columns += $Line.$Header
+				}
+			}
+		} Else {
+			$Columns += $Row
+		}
+		[Hashtable]$Condition = @{}
+		ForEach ($Column In $Columns) {
+			If ($Column -imatch '=') {
+				[String[]]$ColumnRaw = $Column -isplit '='
+				[String]$Key = $ColumnRaw[0]
+				[String]$Value = ($ColumnRaw | Select-Object -SkipIndex 0) -join '='
+				$Condition[$Key] = $Value
+			} Else {
+				Throw "Invalid table syntax"
+			}
+		}
+		$OutputObject += [PSCustomObject]$Condition
+	}
+	Return $OutputObject
+}
+Function Convert-FromCsvsToCsvm {
+	[CmdletBinding()]
+	[OutputType([String[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+	)
+	If ($InputObject -imatch ';') {
+		[String[]]$HeaderTemporary = @(0..($Matches.Count)) | ForEach-Object -Process {
+			Return ((New-Guid).Guid -ireplace '-', '')
+		}
+		[String[]]$Result = @()
+		[PSCustomObject[]]$Raw = ConvertFrom-Csv -InputObject $InputObject -Delimiter ';' -Header $HeaderTemporary
+		ForEach ($Line In $Raw) {
+			ForEach ($Header In $HeaderTemporary) {
+				$Result += $Line.$Header
+			}
+		}
+		Return $Result
+	} Else {
+		Return @($InputObject)
+	}
+}
 Function Format-InputList {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$InputObject,
-		[Parameter(Mandatory = $True, Position = 1)][String]$Delimiter
+		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
 	Return [String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
 		Return $_.Trim()
@@ -14,12 +73,28 @@ Function Format-InputList {
 }
 Function Format-InputTable {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([PSCustomObject[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csvm', 'csvs', 'tsv', 'yaml')][String]$Type,
-		[Parameter(Mandatory = $True, Position = 1)][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 1)][Alias('Input', 'Object')][String]$InputObject
 	)
+	Switch ($Type) {
+		'csv' {
+			Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
+		}
+		'csvm' {
 
+		}
+		'csvs' {
+
+		}
+		'tsv' {
+
+		}
+		'yaml' {
+
+		}
+	}
 }
 Function Get-InputBoolean {
 	[CmdletBinding()]
@@ -34,13 +109,13 @@ Function Get-InputList {
 	[OutputType([String[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
-		[Parameter(Mandatory = $True, Position = 1)][String]$Delimiter
+		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
 		Return @()
 	}
-	Return Format-InputList -InputObject $Raw -Delimiter $Delimiter
+	Return (Format-InputList -InputObject $Raw -Delimiter $Delimiter)
 }
 Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]

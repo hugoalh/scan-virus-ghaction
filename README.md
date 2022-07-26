@@ -101,10 +101,10 @@ jobs:
 
 | **Type** | **Description** |
 |:-:|:--|
-| Local (Default) | Workspace, for prepared files to the workspace in the same job before this action (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)). |
+| Local (Default) | Workspace, for prepared files to the workspace (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action. |
 | Network | Fetch files from network to the workspace, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
 
-When this input is defined (i.e.: network type), will ignore inputs:
+When this input is defined (i.e.: network targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
 - [`git_ignores`](#git_ignores)
@@ -160,8 +160,8 @@ Example:
 
 `<Boolean = False>` Reverse scan order of the Git commits.
 
-- **`False`:** From oldest commit to newest commit.
-- **`True`:** From newest commit to oldest commit.
+- **`False`:** From the oldest commit to the newest commit.
+- **`True`:** From the newest commit to the oldest commit.
 
 #### `clamav_enable`
 
@@ -214,7 +214,7 @@ Example:
 > **⚠ Important:**
 >
 > - If this acts weird, try to disable input [`clamav_subcursive`](#clamav_subcursive) first before report the issues!
-> - It is not recommended to use this on ClamAV official signatures due to these rarely have false positives in most cases.
+> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
 > - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 
 #### `clamav_multiscan`

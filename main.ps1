@@ -1,12 +1,16 @@
+Write-Host -Object 'Starting.'
 [String]$ErrorActionOriginalPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
-Write-Host -Object 'Starting.'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name (@('assets', 'csv', 'git', 'utility') | ForEach-Object -Process {
+Import-Module -Name (@('assets', 'git', 'utility') | ForEach-Object -Process {
 	Return (Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1")
 }) -Scope 'Local'
-[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
+[Hashtable]$TsvParameters = @{
+	Delimiter = "`t"
+	Encoding = 'UTF8NoBOM'
+}
 [String]$AssetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
+[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [String]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $AssetsRoot -ChildPath 'clamav-signatures-ignore-presets'
 [String]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $AssetsRoot -ChildPath 'clamav-unofficial-signatures'
 [String]$YARARulesRoot = Join-Path -Path $AssetsRoot -ChildPath 'yara-rules'
@@ -127,11 +131,9 @@ Exit-GitHubActionsLogGroup
 
 
 
-[PSCustomObject[]]$ClamAVSignaturesIgnorePresetsIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') -Delimiter "`t"
-[PSCustomObject[]]$ClamAVUnofficialSignaturesIndex = Get-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') -Delimiter "`t"
-[PSCustomObject[]]$YARARulesIndex = Get-Csv -LiteralPath (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') -Delimiter "`t"
-
-
+[PSCustomObject[]]$ClamAVSignaturesIgnorePresetsIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVSignaturesIgnorePresetsRoot -ChildPath 'index.tsv') @TsvParameters
+[PSCustomObject[]]$ClamAVUnofficialSignaturesIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') @TsvParameters
+[PSCustomObject[]]$YARARulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YARARulesRoot -ChildPath 'index.tsv') @TsvParameters
 
 
 
