@@ -5,53 +5,32 @@ Function ConvertFrom-Csvm {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
 	)
-	[PSCustomObject[]]$OutputObject = @()
-	ForEach ($Row In $InputObject) {
-		[String[]]$Columns = @()
-		If ($Row -imatch ',') {
-			[String[]]$HeaderTemporary = @(0..($Matches.Count)) | ForEach-Object -Process {
-				Return ((New-Guid).Guid -ireplace '-', '')
-			}
-			[PSCustomObject[]]$RowRaw = ConvertFrom-Csv -InputObject $InputObject -Delimiter ',' -Header $HeaderTemporary
-			ForEach ($Line In $RowRaw) {
-				ForEach ($Header In $HeaderTemporary) {
-					$Columns += $Line.$Header
-				}
-			}
-		} Else {
-			$Columns += $Row
-		}
+	Return ($InputObject | ForEach-Object -Process {
 		[Hashtable]$Condition = @{}
-		ForEach ($Column In $Columns) {
+		ForEach ($Column In (Convert-FromCsvsToCsvm -InputObject $_ -Delimiter ',')) {
 			If ($Column -imatch '=') {
 				[String[]]$ColumnRaw = $Column -isplit '='
-				[String]$Key = $ColumnRaw[0]
-				[String]$Value = ($ColumnRaw | Select-Object -SkipIndex 0) -join '='
-				$Condition[$Key] = $Value
+				$Condition[$ColumnRaw[0]] = ($ColumnRaw | Select-Object -SkipIndex 0) -join '='
 			} Else {
 				Throw "Invalid table syntax"
 			}
 		}
-		$OutputObject += [PSCustomObject]$Condition
-	}
-	Return $OutputObject
+		Return [PSCustomObject]$Condition
+	})
 }
 Function Convert-FromCsvsToCsvm {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject,
+		[Parameter(Position = 1)][Char]$Delimiter = ';'
 	)
-	If ($InputObject -imatch ';') {
-		[String[]]$HeaderTemporary = @(0..($Matches.Count)) | ForEach-Object -Process {
-			Return ((New-Guid).Guid -ireplace '-', '')
-		}
+	If ($InputObject -imatch $Delimiter) {
 		[String[]]$Result = @()
-		[PSCustomObject[]]$Raw = ConvertFrom-Csv -InputObject $InputObject -Delimiter ';' -Header $HeaderTemporary
-		ForEach ($Line In $Raw) {
-			ForEach ($Header In $HeaderTemporary) {
-				$Result += $Line.$Header
-			}
+		ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header (@(0..($Matches.Count)) | ForEach-Object -Process {
+			Return ((New-Guid).Guid -ireplace '-', '')
+		}))) {
+			$Result += $Item.PSObject.Properties.Value
 		}
 		Return $Result
 	} Else {
