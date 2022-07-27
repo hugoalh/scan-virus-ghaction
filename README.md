@@ -99,10 +99,8 @@ jobs:
 
 `<Uri[]>` Targets.
 
-| **Type** | **Description** |
-|:-:|:--|
-| Local (Default) | Workspace, for prepared files to the workspace (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action. |
-| Network | Fetch files from network to the workspace, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
+- **Local *(Default)*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
+- **Network:** Fetch files from network to the workspace, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
 
 When this input is defined (i.e.: network targets), will ignore inputs:
 
@@ -121,9 +119,9 @@ When this input is `False`, will ignore inputs:
 
 #### `git_ignores`
 
-`<Table<{String:RegEx}>>` Git ignores (for commits), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
+[`<Table<{String:RegEx}>>`](#input_tableparser) Git ignores (for commits), by table.
 
-Git commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties (i.e.: keys) are available (properties which have not listed in here are not supported):
+Available properties (i.e.: keys) with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`) (commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties are supported):
 
 - `AuthorDate` (ISO8601 UTC (end with `Z`))
 - `AuthorEmail`
@@ -197,7 +195,7 @@ When this input is `False`, will ignore inputs:
 
 #### `clamav_ignores`
 
-`<Table<{String:RegEx}>>` ClamAV ignores (for files, sessions, and/or signatures), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
+[`<Table<{String:RegEx}>>`](#input_tableparser) ClamAV ignores (for files, sessions, and/or signatures), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
 
 Available properties (i.e.: keys):
 
@@ -255,7 +253,7 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_ignores`
 
-`<Table<{String:RegEx}>>` YARA ignores (for files, rules, and/or sessions), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
+[`<Table<{String:RegEx}>>`](#input_tableparser) YARA ignores (for files, rules, and/or sessions), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
 
 Available properties (i.e.: keys):
 
@@ -278,6 +276,37 @@ Example:
 `<Boolean = False>` Enable YARA tool warning.
 
 > **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while client does not need these informations in most cases.
+
+#### `update_assets`
+
+`<Boolean = True>` Update assets from assets repository before scan anything, for ClamAV unofficial signatures and YARA rules.
+
+When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will ignore this input (i.e.: skip this update in order to save some times).
+
+> **⚠ Important:**
+>
+> - It is recommended to keep this as enable to have the latest assets.
+> - If this action have issues during updates, switch this to disable for offline mode!
+
+#### `update_clamavassets`
+
+`<Boolean = True>` Update ClamAV assets via FreshClam before scan anything, for ClamAV official signatures.
+
+When input [`clamav_enable`](#clamav_enable) is `False`, will ignore this input (i.e.: skip this update in order to save some times).
+
+> **⚠ Important:**
+>
+> - It is recommended to keep this as enable to have the latest ClamAV official signatures.
+> - If this action have issues during updates, switch this to disable for offline mode!
+
+#### `update_packages`
+
+`<Boolean = True>` Update packages (i.e.: this action's dependencies), for ClamAV, Git, and YARA.
+
+> **⚠ Important:**
+>
+> - It is recommended to keep this as enable to have the latest packages' patches.
+> - If this action have issues during updates, switch this to disable for offline mode!
 
 ### 📤 Output
 

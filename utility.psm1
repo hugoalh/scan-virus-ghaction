@@ -110,6 +110,30 @@ Function Get-InputTable {
 	}
 	Return (Format-InputTable -Type $Type -InputObject $Raw)
 }
+Function Group-ScanVirusToolsIgnores {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
+	)
+	Return [PSCustomObject]@{
+		OnlyPaths = ($InputObject | Where-Object -FilterScript {
+			[String[]]$Keys = $_.PSObject.Properties.Name
+			Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Path')
+		})
+		OnlySessions = ($InputObject | Where-Object -FilterScript {
+			[String[]]$Keys = $_.PSObject.Properties.Name
+			Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Session')
+		})
+		Others = ($InputObject | Where-Object -FilterScript {
+			[String[]]$Keys = $_.PSObject.Properties.Name
+			Return !($Keys.Count -ieq 1 -and (
+				$Keys -icontains 'Path' -or
+				$Keys -icontains 'Session'
+			))
+		})
+	}
+}
 Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([String])]
@@ -125,6 +149,20 @@ Function Test-StringIsUri {
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][Uri]$InputObject
 	)
 	Return ($Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$')
+}
+Function Test-StringMatchesRegExs {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Target,
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][RegEx[]]$Matchers
+	)
+	ForEach ($Matcher In $Matchers) {
+		If ($Target -imatch $Matcher) {
+			Return $True
+		}
+	}
+	Return $False
 }
 Function Write-NameValue {
 	[CmdletBinding()]
@@ -152,8 +190,10 @@ Export-ModuleMember -Function @(
 	'Get-InputBoolean',
 	'Get-InputList',
 	'Get-InputTable',
+	'Group-ScanVirusToolsIgnores',
 	'Optimize-PSFormatDisplay',
 	'Test-StringIsUri',
+	'Test-StringMatchesRegExs',
 	'Write-NameValue',
 	'Write-OptimizePSFormatDisplay'
 )

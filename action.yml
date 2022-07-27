@@ -64,6 +64,18 @@ inputs:
     description: "{Boolean} Enable YARA tool warning."
     required: false
     default: "False"
+  update_assets:
+    description: "{Boolean} Update assets from assets repository before scan anything, for ClamAV unofficial signatures and YARA rules."
+    required: false
+    default: "True"
+  update_clamavassets:
+    description: "{Boolean} Update ClamAV assets via FreshClam before scan anything, for ClamAV official signatures."
+    required: false
+    default: "True"
+  update_packages:
+    description: "{Boolean} Update packages (i.e.: this action's dependencies), for ClamAV, Git, and YARA."
+    required: false
+    default: "True"
 runs:
   using: "docker"
   image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.10.0"
