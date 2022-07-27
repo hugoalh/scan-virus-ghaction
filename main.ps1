@@ -1,6 +1,5 @@
 Write-Host -Object 'Starting.'
-[String]$ErrorActionOriginalPreference = $ErrorActionPreference
-$ErrorActionPreference = 'Stop'
+$Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (@('assets', 'git', 'utility') | ForEach-Object -Process {
 	Return (Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1")
@@ -10,10 +9,10 @@ Import-Module -Name (@('assets', 'git', 'utility') | ForEach-Object -Process {
 	Encoding = 'UTF8NoBOM'
 }
 [String]$AssetsRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
-[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [String]$ClamAVSignaturesIgnorePresetsRoot = Join-Path -Path $AssetsRoot -ChildPath 'clamav-signatures-ignore-presets'
 [String]$ClamAVUnofficialSignaturesRoot = Join-Path -Path $AssetsRoot -ChildPath 'clamav-unofficial-signatures'
 [String]$YARARulesRoot = Join-Path -Path $AssetsRoot -ChildPath 'yara-rules'
+[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [RegEx]$GitHubActionsWorkspaceRootRegEx = "$([RegEx]::Escape($Env:GITHUB_WORKSPACE))\/"
 [String[]]$IssuesSessionsClamAV = @()
 [String[]]$IssuesSessionsOther = @()
@@ -80,13 +79,8 @@ If (!$LocalTarget -and $NetworkTargets.Count -ieq 0) {
 }
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
-$GitIgnoresRaw = Get-GitHubActionsInput -Name 'git_ignores' -EmptyStringAsNull
-
-
-
-
-
-
+[PSCustomObject[]]$GitIgnores = Get-InputTable -Name 'git_ignores' -Type $InputTableParser
+Write-NameValue -Name "Git_Ignores ($($GitIgnores.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($GitIgnores | Format-Table -AutoSize -Wrap | Out-String))"
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
@@ -589,9 +583,7 @@ if ($TotalIssues -gt 0) {
 	} | Format-List | Out-String)
 	Exit-GitHubActionsLogGroup
 }
-Optimize-StepSummary
-$ErrorActionPreference = $ErrorActionOriginalPreference
-if ($TotalIssues -gt 0) {
-	exit 1
+If ($TotalIssues -igt 0) {
+	Exit 1
 }
-exit 0
+Exit 0

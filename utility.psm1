@@ -1,4 +1,5 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name 'psyml' -Scope 'Local'
 Function ConvertFrom-Csvm {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
@@ -7,7 +8,7 @@ Function ConvertFrom-Csvm {
 	)
 	Return ($InputObject | ForEach-Object -Process {
 		[Hashtable]$Condition = @{}
-		ForEach ($Column In (Convert-FromCsvsToCsvm -InputObject $_ -Delimiter ',')) {
+		ForEach ($Column In [String[]](Convert-FromCsvsToCsvm -InputObject $_ -Delimiter ',')) {
 			If ($Column -imatch '=') {
 				[String[]]$ColumnRaw = $Column -isplit '='
 				$Condition[$ColumnRaw[0]] = ($ColumnRaw | Select-Object -SkipIndex 0) -join '='
@@ -27,9 +28,7 @@ Function Convert-FromCsvsToCsvm {
 	)
 	If ($InputObject -imatch $Delimiter) {
 		[String[]]$Result = @()
-		ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header (@(0..($Matches.Count)) | ForEach-Object -Process {
-			Return ((New-Guid).Guid -ireplace '-', '')
-		}))) {
+		ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
 			$Result += $Item.PSObject.Properties.Value
 		}
 		Return $Result
@@ -44,11 +43,11 @@ Function Format-InputList {
 		[Parameter(Mandatory = $True, Position = 0)][String]$InputObject,
 		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
-	Return [String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
+	Return ([String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
 		Return $_.Trim()
 	} | Where-Object -FilterScript {
 		Return ($_.Length -igt 0)
-	} | Sort-Object -Unique -CaseSensitive
+	} | Sort-Object -Unique -CaseSensitive)
 }
 Function Format-InputTable {
 	[CmdletBinding()]
@@ -62,16 +61,18 @@ Function Format-InputTable {
 			Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
 		}
 		'csvm' {
-
+			Return (ConvertFrom-Csvm -InputObject ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript {
+				Return ($_.Length -igt 0)
+			}))
 		}
 		'csvs' {
-
+			Return (ConvertFrom-Csvm -InputObject (Convert-FromCsvsToCsvm -InputObject $InputObject))
 		}
 		'tsv' {
-
+			Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t")
 		}
 		'yaml' {
-
+			Return (ConvertFrom-Yaml -InputObject $InputObject)
 		}
 	}
 }
@@ -96,6 +97,19 @@ Function Get-InputList {
 	}
 	Return (Format-InputList -InputObject $Raw -Delimiter $Delimiter)
 }
+Function Get-InputTable {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
+		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csvm', 'csvs', 'tsv', 'yaml')][String]$Type
+	)
+	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
+	If ($Null -ieq $Raw) {
+		Return @()
+	}
+	Return (Format-InputTable -Type $Type -InputObject $Raw)
+}
 Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([String])]
@@ -110,7 +124,7 @@ Function Test-StringIsUri {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][Uri]$InputObject
 	)
-	Return ($Null -ine $InputObject.AbsoluteURI -and $InputObject.Scheme -imatch '^https?$')
+	Return ($Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$')
 }
 Function Write-NameValue {
 	[CmdletBinding()]
@@ -134,10 +148,12 @@ Function Write-OptimizePSFormatDisplay {
 }
 Export-ModuleMember -Function @(
 	'Format-InputList',
+	'Format-InputTable',
 	'Get-InputBoolean',
 	'Get-InputList',
+	'Get-InputTable',
 	'Optimize-PSFormatDisplay',
-	'Test-StringIsUrl',
+	'Test-StringIsUri',
 	'Write-NameValue',
 	'Write-OptimizePSFormatDisplay'
 )
