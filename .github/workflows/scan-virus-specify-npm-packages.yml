@@ -17,7 +17,7 @@ jobs:
           [String[]]$NPMPackages = $NPMPackagesRaw | ForEach-Object -Process {
             Return $_.Trim()
           } | Where-Object -FilterScript {
-            Return ($_.Length -igt 0)
+            Return ($_ -imatch '^.+$')
           }
           [String[]]$NPMPackagesURL = @()
           ForEach ($NPMPackage In $NPMPackages) {

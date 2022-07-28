@@ -4,49 +4,56 @@ Function ConvertFrom-Csvm {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String[]]$InputObject
 	)
-	Return ($InputObject | ForEach-Object -Process {
-		[Hashtable]$Condition = @{}
-		ForEach ($Column In [String[]](Convert-FromCsvsToCsvm -InputObject $_ -Delimiter ',')) {
-			If ($Column -imatch '=') {
-				[String[]]$ColumnRaw = $Column -isplit '='
-				$Condition[$ColumnRaw[0]] = ($ColumnRaw | Select-Object -SkipIndex 0) -join '='
-			} Else {
-				Throw "Invalid table syntax"
+	Begin {}
+	Process {
+		Return ($InputObject | ForEach-Object -Process {
+			[Hashtable]$Condition = @{}
+			ForEach ($Column In [String[]](Convert-FromCsvsToCsvm -InputObject $_ -Delimiter ',')) {
+				If ($Column -imatch '=') {
+					[String]$Key, [String[]]$Value = $Column -isplit '='
+					$Condition[$Key] = $Value -join '='
+					Continue
+				}
+				Throw 'Invalid table syntax!'
 			}
-		}
-		Return [PSCustomObject]$Condition
-	})
+			Return [PSCustomObject]$Condition
+		})
+	}
+	End {}
 }
 Function Convert-FromCsvsToCsvm {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject,
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String]$InputObject,
 		[Parameter(Position = 1)][Char]$Delimiter = ';'
 	)
-	If ($InputObject -imatch $Delimiter) {
-		[String[]]$Result = @()
-		ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
-			$Result += $Item.PSObject.Properties.Value
+	Begin {}
+	Process {
+		If ($InputObject -imatch $Delimiter) {
+			[String[]]$Result = @()
+			ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
+				$Result += $Item.PSObject.Properties.Value
+			}
+			Return $Result
 		}
-		Return $Result
-	} Else {
 		Return @($InputObject)
 	}
+	End {}
 }
 Function Format-InputList {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$InputObject,
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][String]$InputObject,
 		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
 	Return ([String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
 		Return $_.Trim()
 	} | Where-Object -FilterScript {
-		Return ($_.Length -igt 0)
+		Return ($_ -imatch '^.+$')
 	} | Sort-Object -Unique -CaseSensitive)
 }
 Function Format-InputTable {
@@ -62,12 +69,12 @@ Function Format-InputTable {
 				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
 			}
 			'csvm' {
-				Return (ConvertFrom-Csvm -InputObject ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript {
-					Return ($_.Length -igt 0)
-				}))
+				Return ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript {
+					Return ($_ -imatch '^.+$')
+				} | ConvertFrom-Csvm)
 			}
 			'csvs' {
-				Return (ConvertFrom-Csvm -InputObject (Convert-FromCsvsToCsvm -InputObject $InputObject))
+				Return ($InputObject | Convert-FromCsvsToCsvm | ConvertFrom-Csvm)
 			}
 			'tsv' {
 				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t")
@@ -77,7 +84,7 @@ Function Format-InputTable {
 			}
 		}
 	} Catch {
-		Write-GitHubActionsFail -Message "Invalid ``$Type`` table syntax!"
+		Write-GitHubActionsFail -Message "Invalid ``$Type`` table syntax: $_"
 		Throw
 	}
 }
@@ -143,9 +150,13 @@ Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([String])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][String]$InputObject
 	)
-	Return ($InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+	Begin {}
+	Process {
+		Return ($InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+	}
+	End {}
 }
 Function Test-StringIsUri {
 	[CmdletBinding()]
@@ -155,7 +166,7 @@ Function Test-StringIsUri {
 	)
 	Return ($Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$')
 }
-Function Test-StringMatchesRegExs {
+Function Test-StringMatchRegExs {
 	[CmdletBinding()]
 	[OutputType([Boolean])]
 	Param (
@@ -182,12 +193,16 @@ Function Write-OptimizePSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String]$InputObject
 	)
-	[String]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
-	If ($OutputObject.Length -igt 0) {
-		Write-Host -Object $OutputObject
+	Begin {}
+	Process {
+		[String]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
+		If ($OutputObject.Length -igt 0) {
+			Write-Host -Object $OutputObject
+		}
 	}
+	End {}
 }
 Export-ModuleMember -Function @(
 	'Format-InputList',
@@ -198,7 +213,7 @@ Export-ModuleMember -Function @(
 	'Group-ScanVirusToolsIgnores',
 	'Optimize-PSFormatDisplay',
 	'Test-StringIsUri',
-	'Test-StringMatchesRegExs',
+	'Test-StringMatchRegExs',
 	'Write-NameValue',
 	'Write-OptimizePSFormatDisplay'
 )

@@ -17,7 +17,7 @@ jobs:
           [String[]]$GitHubRepositories = $GitHubRepositoriesRaw | ForEach-Object -Process {
             Return $_.Trim()
           } | Where-Object -FilterScript {
-            Return ($_.Length -igt 0)
+            Return ($_ -imatch '^.+$')
           }
           If ($GitHubRepositories.Count -igt 0) {
             Write-Host -Object "::set-output name=targets::{`"repositories`":[`"$($GitHubRepositories -join '","')`"]}"

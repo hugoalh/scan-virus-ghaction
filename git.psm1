@@ -24,10 +24,8 @@
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )
-[Hashtable]$GitCommitsInformationExpression = @{
-	MultipleLine = 'git --no-pager show --format="{1}" {0}'
-	SingleLine = 'git --no-pager log --all --format="{0}"'
-}
+[String]$GitCommitsInformationExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
+[String]$GitCommitsInformationExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
 Function Get-GitCommitsInformation {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
@@ -37,14 +35,13 @@ Function Get-GitCommitsInformation {
 			Return [System.IO.File]::Open($_, 'Open', 'Read', 'Read')
 		})
 	} Catch {
-		Write-Error -Message 'Unable to lock Git database!' -Category 'OperationStopped'
-		Throw
+		Throw 'Unable to lock Git database!'
 	}
 	Try {
 		[Hashtable]$GitCommitsPropertyToken = ($GitCommitsProperties | Where-Object -FilterScript {
 			Return $_.AsIndex
 		})[0]
-		[Hashtable[]]$Result = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpression.SingleLine -f $GitCommitsPropertyToken.Placeholder)) | ForEach-Object -Process {
+		[Hashtable[]]$Result = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpressionSingleLine -f $GitCommitsPropertyToken.Placeholder)) | ForEach-Object -Process {
 			Return @{ "$($GitCommitsPropertyToken.Name)" = $_ }
 		}
 		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
@@ -53,11 +50,11 @@ Function Get-GitCommitsInformation {
 			}
 			If ($GitCommitsProperty.IsMultipleLine) {
 				For ($CommitIndex = 0; $CommitIndex -ilt $Result.Count; $CommitIndex++) {
-					$Result[$CommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpression.MultipleLine -f @($Result[$CommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
+					$Result[$CommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpressionMultipleLine -f @($Result[$CommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
 				}
 				Continue
 			}
-			[String[]]$ExpressionOutput = Invoke-Expression -Command ($GitCommitsInformationExpression.SingleLine -f $GitCommitsProperty.Placeholder)
+			[String[]]$ExpressionOutput = Invoke-Expression -Command ($GitCommitsInformationExpressionSingleLine -f $GitCommitsProperty.Placeholder)
 			For ($Row = 0; $Row -ilt $ExpressionOutput.Count; $Row++) {
 				[String]$Value = $ExpressionOutput[$Row]
 				If ($GitCommitsProperty.IsArray) {
@@ -73,8 +70,7 @@ Function Get-GitCommitsInformation {
 			Return [PSCustomObject]$_
 		} | Sort-Object -Property 'AuthorDate')
 	} Catch {
-		Write-Error -Message "Unexpected Git database error! $_" -Category 'OperationStopped'
-		Throw
+		Throw "Unexpected Git database error: $_"
 	} Finally {
 		$GitDatabaseLocks | ForEach-Object -Process {
 			$_.Close() | Out-Null
