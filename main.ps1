@@ -151,7 +151,7 @@ If ($UpdateAssets -and (
 	Update-GitHubActionScanVirusAssets
 	Exit-GitHubActionsLogGroup
 }
-Enter-GitHubActionsLogGroup -Title 'Index assets.'
+Enter-GitHubActionsLogGroup -Title 'Read assets index.'
 [PSCustomObject[]]$ClamAVUnofficialSignaturesIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath 'index.tsv') @TsvParameters
 [PSCustomObject[]]$YaraRulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesRoot -ChildPath 'index.tsv') @TsvParameters
 [PSCustomObject[]]$ClamAVUnofficialSignaturesApply = ($ClamAVUnofficialSignaturesIndex | Where-Object -FilterScript {
@@ -164,67 +164,58 @@ Enter-GitHubActionsLogGroup -Title 'Index assets.'
 $ClamAVUnofficialSignaturesIndex | ForEach-Object -Process {
 	[String]$ClamAVUnofficialSignatureFullName = Join-Path -Path $ClamAVUnofficialSignaturesRoot -ChildPath $_.Location
 	[Boolean]$ClamAVUnofficialSignatureExist = Test-Path -LiteralPath $ClamAVUnofficialSignatureFullName
-	[Boolean]$ClamAVUnofficialSignatureApply = $_.Name -in $ClamAVUnofficialSignaturesApply.Name
+	[Boolean]$ClamAVUnofficialSignatureApply = $_.Name -iin $ClamAVUnofficialSignaturesApply.Name
 	$ClamAVUnofficialSignaturesDisplay += [PSCustomObject]@{
 		Name = $_.Name
 		Exist = $ClamAVUnofficialSignatureExist
 		Apply = $ClamAVUnofficialSignatureApply
 	}
 	If ($ClamAVUnofficialSignatureExist -and $ClamAVUnofficialSignatureApply) {
-		[String]$ClamAVUnofficialSignatureDestination = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -replace '\/', '_')
+		[String]$ClamAVUnofficialSignatureDestination = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -ireplace '\/', '_')
 		Copy-Item -LiteralPath $ClamAVUnofficialSignatureFullName -Destination $ClamAVUnofficialSignatureDestination -Confirm:$False
 		$CleanUpFilesFullNames += $ClamAVUnofficialSignatureDestination
 	}
 }
-
-
-
-
-
-Enter-GitHubActionsLogGroup -Title "ClamAV unofficial signatures index (Total: $($ClamAVUnofficialSignaturesIndex.Count); Selected: $(); Apply: $($ClamAVUnofficialSignaturesApply.Count - $ClamAVUnofficialSignaturesInvalid.Count)):"
-if ($ClamAVUnofficialSignaturesInvalid.Count -gt 0) {
-	Write-GitHubActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist ($($ClamAVUnofficialSignaturesInvalid.Count)): $($ClamAVUnofficialSignaturesInvalid -join ', ')"
-}
-Write-OptimizePSFormatDisplay -InputObject ($ClamAVUnofficialSignaturesDisplay | Format-Table -Property @(
+[PSCustomObject[]]$ClamAVUnofficialSignaturesNotExist = ($ClamAVUnofficialSignaturesDisplay | Where-Object -FilterScript {
+	Return ($_.Exist -ieq $False)
+})
+Write-NameValue -Name "ClamAV unofficial signatures index (Index: $($ClamAVUnofficialSignaturesIndex.Count); Exist: $($ClamAVUnofficialSignaturesIndex.Count - $ClamAVUnofficialSignaturesNotExist.Count); Apply: $($ClamAVUnofficialSignaturesApply.Count))" -Value "`n$($ClamAVUnofficialSignaturesDisplay | Format-Table -Property @(
 	'Name',
 	@{ Expression = 'Exist'; Alignment = 'Right' },
 	@{ Expression = 'Apply'; Alignment = 'Right' }
-) -AutoSize -Wrap | Out-String)
-Exit-GitHubActionsLogGroup
-if ($YaraEnable) {
-	[PSCustomObject[]]$YaraRulesDisplay = @()
-	[String[]]$YaraRulesInvalid = @()
-	$YaraRulesIndex | ForEach-Object -Process {
-		[String]$YaraRuleFullName = Join-Path -Path $YaraRulesRoot -ChildPath $_.Location
-		[bool]$YaraRuleExist = Test-Path -LiteralPath $YaraRuleFullName
-		[bool]$YaraRuleApply = $_.Name -in $YaraRulesApply.Name
-		[hashtable]$YaraRuleDisplay = @{
-			Name = $_.Name
-			Exist = $YaraRuleExist
-			Apply = $YaraRuleApply
-		}
-		$YaraRulesDisplay += [PSCustomObject]$YaraRuleDisplay
-		if ($YaraRuleExist -eq $False) {
-			$YaraRulesInvalid += $_.Name
-		}
-	}
-	Enter-GitHubActionsLogGroup -Title "YARA rules index (I: $($YaraRulesIndex.Count); A: $($YaraRulesApply.Count); S: $($YaraRulesApply.Count - $YaraRulesInvalid.Count)):"
-	if ($YaraRulesInvalid.Count -gt 0) {
-		Write-GitHubActionsWarning -Message "Some of the YARA rules are indexed but not exist ($($YaraRulesInvalid.Count)): $($YaraRulesInvalid -join ', ')"
-	}
-	Write-OptimizePSFormatDisplay -InputObject ($YaraRulesDisplay | Format-Table -Property @(
-		'Name',
-		@{ Expression = 'Exist'; Alignment = 'Right' },
-		@{ Expression = 'Apply'; Alignment = 'Right' }
-	) -AutoSize -Wrap | Out-String)
-	Exit-GitHubActionsLogGroup
+) -AutoSize -Wrap | Out-String)"
+If ($ClamAVUnofficialSignaturesNotExist.Count -igt 0) {
+	Write-GitHubActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist ($($ClamAVUnofficialSignaturesNotExist.Count)): $($ClamAVUnofficialSignaturesNotExist.Name -join ', ')"
 }
+[PSCustomObject[]]$YaraRulesDisplay = @()
+$YaraRulesIndex | ForEach-Object -Process {
+	[String]$YaraRuleFullName = Join-Path -Path $YaraRulesRoot -ChildPath $_.Location
+	[Boolean]$YaraRuleExist = Test-Path -LiteralPath $YaraRuleFullName
+	[Boolean]$YaraRuleApply = $_.Name -iin $YaraRulesApply.Name
+	$YaraRulesDisplay += [PSCustomObject]@{
+		Name = $_.Name
+		Exist = $YaraRuleExist
+		Apply = $YaraRuleApply
+	}
+}
+[PSCustomObject[]]$YaraRulesNotExist = ($YaraRulesDisplay | Where-Object -FilterScript {
+	Return ($_.Exist -ieq $False)
+})
+Write-NameValue -Name "YARA rules index (Index: $($YaraRulesIndex.Count); Exist: $($YaraRulesIndex.Count - $YaraRulesNotExist.Count); Apply: $($YaraRulesApply.Count))" -Value "`n$($YaraRulesDisplay | Format-Table -Property @(
+	'Name',
+	@{ Expression = 'Exist'; Alignment = 'Right' },
+	@{ Expression = 'Apply'; Alignment = 'Right' }
+) -AutoSize -Wrap | Out-String)"
+If ($YaraRulesNotExist.Count -igt 0) {
+	Write-GitHubActionsWarning -Message "Some of the YARA rules are indexed but not exist ($($YaraRulesNotExist.Count)): $($YaraRulesNotExist.Name -join ', ')"
+}
+Exit-GitHubActionsLogGroup
 If ($ClamAVEnable -and $ClamAVDaemon) {
 	Enter-GitHubActionsLogGroup -Title 'Start ClamAV daemon.'
 	Invoke-Expression -Command 'clamd'
 	Exit-GitHubActionsLogGroup
 }
-Function Invoke-ScanVirusSession {
+Function Invoke-ScanVirusTools {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
@@ -232,83 +223,80 @@ Function Invoke-ScanVirusSession {
 	)
 	Write-Host -Object "Begin of session `"$Session`"."
 	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
-	if (
-		($null -eq $Elements) -or
-		($Elements.Count -eq 0)
-	) {
-		Write-GitHubActionsError -Message "Unable to scan session `"$Session`" due to it is empty! If this is incorrect, probably someone forgot to put files in there."
-		if ($Session -notin $script:IssuesSessionsOther) {
-			$script:IssuesSessionsOther += $Session
+	If ($Elements.Count -ieq 0){
+		Write-GitHubActionsError -Message "Unable to scan session `"$Session`" due to the workspace is empty! If this is incorrect, probably something went wrong."
+		If ($Session -inotin $Script:IssuesSessionsOther) {
+			$Script:IssuesSessionsOther += $Session
 		}
-	} else {
+	} Else {
+		[Boolean]$SkipClamAV = Test-StringMatchesRegExs -Target $Session -Matchers $ClamAVIgnores.OnlySessions.Session
+		[Boolean]$SkipYara = Test-StringMatchesRegExs -Target $Session -Matchers $YaraIgnores.OnlySessions.Session
+		[UInt64]$ElementsIsDirectoryCount = 0
 		[String[]]$ElementsListClamAV = @()
 		[String[]]$ElementsListYara = @()
 		[PSCustomObject[]]$ElementsListDisplay = @()
-		[UInt32]$ElementsIsDirectoryCount = 0
-		$Elements | Sort-Object | ForEach-Object -Process {
-			[bool]$ElementIsDirectory = Test-Path -LiteralPath $_.FullName -PathType 'Container'
-			[String]$ElementName = $_.FullName -replace "^$GitHubActionsWorkspaceRootRegEx", ''
-			[UInt64]$ElementSizes = $_.Length
-			[hashtable]$ElementListDisplay = @{
+		ForEach ($Element In ($Elements | Sort-Object -Property 'FullName')) {
+			[Boolean]$ElementIsDirectory = Test-Path -LiteralPath $Element.FullName -PathType 'Container'
+			[String]$ElementName = $Element.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
+			[UInt64]$ElementSizes = $Element.Length
+			[Hashtable]$ElementListDisplay = @{
 				Element = $ElementName
-				Flags = @(
-					$ElementIsDirectory ? 'D' : ''
-				)
+				Flags = @()
 			}
-			if ($ElementIsDirectory) {
+			If ($ElementIsDirectory) {
 				$ElementsIsDirectoryCount += 1
-			} else {
+				$ElementListDisplay.Flags += 'D'
+			} Else {
 				$ElementListDisplay.Sizes = $ElementSizes
-				$script:TotalSizesAll += $ElementSizes
+				$Script:TotalSizesAll += $ElementSizes
 			}
-			if ($ClamAVEnable -and (
+			If ($ClamAVEnable -and !$SkipClamAV -and (
 				($ElementIsDirectory -and $ClamAVSubcursive) -or
-				($ElementIsDirectory -eq $False)
-			) -and (
-				($LocalTarget -eq $False) -or
-				(Test-InputFilter -Target $ElementName -FilterList $ClamAVFilesFilterList -FilterMode $ClamAVFilesFilterMode)
-			)) {
-				$ElementsListClamAV += $_.FullName
+				!$ElementIsDirectory
+			) -and !(Test-StringMatchesRegExs -Target $ElementName -Matchers $ClamAVIgnores.OnlyPaths.Path)) {
+				$ElementsListClamAV += $Element.FullName
 				$ElementListDisplay.Flags += 'C'
-				if ($ElementIsDirectory -eq $False) {
-					$script:TotalSizesClamAV += $ElementSizes
+				If (!$ElementIsDirectory) {
+					$Script:TotalSizesClamAV += $ElementSizes
 				}
 			}
-			if ($YaraEnable -and ($ElementIsDirectory -eq $False) -and (
-				($LocalTarget -eq $False) -or
-				(Test-InputFilter -Target $ElementName -FilterList $YaraFilesFilterList -FilterMode $YaraFilesFilterMode)
-			)) {
-				$ElementsListYara += $_.FullName
+			If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(Test-StringMatchesRegExs -Target $ElementName -Matchers $YaraIgnores.OnlyPaths.Path)) {
+				$ElementsListYara += $Element.FullName
 				$ElementListDisplay.Flags += 'Y'
-				$script:TotalSizesYara += $ElementSizes
+				$Script:TotalSizesYara += $ElementSizes
 			}
 			$ElementListDisplay.Flags = ($ElementListDisplay.Flags | Sort-Object) -join ''
 			$ElementsListDisplay += [PSCustomObject]$ElementListDisplay
 		}
-		$script:TotalElementsAll += $Elements.Count
-		$script:TotalElementsClamAV += $ElementsListClamAV.Count
-		$script:TotalElementsYara += $ElementsListYara.Count
-		Enter-GitHubActionsLogGroup -Title "Elements of session `"$Session`" (E: $($Elements.Count); FC: $($ElementsListClamAV.Count); FD: $ElementsIsDirectoryCount; FY: $($ElementsListYara.Count)):"
+		$Script:TotalElementsAll += $Elements.Count
+		$Script:TotalElementsClamAV += $ElementsListClamAV.Count
+		$Script:TotalElementsYara += $ElementsListYara.Count
+		Enter-GitHubActionsLogGroup -Title "Elements in the session `"$Session`" (Elements: $($Elements.Count); Flag - ClamAV: $($ElementsListClamAV.Count); Flag - Directory: $ElementsIsDirectoryCount; Flag - Yara: $($ElementsListYara.Count)):"
 		Write-OptimizePSFormatDisplay -InputObject ($ElementsListDisplay | Format-Table -Property @(
 			'Element',
 			'Flags',
 			@{ Expression = 'Sizes'; Alignment = 'Right' }
 		) -AutoSize -Wrap | Out-String)
 		Exit-GitHubActionsLogGroup
-		if ($ClamAVEnable -and ($ElementsListClamAV.Count -gt 0)) {
+		If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
 			[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
 			Set-Content -LiteralPath $ElementsListClamAVFullName -Value ($ElementsListClamAV -join "`n") -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 			Enter-GitHubActionsLogGroup -Title "ClamAV result of session `"$Session`":"
 			[String]$ClamAVExpression = ''
-			if ($ClamAVDaemon) {
+			If ($ClamAVDaemon) {
 				$ClamAVExpression = "clamdscan --fdpass --file-list=`"$ElementsListClamAVFullName`"$($ClamAVMultiScan ? ' --multiscan' : '')$($ClamAVReloadPerSession ? ' --reload' : '')"
-			} else {
+			} Else {
 				$ClamAVExpression = "clamscan --detect-broken=yes --file-list=`"$ElementsListClamAVFullName`" --follow-dir-symlinks=0 --follow-file-symlinks=0 --recursive"
 			}
 			[String[]]$ClamAVOutput = Invoke-Expression -Command $ClamAVExpression
-			[uint]$ClamAVExitCode = $LASTEXITCODE
+			[UInt32]$ClamAVExitCode = $LASTEXITCODE
 			[String[]]$ClamAVResultError = @()
-			[hashtable]$ClamAVResultFound = @{}
+			[Hashtable]$ClamAVResultFound = @{}
+
+
+
+
+
 			for ($ClamAVOutputLineIndex = 0; $ClamAVOutputLineIndex -lt $ClamAVOutput.Count; $ClamAVOutputLineIndex++) {
 				[String]$ClamAVOutputLineContent = $ClamAVOutput[$ClamAVOutputLineIndex] -replace "^$GitHubActionsWorkspaceRootRegEx", ''
 				if ($ClamAVOutputLineContent -match '^[-=]+ SCAN SUMMARY [-=]+$') {
@@ -411,40 +399,40 @@ Function Invoke-ScanVirusSession {
 	}
 	Write-Host -Object "End of session `"$Session`"."
 }
-if ($LocalTarget) {
-	Invoke-ScanVirusSession -Session 'Current'
-	if ($GitIntegrate) {
-		if (Test-Path -LiteralPath (Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath '.git') -PathType 'Container') {
+If ($LocalTarget) {
+	Invoke-ScanVirusTools -Session 'Current'
+	If ($GitIntegrate) {
+		If (Test-Path -LiteralPath (Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath '.git') -PathType 'Container') {
 			Write-Host -Object 'Import Git information.'
-			[String[]]$GitCommits = [String[]](Invoke-Expression -Command "git --no-pager log --all --format=%H$($GitReverse ? '' : ' --reverse')") | Select-Object -Unique
-			if ($GitCommits.Count -le 1) {
-				Write-GitHubActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: ``Re-run ________`` cannot apply the modified workflow!)"
+			[PSCustomObject[]]$GitCommits = Get-GitCommitsInformation
+			If ($GitCommits.Count -ile 1) {
+				Write-GitHubActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: Re-run cannot apply the modified workflow!)"
 			}
-			for ($GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
+			For ($GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
 				[String]$GitCommitHash = $GitCommits[$GitCommitsIndex]
-				[String]$GitSession = "Commit Hash $GitCommitHash (#$($GitReverse ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
-				Enter-GitHubActionsLogGroup -Title "Git checkout for session `"$GitSession`"."
-				try {
+				[String]$GitSession = "Git Commit $GitCommitHash (#$($GitReverse ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
+				Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitCommitHash."
+				Try {
 					Invoke-Expression -Command "git checkout $GitCommitHash --force --quiet"
-				} catch {  }
-				if ($LASTEXITCODE -eq 0) {
+				} Catch {  }
+				If ($LASTEXITCODE -ieq 0) {
 					Exit-GitHubActionsLogGroup
-					Invoke-ScanVirusSession -Session $GitSession
-				} else {
-					Write-GitHubActionsError -Message "Unexpected Git checkout result ``$LASTEXITCODE`` in session `"$GitSession`"!"
-					if ($GitSession -notin $IssuesSessionsOther) {
-						$IssuesSessionsOther += $GitSession
+					Invoke-ScanVirusTools -Session $GitSession
+				} Else {
+					Write-GitHubActionsError -Message "Unexpected Git checkout exit code ``$LASTEXITCODE`` in commit $GitCommitHash!"
+					If ($GitCommitHash -inotin $IssuesSessionsOther) {
+						$IssuesSessionsOther += $GitCommitHash
 					}
 					Exit-GitHubActionsLogGroup
 				}
 			}
-		} else {
-			Write-GitHubActionsWarning -Message 'Unable to scan deeper due to it is not a Git repository! If this is incorrect, probably Git data is broken and/or invalid.'
+		} Else {
+			Write-GitHubActionsWarning -Message 'Unable to integrate with Git due to the workspace is not a Git repository! If this is incorrect, probably Git data is broken and/or invalid.'
 		}
 	}
-} else {
+} Else {
 	[PSCustomObject[]]$UselessElements = Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Recurse -Force
-	if ($UselessElements.Count -gt 0) {
+	If ($UselessElements.Count -igt 0) {
 		Write-GitHubActionsWarning -Message 'Require a clean workspace when target is network!'
 		Write-Host -Object 'Clean workspace.'
 		$UselessElements | Remove-Item -Force -Confirm:$False
@@ -452,26 +440,24 @@ if ($LocalTarget) {
 	$NetworkTargets | ForEach-Object -Process {
 		Enter-GitHubActionsLogGroup -Title "Fetch file `"$_`"."
 		[String]$NetworkTemporaryFileFullPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath (New-Guid).Guid
-		try {
-			Invoke-WebRequest -Uri $_ -UseBasicParsing -Method Get -OutFile $NetworkTemporaryFileFullPath
-		} catch {
+		Try {
+			Invoke-WebRequest -Uri $_ -UseBasicParsing -Method 'Get' -OutFile $NetworkTemporaryFileFullPath
+		} Catch {
 			Write-GitHubActionsError -Message "Unable to fetch file `"$_`"!"
-			continue
+			Continue
 		}
 		Exit-GitHubActionsLogGroup
-		Invoke-ScanVirusSession -Session $_
+		Invoke-ScanVirusTools -Session $_
 		Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$False
 	}
 }
-if ($ClamAVEnable -and $ClamAVDaemon) {
+If ($ClamAVEnable -and $ClamAVDaemon) {
 	Enter-GitHubActionsLogGroup -Title 'Stop ClamAV daemon.'
 	Get-Process -Name '*clamd*' | Stop-Process
 	Exit-GitHubActionsLogGroup
 }
-if ($CleanUpFilesFullNames.Count -gt 0) {
-	$CleanUpFilesFullNames | ForEach-Object -Process {
-		Remove-Item -LiteralPath $_ -Force -Confirm:$False
-	}
+$CleanUpFilesFullNames | ForEach-Object -Process {
+	Remove-Item -LiteralPath $_ -Force -Confirm:$False
 }
 Enter-GitHubActionsLogGroup -Title 'Statistics:'
 [UInt64]$TotalIssues = $IssuesSessionsClamAV.Count + $IssuesSessionsOther.Count + $IssuesSessionsYara.Count
@@ -484,8 +470,8 @@ Write-OptimizePSFormatDisplay -InputObject ([PSCustomObject[]]@(
 	},
 	[PSCustomObject]@{
 		Name = 'TotalElements_Percentage'
-		ClamAV = ($TotalElementsAll -eq 0) ? 0 : ($TotalElementsClamAV / $TotalElementsAll * 100)
-		YARA = ($TotalElementsAll -eq 0) ? 0 : ($TotalElementsYara / $TotalElementsAll * 100)
+		ClamAV = ($TotalElementsAll -ieq 0) ? 0 : ($TotalElementsClamAV / $TotalElementsAll * 100)
+		YARA = ($TotalElementsAll -ieq 0) ? 0 : ($TotalElementsYara / $TotalElementsAll * 100)
 	},
 	[PSCustomObject]@{
 		Name = 'TotalIssuesSessions_Count'
@@ -496,9 +482,9 @@ Write-OptimizePSFormatDisplay -InputObject ([PSCustomObject[]]@(
 	},
 	[PSCustomObject]@{
 		Name = 'TotalIssuesSessions_Percentage'
-		ClamAV = ($TotalIssues -eq 0) ? 0 : ($IssuesSessionsClamAV.Count / $TotalIssues * 100)
-		YARA = ($TotalIssues -eq 0) ? 0 : ($IssuesSessionsYara.Count / $TotalIssues * 100)
-		Other = ($TotalIssues -eq 0) ? 0 : ($IssuesSessionsOther.Count / $TotalIssues * 100)
+		ClamAV = ($TotalIssues -ieq 0) ? 0 : ($IssuesSessionsClamAV.Count / $TotalIssues * 100)
+		YARA = ($TotalIssues -ieq 0) ? 0 : ($IssuesSessionsYara.Count / $TotalIssues * 100)
+		Other = ($TotalIssues -ieq 0) ? 0 : ($IssuesSessionsOther.Count / $TotalIssues * 100)
 	},
 	[PSCustomObject]@{
 		Name = 'TotalSizes_B'
@@ -537,7 +523,7 @@ Write-OptimizePSFormatDisplay -InputObject ([PSCustomObject[]]@(
 	@{ Expression = 'Other'; Alignment = 'Right' }
 ) -AutoSize -Wrap | Out-String)
 Exit-GitHubActionsLogGroup
-if ($TotalIssues -gt 0) {
+if ($TotalIssues -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Issues sessions:'
 	Write-OptimizePSFormatDisplay -InputObject ([PSCustomObject]@{
 		ClamAV = $IssuesSessionsClamAV -join ', '

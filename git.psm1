@@ -70,7 +70,7 @@ Function Get-GitCommitsInformation {
 		}
 		Return ($OutputObject | ForEach-Object -Process {
 			Return [PSCustomObject]$_
-		})
+		} | Sort-Object -Property 'AuthorDate')
 	} Catch {
 		Write-Error -Message "Unexpected Git database error! $_" -Category 'OperationStopped'
 		Throw

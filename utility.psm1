@@ -56,24 +56,29 @@ Function Format-InputTable {
 		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csvm', 'csvs', 'tsv', 'yaml')][String]$Type,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Input', 'Object')][String]$InputObject
 	)
-	Switch ($Type) {
-		'csv' {
-			Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
+	Try {
+		Switch ($Type) {
+			'csv' {
+				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
+			}
+			'csvm' {
+				Return (ConvertFrom-Csvm -InputObject ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript {
+					Return ($_.Length -igt 0)
+				}))
+			}
+			'csvs' {
+				Return (ConvertFrom-Csvm -InputObject (Convert-FromCsvsToCsvm -InputObject $InputObject))
+			}
+			'tsv' {
+				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t")
+			}
+			'yaml' {
+				Return (ConvertFrom-Yaml -InputObject $InputObject)
+			}
 		}
-		'csvm' {
-			Return (ConvertFrom-Csvm -InputObject ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript {
-				Return ($_.Length -igt 0)
-			}))
-		}
-		'csvs' {
-			Return (ConvertFrom-Csvm -InputObject (Convert-FromCsvsToCsvm -InputObject $InputObject))
-		}
-		'tsv' {
-			Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t")
-		}
-		'yaml' {
-			Return (ConvertFrom-Yaml -InputObject $InputObject)
-		}
+	} Catch {
+		Write-GitHubActionsFail -Message "Invalid ``$Type`` table syntax!"
+		Throw
 	}
 }
 Function Get-InputBoolean {
