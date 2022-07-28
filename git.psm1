@@ -1,4 +1,4 @@
-[Hashtable[]]$CommitsProperties = @(
+[Hashtable[]]$GitCommitsProperties = @(
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Type = [DateTime] },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
@@ -24,15 +24,16 @@
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )
-[String]$ExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
-[String]$ExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
+[Hashtable]$GitCommitsInformationExpression = @{
+	MultipleLine = 'git --no-pager show --format="{1}" {0}'
+	SingleLine = 'git --no-pager log --all --format="{0}"'
+}
 Function Get-GitCommitsInformation {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param ()
-	[String[]]$DatabaseFilesFullNames = (Get-ChildItem -LiteralPath (Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath '.git') -Recurse -Force -File | Select-Object -ExpandProperty 'FullName')
 	Try {
-		[Object[]]$DatabaseFilesLocks = ($DatabaseFilesFullNames | ForEach-Object -Process {
+		[Object[]]$GitDatabaseLocks = ([Object[]](Get-ChildItem -LiteralPath (Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath '.git') -Recurse -Force -File) | Select-Object -ExpandProperty 'FullName' | ForEach-Object -Process {
 			Return [System.IO.File]::Open($_, 'Open', 'Read', 'Read')
 		})
 	} Catch {
@@ -40,42 +41,42 @@ Function Get-GitCommitsInformation {
 		Throw
 	}
 	Try {
-		[PSCustomObject]$PropertyToken = ($CommitsProperties | Where-Object -FilterScript {
-			Return ($_.AsIndex -ieq $True)
+		[Hashtable]$GitCommitsPropertyToken = ($GitCommitsProperties | Where-Object -FilterScript {
+			Return $_.AsIndex
 		})[0]
-		[Hashtable[]]$OutputObject = [String[]](Invoke-Expression -Command ($ExpressionSingleLine -f $PropertyToken.Placeholder)) | ForEach-Object -Process {
-			Return @{ "$($PropertyToken.Name)" = $_ }
+		[Hashtable[]]$Result = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpression.SingleLine -f $GitCommitsPropertyToken.Placeholder)) | ForEach-Object -Process {
+			Return @{ "$($GitCommitsPropertyToken.Name)" = $_ }
 		}
-		ForEach ($CommitsProperty In $CommitsProperties) {
-			If ($CommitsProperty.Name -ieq $PropertyToken.Name) {
+		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
+			If ($GitCommitsProperty.Name -ieq $GitCommitsPropertyToken.Name) {
 				Continue
 			}
-			If ($CommitsProperty.IsMultipleLine) {
-				For ($CommitIndex = 0; $CommitIndex -ilt $OutputObject.Count; $CommitIndex++) {
-					$OutputObject[$CommitIndex][$CommitsProperty.Name] = [String[]](Invoke-Expression -Command ($ExpressionMultipleLine -f @($Result[$CommitIndex][$PropertyToken.Name], $CommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
+			If ($GitCommitsProperty.IsMultipleLine) {
+				For ($CommitIndex = 0; $CommitIndex -ilt $Result.Count; $CommitIndex++) {
+					$Result[$CommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpression.MultipleLine -f @($Result[$CommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
 				}
-			} Else {
-				[String[]]$Results = Invoke-Expression -Command ($ExpressionSingleLine -f $CommitsProperty.Placeholder)
-				For ($ResultsIndex = 0; $ResultsIndex -ilt $Results.Count; $ResultsIndex++) {
-					[String]$Result = $Results[$ResultsIndex]
-					If ($CommitsProperty.IsArray) {
-						$OutputObject[$ResultsIndex][$CommitsProperty.Name] = $Result -isplit ' '
-					} ElseIf ($Null -ine $CommitsProperty.Type) {
-						$OutputObject[$ResultsIndex][$CommitsProperty.Name] = $Result -as $CommitsProperty.Type
-					} Else {
-						$OutputObject[$ResultsIndex][$CommitsProperty.Name] = $Result
-					}
+				Continue
+			}
+			[String[]]$ExpressionOutput = Invoke-Expression -Command ($GitCommitsInformationExpression.SingleLine -f $GitCommitsProperty.Placeholder)
+			For ($Row = 0; $Row -ilt $ExpressionOutput.Count; $Row++) {
+				[String]$Value = $ExpressionOutput[$Row]
+				If ($GitCommitsProperty.IsArray) {
+					$Result[$Row][$GitCommitsProperty.Name] = $Value -isplit ' '
+				} ElseIf ($Null -ine $GitCommitsProperty.Type) {
+					$Result[$Row][$GitCommitsProperty.Name] = $Value -as $GitCommitsProperty.Type
+				} Else {
+					$Result[$Row][$GitCommitsProperty.Name] = $Value
 				}
 			}
 		}
-		Return ($OutputObject | ForEach-Object -Process {
+		Return ($Result | ForEach-Object -Process {
 			Return [PSCustomObject]$_
 		} | Sort-Object -Property 'AuthorDate')
 	} Catch {
 		Write-Error -Message "Unexpected Git database error! $_" -Category 'OperationStopped'
 		Throw
 	} Finally {
-		$DatabaseFilesLocks | ForEach-Object -Process {
+		$GitDatabaseLocks | ForEach-Object -Process {
 			$_.Close() | Out-Null
 		}
 	}
