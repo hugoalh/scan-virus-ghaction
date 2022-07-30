@@ -414,13 +414,17 @@ If ($LocalTarget) {
 			If ($GitCommits.Count -ile 1) {
 				Write-GitHubActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: Re-run cannot apply the modified workflow!)"
 			}
-			For ($GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
+			For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
 				[String]$GitCommitHash = $GitCommits[$GitCommitsIndex]
 				[String]$GitSessionTitle = "$GitCommitHash (#$($GitReverse ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
 				Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 				Try {
 					Invoke-Expression -Command "git checkout $GitCommitHash --force --quiet"
-				} Catch {  }
+				} Catch {
+					Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout (SessionID: $GitCommitHash): $_"
+					Exit-GitHubActionsLogGroup
+					Exit 1
+				}
 				If ($LASTEXITCODE -ieq 0) {
 					Exit-GitHubActionsLogGroup
 					Invoke-ScanVirusTools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"

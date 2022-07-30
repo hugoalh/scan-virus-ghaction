@@ -49,13 +49,13 @@ Function Get-GitCommitsInformation {
 				Continue
 			}
 			If ($GitCommitsProperty.IsMultipleLine) {
-				For ($CommitIndex = 0; $CommitIndex -ilt $Result.Count; $CommitIndex++) {
+				For ([UInt32]$CommitIndex = 0; $CommitIndex -ilt $Result.Count; $CommitIndex++) {
 					$Result[$CommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpressionMultipleLine -f @($Result[$CommitIndex][$GitCommitsPropertyToken.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''
 				}
 				Continue
 			}
 			[String[]]$ExpressionOutput = Invoke-Expression -Command ($GitCommitsInformationExpressionSingleLine -f $GitCommitsProperty.Placeholder)
-			For ($Row = 0; $Row -ilt $ExpressionOutput.Count; $Row++) {
+			For ([UInt32]$Row = 0; $Row -ilt $ExpressionOutput.Count; $Row++) {
 				[String]$Value = $ExpressionOutput[$Row]
 				If ($GitCommitsProperty.IsArray) {
 					$Result[$Row][$GitCommitsProperty.Name] = $Value -isplit ' '
