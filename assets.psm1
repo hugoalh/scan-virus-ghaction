@@ -37,7 +37,7 @@ Function Update-GitHubActionScanVirusAssets {
 		Try {
 			New-Item -Path $AssetsRemoteExtractRoot -ItemType 'Directory' -Force -Confirm:$False | Out-Null
 			Invoke-Expression -Command "tar --extract --file=`"$AssetsRemoteOutFileFullName`" --directory=`"$AssetsRemoteExtractRoot`" --gzip" | Out-Null
-			If ($LASTEXITCODE -igt 0) {
+			If ($LASTEXITCODE -ine 0) {
 				Throw
 			}
 			Remove-Item -LiteralPath $AssetsRemoteOutFileFullName -Force -Confirm:$False

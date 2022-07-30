@@ -166,20 +166,6 @@ Function Test-StringIsUri {
 	)
 	Return ($Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$')
 }
-Function Test-StringMatchRegExs {
-	[CmdletBinding()]
-	[OutputType([Boolean])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$Target,
-		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][RegEx[]]$Matchers
-	)
-	ForEach ($Matcher In $Matchers) {
-		If ($Target -imatch $Matcher) {
-			Return $True
-		}
-	}
-	Return $False
-}
 Function Write-NameValue {
 	[CmdletBinding()]
 	[OutputType([Void])]

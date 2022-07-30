@@ -279,34 +279,23 @@ Example:
 
 #### `update_assets`
 
-`<Boolean = True>` Update assets from assets repository before scan anything, for ClamAV unofficial signatures and YARA rules.
-
-When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will ignore this input (i.e.: skip this update in order to save some times).
+`<Boolean = True>` Update ClamAV unofficial signatures index, ClamAV unofficial signatures, YARA rules index, and YARA rules from [assets repository][assets-repository] before scan anything.
 
 > **⚠ Important:**
 >
+> - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
 > - It is recommended to keep this as enable to have the latest assets.
-> - If this action have issues during updates, switch this to disable for offline mode!
+> - If this action have issues during updates, switch this to disable for offline mode.
 
-#### `update_clamavassets`
+#### `update_clamav`
 
-`<Boolean = True>` Update ClamAV assets via FreshClam before scan anything, for ClamAV official signatures.
-
-When input [`clamav_enable`](#clamav_enable) is `False`, will ignore this input (i.e.: skip this update in order to save some times).
+`<Boolean = True>` Update ClamAV via FreshClam (e.g.: ClamAV official signatures) before scan anything.
 
 > **⚠ Important:**
 >
+> - When input [`clamav_enable`](#clamav_enable) is `False`, will skip this update in order to save some times.
 > - It is recommended to keep this as enable to have the latest ClamAV official signatures.
-> - If this action have issues during updates, switch this to disable for offline mode!
-
-#### `update_packages`
-
-`<Boolean = True>` Update packages (i.e.: this action's dependencies), for ClamAV, Git, and YARA.
-
-> **⚠ Important:**
->
-> - It is recommended to keep this as enable to have the latest packages' patches.
-> - If this action have issues during updates, switch this to disable for offline mode!
+> - If this action have issues during updates, switch this to disable for offline mode.
 
 ### 📤 Output
 
@@ -334,5 +323,6 @@ jobs:
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
 
+[assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
 [clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-unofficial-signatures/index.tsv
 [yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/yara-rules/index.tsv

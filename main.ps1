@@ -107,10 +107,8 @@ Write-NameValue -Name "YARA_Rules_RegEx ($($YaraRulesRegEx.Count))" -Value "`n$(
 Write-NameValue -Name 'YARA_ToolWarning' -Value $YaraToolWarning
 [Boolean]$UpdateAssets = Get-InputBoolean -Name -Name 'update_assets'
 Write-NameValue -Name 'Update_Assets' -Value $UpdateAssets
-[Boolean]$UpdateClamAVAssets = Get-InputBoolean -Name -Name 'update_clamavassets'
-Write-NameValue -Name 'Update_Assets' -Value $UpdateClamAVAssets
-[Boolean]$UpdatePackages = Get-InputBoolean -Name -Name 'update_packages'
-Write-NameValue -Name 'Update_Assets' -Value $UpdatePackages
+[Boolean]$UpdateClamAV = Get-InputBoolean -Name -Name 'update_clamav'
+Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
 Exit-GitHubActionsLogGroup
 If (!$LocalTarget -and $NetworkTargets.Count -ieq 0) {
 	Write-GitHubActionsFail -Message 'Input `targets` does not have valid targets!'
@@ -120,34 +118,14 @@ If ($True -notin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No scan virus tools enabled!'
 	Throw
 }
-If ($UpdatePackages) {
-	Enter-GitHubActionsLogGroup -Title 'Update packages.'
-	Try {
-		Invoke-Expression -Command 'apt-get --assume-yes update'
-	} Catch {
-		Write-GitHubActionsWarning -Message "Unexpected issues when update packages's repository (mostly will not cause critical issues): $_"
-	}
-	If ($LASTEXITCODE -igt 0) {
-		Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update packages's repository (mostly will not cause critical issues)!"
-	}
-	Try {
-		Invoke-Expression -Command 'apt-get --assume-yes dist-upgrade'
-	} Catch {
-		Write-GitHubActionsWarning -Message "Unexpected issues when update packages (mostly will not cause critical issues): $_"
-	}
-	If ($LASTEXITCODE -igt 0) {
-		Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update packages (mostly will not cause critical issues)!"
-	}
-	Exit-GitHubActionsLogGroup
-}
-If ($UpdateClamAVAssets -and $ClamAVEnable) {
+If ($UpdateClamAV -and $ClamAVEnable) {
 	Enter-GitHubActionsLogGroup -Title 'Update ClamAV assets via FreshClam.'
 	Try {
 		Invoke-Expression -Command 'freshclam'
 	} Catch {
 		Write-GitHubActionsWarning -Message "Unexpected issues when update ClamAV assets via FreshClam (mostly will not cause critical issues): $_"
 	}
-	If ($LASTEXITCODE -igt 0) {
+	If ($LASTEXITCODE -ine 0) {
 		Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update ClamAV assets via FreshClam (mostly will not cause critical issues)!"
 	}
 	Exit-GitHubActionsLogGroup
@@ -170,10 +148,10 @@ Enter-GitHubActionsLogGroup -Title 'Read assets index.'
 [PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @TsvParameters
 [PSCustomObject[]]$YaraRulesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @TsvParameters
 [PSCustomObject[]]$ClamAVUnofficialSignaturesApply = ($ClamAVUnofficialSignaturesAssetsIndex | Where-Object -FilterScript {
-	Return (Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx)
+	Return (($_.Name | Select-String -Pattern $ClamAVUnofficialSignaturesRegEx -Quiet -AllMatches) ?? $False)
 } | Sort-Object -Property 'Name')
 [PSCustomObject[]]$YaraRulesApply = ($YaraRulesAssetsIndex | Where-Object -FilterScript {
-	Return (Test-StringMatchRegExs -Target $_.Name -Matchers $YaraRulesRegEx.Exclude)
+	Return (($_.Name | Select-String -Pattern $ClamAVUnofficialSignaturesRegEx -Quiet -AllMatches) ?? $False)
 } | Sort-Object -Property 'Name')
 [PSCustomObject[]]$ClamAVUnofficialSignaturesIndexDisplay = @()
 ForEach ($ClamAVUnofficialSignaturesAssetIndex In $ClamAVUnofficialSignaturesAssetsIndex) {
@@ -247,8 +225,8 @@ Function Invoke-ScanVirusTools {
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[Boolean]$SkipClamAV = Test-StringMatchRegExs -Target $SessionId -Matchers $ClamAVIgnores.OnlySessions.Session
-	[Boolean]$SkipYara = Test-StringMatchRegExs -Target $SessionId -Matchers $YaraIgnores.OnlySessions.Session
+	[Boolean]$SkipClamAV = ($SessionId | Select-String -Pattern $ClamAVIgnores.OnlySessions.Session -Quiet -AllMatches) ?? $False
+	[Boolean]$SkipYara = ($SessionId | Select-String -Pattern $YaraIgnores.OnlySessions.Session -Quiet -AllMatches) ?? $False
 	[UInt64]$ElementsIsDirectoryCount = 0
 	[String[]]$ElementsListClamAV = @()
 	[String[]]$ElementsListYara = @()
@@ -270,14 +248,14 @@ Function Invoke-ScanVirusTools {
 		If ($ClamAVEnable -and !$SkipClamAV -and (
 			($ElementIsDirectory -and $ClamAVSubcursive) -or
 			!$ElementIsDirectory
-		) -and !(Test-StringMatchRegExs -Target $ElementName -Matchers $ClamAVIgnores.OnlyPaths.Path)) {
+		) -and !(($ElementName | Select-String -Pattern $ClamAVIgnores.OnlyPaths.Path -Quiet -AllMatches) ?? $False)) {
 			$ElementsListClamAV += $Element.FullName
 			$ElementListDisplay.Flags += 'C'
 			If (!$ElementIsDirectory) {
 				$Script:TotalSizesClamAV += $Element.Length
 			}
 		}
-		If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(Test-StringMatchRegExs -Target $ElementName -Matchers $YaraIgnores.OnlyPaths.Path)) {
+		If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(($ElementName | Select-String -Pattern $YaraIgnores.OnlyPaths.Path -Quiet -AllMatches) ?? $False)) {
 			$ElementsListYara += $Element.FullName
 			$ElementListDisplay.Flags += 'Y'
 			$Script:TotalSizesYara += $Element.Length
