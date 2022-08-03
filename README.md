@@ -9,7 +9,7 @@
 [![GitHub Forks](https://img.shields.io/github/forks/hugoalh/scan-virus-ghaction?label=Forks&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/network/members)
 ![GitHub Languages](https://img.shields.io/github/languages/count/hugoalh/scan-virus-ghaction?label=Languages&logo=github&logoColor=ffffff&style=flat-square)
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square)](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
-[![License](https://img.shields.io/static/v1?label=License&message=MIT&color=brightgreen&style=flat-square)](./LICENSE.md)
+[![License](https://img.shields.io/static/v1?label=License&message=MIT&style=flat-square)](./LICENSE.md)
 
 | **Release** | **Latest** (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) | **Pre** (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) |
 |:-:|:-:|:-:|
@@ -17,14 +17,14 @@
 
 ## 📝 Description
 
-A GitHub Action to scan virus (including malicious files and malware) in the GitHub Action workspace.
+A GitHub Action to scan virus (including malicious file and malware) in the GitHub Action workspace.
 
 ### 🛡 Anti Virus Software
 
-- [ClamAV](https://www.clamav.net)
-  > ClamAV, by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malware, and other malicious threats.
-- **(>= v0.6.0)** [YARA](http://virustotal.github.io/yara) ([Rules List][yara-rules-list])
-  > YARA, by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
+- **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
+  - [Unofficial Signatures List][clamav-unofficial-signatures-list]
+- **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
+  - [Rules List][yara-rules-list]
 
 ### ⚠ Disclaimer
 
@@ -38,205 +38,264 @@ This action does not provide any guarantee that carefully hidden objects will be
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.6.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.10.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
 
 ### 🎯 Entrypoint / Target
 
 ```yml
 jobs:
   job_id:
-    runs-on: "ubuntu-________"
+    runs-on: "________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction@<tag/version>"
+      - uses: "hugoalh/scan-virus-ghaction________@<Tag/Version>"
 ```
 
-Require Software:
-
-- Docker
+|  | **`jobs.job_id.runs-on`** | **`jobs.job_id.steps[*].uses`** | **Require Software** |
+|:-:|:-:|:-:|:-:|
+| **Default** | `ubuntu-________` | *None* | Docker |
 
 ### 📥 Input
 
+> **ℹ Notice:** All inputs are optional.
+
+#### `input_listdelimiter`
+
+`<RegEx = ",|;|\r?\n">` Delimiter when input is type of list (i.e.: array), by regular expression.
+
+#### `input_tableparser`
+
+`<String = "yaml">` Paser to use when input is type of table:
+
+- `csv`
+  ```csv
+  bar,foo
+  5,10
+  10,20
+  ```
+- `csv-kv-singleline`
+  ```
+  bar=5,foo=10;bar=10,foo=20
+  ```
+- `csv-kv-multipleline`
+  ```
+  bar=5,foo=10
+  bar=10,foo=20
+  ```
+- `tsv`
+  ```tsv
+  bar	foo
+  5	10
+  10	20
+  ```
+- `yaml`/`yml`
+  ```yml
+  - bar: 5
+    foo: 10
+  - bar: 10
+    foo: 20
+  ```
+
 #### `targets`
 
-**\[Optional\]** `<string[] = "./">` Targets.
+`<Uri[]>` Targets.
 
-- **Local (`"./"`):** Workspace, for checkouted repository via [`actions/checkout`](https://github.com/actions/checkout) or prepared files to workspace before this action.
-- **Network:** Fetch files from network to workspace, by HTTP/HTTPS URL, separate each target with semicolon (`;`) or per line.
-  > **⚠ Important:**
-  >
-  > - Each files is recommanded to limit sizes for maximum 4 GB to prevent unexpected error/hang.
-  > - Require a clean workspace.
+- **Local *(Default)*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
+- **Network:** Fetch files from network to the workspace, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
 
-When this input is network, will ignore inputs:
+When this input is defined (i.e.: network targets), will ignore inputs:
 
-- `clamav_filesfilter_list`
-- `clamav_filesfilter_mode`
-- `yara_filesfilter_list`
-- `yara_filesfilter_mode`
+- [`git_integrate`](#git_integrate)
+- [`git_ignores`](#git_ignores)
+- [`git_reverse`](#git_reverse)
 
-#### `git_deep`
+#### `git_integrate`
 
-**\[Optional\]** `<boolean = false>` Scan deeper for Git repository, will scan each commits. When this input is `false`, will ignore input `git_reversesession`.
+`<Boolean = False>` Integrate with Git to scan every commits; Require workspace is a Git repository.
 
-#### `git_reversesession`
+When this input is `False`, will ignore inputs:
 
-**\[Optional\]** `<boolean = false>` Reverse Git session.
+- [`git_ignores`](#git_ignores)
+- [`git_reverse`](#git_reverse)
 
-- **`false`:** From oldest to newest.
-- **`true`:** From newest to oldest.
+#### `git_ignores`
+
+[`<Table<{String:RegEx}>>`](#input_tableparser) Git ignores (for commits), by table.
+
+Available properties (i.e.: keys) with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`) (commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties are supported):
+
+- `AuthorDate` (ISO8601 UTC (end with `Z`))
+- `AuthorEmail`
+- `AuthorName`
+- `Body`
+- `CommitHash`
+- `CommitterDate` (ISO8601 UTC (end with `Z`))
+- `CommitterEmail`
+- `CommitterName`
+- `Encoding`
+- `GPGSignatureKey`
+- `GPGSignatureKeyFingerprint`
+- `GPGSignaturePrimaryKeyFingerprint`
+- `GPGSignatureSigner`
+- `GPGSignatureStatus`
+- `GPGSignatureTrustLevel`
+- `Notes`
+- `ReflogIdentityEmail`
+- `ReflogIdentityName`
+- `ReflogSelector`
+- `ReflogSubject`
+- `ShortenedReflogSelector`
+- `Subject`
+- `TreeHash`
+
+Example:
+
+```yml
+- AuthorName: ^octokit$
+  CommitterName: ^octokit$
+```
+
+#### `git_reverse`
+
+`<Boolean = False>` Reverse scan order of the Git commits.
+
+- **`False`:** From the oldest commit to the newest commit.
+- **`True`:** From the newest commit to the oldest commit.
 
 #### `clamav_enable`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV. When this input is `false`, will ignore inputs:
+`<Boolean = True>` Use ClamAV.
 
-- `clamav_daemon`
-- `clamav_filesfilter_list`
-- `clamav_filesfilter_mode`
-- `clamav_multiscan`
-- `clamav_reloadpersession`
-- `clamav_signaturesignore_custom`
-- `clamav_signaturesignore_presets`
-- `clamav_subcursive`
+When this input is `False`, will ignore inputs:
+
+- [`clamav_daemon`](#clamav_daemon)
+- [`clamav_ignores`](#clamav_ignores)
+- [`clamav_multiscan`](#clamav_multiscan)
+- [`clamav_reloadpersession`](#clamav_reloadpersession)
+- [`clamav_subcursive`](#clamav_subcursive)
+- [`clamav_unofficialsignatures`](#clamav_unofficialsignatures)
 
 #### `clamav_daemon`
 
-**(>= v0.6.1) \[Optional\]** `<boolean = true>` Use ClamAV daemon. When this input is `false`, will ignore inputs:
+`<Boolean = True>` Use ClamAV daemon.
 
-- `clamav_multiscan`
-- `clamav_reloadpersession`
+When this input is `False`, will ignore inputs:
+
+- [`clamav_multiscan`](#clamav_multiscan)
+- [`clamav_reloadpersession`](#clamav_reloadpersession)
 
 > **⚠ Important:**
 >
 > - It is recommended to keep this as enable to have a shorter scanning duration.
-> - When this input is `false`, will have limitations to protect the system against DoS attacks:
+> - When this input is `False`, will have limitations to protect the system against DoS attacks:
 >   - Extract and scan at most 25 MB from each archive.
 >   - Extract and scan at most 100 MB from each scanned file.
 >   - Extract at most 10000 files from each scanned file (when this is an archive, a document or another kind of container).
 >   - Maximum 15 depth directories are scanned.
 >   - Maximum 16 archive recursion levels.
 
-#### `clamav_filesfilter_list`
+#### `clamav_ignores`
 
-**\[Optional\]** `<string[] = "">` ClamAV files filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions), separate each target with semicolon (`;`) or per line.
+[`<Table<{String:RegEx}>>`](#input_tableparser) ClamAV ignores (for files, sessions, and/or signatures), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
 
-#### `clamav_filesfilter_mode`
+Available properties (i.e.: keys):
 
-**\[Optional\]** `<string = "exclude">` ClamAV files filter mode.
+- `Path` (Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension))
+- `Session` (`Current`, Git commit hash, or HTTP/HTTPS URI)
+- `Signature` (Platform`.`Category`.`Name`-`SignatureID`-`Revision)
 
-- **`"exclude"`:** Exclude files in input `clamav_filesfilter_list`.
-- **`"include"`:** Only include files in input `clamav_filesfilter_list`.
+Example:
+
+```yml
+- Path: ^node_modules
+```
+
+> **⚠ Important:**
+>
+> - If this acts weird, try to disable input [`clamav_subcursive`](#clamav_subcursive) first before report the issues!
+> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
+> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 
 #### `clamav_multiscan`
 
-**\[Optional\]** `<boolean = true>` Use ClamAV "multiscan" mode, ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+`<Boolean = True>` Use ClamAV multiscan mode; ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
 
 > **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `clamav_reloadpersession`
 
-**(>= v0.6.1) \[Optional\]** `<boolean = false>` Reload ClamAV per session.
+`<Boolean = False>` Reload ClamAV per session.
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
-#### `clamav_signaturesignore_custom`
-
-**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore individual ClamAV signatures, separate each signature with semicolon (`;`) or per line.
-
-> **⚠ Important:**
->
-> - It is not recommended to use this due to ClamAV rarely throw false positives in most cases.
-> - Signatures must be exactly the same in order to ignore.
-> - This is unable to filter signatures with specify directories and/or files.
-> - This is unable to only include specify signatures.
-
-#### `clamav_signaturesignore_presets`
-
-**(>= v0.6.1) \[Optional\]** `<string[] = "">` Ignore ClamAV signatures by [presets list][clamav-signatures-ignore-presets-list], separate each preset with semicolon (`;`) or per line.
-
-> **⚠ Important:**
->
-> - It is not recommended to use this due to ClamAV rarely throw false positives in most cases.
-> - This is unable to filter presets with specify directories and/or files.
-> - This is unable to only include specify presets.
-
 #### `clamav_subcursive`
 
-**(>= v0.6.1) \[Optional\]** `<boolean = true>` Scan directories subcursively.
+`<Boolean = True>` Scan directories subcursively.
 
-> **⚠ Important:** If there has issues at the input `clamav_filesfilter_list`, try to disable this first before report the issues!
+> **⚠ Important:** If input [`clamav_ignores`](#clamav_ignores) acts weird, try to disable this first before report the issues!
 
 #### `clamav_unofficialsignatures`
 
-**(>= v0.6.1) \[Optional\]** `<string[] = "">` ClamAV unofficial signatures, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [signatures list][clamav-unofficial-signatures-list], separate each rule with semicolon (`;`) or per line.
+`<RegEx[]>` Use ClamAV unofficial signatures, by regular expression and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial signatures are not in use.
 
-> **⚠ Important:** It is not recommended to use this due to ClamAV official signature is less false positives in most cases.
+> **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives than official signatures in most cases.
 
 #### `yara_enable`
 
-**\[Optional\]** `<boolean = false>` Use YARA. When this input is `false`, will ignore inputs:
+`<Boolean = False>` Use YARA.
 
-- `yara_filesfilter_list`
-- `yara_filesfilter_mode`
-- `yara_rulesfilter_list`
-- `yara_rulesfilter_mode`
-- `yara_toolwarning`
+When this input is `False`, will ignore inputs:
 
-> **⚠ Important:** This is disable by default due to YARA can throw many false positives in most cases.
+- [`yara_ignores`](#yara_ignores)
+- [`yara_rules`](#yara_rules)
+- [`yara_toolwarning`](#yara_toolwarning)
 
-#### `yara_filesfilter_list`
+> **⚠ Important:** It is not recommended to use this due to YARA rules can have many false positives in most cases.
 
-**\[Optional\]** `<string[] = "">` YARA files filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions), separate each target with semicolon (`;`) or per line.
+#### `yara_ignores`
 
-#### `yara_filesfilter_mode`
+[`<Table<{String:RegEx}>>`](#input_tableparser) YARA ignores (for files, rules, and/or sessions), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
 
-**\[Optional\]** `<string = "exclude">` YARA files filter mode.
+Available properties (i.e.: keys):
 
-- **`"exclude"`:** Exclude files in input `yara_filesfilter_list`.
-- **`"include"`:** Only include files in input `yara_filesfilter_list`.
+- `Path` (Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension))
+- `Rule` (Index`/`RuleName)
+- `Session` (`Current`, Git commit hash, or HTTP/HTTPS URI)
 
-#### `yara_rulesfilter_list`
+Example:
 
-**\[Optional\]** `<string[] = "">` YARA rules filter list, by [PowerShell regular expressions](#PowerShell-Regular-Expressions) and [rules list][yara-rules-list], separate each rule with semicolon (`;`) or per line.
-
-To filter specifically, separate main rule and sub-rule with forward slash (`/`) (i.e.: backward slash and forward slash (`\/`) for regular expressions), and sub-rule and file with right angle bracket (`>`). For full pattern:
-
-```
-^<Main>\/<Sub>><File>$
+```yml
+- Path: ^node_modules
 ```
 
-For example with main rule is `foo`, sub-rule is `bar`, file is `goob`:
+#### `yara_rules`
 
-| **Pattern** | **Example** |
-|:-:|:-:|
-| Main + Sub | `^foo\/bar` |
-| Main + File | `^foo\/.+>goob$` |
-| Sub + File | `\/bar>goob$` |
-| Main + Sub + File | `^foo\/bar>goob$` |
-
-#### `yara_rulesfilter_mode`
-
-**\[Optional\]** `<string = "exclude">` YARA rules filter mode.
-
-- **`"exclude"`:** Exclude rules in input `yara_rulesfilter_list`.
-- **`"include"`:** Only include rules in input `yara_rulesfilter_list`.
+`<RegEx[]>` Use YARA rules, by regular expression and [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the rules are not in use.
 
 #### `yara_toolwarning`
 
-**\[Optional\]** `<boolean = false>` Enable YARA tool warning.
+`<Boolean = False>` Enable YARA tool warning.
 
-> **⚠ Important:** It is recommended to keep this as disable due to YARA can throw many warnings about deprecated features, while user-end does not need these informations in most cases.
+> **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while client does not need these informations in most cases.
 
-#### PowerShell Regular Expressions
+#### `update_assets`
 
-[Regular expressions in PowerShell](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions) is slightly different to others, forward slash (`/`) does not need at the start and end of the regular expressions.
+`<Boolean = True>` Update ClamAV unofficial signatures index, ClamAV unofficial signatures, YARA rules index, and YARA rules from [assets repository][assets-repository] before scan anything.
 
-Also, when defining the regular expressions, it is important to note that the target is considered valid if the regular expression matches anywhere within the target. For example, the regular expression `p` will match any target with a "p" in it, such as "apple" not just a target that is simply "p". Therefore, it is usually less confusing, as a matter of course, to surround the regular expression in `^...$` form (e.g.: `^p$`), unless there is a good reason not to do so.
+> **⚠ Important:**
+>
+> - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
+> - It is recommended to keep this as enable to have the latest assets.
+> - If this action have issues during updates, switch this to disable for offline mode.
 
-| **JavaScript** | **PowerShell** |
-|:-:|:-:|
-| `/p/` | `p` |
-| `/^foo/` | `^foo` |
-| `/\//` | `\/` |
+#### `update_clamav`
+
+`<Boolean = True>` Update ClamAV via FreshClam (e.g.: ClamAV official signatures) before scan anything.
+
+> **⚠ Important:**
+>
+> - When input [`clamav_enable`](#clamav_enable) is `False`, will skip this update in order to save some times.
+> - It is recommended to keep this as enable to have the latest ClamAV official signatures.
+> - If this action have issues during updates, switch this to disable for offline mode.
 
 ### 📤 Output
 
@@ -251,11 +310,11 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.0.0"
+        uses: "actions/checkout@v3.0.2"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.6.0"
+        uses: "hugoalh/scan-virus-ghaction@v0.10.0"
 ```
 
 ### Guide
@@ -264,6 +323,6 @@ jobs:
 
 - [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
 
-[clamav-signatures-ignore-presets-list]: ./clamav-signatures-ignore-presets/index.tsv
-[clamav-unofficial-signatures-list]: ./clamav-unofficial-signatures/index.tsv
-[yara-rules-list]: ./yara-rules/index.tsv
+[assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
+[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-unofficial-signatures/index.tsv
+[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/yara-rules/index.tsv

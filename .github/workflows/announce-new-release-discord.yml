@@ -8,25 +8,36 @@ jobs:
     name: "Announce New Release - Discord"
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "hugoalh/send-discord-webhook-ghaction@v4.2.0"
+      - uses: "hugoalh/send-discord-webhook-ghaction/use-nodejs@v4.2.3"
         with:
-          key: "${{secrets.DISCORDWEBHOOK_HUGOALHSTUDIO_STUDIOANNOUNCEMENT_PROJECTNEWRELEASEANNOUNCER}}"
+          key: "${{secrets.DISCORD_HXHS_PROJECTNEWRELEASEANNOUNCER_WEBHOOK}}"
           payload: |
-            content: |
-              **__Scan Virus (GitHub Action)__**
-
-              Version ${{github.event.release.name}} (${{github.event.release.tag_name}}) is released and available on:
-
-              - **GitHub Repository Release (& Changelog):** <${{github.event.release.html_url}}>
-              - **GitHub Marketplace:** <https://github.com/marketplace/actions/scan-virus>
             embeds:
-              - description: |
-                  **__Scan Virus (GitHub Action)__**
+              - title: "Scan Virus (GitHub Action)"
+                description: |
+                  > ${{github.event.repository.description}}
 
-                  ${{github.event.repository.description}}
-
-                  - **GitHub:** ${{github.event.repository.html_url}}
+                  Version ${{github.event.release.name}} (${{github.event.release.tag_name}}) just released!
                 color: "16,116,231"
                 thumbnail:
-                  url: "https://i.imgur.com/knmLbFg.png"
+                  url: "https://i.imgur.com/6qM8z4w.png"
+                fields:
+                  - name: "GitHub: ${{github.event.repository.full_name}}"
+                    value: "${{github.event.repository.html_url}}"
+                    inline: true
+                  - name: "GitHub Repository Release & Changelog"
+                    value: "${{github.event.release.html_url}}"
+                    inline: true
+                  - name: "GitHub Marketplace"
+                    value: "https://github.com/marketplace/actions/scan-virus"
+                    inline: true
+                  - name: "．"
+                    value: "．"
+                    inline: false
+                  - name: "Author"
+                    value: "${{github.event.release.author.login}}"
+                    inline: true
+                  - name: "Publish Time"
+                    value: "${{github.event.release.published_at}}"
+                    inline: true
           wait: "true"

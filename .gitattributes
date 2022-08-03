@@ -457,7 +457,7 @@
 *.rdx binary
 *.reason binary
 *.rel binary
-*.res text 
+*.res text
 *.rgbe binary
 *.rm binary
 *.rmd text

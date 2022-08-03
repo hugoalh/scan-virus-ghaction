@@ -2,85 +2,79 @@ name: "Scan Virus"
 author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
+  input_listdelimiter:
+    description: "{RegEx} Delimiter when input is type of list (i.e.: array)."
+    required: false
+    default: ",|;|\\r?\\n"
+  input_tableparser:
+    description: "{String} Paser to use when input is type of table."
+    required: false
+    default: "yaml"
   targets:
-    description: "{string[]} Targets."
+    description: "{Uri[]} Targets."
     required: false
-    default: "./"
-  git_deep:
-    description: "{boolean} Scan deeper for Git repository."
+  git_integrate:
+    description: "{Boolean} Integrate with Git to scan every commits; Require workspace is a Git repository."
     required: false
-    default: "false"
-  git_reversesession:
-    description: "{boolean} Reverse Git session."
+    default: "False"
+  git_ignores:
+    description: "{Table<{String:RegEx}>} Git ignores (for commits)."
     required: false
-    default: "false"
+  git_reverse:
+    description: "{Boolean} Reverse scan order of the Git commits."
+    required: false
+    default: "False"
   clamav_enable:
-    description: "{boolean} Use ClamAV."
+    description: "{Boolean} Use ClamAV."
     required: false
-    default: "true"
+    default: "True"
   clamav_daemon:
-    description: "{boolean} Use ClamAV daemon."
+    description: "{Boolean} Use ClamAV daemon."
     required: false
-    default: "true"
-  clamav_filesfilter_list:
-    description: "{string[]} ClamAV files filter list."
+    default: "True"
+  clamav_ignores:
+    description: "{Table<{String:RegEx}>} ClamAV ignores."
     required: false
-    default: ""
-  clamav_filesfilter_mode:
-    description: "{string} ClamAV files filter mode."
-    required: false
-    default: "exclude"
   clamav_multiscan:
-    description: "{boolean} Use ClamAV multiscan mode."
+    description: "{Boolean} Use ClamAV multiscan mode."
     required: false
-    default: "true"
+    default: "True"
   clamav_reloadpersession:
-    description: "{boolean} Reload ClamAV per session."
+    description: "{Boolean} Reload ClamAV per session."
     required: false
-    default: "false"
-  clamav_signaturesignore_custom:
-    description: "{string[]} Ignore individual ClamAV signatures."
-    required: false
-    default: ""
-  clamav_signaturesignore_presets:
-    description: "{string[]} Ignore ClamAV signatures by presets list."
-    required: false
-    default: ""
+    default: "False"
   clamav_subcursive:
-    description: "{boolean} Scan directories subcursively."
+    description: "{Boolean} Scan directories subcursively."
     required: false
-    default: "true"
+    default: "True"
   clamav_unofficialsignatures:
-    description: "{string[]} ClamAV unofficial signatures."
+    description: "{RegEx[]} Use ClamAV unofficial signatures."
     required: false
-    default: ""
   yara_enable:
-    description: "{boolean} Use YARA."
+    description: "{Boolean} Use YARA."
     required: false
-    default: "false"
-  yara_filesfilter_list:
-    description: "{string[]} YARA files filter list."
+    default: "False"
+  yara_ignores:
+    description: "{Table<{String:RegEx}>} YARA ignores."
     required: false
-    default: ""
-  yara_filesfilter_mode:
-    description: "{string} YARA files filter mode."
+  yara_rules:
+    description: "{RegEx[]} Use YARA rules."
     required: false
-    default: "exclude"
-  yara_rulesfilter_list:
-    description: "{string[]} YARA rules filter list."
-    required: false
-    default: ""
-  yara_rulesfilter_mode:
-    description: "{string} YARA rules filter mode."
-    required: false
-    default: "exclude"
   yara_toolwarning:
-    description: "{boolean} Enable YARA tool warning."
+    description: "{Boolean} Enable YARA tool warning."
     required: false
-    default: "false"
+    default: "False"
+  update_assets:
+    description: "{Boolean} Update ClamAV unofficial signatures index, ClamAV unofficial signatures, YARA rules index, and YARA rules from assets repository before scan anything."
+    required: false
+    default: "True"
+  update_clamav:
+    description: "{Boolean} Update ClamAV via FreshClam (e.g.: ClamAV official signatures) before scan anything."
+    required: false
+    default: "True"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.6.2"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.10.0-alpha.1"
 branding:
   icon: "shield"
   color: "red"
