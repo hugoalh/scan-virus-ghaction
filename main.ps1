@@ -152,10 +152,10 @@ Enter-GitHubActionsLogGroup -Title 'Read assets index.'
 [PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @TsvParameters
 [PSCustomObject[]]$YaraRulesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @TsvParameters
 [PSCustomObject[]]$ClamAVUnofficialSignaturesApply = ($ClamAVUnofficialSignaturesAssetsIndex | Where-Object -FilterScript {
-	Return (($_.Name | Select-String -Pattern $ClamAVUnofficialSignaturesRegEx -Quiet -AllMatches) ?? $False)
+	Return !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx)
 } | Sort-Object -Property 'Name')
 [PSCustomObject[]]$YaraRulesApply = ($YaraRulesAssetsIndex | Where-Object -FilterScript {
-	Return (($_.Name | Select-String -Pattern $ClamAVUnofficialSignaturesRegEx -Quiet -AllMatches) ?? $False)
+	Return !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx)
 } | Sort-Object -Property 'Name')
 [PSCustomObject[]]$ClamAVUnofficialSignaturesIndexDisplay = @()
 ForEach ($ClamAVUnofficialSignaturesAssetIndex In $ClamAVUnofficialSignaturesAssetsIndex) {
@@ -163,7 +163,7 @@ ForEach ($ClamAVUnofficialSignaturesAssetIndex In $ClamAVUnofficialSignaturesAss
 	[Boolean]$ClamAVUnofficialSignaturesAssetIndexExist = Test-Path -LiteralPath $ClamAVUnofficialSignaturesAssetIndexFullName
 	[Boolean]$ClamAVUnofficialSignaturesAssetIndexApply = $ClamAVUnofficialSignaturesAssetIndex.Name -iin $ClamAVUnofficialSignaturesApply.Name
 	$ClamAVUnofficialSignaturesIndexDisplay += [PSCustomObject]@{
-		Name = $ClamAVUnofficialSignaturesAsset.Name
+		Name = $ClamAVUnofficialSignaturesAssetIndex.Name
 		Exist = $ClamAVUnofficialSignaturesAssetIndexExist
 		Apply = $ClamAVUnofficialSignaturesAssetIndexApply
 	}
@@ -176,33 +176,33 @@ ForEach ($ClamAVUnofficialSignaturesAssetIndex In $ClamAVUnofficialSignaturesAss
 [PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsNotExist = ($ClamAVUnofficialSignaturesIndexDisplay | Where-Object -FilterScript {
 	Return !$_.Exist
 })
-Write-NameValue -Name "ClamAV unofficial signatures index (Index: $($ClamAVUnofficialSignaturesAssetsIndex.Count); Exist: $($ClamAVUnofficialSignaturesAssetsIndex.Count - $ClamAVUnofficialSignaturesAssetsNotExist.Count); Apply: $($ClamAVUnofficialSignaturesApply.Count))" -Value "`n$($ClamAVUnofficialSignaturesIndexDisplay | Format-Table -Property @(
+Write-NameValue -Name "ClamAV unofficial signatures index (Index: $($ClamAVUnofficialSignaturesAssetsIndex.Count); Exist: $($ClamAVUnofficialSignaturesAssetsIndex.Count - $ClamAVUnofficialSignaturesAssetsNotExist.Count); Apply: $($ClamAVUnofficialSignaturesApply.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVUnofficialSignaturesIndexDisplay | Format-Table -Property @(
 	'Name',
 	@{ Expression = 'Exist'; Alignment = 'Right' },
 	@{ Expression = 'Apply'; Alignment = 'Right' }
-) -AutoSize -Wrap | Out-String)"
+) -AutoSize -Wrap | Out-String))"
 If ($ClamAVUnofficialSignaturesAssetsNotExist.Count -igt 0) {
 	Write-GitHubActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist ($($ClamAVUnofficialSignaturesAssetsNotExist.Count)): $($ClamAVUnofficialSignaturesAssetsNotExist.Name -join ', ')"
 }
 [PSCustomObject[]]$YaraRulesIndexDisplay = @()
 ForEach ($YaraRulesAssetIndex In $YaraRulesAssetsIndex) {
 	[String]$YaraRuleFullName = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $YaraRulesAssetIndex.Location
-	[Boolean]$YaraRuleExist = Test-Path -LiteralPath $YaraRuleFullName
-	[Boolean]$YaraRuleApply = $YaraRulesAssetIndex.Name -iin $YaraRulesApply.Name
+	[Boolean]$YaraRuleAssetExist = Test-Path -LiteralPath $YaraRuleFullName
+	[Boolean]$YaraRuleAssetApply = $YaraRulesAssetIndex.Name -iin $YaraRulesApply.Name
 	$YaraRulesIndexDisplay += [PSCustomObject]@{
 		Name = $YaraRulesAssetIndex.Name
-		Exist = $YaraRuleExist
-		Apply = $YaraRuleApply
+		Exist = $YaraRuleAssetExist
+		Apply = $YaraRuleAssetApply
 	}
 }
 [PSCustomObject[]]$YaraRulesAssetsNotExist = ($YaraRulesIndexDisplay | Where-Object -FilterScript {
 	Return !$_.Exist
 })
-Write-NameValue -Name "YARA rules index (Index: $($YaraRulesAssetsIndex.Count); Exist: $($YaraRulesAssetsIndex.Count - $YaraRulesAssetsNotExist.Count); Apply: $($YaraRulesApply.Count))" -Value "`n$($YaraRulesIndexDisplay | Format-Table -Property @(
+Write-NameValue -Name "YARA rules index (Index: $($YaraRulesAssetsIndex.Count); Exist: $($YaraRulesAssetsIndex.Count - $YaraRulesAssetsNotExist.Count); Apply: $($YaraRulesApply.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraRulesIndexDisplay | Format-Table -Property @(
 	'Name',
 	@{ Expression = 'Exist'; Alignment = 'Right' },
 	@{ Expression = 'Apply'; Alignment = 'Right' }
-) -AutoSize -Wrap | Out-String)"
+) -AutoSize -Wrap | Out-String))"
 If ($YaraRulesAssetsNotExist.Count -igt 0) {
 	Write-GitHubActionsWarning -Message "Some of the YARA rules are indexed but not exist ($($YaraRulesAssetsNotExist.Count)): $($YaraRulesAssetsNotExist.Name -join ', ')"
 }
@@ -229,8 +229,8 @@ Function Invoke-ScanVirusTools {
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[Boolean]$SkipClamAV = ($SessionId | Select-String -Pattern $ClamAVIgnores.OnlySessions.Session -Quiet -AllMatches) ?? $False
-	[Boolean]$SkipYara = ($SessionId | Select-String -Pattern $YaraIgnores.OnlySessions.Session -Quiet -AllMatches) ?? $False
+	[Boolean]$SkipClamAV = Test-StringMatchRegExs -Target $SessionId -Matchers $ClamAVIgnores.OnlySessions.Session
+	[Boolean]$SkipYara = Test-StringMatchRegExs -Target $SessionId -Matchers $YaraIgnores.OnlySessions.Session
 	[UInt64]$ElementsIsDirectoryCount = 0
 	[String[]]$ElementsListClamAV = @()
 	[String[]]$ElementsListYara = @()
@@ -252,14 +252,14 @@ Function Invoke-ScanVirusTools {
 		If ($ClamAVEnable -and !$SkipClamAV -and (
 			($ElementIsDirectory -and $ClamAVSubcursive) -or
 			!$ElementIsDirectory
-		) -and !(($ElementName | Select-String -Pattern $ClamAVIgnores.OnlyPaths.Path -Quiet -AllMatches) ?? $False)) {
+		) -and !(Test-StringMatchRegExs -Target $ElementName -Matchers $ClamAVIgnores.OnlyPaths.Path)) {
 			$ElementsListClamAV += $Element.FullName
 			$ElementListDisplay.Flags += 'C'
 			If (!$ElementIsDirectory) {
 				$Script:TotalSizesClamAV += $Element.Length
 			}
 		}
-		If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(($ElementName | Select-String -Pattern $YaraIgnores.OnlyPaths.Path -Quiet -AllMatches) ?? $False)) {
+		If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(Test-StringMatchRegExs -Target $ElementName -Matchers $YaraIgnores.OnlyPaths.Path)) {
 			$ElementsListYara += $Element.FullName
 			$ElementListDisplay.Flags += 'Y'
 			$Script:TotalSizesYara += $Element.Length
