@@ -10,8 +10,6 @@ ENV SNAPCRAFT_SETUP_CORE=1
 RUN ["apt-get", "--assume-yes", "update"]
 RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "curl", "git", "git-lfs", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "snapd", "yara", "zlib1g"]
 RUN ["apt-get", "--assume-yes", "dist-upgrade"]
-RUN ["systemctl", "restart", "snapd", "snapd.socket"]
-RUN ["systemctl", "daemon-reload"]
 RUN ["snap", "install", "core"]
 RUN ["snap", "install", "node", "--channel=16/stable", "--classic"]
 RUN ["snap", "install", "powershell", "--channel=latest/stable", "--classic"]
