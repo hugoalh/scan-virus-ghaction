@@ -105,7 +105,7 @@ Function Get-InputList {
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
-		Return @()
+		Return [String[]]@()
 	}
 	Return (Format-InputList -InputObject $Raw -Delimiter $Delimiter)
 }
@@ -118,7 +118,7 @@ Function Get-InputTable {
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
-		Return @()
+		Return [PSCustomObject[]]@()
 	}
 	Return (Format-InputTable -Type $Type -InputObject $Raw)
 }
@@ -126,24 +126,27 @@ Function Group-ScanVirusToolsIgnores {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
 	)
+	[PSCustomObject[]]$OnlyPaths = ($InputObject | Where-Object -FilterScript {
+		[String[]]$Keys = $_.PSObject.Properties.Name
+		Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Path')
+	})
+	[PSCustomObject[]]$OnlySessions = ($InputObject | Where-Object -FilterScript {
+		[String[]]$Keys = $_.PSObject.Properties.Name
+		Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Session')
+	})
+	[PSCustomObject[]]$Others = ($InputObject | Where-Object -FilterScript {
+		[String[]]$Keys = $_.PSObject.Properties.Name
+		Return !($Keys.Count -ieq 1 -and (
+			$Keys -icontains 'Path' -or
+			$Keys -icontains 'Session'
+		))
+	})
 	Return [PSCustomObject]@{
-		OnlyPaths = ($InputObject | Where-Object -FilterScript {
-			[String[]]$Keys = $_.PSObject.Properties.Name
-			Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Path')
-		})
-		OnlySessions = ($InputObject | Where-Object -FilterScript {
-			[String[]]$Keys = $_.PSObject.Properties.Name
-			Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Session')
-		})
-		Others = ($InputObject | Where-Object -FilterScript {
-			[String[]]$Keys = $_.PSObject.Properties.Name
-			Return !($Keys.Count -ieq 1 -and (
-				$Keys -icontains 'Path' -or
-				$Keys -icontains 'Session'
-			))
-		})
+		OnlyPaths = $OnlyPaths
+		OnlySessions = $OnlySessions
+		Others = $Others
 	}
 }
 Function Optimize-PSFormatDisplay {
