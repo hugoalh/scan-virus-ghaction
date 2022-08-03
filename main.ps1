@@ -87,12 +87,14 @@ Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
 Write-NameValue -Name 'ClamAV_Daemon' -Value $ClamAVDaemon
 [PSCustomObject[]]$ClamAVIgnoresRaw = (Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser) ?? @()
 [PSCustomObject]$ClamAVIgnores = Group-ScanVirusToolsIgnores -InputObject $ClamAVIgnoresRaw
-Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresRaw.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnoresRaw | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "ClamAV_Ignores_OnlyPaths ($($ClamAVIgnores.OnlyPaths.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnores.OnlyPaths | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "ClamAV_Ignores_OnlySessions ($($ClamAVIgnores.OnlySessions.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnores.OnlySessions | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "ClamAV_Ignores_Others ($($ClamAVIgnores.Others.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnores.Others | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
 [Boolean]$ClamAVMultiScan = Get-InputBoolean -Name 'clamav_multiscan'
 Write-NameValue -Name 'ClamAV_MultiScan' -Value $ClamAVMultiScan
 [Boolean]$ClamAVReloadPerSession = Get-InputBoolean -Name 'clamav_reloadpersession'
 Write-NameValue -Name 'ClamAV_ReloadPerSession' -Value $ClamAVReloadPerSession
-[Boolean]$ClamAVSubcursive = Get-InputBoolean -Name -Name 'clamav_subcursive'
+[Boolean]$ClamAVSubcursive = Get-InputBoolean -Name 'clamav_subcursive'
 Write-NameValue -Name 'ClamAV_Subcursive' -Value $ClamAVSubcursive
 [RegEx[]]$ClamAVUnofficialSignaturesRegEx = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
 Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx ($($ClamAVUnofficialSignaturesRegEx.Count))" -Value "`n$($ClamAVUnofficialSignaturesRegEx -join "`n")"
@@ -100,14 +102,16 @@ Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx ($($ClamAVUnofficialSig
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
 [PSCustomObject[]]$YaraIgnoresRaw = (Get-InputTable -Name 'yara_ignores' -Type $InputTableParser) ?? @()
 [PSCustomObject]$YaraIgnores = Group-ScanVirusToolsIgnores -InputObject $YaraIgnoresRaw
-Write-NameValue -Name "YARA_Ignores ($($YaraIgnoresRaw.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnoresRaw | Format-Table -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "YARA_Ignores_OnlyPaths ($($YaraIgnores.OnlyPaths.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnores.OnlyPaths | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "YARA_Ignores_OnlySessions ($($YaraIgnores.OnlySessions.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnores.OnlySessions | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "YARA_Ignores_Others ($($YaraIgnores.Others.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnores.Others | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
 [RegEx[]]$YaraRulesRegEx = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
 Write-NameValue -Name "YARA_Rules_RegEx ($($YaraRulesRegEx.Count))" -Value "`n$($YaraRulesRegEx -join "`n")"
 [Boolean]$YaraToolWarning = Get-InputBoolean -Name 'yara_toolwarning'
 Write-NameValue -Name 'YARA_ToolWarning' -Value $YaraToolWarning
-[Boolean]$UpdateAssets = Get-InputBoolean -Name -Name 'update_assets'
+[Boolean]$UpdateAssets = Get-InputBoolean -Name 'update_assets'
 Write-NameValue -Name 'Update_Assets' -Value $UpdateAssets
-[Boolean]$UpdateClamAV = Get-InputBoolean -Name -Name 'update_clamav'
+[Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
 Exit-GitHubActionsLogGroup
 If (!$LocalTarget -and $NetworkTargets.Count -ieq 0) {
