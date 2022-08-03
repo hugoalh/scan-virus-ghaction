@@ -6,6 +6,7 @@ RUN ["tar", "--extract", "--file=/tmp/scan-virus-ghaction-assets.tar.gz", "--dir
 
 FROM debian:11.4 AS main
 ENV DEBIAN_FRONTEND=noninteractive
+ENV SNAPCRAFT_SETUP_CORE=1
 RUN ["apt-get", "--assume-yes", "update"]
 RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "curl", "git", "git-lfs", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "snapd", "yara", "zlib1g"]
 RUN ["apt-get", "--assume-yes", "dist-upgrade"]
