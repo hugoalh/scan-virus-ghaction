@@ -77,7 +77,7 @@ If ($Targets.Count -ieq 0) {
 Write-NameValue -Name "Targets ($($LocalTarget ? 1 : $NetworkTargets.Count))" -Value ($LocalTarget ? 'Local' : ($NetworkTargets -join ', '))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
-[PSCustomObject[]]$GitIgnores = Get-InputTable -Name 'git_ignores' -Type $InputTableParser
+[PSCustomObject[]]$GitIgnores = (Get-InputTable -Name 'git_ignores' -Type $InputTableParser) ?? @()
 Write-NameValue -Name "Git_Ignores ($($GitIgnores.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($GitIgnores | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
@@ -85,7 +85,7 @@ Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
 [Boolean]$ClamAVDaemon = Get-InputBoolean -Name 'clamav_daemon'
 Write-NameValue -Name 'ClamAV_Daemon' -Value $ClamAVDaemon
-[PSCustomObject[]]$ClamAVIgnoresRaw = Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser
+[PSCustomObject[]]$ClamAVIgnoresRaw = (Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser) ?? @()
 [PSCustomObject]$ClamAVIgnores = Group-ScanVirusToolsIgnores -InputObject $ClamAVIgnoresRaw
 Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresRaw.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnoresRaw | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
 [Boolean]$ClamAVMultiScan = Get-InputBoolean -Name 'clamav_multiscan'
@@ -98,7 +98,7 @@ Write-NameValue -Name 'ClamAV_Subcursive' -Value $ClamAVSubcursive
 Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx ($($ClamAVUnofficialSignaturesRegEx.Count))" -Value "`n$($ClamAVUnofficialSignaturesRegEx -join "`n")"
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[PSCustomObject[]]$YaraIgnoresRaw = Get-InputTable -Name 'yara_ignores' -Type $InputTableParser
+[PSCustomObject[]]$YaraIgnoresRaw = (Get-InputTable -Name 'yara_ignores' -Type $InputTableParser) ?? @()
 [PSCustomObject]$YaraIgnores = Group-ScanVirusToolsIgnores -InputObject $YaraIgnoresRaw
 Write-NameValue -Name "YARA_Ignores ($($YaraIgnoresRaw.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnoresRaw | Format-Table -AutoSize -Wrap | Out-String))"
 [RegEx[]]$YaraRulesRegEx = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter

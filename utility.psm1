@@ -105,7 +105,7 @@ Function Get-InputList {
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
-		Return [String[]]@()
+		Return @()
 	}
 	Return (Format-InputList -InputObject $Raw -Delimiter $Delimiter)
 }
@@ -118,7 +118,7 @@ Function Get-InputTable {
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
-		Return [PSCustomObject[]]@()
+		Return @()
 	}
 	Return (Format-InputTable -Type $Type -InputObject $Raw)
 }
