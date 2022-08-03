@@ -47,7 +47,7 @@ Function Format-InputList {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][String]$InputObject,
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject,
 		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
 	Return ([String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
@@ -150,7 +150,7 @@ Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([String])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
 	)
 	Begin {}
 	Process {
@@ -179,7 +179,7 @@ Function Write-OptimizePSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
 	)
 	Begin {}
 	Process {

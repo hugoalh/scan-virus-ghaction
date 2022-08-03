@@ -4,7 +4,7 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (@('assets', 'git', 'utility') | ForEach-Object -Process {
 	Return (Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1")
 }) -Scope 'Local'
-Test-GitHubActionsEnvironment -Mandatory
+Test-GitHubActionsEnvironment -Mandatory | Out-Null
 [Hashtable]$TsvParameters = @{
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'

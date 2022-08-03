@@ -21,7 +21,7 @@ COPY --from=extract-powershell /opt/microsoft/powershell/7 /opt/microsoft/powers
 RUN ["chmod", "--verbose", "a+x,o-w", "/opt/microsoft/powershell/7/pwsh"]
 RUN ["ln", "-s", "/opt/microsoft/powershell/7/pwsh", "/usr/bin/pwsh"]
 RUN ["apt-get", "--assume-yes", "update"]
-RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "curl", "git", "git-lfs", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "snapd", "yara", "zlib1g"]
+RUN ["apt-get", "--assume-yes", "install", "ca-certificates", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "curl", "git", "git-lfs", "gss-ntlmssp", "less", "libc6", "libgcc1", "libgssapi-krb5-2", "libicu67", "liblttng-ust0", "libssl1.1", "libstdc++6", "locales", "openssh-client", "yara", "zlib1g"]
 RUN ["apt-get", "--assume-yes", "dist-upgrade"]
 RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"]
 RUN ["locale-gen"]
