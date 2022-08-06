@@ -5,7 +5,7 @@ Import-Module -Name (@('assets', 'git', 'utility') | ForEach-Object -Process {
 	Return (Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1")
 }) -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory | Out-Null
-[Hashtable]$TsvParameters = @{
+[Hashtable]$ImportTsvParameters = @{
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
 }
@@ -37,11 +37,11 @@ Switch -RegEx ($InputTableParserRaw) {
 		Break
 	}
 	'^c(?:omma|sv)-?(?:kv)?-?s(?:ingle(?:line)?)?$' {
-		$InputTableParser = 'csvs'
+		$InputTableParser = 'csv-kv-s'
 		Break
 	}
 	'^c(?:omma|sv)-?(?:kv)?-?m(?:ulti(?:ple)?(?:line)?)?$' {
-		$InputTableParser = 'csvm'
+		$InputTableParser = 'csv-kv-m'
 		Break
 	}
 	'^t(?:ab|sv)$' {
@@ -149,8 +149,8 @@ If ($UpdateAssets -and (
 	Exit-GitHubActionsLogGroup
 }
 Enter-GitHubActionsLogGroup -Title 'Read assets index.'
-[PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @TsvParameters
-[PSCustomObject[]]$YaraRulesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @TsvParameters
+[PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @ImportTsvParameters
+[PSCustomObject[]]$YaraRulesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportTsvParameters
 [PSCustomObject[]]$ClamAVUnofficialSignaturesApply = ($ClamAVUnofficialSignaturesAssetsIndex | Where-Object -FilterScript {
 	Return !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx)
 } | Sort-Object -Property 'Name')

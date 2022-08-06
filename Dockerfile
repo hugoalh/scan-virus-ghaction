@@ -2,7 +2,7 @@ FROM debian:11.4 AS extract-powershell
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.5/powershell-7.2.5-linux-x64.tar.gz /tmp/powershell-7.2.5-linux-x64.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
-RUN ["tar", "zxf", "/tmp/powershell-7.2.5-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
+RUN ["tar", "--extract", "--file=/tmp/powershell-7.2.5-linux-x64.tar.gz", "--directory=/opt/microsoft/powershell/7", "--gzip", "--verbose"]
 
 FROM debian:11.4 AS extract-assets
 ENV DEBIAN_FRONTEND=noninteractive

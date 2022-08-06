@@ -1,6 +1,6 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name 'psyml' -Scope 'Local'
-Function ConvertFrom-Csvm {
+Function ConvertFrom-CsvKvm {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
@@ -9,21 +9,12 @@ Function ConvertFrom-Csvm {
 	Begin {}
 	Process {
 		Return ($InputObject | ForEach-Object -Process {
-			[Hashtable]$Condition = @{}
-			ForEach ($Column In [String[]](Convert-FromCsvsToCsvm -InputObject $_ -Delimiter ',')) {
-				If ($Column -imatch '=') {
-					[String]$Key, [String[]]$Value = $Column -isplit '='
-					$Condition[$Key] = $Value -join '='
-					Continue
-				}
-				Throw 'Invalid table syntax!'
-			}
-			Return [PSCustomObject]$Condition
+			Return [PSCustomObject]([String[]](Convert-FromCsvKvsToCsvKvm -InputObject $_ -Delimiter ',') | Join-String -Separator "`n" | ConvertFrom-StringData)
 		})
 	}
 	End {}
 }
-Function Convert-FromCsvsToCsvm {
+Function Convert-FromCsvKvsToCsvKvm {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
@@ -52,29 +43,25 @@ Function Format-InputList {
 	)
 	Return ([String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
 		Return $_.Trim()
-	} | Where-Object -FilterScript {
-		Return ($_ -imatch '^.+$')
-	} | Sort-Object -Unique -CaseSensitive)
+	} | Where-Object -FilterScript { Return ($_ -imatch '^.+$') } | Sort-Object -Unique -CaseSensitive)
 }
 Function Format-InputTable {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csvm', 'csvs', 'tsv', 'yaml')][String]$Type,
+		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csv-kv-m', 'csv-kv-s', 'tsv', 'yaml')][String]$Type,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Input', 'Object')][String]$InputObject
 	)
 	Try {
-		Switch ($Type) {
+		Switch -Exact ($Type) {
 			'csv' {
 				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
 			}
-			'csvm' {
-				Return ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript {
-					Return ($_ -imatch '^.+$')
-				} | ConvertFrom-Csvm)
+			'csv-kv-m' {
+				Return ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript { Return ($_ -imatch '^.+$') } | ConvertFrom-CsvKvm)
 			}
-			'csvs' {
-				Return ($InputObject | Convert-FromCsvsToCsvm | ConvertFrom-Csvm)
+			'csv-kv-s' {
+				Return ($InputObject | Convert-FromCsvKvsToCsvKvm | ConvertFrom-CsvKvm)
 			}
 			'tsv' {
 				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t")
@@ -84,7 +71,7 @@ Function Format-InputTable {
 			}
 		}
 	} Catch {
-		Write-GitHubActionsFail -Message "Invalid ``$Type`` table syntax: $_"
+		Write-GitHubActionsFail -Message "Invalid ``$Type`` table syntax! $_"
 		Throw
 	}
 }
@@ -114,7 +101,7 @@ Function Get-InputTable {
 	[OutputType([PSCustomObject[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
-		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csvm', 'csvs', 'tsv', 'yaml')][String]$Type
+		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csv-kv-m', 'csv-kv-s', 'tsv', 'yaml')][String]$Type
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {

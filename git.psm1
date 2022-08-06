@@ -26,16 +26,44 @@
 )
 [String]$GitCommitsInformationExpressionMultipleLine = 'git --no-pager show --format="{1}" {0}'
 [String]$GitCommitsInformationExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
+Function Select-GitCommits {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyCollection()][Alias('Input', 'Object')][PSCustomObject[]]$InputObject,
+		[Parameter(Position = 1)][AllowEmptyCollection()][Alias('Exclude', 'Ignore', 'Ignores')][PSCustomObject[]]$Excludes = @()
+	)
+	Begin {}
+	Process {
+		[PSCustomObject[]]$Result = @()
+		:GitCommitsLoop ForEach ($GitCommit In $InputObject) {
+			ForEach ($Exclude In $Excludes) {
+				[String[]]$ExcludeTypes = ($Exclude.PSObject.Properties.Name | Where-Object -FilterScript {
+					Return ($_ -iin $GitCommitsProperties.Name)
+				})
+				ForEach ($ExcludeType In $ExcludeTypes) {
+					Try {
+						If ($GitCommit[$ExcludeType] -imatch $Exclude[$ExcludeType]) {
+						}
+					} Catch {  }
+				}
+			}
+			$Result += $GitCommit
+		}
+		Return $Result
+	}
+	End {}
+}
 Function Get-GitCommitsInformation {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param ()
 	Try {
-		[Object[]]$GitDatabaseLocks = ([Object[]](Get-ChildItem -LiteralPath (Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath '.git') -Recurse -Force -File) | Select-Object -ExpandProperty 'FullName' | ForEach-Object -Process {
+		[Object[]]$GitDatabaseLocks = ([PSCustomObject[]](Get-ChildItem -LiteralPath (Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath '.git') -Recurse -Force -File) | Select-Object -ExpandProperty 'FullName' | ForEach-Object -Process {
 			Return [System.IO.File]::Open($_, 'Open', 'Read', 'Read')
 		})
 	} Catch {
-		Throw 'Unable to lock Git database!'
+		Throw "Unable to lock Git database! $_"
 	}
 	Try {
 		[Hashtable]$GitCommitsPropertyToken = ($GitCommitsProperties | Where-Object -FilterScript {
@@ -70,7 +98,7 @@ Function Get-GitCommitsInformation {
 			Return [PSCustomObject]$_
 		} | Sort-Object -Property 'AuthorDate')
 	} Catch {
-		Throw "Unexpected Git database error: $_"
+		Throw "Unexpected Git database issue! $_"
 	} Finally {
 		$GitDatabaseLocks | ForEach-Object -Process {
 			$_.Close() | Out-Null
