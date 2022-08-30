@@ -20,7 +20,6 @@
 	@{ Name = 'ReflogIdentityName'; Placeholder = '%gn' },
 	@{ Name = 'ReflogSelector'; Placeholder = '%gD' },
 	@{ Name = 'ReflogSubject'; Placeholder = '%gs' },
-	@{ Name = 'ShortenedReflogSelector'; Placeholder = '%gd' },
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )

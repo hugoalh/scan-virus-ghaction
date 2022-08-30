@@ -99,8 +99,8 @@ jobs:
 
 `<Uri[]>` Targets.
 
-- **Local *(Default)*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
-- **Network:** Fetch files from network to the workspace, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
+- **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
+- **Network:** Fetch files from network to the workspace in this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
 
 When this input is defined (i.e.: network targets), will ignore inputs:
 
@@ -119,33 +119,45 @@ When this input is `False`, will ignore inputs:
 
 #### `git_ignores`
 
-[`<Table<{String:RegEx}>>`](#input_tableparser) Git ignores (for commits), by table.
+[`<Table<{String:RegEx}>>`](#input_tableparser) Git ignores for commits, by table. Commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties are supported:
 
-Available properties (i.e.: keys) with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`) (commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties are supported):
-
-- `AuthorDate` (ISO8601 UTC (end with `Z`))
-- `AuthorEmail`
-- `AuthorName`
-- `Body`
-- `CommitHash`
-- `CommitterDate` (ISO8601 UTC (end with `Z`))
-- `CommitterEmail`
-- `CommitterName`
-- `Encoding`
-- `GPGSignatureKey`
-- `GPGSignatureKeyFingerprint`
-- `GPGSignaturePrimaryKeyFingerprint`
-- `GPGSignatureSigner`
-- `GPGSignatureStatus`
-- `GPGSignatureTrustLevel`
-- `Notes`
-- `ReflogIdentityEmail`
-- `ReflogIdentityName`
-- `ReflogSelector`
-- `ReflogSubject`
-- `ShortenedReflogSelector`
-- `Subject`
-- `TreeHash`
+- **`AuthorDate`:**
+  - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
+  - `<String>` A string with specify pattern to compare the timestamp:
+    - `$ge %Y-%m-%dT%H:%M:%SZ` Author date that after or equal to this time.
+    - `$gt %Y-%m-%dT%H:%M:%SZ` Author date that after this time.
+    - `$le %Y-%m-%dT%H:%M:%SZ` Author date that before or equal to this time.
+    - `$lt %Y-%m-%dT%H:%M:%SZ` Author date that before this time.
+- **`AuthorEmail`:** `<RegEx>`
+- **`AuthorName`:** `<RegEx>`
+- **`Body`:** `<RegEx>`
+- **`CommitHash`:** `<RegEx>`
+- **`CommitterDate`:**
+  - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
+  - `<String>` A string with specify pattern to compare the timestamp:
+    - `$ge %Y-%m-%dT%H:%M:%SZ` Committer date that after or equal to this time.
+    - `$gt %Y-%m-%dT%H:%M:%SZ` Committer date that after this time.
+    - `$le %Y-%m-%dT%H:%M:%SZ` Committer date that before or equal to this time.
+    - `$lt %Y-%m-%dT%H:%M:%SZ` Committer date that before this time.
+- **`CommitterEmail`:** `<RegEx>`
+- **`CommitterName`:** `<RegEx>`
+- **`Count`:** `<String>` A string with specify pattern to compare the count:
+  - `$old %n` Oldest `%n` commits.
+  - `$new %n` Newest `%n` commits.
+- **`Encoding`:** `<RegEx>`
+- **`GPGSignatureKey`:** `<RegEx>`
+- **`GPGSignatureKeyFingerprint`:** `<RegEx>`
+- **`GPGSignaturePrimaryKeyFingerprint`:** `<RegEx>`
+- **`GPGSignatureSigner`:** `<RegEx>`
+- **`GPGSignatureStatus`:** `<RegEx>`
+- **`GPGSignatureTrustLevel`:** `<RegEx>`
+- **`Notes`:** `<RegEx>`
+- **`ReflogIdentityEmail`:** `<RegEx>`
+- **`ReflogIdentityName`:** `<RegEx>`
+- **`ReflogSelector`:** `<RegEx>`
+- **`ReflogSubject`:** `<RegEx>`
+- **`Subject`:** `<RegEx>`
+- **`TreeHash`:** `<RegEx>`
 
 Example:
 
@@ -279,23 +291,23 @@ Example:
 
 #### `update_assets`
 
-`<Boolean = True>` Update ClamAV unofficial signatures index, ClamAV unofficial signatures, YARA rules index, and YARA rules from [assets repository][assets-repository] before scan anything.
+`<Boolean = True>` Update ClamAV unofficial signatures and YARA rules from [assets repository][assets-repository] before scan anything.
 
 > **⚠ Important:**
 >
 > - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
 > - It is recommended to keep this as enable to have the latest assets.
-> - If this action have issues during updates, switch this to disable for offline mode.
+> - If this action has issues during updates, switch this to disable for offline mode.
 
 #### `update_clamav`
 
-`<Boolean = True>` Update ClamAV via FreshClam (e.g.: ClamAV official signatures) before scan anything.
+`<Boolean = True>` Update ClamAV official signatures via FreshClam before scan anything.
 
 > **⚠ Important:**
 >
 > - When input [`clamav_enable`](#clamav_enable) is `False`, will skip this update in order to save some times.
 > - It is recommended to keep this as enable to have the latest ClamAV official signatures.
-> - If this action have issues during updates, switch this to disable for offline mode.
+> - If this action has issues during updates, switch this to disable for offline mode.
 
 ### 📤 Output
 

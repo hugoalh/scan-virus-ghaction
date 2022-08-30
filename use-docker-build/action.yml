@@ -65,11 +65,11 @@ inputs:
     required: false
     default: "False"
   update_assets:
-    description: "{Boolean} Update ClamAV unofficial signatures index, ClamAV unofficial signatures, YARA rules index, and YARA rules from assets repository before scan anything."
+    description: "{Boolean} Update ClamAV unofficial signatures and YARA rules from assets repository before scan anything."
     required: false
     default: "True"
   update_clamav:
-    description: "{Boolean} Update ClamAV via FreshClam (e.g.: ClamAV official signatures) before scan anything."
+    description: "{Boolean} Update ClamAV official signatures via FreshClam before scan anything."
     required: false
     default: "True"
 runs:
