@@ -64,43 +64,81 @@ jobs:
 
 #### `input_tableparser`
 
-`<String = "yaml">` Paser to use when input is type of table:
+`<String = "yaml">` Parser when input is type of table.
 
-- `csv`
-  ```csv
-  bar,foo
-  5,10
-  10,20
-  ```
-- `csv-kv-singleline`
-  ```
-  bar=5,foo=10;bar=10,foo=20
-  ```
-- `csv-kv-multipleline`
-  ```
-  bar=5,foo=10
-  bar=10,foo=20
-  ```
-- `tsv`
-  ```tsv
-  bar	foo
-  5	10
-  10	20
-  ```
-- `yaml`/`yml`
-  ```yml
-  - bar: 5
-    foo: 10
-  - bar: 10
-    foo: 20
-  ```
+<table>
+<tr>
+<td align="center"><b>Parser</b></td>
+<td><b>Example</b></td>
+</tr>
+<tr>
+<td align="center"><code>csv</code></td>
+<td>
+
+```csv
+bar,foo
+5,10
+10,20
+```
+
+</td>
+</tr>
+<tr>
+<td align="center"><code>csv-kv-singleline</code></td>
+<td>
+
+```
+bar=5,foo=10;bar=10,foo=20
+```
+
+</td>
+</tr>
+<tr>
+<td align="center"><code>csv-kv-multipleline</code></td>
+<td>
+
+```
+bar=5,foo=10
+bar=10,foo=20
+```
+
+</td>
+</tr>
+<tr>
+<td align="center"><code>tsv</code></td>
+<td>
+
+```tsv
+bar	foo
+5	10
+10	20
+```
+
+</td>
+</tr>
+<tr>
+<td align="center"><code>yaml</code> / <code>yml</code></td>
+<td>
+
+```yml
+- bar: 5
+  foo: 10
+- bar: 10
+  foo: 20
+```
+
+</td>
+</tr>
+</table>
 
 #### `targets`
 
 `<Uri[]>` Targets.
 
-- **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
-- **Network:** Fetch files from network to the workspace in this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
+| **Type** | **Description** |
+|:-:|:--|
+| Local ***\[Default\]*** | Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action. |
+| Network | Fetch files from network to the workspace in this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
 
 When this input is defined (i.e.: network targets), will ignore inputs:
 
@@ -119,7 +157,7 @@ When this input is `False`, will ignore inputs:
 
 #### `git_ignores`
 
-[`<Table<{String:RegEx}>>`](#input_tableparser) Git ignores for commits, by table. Commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log), but only these properties are supported:
+[`<Table>`](#input_tableparser) Git ignores for commits, by table. Commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log). Available properties (i.e.: keys):
 
 - **`AuthorDate`:**
   - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
@@ -141,9 +179,6 @@ When this input is `False`, will ignore inputs:
     - `$lt %Y-%m-%dT%H:%M:%SZ` Committer date that before this time.
 - **`CommitterEmail`:** `<RegEx>`
 - **`CommitterName`:** `<RegEx>`
-- **`Count`:** `<String>` A string with specify pattern to compare the count:
-  - `$old %n` Oldest `%n` commits.
-  - `$new %n` Newest `%n` commits.
 - **`Encoding`:** `<RegEx>`
 - **`GPGSignatureKey`:** `<RegEx>`
 - **`GPGSignatureKeyFingerprint`:** `<RegEx>`
@@ -163,6 +198,7 @@ Example:
 
 ```yml
 - AuthorName: ^octokit$
+  CommitterDate: $lt 2022-01-01T00:00:00Z
   CommitterName: ^octokit$
 ```
 
@@ -207,13 +243,11 @@ When this input is `False`, will ignore inputs:
 
 #### `clamav_ignores`
 
-[`<Table<{String:RegEx}>>`](#input_tableparser) ClamAV ignores (for files, sessions, and/or signatures), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
+[`<Table>`](#input_tableparser) ClamAV ignores (for files, sessions, and/or signatures), by table. Available properties (i.e.: keys):
 
-Available properties (i.e.: keys):
-
-- `Path` (Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension))
-- `Session` (`Current`, Git commit hash, or HTTP/HTTPS URI)
-- `Signature` (Platform`.`Category`.`Name`-`SignatureID`-`Revision)
+- **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
+- **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
+- **`Signature`:** `<RegEx>` Platform`.`Category`.`Name`-`SignatureID`-`Revision
 
 Example:
 
@@ -265,13 +299,11 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_ignores`
 
-[`<Table<{String:RegEx}>>`](#input_tableparser) YARA ignores (for files, rules, and/or sessions), by table with type of key is string (`<String>`) and type of value is regular expression (`<RegEx>`).
+[`<Table>`](#input_tableparser) YARA ignores (for files, rules, and/or sessions), by table. Available properties (i.e.: keys):
 
-Available properties (i.e.: keys):
-
-- `Path` (Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension))
-- `Rule` (Index`/`RuleName)
-- `Session` (`Current`, Git commit hash, or HTTP/HTTPS URI)
+- **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
+- **`Rule`:** `<RegEx>` Index`/`RuleName
+- **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
 
 Example:
 
