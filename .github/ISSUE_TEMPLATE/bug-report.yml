@@ -15,7 +15,7 @@ body:
     id: "version"
     attributes:
       label: "Version"
-      description: "What versions are affected? Versions must be listed as supported in the Security Policy (/.github/SECURITY.md)."
+      description: "What versions are affected? Versions must be listed as supported in the Security Policy (file: `SECURITY.md`)."
       multiple: true
       options:
         - "v0.10.0"

@@ -1,3 +1,5 @@
+#Requires -PSEdition Core
+#Requires -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name 'psyml' -Scope 'Local'
 Function ConvertFrom-CsvKvm {

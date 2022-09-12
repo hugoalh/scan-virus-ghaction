@@ -1,3 +1,5 @@
+#Requires -PSEdition Core
+#Requires -Version 7.2
 Write-Host -Object 'Starting.'
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'

@@ -11,7 +11,7 @@
 > | ❌{🐛} | **No (Issue):** Not supported due to confirmed contains bugs and/or issues. |
 > | ❌{🧓} | **No (Old):** Not supported due to too old. |
 
-| **Versions** | **Status** | **Target - Docker** |
+| **Releases / Tags / Versions** | **Status** | **Target - Docker** |
 |:-:|:-:|:-:|
 | v0.10.X | L | Latest Release |
 | v0.6.X | ✔ | Latest Release |
@@ -46,7 +46,7 @@ Please provide as much as you can to help the security vulnerability report supe
 - Your account's platform (e.g.: GitHub, GitLab, ...).
 - Your account's username (e.g.: `@octocat`).
 - Project's ID or repository URI.
-  - Project's ID is displayed at the top part of readme (i.e.: `README` file), below the project display name (i.e.: header), inside a code block.
+  - Project's ID is displayed at the top part of Readme (file: `README.md`), below the project display name (i.e.: header), inside a code block.
 - Affected branches, commits, tags, and/or versions.
   - Versions must be listed as supported.
   - For multiple versions, you can use version range instead.

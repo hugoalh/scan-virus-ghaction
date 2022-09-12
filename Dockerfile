@@ -38,7 +38,7 @@ RUN ["npm", "--global", "install", "npm@latest"]
 RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
-RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -MinimumVersion '1.0.0' -Scope 'AllUsers' -AcceptLicense -Verbose; Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -MinimumVersion '1.0.1' -Scope 'AllUsers' -AcceptLicense -Verbose; Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main /opt/hugoalh/scan-virus-ghaction/assets/
