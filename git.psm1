@@ -27,7 +27,8 @@ Import-Module -Name @(
 	@{ Name = 'ReflogSubject'; Placeholder = '%gs' },
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
-)
+) |
+	Sort-Object -Property 'Name'
 [String]$GitCommitsInformationExpressionMultipleLine = 'git --no-pager show --format="{1}" --no-color --no-patch {0}'
 [String]$GitCommitsInformationExpressionSingleLine = 'git --no-pager log --all --format="{0}"'
 [Hashtable]$GitCommitsPropertySorter = $GitCommitsProperties |
@@ -48,12 +49,14 @@ Function Get-GitCommitsInformation {
 			[String]$DelimiterPerCommitStart = "=====S:$(New-RandomToken -Length 32)====="
 			[String]$DelimiterPerCommitProperty = "=====B:$(New-RandomToken -Length 32)====="
 			[String]$DelimiterPerCommitEnd = "=====E:$(New-RandomToken -Length 32)====="
-			[String]$GitCommitsInformationQuery = "$DelimiterPerCommitStart%n$(
+			[RegEx]$DelimiterPerCommitStartRegEx = "^$([RegEx]::Escape($DelimiterPerCommitStart))$"
+			[RegEx]$DelimiterPerCommitPropertyRegEx = "^$([RegEx]::Escape($DelimiterPerCommitProperty))$"
+			[RegEx]$DelimiterPerCommitEndRegEx = "^$([RegEx]::Escape($DelimiterPerCommitEnd))$"
+			[String[]]$Raw = Invoke-Expression -Command "git --no-pager log --all --format=`"$DelimiterPerCommitStart%n$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
 					Join-String -Separator "%n$DelimiterPerCommitProperty%n"
-			)%n$DelimiterPerCommitEnd"
-			[String[]]$Raw = Invoke-Expression -Command "git --no-pager log --all --format=`"$GitCommitsInformationQuery`" --no-color"
+			)%n$DelimiterPerCommitEnd`" --no-color"
 			If ($LASTEXITCODE -ine 0) {
 				Throw (
 					$Raw |
@@ -62,31 +65,60 @@ Function Get-GitCommitsInformation {
 			}
 			[UInt32]$DelimiterStartCount = (
 				$Raw |
-					Select-String -Pattern [RegEx]::Escape($DelimiterPerCommitStart) -AllMatches
-			).Matches.Count
+					Select-String -Pattern $DelimiterPerCommitStartRegEx -Raw -CaseSensitive -NoEmphasis -AllMatches
+			).Count
 			[UInt64]$DelimiterPropertyCount = (
 				$Raw |
-					Select-String -Pattern [RegEx]::Escape($DelimiterPerCommitProperty) -AllMatches
-			).Matches.Count
+					Select-String -Pattern $DelimiterPerCommitPropertyRegEx -Raw -CaseSensitive -NoEmphasis -AllMatches
+			).Count
 			[UInt32]$DelimiterEndCount = (
 				$Raw |
-					Select-String -Pattern [RegEx]::Escape($DelimiterPerCommitEnd) -AllMatches
-			).Matches.Count
+					Select-String -Pattern $DelimiterPerCommitEndRegEx -Raw -CaseSensitive -NoEmphasis -AllMatches
+			).Count
 			If (
 				($DelimiterStartCount -ine $DelimiterEndCount) -or
 				($DelimiterPropertyCount / $DelimiterTokenCountPerCommit -ine $DelimiterStartCount)
 			) {
 				Continue
 			}
-			[Hashtable[]]$Result = $Raw |
-				ForEach-Object -Process { @{ "$($GitCommitsPropertyTokenizer.Name)" = $_ } }
-			For ([UInt32]$CommitIndex = 0; $CommitIndex -ilt $Result.Count; $CommitIndex++) {
-				
-			}
-			ForEach ($GitCommitsProperty In $GitCommitsProperties) {
-				If ($GitCommitsProperty.Name -ieq $GitCommitsPropertyTokenizer.Name) {
+			[PSCustomObject[]]$Result = @()
+			[Hashtable]$ResultCommitStorage = @{}
+			[UInt16]$GitCommitsPropertiesIndex = 0
+			For ([UInt32]$RawLine = 0; $RawLine -ilt $Raw.Count; $RawLine++) {
+				[String]$RawLineCurrent = $Raw[$RawLine]
+				If (
+					$RawLineCurrent -ceq $DelimiterPerCommitStart -or
+					$RawLineCurrent -ceq $DelimiterPerCommitProperty
+				) {
 					Continue
 				}
+				If ($RawLineCurrent -ceq $DelimiterPerCommitEnd) {
+					$Result += [PSCustomObject]$ResultCommitStorage
+					$ResultCommitStorage = @{}
+					$GitCommitsPropertiesIndex = 0
+					Continue
+				}
+				[String[]]$RawRemain = $Raw |
+					Select-Object -Skip $RawLine
+				[UInt32]$RawNextDelimiterIndex = @(
+					$RawRemain.IndexOf($DelimiterPerCommitStart)
+					$RawRemain.IndexOf($DelimiterPerCommitProperty)
+					$RawRemain.IndexOf($DelimiterPerCommitEnd)
+				) |
+					Measure-Object -Minimum |
+					Select-Object -ExpandProperty 'Minimum'
+				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$GitCommitsPropertiesIndex]
+
+				[String[]]$Value = $RawRemain[0..($RawNextDelimiterIndex - 1)]
+				If ($GitCommitsPropertiesCurrent.IsArray) {
+					$Result[$Row][$GitCommitsProperty.Name] = $Value -isplit ' '
+				}
+
+			}
+
+
+
+			ForEach ($GitCommitsProperty In $GitCommitsProperties) {
 				If ($GitCommitsProperty.IsMultipleLine) {
 					For ([UInt32]$CommitIndex = 0; $CommitIndex -ilt $Result.Count; $CommitIndex++) {
 						$Result[$CommitIndex][$GitCommitsProperty.Name] = [String[]](Invoke-Expression -Command ($GitCommitsInformationExpressionMultipleLine -f @($Result[$CommitIndex][$GitCommitsPropertyTokenizer.Name], $GitCommitsProperty.Placeholder))) -join "`n" -ireplace '^(?:\s*\r?\n)+|(?:\s*\r?\n)+$', ''

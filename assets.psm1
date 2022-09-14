@@ -30,7 +30,8 @@ Function Update-GitHubActionScanVirusAssets {
 		[PSCustomObject]$LocalMetadata = Get-Content -LiteralPath (Join-Path -Path $AssetsLocalRoot -ChildPath $AssetsMetadataName) -Raw -Encoding 'UTF8NoBOM' |
 			ConvertFrom-Json -Depth 100
 		[DateTime]$LocalAssetsTimestamp = Get-Date -Date $LocalMetadata.Timestamp -AsUTC
-	} Catch {
+	}
+	Catch {
 		Throw "Unable to get and parse local assets metadata! Local assets maybe modified unexpectedly.`n$_"
 	}
 	Write-NameValue -Name 'Local Assets Compatibility' -Value $LocalMetadata.Compatibility
@@ -38,9 +39,11 @@ Function Update-GitHubActionScanVirusAssets {
 	Try {
 		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri "$AssetsRemoteRoot/raw/main/$AssetsMetadataName" @InvokeWebGetRequestParameters |
 			Select-Object -ExpandProperty 'Content' |
+			Join-String -Separator "`n" |
 			ConvertFrom-Json -Depth 100
 		[DateTime]$RemoteAssetsTimestamp = Get-Date -Date $RemoteMetadata.Timestamp -AsUTC
-	} Catch {
+	}
+	Catch {
 		Write-GitHubActionsNotice -Message "Unable to get and parse remote assets metadata! $AssetsLocalOutdatedMessage`n$_"
 		Return
 	}
@@ -57,7 +60,8 @@ Function Update-GitHubActionScanVirusAssets {
 	Write-Host -Object 'Need to update local assets.'
 	Try {
 		Invoke-WebRequest -Uri $AssetsRemotePackage -OutFile $AssetsRemoteOutFileFullName @InvokeWebGetRequestParameters
-	} Catch {
+	}
+	Catch {
 		Write-GitHubActionsNotice -Message "Unable to download remote assets package! $AssetsLocalOutdatedMessage`n$_"
 		Return
 	}
@@ -70,7 +74,8 @@ Function Update-GitHubActionScanVirusAssets {
 			Throw "Compression program exit code is $LASTEXITCODE."
 		}
 		Remove-Item -LiteralPath $AssetsRemoteOutFileFullName -Force -Confirm:$False
-	} Catch {
+	}
+	Catch {
 		Write-GitHubActionsNotice -Message "Unable to extract remote assets package! $AssetsLocalOutdatedMessage`n$_"
 		Return
 	}
@@ -78,7 +83,8 @@ Function Update-GitHubActionScanVirusAssets {
 		Remove-Item -LiteralPath $AssetsLocalRoot -Recurse -Force -Confirm:$False
 		Move-Item -LiteralPath (Join-Path -Path $AssetsRemoteExtractRoot -ChildPath 'scan-virus-ghaction-assets-main') -Destination $AssetsLocalRoot -Confirm:$False
 		Remove-Item -LiteralPath $AssetsRemoteExtractRoot -Recurse -Force -Confirm:$False
-	} Catch {
+	}
+	Catch {
 		Throw "Unable to update local assets package! $_"
 	}
 	Write-Host -Object 'Local assets is now up to date.'
