@@ -1,0 +1,62 @@
+rules:
+  braces:
+    forbid: "non-empty"
+    max-spaces-inside-empty: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    min-spaces-inside: 1
+  brackets:
+    forbid: "non-empty"
+    max-spaces-inside-empty: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    min-spaces-inside: 1
+  colons:
+    max-spaces-after: 1
+    max-spaces-before: 0
+  commas:
+    max-spaces-after: 1
+    max-spaces-before: 0
+    min-spaces-after: 1
+  comments:
+    ignore-shebangs: true
+    min-spaces-from-content: 0
+    require-starting-space: false
+  comments-indentation: true
+  document-end:
+    present: false
+  document-start: false
+  empty-lines:
+    max-end: 1
+    max-start: 0
+    max: 0
+  empty-values:
+    forbid-in-block-mappings: true
+    forbid-in-flow-mappings: true
+  float-values:
+    forbid-inf: false
+    forbid-nan: true
+    forbid-scientific-notation: false
+    require-numeral-before-decimal: true
+  hyphens:
+    max-spaces-after: 1
+  indentation:
+    check-multi-line-strings: false
+    indent-sequences: true
+    spaces: 2
+  key-duplicates: true
+  key-ordering: false
+  line-length: false
+  new-line-at-end-of-file: true
+  new-lines: false
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+  quoted-strings:
+    quote-type: "double"
+    required: true
+  trailing-spaces: true
+  truthy: true
+yaml-files:
+  - "./**/**.yaml"
+  - "./**/**.yml"

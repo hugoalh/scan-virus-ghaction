@@ -2,24 +2,32 @@ name: "Scan Virus"
 author: "hugoalh"
 description: "Scan virus in the GitHub Action workspace."
 inputs:
-  input_listdelimiter:
-    description: "{RegEx} Delimiter when input is type of list (i.e.: array)."
+  input_list_delimiter:
+    description: "{RegEx} Delimiter when the input is type of list."
     required: false
     default: ",|;|\\r?\\n"
-  input_tableparser:
-    description: "{String} Parser when input is type of table."
+  input_table_parser:
+    description: "{String} Parser when the input is type of table."
     required: false
     default: "yaml"
   targets:
     description: "{Uri[]} Targets."
     required: false
   git_integrate:
-    description: "{Boolean} Integrate with Git to scan every commits; Require workspace is a Git repository."
+    description: "{Boolean} Integrate with Git to scan every commits."
     required: false
     default: "False"
   git_ignores:
-    description: "{Table} Git ignores (for commits)."
+    description: "{Table} Git ignores for commits."
     required: false
+  git_log_allbranches:
+    description: "{Boolean} Include Git commits which not in default branch."
+    required: false
+    default: "False"
+  git_log_reflogs:
+    description: "{Boolean} Include Git commits which mark as references."
+    required: false
+    default: "False"
   git_reverse:
     description: "{Boolean} Reverse scan order of the Git commits."
     required: false
@@ -33,7 +41,7 @@ inputs:
     required: false
     default: "True"
   clamav_ignores:
-    description: "{Table} ClamAV ignores."
+    description: "{Table} ClamAV ignores for files, sessions, and/or signatures."
     required: false
   clamav_multiscan:
     description: "{Boolean} Use ClamAV multiscan mode."
@@ -55,7 +63,7 @@ inputs:
     required: false
     default: "False"
   yara_ignores:
-    description: "{Table} YARA ignores."
+    description: "{Table} YARA ignores for files, rules, and/or sessions."
     required: false
   yara_rules:
     description: "{RegEx[]} Use YARA rules."

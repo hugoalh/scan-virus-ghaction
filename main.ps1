@@ -1,12 +1,22 @@
 #Requires -PSEdition Core
 #Requires -Version 7.2
-Write-Host -Object 'Starting.'
+Write-Host -Object 'Begin process.'
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name (@('assets', 'git', 'utility') | ForEach-Object -Process {
-	Return (Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1")
-}) -Scope 'Local'
-Test-GitHubActionsEnvironment -Mandatory | Out-Null
+Import-Module -Name (
+	@(
+		'assets',
+		'git',
+		'utility'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
+) -Scope 'Local'
+Try {
+	$Null = Test-GitHubActionsEnvironment -Mandatory
+}
+Catch {
+	Throw $_
+}
 [Hashtable]$ImportTsvParameters = @{
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
@@ -25,25 +35,22 @@ Test-GitHubActionsEnvironment -Mandatory | Out-Null
 [UInt64]$TotalSizesAll = 0
 [UInt64]$TotalSizesClamAV = 0
 [UInt64]$TotalSizesYara = 0
-[Boolean]$LocalTarget = $False
-[Uri[]]$NetworkTargets = @()
 [String[]]$CleanUpFilesFullNames = @()
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
-[RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
-Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter
-[String]$InputTableParserRaw = Get-GitHubActionsInput -Name 'input_tableparser' -Mandatory -EmptyStringAsNull -Trim
+[RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
+Write-NameValue -Name 'Input_List_Delimiter' -Value $InputListDelimiter
 [String]$InputTableParser = ''
-Switch -RegEx ($InputTableParserRaw) {
+Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_parser' -Mandatory -EmptyStringAsNull -Trim) {
 	'^c(?:omma|sv)$' {
 		$InputTableParser = 'csv'
 		Break
 	}
-	'^c(?:omma|sv)-?(?:kv)?-?s(?:ingle(?:line)?)?$' {
-		$InputTableParser = 'csv-kv-s'
+	'^c(?:omma|sv)-?s(?:ingle(?:line)?)?$' {
+		$InputTableParser = 'csv-s'
 		Break
 	}
-	'^c(?:omma|sv)-?(?:kv)?-?m(?:ulti(?:ple)?(?:line)?)?$' {
-		$InputTableParser = 'csv-kv-m'
+	'^c(?:omma|sv)-?m(?:ulti(?:ple)?(?:line)?)?$' {
+		$InputTableParser = 'csv-m'
 		Break
 	}
 	'^t(?:ab|sv)$' {
@@ -55,43 +62,49 @@ Switch -RegEx ($InputTableParserRaw) {
 		Break
 	}
 	Default {
-		Write-GitHubActionsFail -Message "``$InputTableParserRaw`` is not a valid table parser!"
+		Write-GitHubActionsFail -Message "``$_`` is not a valid table parser!"
 		Throw
 	}
 }
-Write-NameValue -Name 'Input_TableParser' -Value $InputTableParser
-[String[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter
-If ($Targets.Count -ieq 0) {
-	$LocalTarget = $True
-} Else {
-	[String[]]$TargetsInvalid = @()
-	ForEach ($Target In $Targets) {
-		If (Test-StringIsUrl -InputObject $Target) {
-			$NetworkTargets += $Target -as [Uri]
-		} Else {
-			$TargetsInvalid += $Target
-		}
-	}
-	If ($TargetsInvalid.Count -igt 0) {
-		Write-GitHubActionsWarning -Message "Input ``targets`` contains invalid network targets ($($TargetsInvalid.Count)): ``$($TargetsInvalid -join '`, `')``"
-	}
-}
-Write-NameValue -Name "Targets ($($LocalTarget ? 1 : $NetworkTargets.Count))" -Value ($LocalTarget ? 'Local' : ($NetworkTargets -join ', '))
+Write-NameValue -Name 'Input_Table_Parser' -Value $InputTableParser
+[Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
+	ForEach-Object -Process { $_ -as [Uri] }
+Write-NameValue -Name "Targets ($($Targets.Count))" -Value (($Targets.Count -ieq 0) ? 'Local' : (
+	$Targets |
+		Select-Object -ExpandProperty 'OriginalString' |
+		Join-String -Separator ', '
+))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
-[PSCustomObject[]]$GitIgnores = (Get-InputTable -Name 'git_ignores' -Type $InputTableParser) ?? @()
+[PSCustomObject[]]$GitIgnores = Get-InputTable -Name 'git_ignores' -Type $InputTableParser
 Write-NameValue -Name "Git_Ignores ($($GitIgnores.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($GitIgnores | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+[Boolean]$GitLogAllBranches = Get-InputBoolean -Name 'git_log_allbranches'
+Write-NameValue -Name 'Git_Log_AllBranches' -Value $GitLogAllBranches
+[Boolean]$GitLogReflogs = Get-InputBoolean -Name 'git_log_reflogs'
+Write-NameValue -Name 'Git_Log_Reflogs' -Value $GitLogReflogs
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
 [Boolean]$ClamAVDaemon = Get-InputBoolean -Name 'clamav_daemon'
 Write-NameValue -Name 'ClamAV_Daemon' -Value $ClamAVDaemon
-[PSCustomObject[]]$ClamAVIgnoresRaw = (Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser) ?? @()
+[PSCustomObject[]]$ClamAVIgnoresRaw = Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser
 [PSCustomObject]$ClamAVIgnores = Group-ScanVirusToolsIgnores -InputObject $ClamAVIgnoresRaw
-Write-NameValue -Name "ClamAV_Ignores_OnlyPaths ($($ClamAVIgnores.OnlyPaths.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnores.OnlyPaths | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
-Write-NameValue -Name "ClamAV_Ignores_OnlySessions ($($ClamAVIgnores.OnlySessions.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnores.OnlySessions | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
-Write-NameValue -Name "ClamAV_Ignores_Others ($($ClamAVIgnores.Others.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVIgnores.Others | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "ClamAV_Ignores_OnlyPaths ($($ClamAVIgnores.OnlyPaths.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$ClamAVIgnores.OnlyPaths |
+		Format-List -Property '*' |
+		Out-String
+))"
+Write-NameValue -Name "ClamAV_Ignores_OnlySessions ($($ClamAVIgnores.OnlySessions.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$ClamAVIgnores.OnlySessions |
+		Format-List -Property '*' |
+		Out-String
+))"
+Write-NameValue -Name "ClamAV_Ignores_Others ($($ClamAVIgnores.Others.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$ClamAVIgnores.Others |
+		Format-List -Property '*' |
+		Out-String
+))"
 [Boolean]$ClamAVMultiScan = Get-InputBoolean -Name 'clamav_multiscan'
 Write-NameValue -Name 'ClamAV_MultiScan' -Value $ClamAVMultiScan
 [Boolean]$ClamAVReloadPerSession = Get-InputBoolean -Name 'clamav_reloadpersession'
@@ -99,16 +112,34 @@ Write-NameValue -Name 'ClamAV_ReloadPerSession' -Value $ClamAVReloadPerSession
 [Boolean]$ClamAVSubcursive = Get-InputBoolean -Name 'clamav_subcursive'
 Write-NameValue -Name 'ClamAV_Subcursive' -Value $ClamAVSubcursive
 [RegEx[]]$ClamAVUnofficialSignaturesRegEx = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
-Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx ($($ClamAVUnofficialSignaturesRegEx.Count))" -Value "`n$($ClamAVUnofficialSignaturesRegEx -join "`n")"
+Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx ($($ClamAVUnofficialSignaturesRegEx.Count))" -Value "`n$(
+	$ClamAVUnofficialSignaturesRegEx |
+		Join-String -Separator "`n"
+)"
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[PSCustomObject[]]$YaraIgnoresRaw = (Get-InputTable -Name 'yara_ignores' -Type $InputTableParser) ?? @()
+[PSCustomObject[]]$YaraIgnoresRaw = Get-InputTable -Name 'yara_ignores' -Type $InputTableParser
 [PSCustomObject]$YaraIgnores = Group-ScanVirusToolsIgnores -InputObject $YaraIgnoresRaw
-Write-NameValue -Name "YARA_Ignores_OnlyPaths ($($YaraIgnores.OnlyPaths.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnores.OnlyPaths | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
-Write-NameValue -Name "YARA_Ignores_OnlySessions ($($YaraIgnores.OnlySessions.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnores.OnlySessions | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
-Write-NameValue -Name "YARA_Ignores_Others ($($YaraIgnores.Others.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraIgnores.Others | Format-Table -Property '*' -AutoSize -Wrap | Out-String))"
+Write-NameValue -Name "YARA_Ignores_OnlyPaths ($($YaraIgnores.OnlyPaths.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$YaraIgnores.OnlyPaths |
+		Format-List -Property '*' |
+		Out-String
+))"
+Write-NameValue -Name "YARA_Ignores_OnlySessions ($($YaraIgnores.OnlySessions.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$YaraIgnores.OnlySessions |
+		Format-List -Property '*' |
+		Out-String
+))"
+Write-NameValue -Name "YARA_Ignores_Others ($($YaraIgnores.Others.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$YaraIgnores.Others |
+		Format-List -Property '*' |
+		Out-String
+))"
 [RegEx[]]$YaraRulesRegEx = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
-Write-NameValue -Name "YARA_Rules_RegEx ($($YaraRulesRegEx.Count))" -Value "`n$($YaraRulesRegEx -join "`n")"
+Write-NameValue -Name "YARA_Rules_RegEx ($($YaraRulesRegEx.Count))" -Value "`n$(
+	$YaraRulesRegEx |
+		Join-String -Separator "`n"
+)"
 [Boolean]$YaraToolWarning = Get-InputBoolean -Name 'yara_toolwarning'
 Write-NameValue -Name 'YARA_ToolWarning' -Value $YaraToolWarning
 [Boolean]$UpdateAssets = Get-InputBoolean -Name 'update_assets'
@@ -116,19 +147,16 @@ Write-NameValue -Name 'Update_Assets' -Value $UpdateAssets
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
 Exit-GitHubActionsLogGroup
-If (!$LocalTarget -and $NetworkTargets.Count -ieq 0) {
-	Write-GitHubActionsFail -Message 'Input `targets` does not have valid targets!'
-	Throw
-}
-If ($True -notin @($ClamAVEnable, $YaraEnable)) {
-	Write-GitHubActionsFail -Message 'No scan virus tools enabled!'
+If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
+	Write-GitHubActionsFail -Message 'No tools enabled!'
 	Throw
 }
 If ($UpdateClamAV -and $ClamAVEnable) {
 	Enter-GitHubActionsLogGroup -Title 'Update ClamAV assets via FreshClam.'
 	Try {
 		Invoke-Expression -Command 'freshclam'
-	} Catch {
+	}
+	Catch {
 		Write-GitHubActionsWarning -Message "Unexpected issues when update ClamAV assets via FreshClam (mostly will not cause critical issues): $_"
 	}
 	If ($LASTEXITCODE -ine 0) {
@@ -153,12 +181,12 @@ If ($UpdateAssets -and (
 Enter-GitHubActionsLogGroup -Title 'Read assets index.'
 [PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @ImportTsvParameters
 [PSCustomObject[]]$YaraRulesAssetsIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportTsvParameters
-[PSCustomObject[]]$ClamAVUnofficialSignaturesApply = ($ClamAVUnofficialSignaturesAssetsIndex | Where-Object -FilterScript {
-	Return !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx)
-} | Sort-Object -Property 'Name')
-[PSCustomObject[]]$YaraRulesApply = ($YaraRulesAssetsIndex | Where-Object -FilterScript {
-	Return !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx)
-} | Sort-Object -Property 'Name')
+[PSCustomObject[]]$ClamAVUnofficialSignaturesApply = $ClamAVUnofficialSignaturesAssetsIndex |
+	Where-Object -FilterScript { !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx) } |
+	Sort-Object -Property 'Name'
+[PSCustomObject[]]$YaraRulesApply = $YaraRulesAssetsIndex |
+	Where-Object -FilterScript { !(Test-StringMatchRegExs -Target $_.Name -Matchers $ClamAVUnofficialSignaturesRegEx) } |
+	Sort-Object -Property 'Name'
 [PSCustomObject[]]$ClamAVUnofficialSignaturesIndexDisplay = @()
 ForEach ($ClamAVUnofficialSignaturesAssetIndex In $ClamAVUnofficialSignaturesAssetsIndex) {
 	[String]$ClamAVUnofficialSignaturesAssetIndexFullName = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $ClamAVUnofficialSignaturesAssetIndex.Location
@@ -175,16 +203,22 @@ ForEach ($ClamAVUnofficialSignaturesAssetIndex In $ClamAVUnofficialSignaturesAss
 		$CleanUpFilesFullNames += $ClamAVUnofficialSignatureAssetDestination
 	}
 }
-[PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsNotExist = ($ClamAVUnofficialSignaturesIndexDisplay | Where-Object -FilterScript {
-	Return !$_.Exist
-})
-Write-NameValue -Name "ClamAV unofficial signatures index (Index: $($ClamAVUnofficialSignaturesAssetsIndex.Count); Exist: $($ClamAVUnofficialSignaturesAssetsIndex.Count - $ClamAVUnofficialSignaturesAssetsNotExist.Count); Apply: $($ClamAVUnofficialSignaturesApply.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($ClamAVUnofficialSignaturesIndexDisplay | Format-Table -Property @(
-	'Name',
-	@{ Expression = 'Exist'; Alignment = 'Right' },
-	@{ Expression = 'Apply'; Alignment = 'Right' }
-) -AutoSize -Wrap | Out-String))"
+[PSCustomObject[]]$ClamAVUnofficialSignaturesAssetsNotExist = $ClamAVUnofficialSignaturesIndexDisplay |
+	Where-Object -FilterScript { !$_.Exist }
+Write-NameValue -Name "ClamAV unofficial signatures index (Index: $($ClamAVUnofficialSignaturesAssetsIndex.Count); Exist: $($ClamAVUnofficialSignaturesAssetsIndex.Count - $ClamAVUnofficialSignaturesAssetsNotExist.Count); Apply: $($ClamAVUnofficialSignaturesApply.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$ClamAVUnofficialSignaturesIndexDisplay |
+		Format-Table -Property @(
+			'Name',
+			@{ Expression = 'Exist'; Alignment = 'Right' },
+			@{ Expression = 'Apply'; Alignment = 'Right' }
+		) -AutoSize -Wrap |
+		Out-String
+))"
 If ($ClamAVUnofficialSignaturesAssetsNotExist.Count -igt 0) {
-	Write-GitHubActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist ($($ClamAVUnofficialSignaturesAssetsNotExist.Count)): $($ClamAVUnofficialSignaturesAssetsNotExist.Name -join ', ')"
+	Write-GitHubActionsWarning -Message "Some of the ClamAV unofficial signatures are indexed but not exist ($($ClamAVUnofficialSignaturesAssetsNotExist.Count)): $(
+		$ClamAVUnofficialSignaturesAssetsNotExist.Name |
+			Join-String -Separator ', '
+	)"
 }
 [PSCustomObject[]]$YaraRulesIndexDisplay = @()
 ForEach ($YaraRulesAssetIndex In $YaraRulesAssetsIndex) {
@@ -197,16 +231,22 @@ ForEach ($YaraRulesAssetIndex In $YaraRulesAssetsIndex) {
 		Apply = $YaraRuleAssetApply
 	}
 }
-[PSCustomObject[]]$YaraRulesAssetsNotExist = ($YaraRulesIndexDisplay | Where-Object -FilterScript {
-	Return !$_.Exist
-})
-Write-NameValue -Name "YARA rules index (Index: $($YaraRulesAssetsIndex.Count); Exist: $($YaraRulesAssetsIndex.Count - $YaraRulesAssetsNotExist.Count); Apply: $($YaraRulesApply.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject ($YaraRulesIndexDisplay | Format-Table -Property @(
-	'Name',
-	@{ Expression = 'Exist'; Alignment = 'Right' },
-	@{ Expression = 'Apply'; Alignment = 'Right' }
-) -AutoSize -Wrap | Out-String))"
+[PSCustomObject[]]$YaraRulesAssetsNotExist = $YaraRulesIndexDisplay |
+	Where-Object -FilterScript { !$_.Exist }
+Write-NameValue -Name "YARA rules index (Index: $($YaraRulesAssetsIndex.Count); Exist: $($YaraRulesAssetsIndex.Count - $YaraRulesAssetsNotExist.Count); Apply: $($YaraRulesApply.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
+	$YaraRulesIndexDisplay |
+		Format-Table -Property @(
+			'Name',
+			@{ Expression = 'Exist'; Alignment = 'Right' },
+			@{ Expression = 'Apply'; Alignment = 'Right' }
+		) -AutoSize -Wrap |
+		Out-String
+))"
 If ($YaraRulesAssetsNotExist.Count -igt 0) {
-	Write-GitHubActionsWarning -Message "Some of the YARA rules are indexed but not exist ($($YaraRulesAssetsNotExist.Count)): $($YaraRulesAssetsNotExist.Name -join ', ')"
+	Write-GitHubActionsWarning -Message "Some of the YARA rules are indexed but not exist ($($YaraRulesAssetsNotExist.Count)): $(
+		$YaraRulesAssetsNotExist.Name |
+			Join-String -Separator ', '
+	)"
 }
 Exit-GitHubActionsLogGroup
 If ($ClamAVEnable -and $ClamAVDaemon) {
@@ -237,7 +277,10 @@ Function Invoke-ScanVirusTools {
 	[String[]]$ElementsListClamAV = @()
 	[String[]]$ElementsListYara = @()
 	[PSCustomObject[]]$ElementsListDisplay = @()
-	ForEach ($Element In ($Elements | Sort-Object -Property 'FullName')) {
+	ForEach ($Element In (
+		$Elements |
+			Sort-Object -Property 'FullName'
+	)) {
 		[Boolean]$ElementIsDirectory = Test-Path -LiteralPath $Element.FullName -PathType 'Container'
 		[String]$ElementName = $Element.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
 		[Hashtable]$ElementListDisplay = @{
@@ -247,7 +290,8 @@ Function Invoke-ScanVirusTools {
 		If ($ElementIsDirectory) {
 			$ElementsIsDirectoryCount += 1
 			$ElementListDisplay.Flags += 'D'
-		} Else {
+		}
+		Else {
 			$ElementListDisplay.Sizes = $Element.Length
 			$Script:TotalSizesAll += $Element.Length
 		}
@@ -266,29 +310,41 @@ Function Invoke-ScanVirusTools {
 			$ElementListDisplay.Flags += 'Y'
 			$Script:TotalSizesYara += $Element.Length
 		}
-		$ElementListDisplay.Flags = ($ElementListDisplay.Flags | Sort-Object) -join ''
+		$ElementListDisplay.Flags = $ElementListDisplay.Flags |
+			Sort-Object |
+			Join-String -Separator ''
 		$ElementsListDisplay += [PSCustomObject]$ElementListDisplay
 	}
 	$Script:TotalElementsAll += $Elements.Count
 	$Script:TotalElementsClamAV += $ElementsListClamAV.Count
 	$Script:TotalElementsYara += $ElementsListYara.Count
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`" (Elements: $($Elements.Count); irectory: $ElementsIsDirectoryCount; ClamAV: $($ElementsListClamAV.Count); Yara: $($ElementsListYara.Count)):"
-	Write-OptimizePSFormatDisplay -InputObject ($ElementsListDisplay | Format-Table -Property @(
-		'Element',
-		'Flags',
-		@{ Expression = 'Sizes'; Alignment = 'Right' }
-	) -AutoSize -Wrap | Out-String)
+	Write-OptimizePSFormatDisplay -InputObject (
+		$ElementsListDisplay |
+			Format-Table -Property @(
+				'Element',
+				'Flags',
+				@{ Expression = 'Sizes'; Alignment = 'Right' }
+			) -AutoSize -Wrap |
+			Out-String
+	)
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
-		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
-		Set-Content -LiteralPath $ElementsListClamAVFullName -Value ($ElementsListClamAV -join "`n") -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
+		[String]$ElementsListClamAVFullName = New-TemporaryFile |
+			Select-Object -ExpandProperty 'FullName'
+		Set-Content -LiteralPath $ElementsListClamAVFullName -Value (
+			$ElementsListClamAV |
+				Join-String -Separator "`n"
+		) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
 		[String]$ClamAVExpression = ''
 		If ($ClamAVDaemon) {
 			$ClamAVExpression = "clamdscan --fdpass --file-list=`"$ElementsListClamAVFullName`"$($ClamAVMultiScan ? ' --multiscan' : '')$($ClamAVReloadPerSession ? ' --reload' : '')"
-		} Else {
+		}
+		Else {
 			$ClamAVExpression = "clamscan --detect-broken=yes --file-list=`"$ElementsListClamAVFullName`" --follow-dir-symlinks=0 --follow-file-symlinks=0 --recursive"
 		}
+<# TODO: 1st review #>
 		Try {
 			[String[]]$ClamAVOutput = Invoke-Expression -Command $ClamAVExpression
 			[UInt32]$ClamAVExitCode = $LASTEXITCODE

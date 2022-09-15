@@ -17,26 +17,26 @@
 
 A GitHub Action to scan virus (including malicious file and malware) in the GitHub Action workspace.
 
-### 🛡 Anti Virus Software
+### ⚠ Disclaimer
+
+This action does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
+
+### 🛡 Tools
 
 - **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
   - [Unofficial Signatures List][clamav-unofficial-signatures-list]
 - **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
   - [Rules List][yara-rules-list]
 
-### ⚠ Disclaimer
-
-This action does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
-
 ### 🌟 Feature
 
 - 4\~96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
+- Ability to ignore specify directories, files, and/or Git commits.
 - Ability to scan other things, not limited to only Git repository.
-- Files filter to scan specify directories and/or files or not.
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.10.0 based; To view other tag's/version's documentation, please visit the [tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct tag/version.
+> **⚠ Important:** This documentation is v0.10.0 based; To view other release's/tag's/version's documentation, please visit the [releases/tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct release/tag/version.
 
 ### 🎯 Entrypoint / Target
 
@@ -56,21 +56,23 @@ jobs:
 
 > **ℹ Notice:** All inputs are optional.
 
-#### `input_listdelimiter`
+#### `input_list_delimiter`
 
-`<RegEx = ",|;|\r?\n">` Delimiter when input is type of list (i.e.: array), by regular expression.
+`<RegEx = ",|;|\r?\n">` Delimiter when the input is type of list (i.e.: array), by regular expression.
 
-#### `input_tableparser`
+#### `input_table_parser`
 
-`<String = "yaml">` Parser when input is type of table.
+`<String = "yaml">` Parser when the input is type of table.
 
 <table>
 <tr>
 <td align="center"><b>Parser</b></td>
+<td><b>Parser ID</b></td>
 <td><b>Example</b></td>
 </tr>
 <tr>
-<td align="center"><code>csv</code></td>
+<td align="center">CSV (Comma Separated Values)</td>
+<td><code>csv</code></td>
 <td>
 
 ```csv
@@ -82,7 +84,13 @@ bar,foo
 </td>
 </tr>
 <tr>
-<td align="center"><code>csv-kv-singleline</code></td>
+<td align="center">CSV (Comma Separated Values) Single Line</code></td>
+<td>
+<ul>
+<li><code>csv-s</code></li>
+<li><code>csv-singleline</code></li>
+</ul>
+</td>
 <td>
 
 ```
@@ -92,7 +100,13 @@ bar=5,foo=10;bar=10,foo=20
 </td>
 </tr>
 <tr>
-<td align="center"><code>csv-kv-multipleline</code></td>
+<td align="center">CSV (Comma Separated Values) Multiple Line</td>
+<td>
+<ul>
+<li><code>csv-m</code></li>
+<li><code>csv-multipleline</code></li>
+</ul>
+</td>
 <td>
 
 ```
@@ -103,7 +117,8 @@ bar=10,foo=20
 </td>
 </tr>
 <tr>
-<td align="center"><code>tsv</code></td>
+<td align="center">TSV (Tab Separated Values)</td>
+<td><code>tsv</code></td>
 <td>
 
 ```tsv
@@ -115,7 +130,13 @@ bar	foo
 </td>
 </tr>
 <tr>
-<td align="center"><code>yaml</code> / <code>yml</code></td>
+<td align="center">YAML / YML (YAML Ain't Markup Language)</td>
+<td>
+<ul>
+<li><code>yaml</code></li>
+<li><code>yml</code></li>
+</ul>
+</td>
 <td>
 
 ```yml
@@ -133,15 +154,16 @@ bar	foo
 
 `<Uri[]>` Targets.
 
-| **Type** | **Description** |
-|:-:|:--|
-| Local ***\[Default\]*** | Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action. |
-| Network | Fetch files from network to the workspace in this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace. |
+- **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
+- **Network:** Fetch files from network to the workspace in this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); Require a clean workspace.
+
 
 When this input is defined (i.e.: network targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
 - [`git_ignores`](#git_ignores)
+- [`git_log_allbranches`](#git_log_allbranches)
+- [`git_log_reflogs`](#git_log_reflogs)
 - [`git_reverse`](#git_reverse)
 
 #### `git_integrate`
@@ -151,11 +173,13 @@ When this input is defined (i.e.: network targets), will ignore inputs:
 When this input is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
+- [`git_log_allbranches`](#git_log_allbranches)
+- [`git_log_reflogs`](#git_log_reflogs)
 - [`git_reverse`](#git_reverse)
 
 #### `git_ignores`
 
-[`<Table>`](#input_tableparser) Git ignores for commits, by table. Commits' information are provided by [Git CLI `git log`](https://git-scm.com/docs/git-log). Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) Git ignores for commits, by table. Available properties (i.e.: keys):
 
 - **`AuthorDate`:**
   - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
@@ -185,6 +209,8 @@ When this input is `False`, will ignore inputs:
 - **`GPGSignatureStatus`:** `<RegEx>`
 - **`GPGSignatureTrustLevel`:** `<RegEx>`
 - **`Notes`:** `<RegEx>`
+- **`ParentHashes`:** `<RegEx>`
+  - For multiple parent hashes, match any parent hashes will cause ignore this commit.
 - **`ReflogIdentityEmail`:** `<RegEx>`
 - **`ReflogIdentityName`:** `<RegEx>`
 - **`ReflogSelector`:** `<RegEx>`
@@ -199,6 +225,14 @@ Example:
   CommitterDate: $lt 2022-01-01T00:00:00Z
   CommitterName: ^octokit$
 ```
+
+#### `git_log_allbranches`
+
+`<Boolean = False>` Include Git commits which not in default branch.
+
+#### `git_log_reflogs`
+
+`<Boolean = False>` Include Git commits which mark as references.
 
 #### `git_reverse`
 
@@ -241,7 +275,7 @@ When this input is `False`, will ignore inputs:
 
 #### `clamav_ignores`
 
-[`<Table>`](#input_tableparser) ClamAV ignores (for files, sessions, and/or signatures), by table. Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) ClamAV ignores for files, sessions, and/or signatures, by table. Available properties (i.e.: keys):
 
 - **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
 - **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
@@ -279,7 +313,7 @@ Example:
 
 #### `clamav_unofficialsignatures`
 
-`<RegEx[]>` Use ClamAV unofficial signatures, by regular expression and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial signatures are not in use.
+`<RegEx[]>` Use ClamAV unofficial signatures, by regular expression and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial signatures are not in use.
 
 > **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives than official signatures in most cases.
 
@@ -297,7 +331,7 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_ignores`
 
-[`<Table>`](#input_tableparser) YARA ignores (for files, rules, and/or sessions), by table. Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) YARA ignores for files, rules, and/or sessions, by table. Available properties (i.e.: keys):
 
 - **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
 - **`Rule`:** `<RegEx>` Index`/`RuleName
@@ -311,7 +345,7 @@ Example:
 
 #### `yara_rules`
 
-`<RegEx[]>` Use YARA rules, by regular expression and [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the rules are not in use.
+`<RegEx[]>` Use YARA rules, by regular expression and [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
 
 #### `yara_toolwarning`
 
