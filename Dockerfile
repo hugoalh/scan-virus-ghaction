@@ -42,5 +42,5 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -M
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main /opt/hugoalh/scan-virus-ghaction/assets/
-COPY assets.psm1 git.psm1 main.ps1 utility.psm1 /opt/hugoalh/scan-virus-ghaction/
+COPY assets.psm1 git.psm1 main.ps1 token.psm1 utility.psm1 /opt/hugoalh/scan-virus-ghaction/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
