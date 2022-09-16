@@ -1,6 +1,6 @@
 [string]$ErrorActionOriginalPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
-Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Prefix 'GHActions' -Scope 'Local'
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'utilities.psm1') -Scope 'Local'
 enum FilterMode {
 	Exclude = 0
