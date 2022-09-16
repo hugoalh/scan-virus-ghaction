@@ -4,11 +4,11 @@ Import-Module -Name @(
 	(Join-Path -Path $PSScriptRoot -ChildPath 'token.psm1')
 ) -Scope 'Local'
 [Hashtable[]]$GitCommitsProperties = @(
-	@{ Name = 'AuthorDate'; Placeholder = '%aI'; AsSort = $True; Type = [DateTime] },
+	@{ Name = 'AuthorDate'; Placeholder = '%aI'; AsSort = $True; Require = $True; Type = [DateTime] },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
 	@{ Name = 'Body'; Placeholder = '%b'; IsMultipleLine = $True },
-	@{ Name = 'CommitHash'; Placeholder = '%H'; AsIndex = $True },
+	@{ Name = 'CommitHash'; Placeholder = '%H'; AsIndex = $True; Require = $True },
 	@{ Name = 'CommitterDate'; Placeholder = '%cI'; Type = [DateTime] },
 	@{ Name = 'CommitterEmail'; Placeholder = '%ce' },
 	@{ Name = 'CommitterName'; Placeholder = '%cn' },
@@ -32,21 +32,30 @@ Import-Module -Name @(
 [Hashtable]$GitCommitsPropertySorter = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsSort } |
 	Select-Object -First 1
+[Hashtable[]]$GitCommitsRequireProperties =  $GitCommitsProperties |
+	Where-Object -FilterScript { $_.Require }
 [UInt16]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 Function Get-GitCommitsInformation {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
-	Param ()
+	Param (
+		[String[]]$Property = (
+			$GitCommitsRequireProperties |
+				Select-Object -ExpandProperty 'Name'
+		),
+		[Switch]$AllBranches,
+		[Switch]$Reflogs
+	)
 	While ($True) {
 		Try {
 			[String]$DelimiterPerCommitStart = "=====S:$(New-RandomToken -Length 32)====="
 			[String]$DelimiterPerCommitProperty = "=====B:$(New-RandomToken -Length 32)====="
 			[String]$DelimiterPerCommitEnd = "=====E:$(New-RandomToken -Length 32)====="
-			[String[]]$Raw = Invoke-Expression -Command "git --no-pager log --all --format=`"$DelimiterPerCommitStart%n$(
+			[String[]]$Raw = Invoke-Expression -Command "git --no-pager log$($AllBranches ? ' --all' : '') --format=`"$DelimiterPerCommitStart%n$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
 					Join-String -Separator "%n$DelimiterPerCommitProperty%n"
-			)%n$DelimiterPerCommitEnd`" --no-color --reflog --reverse"
+			)%n$DelimiterPerCommitEnd`" --no-color$($Reflogs ? ' --reflog' : '')"
 			If ($LASTEXITCODE -ine 0) {
 				Throw (
 					$Raw |

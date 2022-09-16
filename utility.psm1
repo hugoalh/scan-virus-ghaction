@@ -2,39 +2,42 @@
 #Requires -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name 'psyml' -Scope 'Local'
-Function ConvertFrom-CsvKvm {
+Function ConvertFrom-CsvM {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String[]]$InputObject
 	)
-	Begin {}
 	Process {
-		Return ($InputObject | ForEach-Object -Process {
-			Return [PSCustomObject]([String[]](Convert-FromCsvKvsToCsvKvm -InputObject $_ -Delimiter ',') | Join-String -Separator "`n" | ConvertFrom-StringData)
-		})
+		$InputObject |
+			ForEach-Object -Process { [PSCustomObject](
+				[String[]](Convert-FromCsvSToCsvM -InputObject $_ -Delimiter ',') |
+					Join-String -Separator "`n" |
+					ConvertFrom-StringData
+			)} |
+			Write-Output
 	}
-	End {}
 }
-Function Convert-FromCsvKvsToCsvKvm {
+Function Convert-FromCsvSToCsvM {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String]$InputObject,
 		[Parameter(Position = 1)][Char]$Delimiter = ';'
 	)
-	Begin {}
 	Process {
 		If ($InputObject -imatch $Delimiter) {
 			[String[]]$Result = @()
 			ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
 				$Result += $Item.PSObject.Properties.Value
 			}
-			Return $Result
+			$Result |
+				Write-Output
+			Return
 		}
-		Return @($InputObject)
+		$InputObject |
+			Write-Output
 	}
-	End {}
 }
 Function Format-InputList {
 	[CmdletBinding()]
@@ -43,36 +46,53 @@ Function Format-InputList {
 		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject,
 		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
-	Return ([String[]]($InputObject -isplit $Delimiter) | ForEach-Object -Process {
-		Return $_.Trim()
-	} | Where-Object -FilterScript { Return ($_ -imatch '^.+$') } | Sort-Object -Unique -CaseSensitive)
+	[String[]]($InputObject -isplit $Delimiter) |
+		ForEach-Object -Process { $_.Trim() } |
+		Where-Object -FilterScript { $_ -imatch '^.+$' } |
+		Sort-Object -Unique -CaseSensitive |
+		Write-Output
 }
 Function Format-InputTable {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csv-kv-m', 'csv-kv-s', 'tsv', 'yaml')][String]$Type,
+		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csv-m', 'csv-s', 'tsv', 'yaml')][String]$Type,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Input', 'Object')][String]$InputObject
 	)
 	Try {
 		Switch -Exact ($Type) {
 			'csv' {
-				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter ',')
+				ConvertFrom-Csv -InputObject $InputObject -Delimiter ',' |
+					Write-Output
+				Return
 			}
-			'csv-kv-m' {
-				Return ([String[]]($InputObject -isplit '\r?\n') | Where-Object -FilterScript { Return ($_ -imatch '^.+$') } | ConvertFrom-CsvKvm)
+			'csv-m' {
+				[String[]]($InputObject -isplit '\r?\n') |
+					Where-Object -FilterScript { $_ -imatch '^.+$' } |
+					ConvertFrom-CsvM |
+					Write-Output
+				Return
 			}
-			'csv-kv-s' {
-				Return ($InputObject | Convert-FromCsvKvsToCsvKvm | ConvertFrom-CsvKvm)
+			'csv-s' {
+				$InputObject |
+					Convert-FromCsvSToCsvM |
+					ConvertFrom-CsvM |
+					Write-Output
+				Return
 			}
 			'tsv' {
-				Return (ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t")
+				ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t" |
+					Write-Output
+				Return
 			}
 			'yaml' {
-				Return (ConvertFrom-Yaml -InputObject $InputObject)
+				ConvertFrom-Yaml -InputObject $InputObject |
+					Write-Output
+				Return
 			}
 		}
-	} Catch {
+	}
+	Catch {
 		Write-GitHubActionsFail -Message "Invalid ``$Type`` table syntax! $_"
 		Throw
 	}
@@ -83,7 +103,7 @@ Function Get-InputBoolean {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name
 	)
-	Return [Boolean]::Parse((Get-GitHubActionsInput -Name $Name -Mandatory -EmptyStringAsNull -Trim))
+	Write-Output -InputObject [Boolean]::Parse((Get-GitHubActionsInput -Name $Name -Mandatory -EmptyStringAsNull -Trim))
 }
 Function Get-InputList {
 	[CmdletBinding()]
@@ -94,22 +114,26 @@ Function Get-InputList {
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
-		Return @()
+		Write-Output -InputObject @()
+		Return
 	}
-	Return (Format-InputList -InputObject $Raw -Delimiter $Delimiter)
+	Format-InputList -InputObject $Raw -Delimiter $Delimiter |
+		Write-Output
 }
 Function Get-InputTable {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
-		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csv-kv-m', 'csv-kv-s', 'tsv', 'yaml')][String]$Type
+		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csv-m', 'csv-s', 'tsv', 'yaml')][String]$Type
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
-		Return @()
+		Write-Output -InputObject @()
+		Return
 	}
-	Return (Format-InputTable -Type $Type -InputObject $Raw)
+	Format-InputTable -Type $Type -InputObject $Raw |
+		Write-Output
 }
 Function Group-ScanVirusToolsIgnores {
 	[CmdletBinding()]
@@ -117,26 +141,33 @@ Function Group-ScanVirusToolsIgnores {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
 	)
-	[PSCustomObject[]]$OnlyPaths = ($InputObject | Where-Object -FilterScript {
-		[String[]]$Keys = $_.PSObject.Properties.Name
-		Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Path')
-	})
-	[PSCustomObject[]]$OnlySessions = ($InputObject | Where-Object -FilterScript {
-		[String[]]$Keys = $_.PSObject.Properties.Name
-		Return ($Keys.Count -ieq 1 -and $Keys -icontains 'Session')
-	})
-	[PSCustomObject[]]$Others = ($InputObject | Where-Object -FilterScript {
-		[String[]]$Keys = $_.PSObject.Properties.Name
-		Return !($Keys.Count -ieq 1 -and (
-			$Keys -icontains 'Path' -or
-			$Keys -icontains 'Session'
-		))
-	})
-	Return [PSCustomObject]@{
+	[PSCustomObject[]]$OnlyPaths = $InputObject |
+		Where-Object -FilterScript {
+			[String[]]$Keys = $_.PSObject.Properties.Name
+			$Keys.Count -ieq 1 -and $Keys -icontains 'Path' |
+				Write-Output
+	}
+	[PSCustomObject[]]$OnlySessions = $InputObject |
+		Where-Object -FilterScript {
+			[String[]]$Keys = $_.PSObject.Properties.Name
+			$Keys.Count -ieq 1 -and $Keys -icontains 'Session' |
+				Write-Output
+	}
+	[PSCustomObject[]]$Others = $InputObject |
+		Where-Object -FilterScript {
+			[String[]]$Keys = $_.PSObject.Properties.Name
+			!($Keys.Count -ieq 1 -and (
+				$Keys -icontains 'Path' -or
+				$Keys -icontains 'Session'
+			)) |
+				Write-Output
+	}
+	[PSCustomObject]@{
 		OnlyPaths = $OnlyPaths
 		OnlySessions = $OnlySessions
 		Others = $Others
-	}
+	} |
+		Write-Output
 }
 Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]
@@ -144,11 +175,10 @@ Function Optimize-PSFormatDisplay {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
 	)
-	Begin {}
 	Process {
-		Return ($InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '')
+		$InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '' |
+			Write-Output
 	}
-	End {}
 }
 Function Test-StringIsUri {
 	[CmdletBinding()]
@@ -156,7 +186,8 @@ Function Test-StringIsUri {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][Uri]$InputObject
 	)
-	Return ($Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$')
+	$Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$' |
+		Write-Output
 }
 Function Test-StringMatchRegExs {
 	[CmdletBinding()]
@@ -167,10 +198,11 @@ Function Test-StringMatchRegExs {
 	)
 	ForEach ($Matcher in $Matchers) {
 		If ($Target -imatch $Matcher) {
-			Return $True
+			Write-Output -InputObject $True
+			Return
 		}
 	}
-	Return $False
+	Write-Output -InputObject $False
 }
 Function Write-NameValue {
 	[CmdletBinding()]
@@ -187,14 +219,12 @@ Function Write-OptimizePSFormatDisplay {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
 	)
-	Begin {}
 	Process {
 		[String]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
 		If ($OutputObject.Length -igt 0) {
 			Write-Host -Object $OutputObject
 		}
 	}
-	End {}
 }
 Export-ModuleMember -Function @(
 	'Format-InputList',
