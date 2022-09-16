@@ -1,26 +1,5 @@
 # Available Files
 
-## Table of Contents
-
-* [Audio](#audio)
-* [Compressed Files](#compressed-files)
-* [Crypto Files](#crypto-files)
-* [GIF](#gif)
-* [GPS Files](#gps-files)
-* [JPEG Images](#jpeg-images)
-* [Memory Dumps](#memory-dumps)
-* [Office](#office)
-* [PDF](#pdf)
-* [PNG Images](#png-images)
-* [Skype](#skype)
-* [SQLite](#sqlite)
-* [Telegram](#telegram)
-* [vCard](#vcard)
-* [Vector](#vector)
-* [Video](#video)
-* [VmWare](#VmWare)
-* [Windows Registry](#windows-registry)
-
 ## Audio
 
 + OGG.
@@ -46,22 +25,12 @@
 + RAW.
 + TTA.
 + VOX.
-
-## Compressed Files
+      
+## Compressed Files 
 
 + 7z.
-+ Rar.
-+ Tar.
-+ Gzip.
 
-## Crypto Files
-
-+ DER or x509.
-+ PGP Whole Disk Encryption
-+ PKR Public keyring.
-+ SKR Private keyring.
-
-### GPS Files
+### GPS Files        
 
 + GPX.
 
@@ -104,18 +73,12 @@
 ## SQLite
 
 + SQLite.
-+ WTBDB
-+ QRDB
-
-## Telegram
-+ TDF.
-+ TDEF.
 
 ## vCard
 
 + vCard.
 
-## Video
+## Video      
 
 + VCD.
 + OGG.
@@ -139,11 +102,6 @@
 + Picasa MXF.
 + ROQ.
 + NSV.
-
-## Windows Registry
-
-+ REG.
-+ SUD.
 
 ## GIF
 
@@ -186,27 +144,3 @@
 + 3D.
 + 3DM.
 + 3DXML.
-
-## Apple
-
-+ PLIST.
-+ CAR.
-+ NIB.
-+ DYLIB.
-+ SINF.
-+ SUPF.
-+ SUPP.
-
-## VmWare
-
-+ VMDK.
-+ VMEM.
-+ NVRAM.
-+ VMX.
-+ VMXF.
-+ VMSS.
-
-## Executables
-
-+ MZ
-+ ELF32

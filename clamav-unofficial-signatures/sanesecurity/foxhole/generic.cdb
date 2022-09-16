@@ -210,3 +210,4 @@ Sanesecurity.Foxhole.Iso_doc:CL_TYPE_ISO9660:*:[. -_]([Dd][Oo][Cc])(([. _,]){1,}
 Sanesecurity.Foxhole.Iso_pdf:CL_TYPE_ISO9660:*:[. -_]([Pp][Dd][Ff])(([. _,]){1,})([Pp][Ii][Ff]|[Ss][Cc][Rr]|[Ww][Ss][Ff]|[Ee][Xx][Ee]|[Cc][Oo][Mm]|[Bb][Aa][Tt]|[Cc][Mm][Dd]|[Vv][Bb][Ss]|[Ll][Nn][Kk]|[Cc][Pp][Ll]|[Vv][Bb])$:*:*:0:0:0:00000000
 Sanesecurity.Foxhole.Zip_msi_js:CL_TYPE_ZIP:*:[. -]([Mm][Ss][Ii])(([. _,]){1,})(Ww][Ss][Ff]|[Jj][Ss])$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_xlm:CL_TYPE_ZIP:*:[. -_]([Xx][Ll][Mm])(([. _,]){1,})([Pp][Ii][Ff]|[Ss][Cc][Rr]|[Ww][Ss][Ff]|[Ee][Xx][Ee]|[Cc][Oo][Mm]|[Bb][Aa][Tt]|[Cc][Mm][Dd]|[Vv][Bb][Ss]|[Ll][Nn][Kk]|[Cc][Pp][Ll]|[Vv][Bb]|[Vv][Bb][Ee]|[Vv][Bb][Ss])$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Iso_pdf:CL_TYPE_ISO9660:*:[. -_]([Pp][Dd][Ff])(([. _,]){1,})([Pp][Ii][Ff]|[Ss][Cc][Rr]|[Ww][Ss][Ff]|[Ee][Xx][Ee]|[Cc][Oo][Mm]|[Bb][Aa][Tt]|[Cc][Mm][Dd]|[Vv][Bb][Ss]|[Ll][Nn][Kk]|[Cc][Pp][Ll]|[Vv][Bb])$:*:*:0:0:0:00000000

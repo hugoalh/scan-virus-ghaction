@@ -23,14 +23,14 @@ jobs:
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.0.2"
       - name: "Sign In To Registry ${{env.REGISTRY}}"
-        uses: "docker/login-action@v1.14.1"
+        uses: "docker/login-action@v2.0.0"
         with:
           registry: "${{env.REGISTRY}}"
           username: "${{github.actor}}"
           password: "${{github.token}}"
       - name: "Generate Docker Metadata"
         id: "docker-meta"
-        uses: "docker/metadata-action@v3.7.0"
+        uses: "docker/metadata-action@v4.0.1"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |
@@ -46,7 +46,7 @@ jobs:
             org.opencontainers.image.title=Scan Virus (GitHub Action) Image
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Build & Push Docker Image"
-        uses: "docker/build-push-action@v2.10.0"
+        uses: "docker/build-push-action@v3.1.1"
         with:
           context: "./"
           file: "Dockerfile"

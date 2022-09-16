@@ -15,12 +15,11 @@ body:
     id: "version"
     attributes:
       label: "Version"
-      description: "What versions are affected? Versions must be listed as supported in the Security Policy (/.github/SECURITY.md)."
+      description: "What versions are affected? Versions must be listed as supported in the Security Policy (file: `SECURITY.md`)."
       multiple: true
       options:
-        - "v0.6.1"
-        - "v0.6.0"
-        - "v0.5.0"
+        - "v0.10.0"
+        - "v0.6.2"
     validations:
       required: false
   - type: "textarea"

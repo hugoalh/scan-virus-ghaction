@@ -1,10 +1,10 @@
-FROM debian:11 AS extract-powershell
+FROM debian:11.5 AS extract-powershell
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
-ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.4/powershell-7.2.4-linux-x64.tar.gz /tmp/powershell-7.2.4-linux-x64.tar.gz
+ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/powershell-7.2.6-linux-x64.tar.gz /tmp/powershell-7.2.6-linux-x64.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
-RUN ["tar", "zxf", "/tmp/powershell-7.2.4-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
+RUN ["tar", "zxf", "/tmp/powershell-7.2.6-linux-x64.tar.gz", "-C", "/opt/microsoft/powershell/7", "-v"]
 
-FROM debian:11 AS main
+FROM debian:11.5 AS main
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8

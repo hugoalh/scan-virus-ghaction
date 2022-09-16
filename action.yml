@@ -80,7 +80,7 @@ inputs:
     default: "false"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.6.2"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.6.3"
 branding:
   icon: "shield"
   color: "red"

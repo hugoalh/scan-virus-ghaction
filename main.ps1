@@ -268,12 +268,6 @@ if ($YARAEnable) {
 	Write-OptimizePSFormatDisplay -InputObject ($YARARulesDisplay | Format-Table -Property @('Name', @{Expression = 'Exist'; Alignment = 'Right'}, @{Expression = 'Apply'; Alignment = 'Right'}) -AutoSize -Wrap | Out-String)
 	Exit-GHActionsLogGroup
 }
-Enter-GHActionsLogGroup -Title 'Update software.'
-try {
-	Invoke-Expression -Command 'apt-get --assume-yes update'
-	Invoke-Expression -Command 'apt-get --assume-yes upgrade'
-} catch {  }
-Exit-GHActionsLogGroup
 if ($ClamAVEnable) {
 	Enter-GHActionsLogGroup -Title 'Update ClamAV via FreshClam.'
 	try {

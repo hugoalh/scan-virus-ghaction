@@ -17,12 +17,6 @@ The avaliable files are listed in [`FILES.md`](FILES.md).
 
 ***
 
-## Contribution
-
-We have defined a short document describing how to contribute to Yara-Forensics, please before sharing your rules we encorage you to read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-***
-
 ## Yara installation
 
 Installing `Yara` is quite easy: just follow [the official documentation](http://yara.readthedocs.io/en/v3.5.0/gettingstarted.html), after that, you can use the rules of this repository (and all `Yara` rules in general).
@@ -116,5 +110,3 @@ contains_jpeg_2000 mem.raw
 
 44,60s user 12,84s system 57% cpu 1:39,83 total
 ```
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M625UW0)
-
