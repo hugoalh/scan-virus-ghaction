@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       git_integrate:
-        description: "{Boolean} Integrate with Git to scan every commits; Require workspace is a Git repository."
+        description: "{Boolean} Integrate with Git to scan every commits."
         required: false
         default: "True"
       git_reverse:
