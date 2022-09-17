@@ -19,6 +19,7 @@ body:
       multiple: true
       options:
         - "v0.10.0"
+        - "v0.6.3"
         - "v0.6.2"
     validations:
       required: false
