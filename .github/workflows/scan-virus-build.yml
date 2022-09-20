@@ -18,7 +18,7 @@ on:
         required: false
         default: "True"
       git_reverse:
-        description: "{Boolean} Reverse scan order of the Git commits."
+        description: "{Boolean} Reverse the scan order of the Git commits."
         required: false
         default: "False"
 jobs:

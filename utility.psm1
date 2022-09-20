@@ -1,7 +1,9 @@
 #Requires -PSEdition Core
 #Requires -Version 7.2
-Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name 'psyml' -Scope 'Local'
+Import-Module -Name @(
+	'hugoalh.GitHubActionsToolkit',
+	'psyml'
+) -Scope 'Local'
 Function ConvertFrom-CsvM {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
@@ -14,7 +16,7 @@ Function ConvertFrom-CsvM {
 				[String[]](Convert-FromCsvSToCsvM -InputObject $_ -Delimiter ',') |
 					Join-String -Separator "`n" |
 					ConvertFrom-StringData
-			)} |
+			) } |
 			Write-Output
 	}
 }
@@ -26,17 +28,15 @@ Function Convert-FromCsvSToCsvM {
 		[Parameter(Position = 1)][Char]$Delimiter = ';'
 	)
 	Process {
-		If ($InputObject -imatch $Delimiter) {
-			[String[]]$Result = @()
-			ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
-				$Result += $Item.PSObject.Properties.Value
-			}
-			$Result |
-				Write-Output
+		If ($InputObject -inotmatch $Delimiter) {
+			Write-Output -InputObject $InputObject
 			Return
 		}
-		$InputObject |
-			Write-Output
+		[String[]]$Result = @()
+		ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
+			$Result += $Item.PSObject.Properties.Value
+		}
+		Write-Output -InputObject $Result
 	}
 }
 Function Format-InputList {
@@ -46,7 +46,7 @@ Function Format-InputList {
 		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject,
 		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Delimiter
 	)
-	[String[]]($InputObject -isplit $Delimiter) |
+	$InputObject -isplit $Delimiter |
 		ForEach-Object -Process { $_.Trim() } |
 		Where-Object -FilterScript { $_ -imatch '^.+$' } |
 		Sort-Object -Unique -CaseSensitive |
