@@ -34,18 +34,26 @@ Import-Module -Name @(
 	Select-Object -First 1
 [Hashtable[]]$GitCommitsRequireProperties =  $GitCommitsProperties |
 	Where-Object -FilterScript { $_.Require }
-[UInt16]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 Function Get-GitCommitsInformation {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[String[]]$Property = (
+		[Alias('Properties')][String[]]$Property = (
 			$GitCommitsRequireProperties |
 				Select-Object -ExpandProperty 'Name'
 		),
-		[Switch]$AllBranches,
-		[Switch]$Reflogs
+		[Alias('IncludeAllBranches')][Switch]$AllBranches,
+		[Alias('IncludeReflogs')][Switch]$Reflogs
 	)
+	[String[]]$PropertySelect = $Property + (
+		$GitCommitsRequireProperties |
+			Select-Object -ExpandProperty 'Name'
+	) |
+		ForEach-Object -Process { $_.ToLower() } |
+		Select-Object -Unique
+	[Hashtable[]]$GitCommitsPropertiesSelect = $GitCommitsProperties |
+		Where-Object -FilterScript { $_.Name -iin $PropertySelect }
+	[UInt16]$DelimiterTokenCountPerCommit = $GitCommitsPropertiesSelect.Count - 1
 	While ($True) {
 		Try {
 			[String]$DelimiterPerCommitStart = "=====S:$(New-RandomToken -Length 32)====="

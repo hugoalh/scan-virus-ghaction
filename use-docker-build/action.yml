@@ -18,18 +18,18 @@ inputs:
     required: false
     default: "False"
   git_ignores:
-    description: "{Table} Git ignores for commits."
+    description: "{Table} Ignores for the Git commits."
     required: false
   git_log_allbranches:
-    description: "{Boolean} Include Git commits which not in default branch."
+    description: "{Boolean} Include the Git commits which not in the default branch."
     required: false
     default: "False"
   git_log_reflogs:
-    description: "{Boolean} Include Git commits which mark as references."
+    description: "{Boolean} Include the Git commits which mark as references."
     required: false
     default: "False"
   git_reverse:
-    description: "{Boolean} Reverse scan order of the Git commits."
+    description: "{Boolean} Reverse the scan order of the Git commits."
     required: false
     default: "False"
   clamav_enable:
@@ -41,7 +41,7 @@ inputs:
     required: false
     default: "True"
   clamav_ignores:
-    description: "{Table} ClamAV ignores for files, sessions, and/or signatures."
+    description: "{Table} Ignores for the ClamAV's paths, sessions, and/or signatures."
     required: false
   clamav_multiscan:
     description: "{Boolean} Use ClamAV multiscan mode."
@@ -63,7 +63,7 @@ inputs:
     required: false
     default: "False"
   yara_ignores:
-    description: "{Table} YARA ignores for files, rules, and/or sessions."
+    description: "{Table} Ignores for the YARA's paths, rules, and/or sessions."
     required: false
   yara_rules:
     description: "{RegEx[]} Use YARA rules."
@@ -73,7 +73,7 @@ inputs:
     required: false
     default: "False"
   update_assets:
-    description: "{Boolean} Update ClamAV unofficial signatures and YARA rules from assets repository before scan anything."
+    description: "{Boolean} Update ClamAV unofficial signatures and YARA rules from the assets repository before scan anything."
     required: false
     default: "True"
   update_clamav:

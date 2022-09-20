@@ -1,17 +1,19 @@
 # Scan Virus (GitHub Action)
 
 [`ScanVirus.GitHubAction`](https://github.com/hugoalh/scan-virus-ghaction)
-![License](https://img.shields.io/static/v1?label=License&message=MIT&style=flat-square)
-[![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=Stars&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/stargazers)
-[![GitHub Contributors](https://img.shields.io/github/contributors/hugoalh/scan-virus-ghaction?label=Contributors&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/graphs/contributors)
-[![GitHub Issues](https://img.shields.io/github/issues-raw/hugoalh/scan-virus-ghaction?label=Issues&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr-raw/hugoalh/scan-virus-ghaction?label=Pull%20Requests&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/pulls)
-[![GitHub Discussions](https://img.shields.io/github/discussions/hugoalh/scan-virus-ghaction?label=Discussions&logo=github&logoColor=ffffff&style=flat-square)](https://github.com/hugoalh/scan-virus-ghaction/discussions)
-[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square)](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
 
-| **Releases** | **Latest** (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) | **Pre** (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=%20&style=flat-square)) |
+![GitHub Action](https://img.shields.io/badge/GitHub%20Action-2088FF?logo=github-actions&logoColor=ffffff&style=flat-square "GitHub Action")
+![License](https://img.shields.io/static/v1?label=License&message=MIT&style=flat-square "License")
+[![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=Stars&logo=github&logoColor=ffffff&style=flat-square "GitHub Stars")](https://github.com/hugoalh/scan-virus-ghaction/stargazers)
+[![GitHub Contributors](https://img.shields.io/github/contributors/hugoalh/scan-virus-ghaction?label=Contributors&logo=github&logoColor=ffffff&style=flat-square "GitHub Contributors")](https://github.com/hugoalh/scan-virus-ghaction/graphs/contributors)
+[![GitHub Issues](https://img.shields.io/github/issues-raw/hugoalh/scan-virus-ghaction?label=Issues&logo=github&logoColor=ffffff&style=flat-square "GitHub Issues")](https://github.com/hugoalh/scan-virus-ghaction/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr-raw/hugoalh/scan-virus-ghaction?label=Pull%20Requests&logo=github&logoColor=ffffff&style=flat-square "GitHub Pull Requests")](https://github.com/hugoalh/scan-virus-ghaction/pulls)
+[![GitHub Discussions](https://img.shields.io/github/discussions/hugoalh/scan-virus-ghaction?label=Discussions&logo=github&logoColor=ffffff&style=flat-square "GitHub Discussions")](https://github.com/hugoalh/scan-virus-ghaction/discussions)
+[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square "CodeFactor Grade")](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
+
+| **Releases** | **Latest** (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=%20&style=flat-square "GitHub Latest Release Date")) | **Pre** (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=%20&style=flat-square "GitHub Latest Pre-Release Date")) |
 |:-:|:-:|:-:|
-| [GitHub](https://github.com/hugoalh/scan-virus-ghaction/releases) ![GitHub Total Downloads](https://img.shields.io/github/downloads/hugoalh/scan-virus-ghaction/total?label=%20&style=flat-square) | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=%20&style=flat-square) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=%20&style=flat-square) |
+| [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction/releases) ![GitHub Total Downloads](https://img.shields.io/github/downloads/hugoalh/scan-virus-ghaction/total?label=%20&style=flat-square "GitHub Total Downloads") | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=%20&style=flat-square "GitHub Latest Release Version") | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=%20&style=flat-square "GitHub Latest Pre-Release Version") |
 
 ## 📝 Description
 
@@ -19,7 +21,7 @@ A GitHub Action to scan virus (including malicious file and malware) in the GitH
 
 ### ⚠ Disclaimer
 
-This action does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
+This does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
 
 ### 🛡 Tools
 
@@ -31,7 +33,7 @@ This action does not provide any guarantee that carefully hidden objects will be
 ### 🌟 Feature
 
 - 4\~96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
-- Ability to ignore specify directories, files, and/or Git commits.
+- Ability to ignore specify paths (i.e.: directories and/or files), rules, sessions (e.g.: Git commits), and/or signatures.
 - Ability to scan other things, not limited to only Git repository.
 
 ## 📚 Documentation
@@ -54,7 +56,10 @@ jobs:
 
 ### 📥 Input
 
-> **ℹ Notice:** All inputs are optional.
+> **ℹ Notice:**
+>
+> - All inputs are optional.
+> - Use this action without any inputs will be default to scan current workspace with ClamAV official signatures.
 
 #### `input_list_delimiter`
 
@@ -155,8 +160,7 @@ bar	foo
 `<Uri[]>` Targets.
 
 - **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
-- **Network:** Fetch files from network to the workspace in this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); Require a clean workspace.
-
+- **Network:** Fetch files from the network to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); Require a clean workspace.
 
 When this input is defined (i.e.: network targets), will ignore inputs:
 
@@ -179,7 +183,7 @@ When this input is `False`, will ignore inputs:
 
 #### `git_ignores`
 
-[`<Table>`](#input_table_parser) Git ignores for commits, by table. Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) Ignores for the Git commits, by table. Available properties (i.e.: keys):
 
 - **`AuthorDate`:**
   - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
@@ -210,7 +214,7 @@ When this input is `False`, will ignore inputs:
 - **`GPGSignatureTrustLevel`:** `<RegEx>`
 - **`Notes`:** `<RegEx>`
 - **`ParentHashes`:** `<RegEx>`
-  - For multiple parent hashes, match any parent hashes will cause ignore this commit.
+  - For multiple parent hashes in a commit, match any parent hash will cause ignore this commit.
 - **`ReflogIdentityEmail`:** `<RegEx>`
 - **`ReflogIdentityName`:** `<RegEx>`
 - **`ReflogSelector`:** `<RegEx>`
@@ -228,15 +232,15 @@ Example:
 
 #### `git_log_allbranches`
 
-`<Boolean = False>` Include Git commits which not in default branch.
+`<Boolean = False>` Include the Git commits which not in the default branch.
 
 #### `git_log_reflogs`
 
-`<Boolean = False>` Include Git commits which mark as references.
+`<Boolean = False>` Include the Git commits which mark as references (e.g.: dead end).
 
 #### `git_reverse`
 
-`<Boolean = False>` Reverse scan order of the Git commits.
+`<Boolean = False>` Reverse the scan order of the Git commits.
 
 - **`False`:** From the oldest commit to the newest commit.
 - **`True`:** From the newest commit to the oldest commit.
@@ -275,7 +279,7 @@ When this input is `False`, will ignore inputs:
 
 #### `clamav_ignores`
 
-[`<Table>`](#input_table_parser) ClamAV ignores for files, sessions, and/or signatures, by table. Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) Ignores for the ClamAV's paths, sessions, and/or signatures, by table. Available properties (i.e.: keys):
 
 - **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
 - **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
@@ -331,7 +335,7 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_ignores`
 
-[`<Table>`](#input_table_parser) YARA ignores for files, rules, and/or sessions, by table. Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) Ignores for the YARA's paths, rules, and/or sessions, by table. Available properties (i.e.: keys):
 
 - **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
 - **`Rule`:** `<RegEx>` Index`/`RuleName
@@ -351,11 +355,11 @@ Example:
 
 `<Boolean = False>` Enable YARA tool warning.
 
-> **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while client does not need these informations in most cases.
+> **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while users does not need these informations in most cases.
 
 #### `update_assets`
 
-`<Boolean = True>` Update ClamAV unofficial signatures and YARA rules from [assets repository][assets-repository] before scan anything.
+`<Boolean = True>` Update ClamAV unofficial signatures and YARA rules from the [assets repository][assets-repository] before scan anything.
 
 > **⚠ Important:**
 >

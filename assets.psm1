@@ -32,7 +32,7 @@ Function Update-GitHubActionScanVirusAssets {
 		[DateTime]$LocalAssetsTimestamp = Get-Date -Date $LocalMetadata.Timestamp -AsUTC
 	}
 	Catch {
-		Throw "Unable to get and parse local assets metadata! Local assets maybe modified unexpectedly.`n$_"
+		Throw "Unable to get and parse local assets metadata! Local assets maybe modified unexpectedly. $_"
 	}
 	Write-NameValue -Name 'Local Assets Compatibility' -Value $LocalMetadata.Compatibility
 	Write-NameValue -Name 'Local Assets Timestamp' -Value (Get-Date -Date $LocalAssetsTimestamp @DateTimeISOParameters)
@@ -44,13 +44,13 @@ Function Update-GitHubActionScanVirusAssets {
 		[DateTime]$RemoteAssetsTimestamp = Get-Date -Date $RemoteMetadata.Timestamp -AsUTC
 	}
 	Catch {
-		Write-GitHubActionsNotice -Message "Unable to get and parse remote assets metadata! $AssetsLocalOutdatedMessage`n$_"
+		Write-GitHubActionsWarning -Message "Unable to get and parse remote assets metadata! $_ $AssetsLocalOutdatedMessage"
 		Return
 	}
 	Write-NameValue -Name 'Remote Assets Compatibility' -Value $RemoteMetadata.Compatibility
 	Write-NameValue -Name 'Remote Assets Timestamp' -Value (Get-Date -Date $RemoteAssetsTimestamp @DateTimeISOParameters)
 	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
-		Write-GitHubActionsNotice -Message "Unable to update local assets safely! Local assets' compatibility and remote assets' compatibility are not match. $AssetsLocalOutdatedMessage"
+		Write-GitHubActionsWarning -Message "Unable to update local assets safely! Local assets' compatibility and remote assets' compatibility are not match. $AssetsLocalOutdatedMessage"
 		Return
 	}
 	If ($LocalAssetsTimestamp -ige $RemoteAssetsTimestamp) {
@@ -62,13 +62,13 @@ Function Update-GitHubActionScanVirusAssets {
 		Invoke-WebRequest -Uri $AssetsRemotePackage -OutFile $AssetsRemoteOutFileFullName @InvokeWebGetRequestParameters
 	}
 	Catch {
-		Write-GitHubActionsNotice -Message "Unable to download remote assets package! $AssetsLocalOutdatedMessage`n$_"
+		Write-GitHubActionsWarning -Message "Unable to download remote assets package! $_ $AssetsLocalOutdatedMessage"
 		Return
 	}
 	Try {
 		New-Item -Path $AssetsRemoteExtractRoot -ItemType 'Directory' -Force -Confirm:$False |
 			Out-Null
-		Invoke-Expression -Command "tar --extract --file=`"$AssetsRemoteOutFileFullName`" --directory=`"$AssetsRemoteExtractRoot`" --gzip" |
+		tar --extract --file="$AssetsRemoteOutFileFullName" --directory="$AssetsRemoteExtractRoot" --gzip |
 			Out-Null
 		If ($LASTEXITCODE -ine 0) {
 			Throw "Compression program exit code is $LASTEXITCODE."
@@ -76,7 +76,7 @@ Function Update-GitHubActionScanVirusAssets {
 		Remove-Item -LiteralPath $AssetsRemoteOutFileFullName -Force -Confirm:$False
 	}
 	Catch {
-		Write-GitHubActionsNotice -Message "Unable to extract remote assets package! $AssetsLocalOutdatedMessage`n$_"
+		Write-GitHubActionsNotice -Message "Unable to extract remote assets package! $_ $AssetsLocalOutdatedMessage"
 		Return
 	}
 	Try {
