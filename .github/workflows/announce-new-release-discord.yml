@@ -33,7 +33,7 @@ jobs:
                     inline: false
                   - name: "Releases"
                     value: |
-                      **- GitHub (& Changelog):** ${{github.event.repository.html_url}}
+                      **- GitHub (& Changelog):** ${{github.event.release.html_url}}
                       **- GitHub Marketplace:** https://github.com/marketplace/actions/scan-virus
                     inline: false
           wait: "true"
