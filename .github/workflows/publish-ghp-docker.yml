@@ -23,7 +23,7 @@ jobs:
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.1.0"
       - name: "Sign In To Registry ${{env.REGISTRY}}"
-        uses: "docker/login-action@v2.0.0"
+        uses: "docker/login-action@v2.1.0"
         with:
           registry: "${{env.REGISTRY}}"
           username: "${{github.actor}}"
