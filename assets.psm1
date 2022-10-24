@@ -28,7 +28,7 @@ Function Update-GitHubActionScanVirusAssets {
 	Param ()
 	Try {
 		[PSCustomObject]$LocalMetadata = Get-Content -LiteralPath (Join-Path -Path $AssetsLocalRoot -ChildPath $AssetsMetadataName) -Raw -Encoding 'UTF8NoBOM' |
-			ConvertFrom-Json -Depth 100
+			ConvertFrom-Json -Depth 100 -NoEnumerate
 		[DateTime]$LocalAssetsTimestamp = Get-Date -Date $LocalMetadata.Timestamp -AsUTC
 	}
 	Catch {
@@ -40,7 +40,7 @@ Function Update-GitHubActionScanVirusAssets {
 		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri "$AssetsRemoteRoot/raw/main/$AssetsMetadataName" @InvokeWebGetRequestParameters |
 			Select-Object -ExpandProperty 'Content' |
 			Join-String -Separator "`n" |
-			ConvertFrom-Json -Depth 100
+			ConvertFrom-Json -Depth 100 -NoEnumerate
 		[DateTime]$RemoteAssetsTimestamp = Get-Date -Date $RemoteMetadata.Timestamp -AsUTC
 	}
 	Catch {
@@ -54,7 +54,7 @@ Function Update-GitHubActionScanVirusAssets {
 		Return
 	}
 	If ($LocalAssetsTimestamp -ige $RemoteAssetsTimestamp) {
-		Write-Host -Object 'Local assets is already up to date.'
+		Write-Host -Object 'Local assets are already up to date.'
 		Return
 	}
 	Write-Host -Object 'Need to update local assets.'
@@ -87,7 +87,7 @@ Function Update-GitHubActionScanVirusAssets {
 	Catch {
 		Throw "Unable to update local assets package! $_"
 	}
-	Write-Host -Object 'Local assets is now up to date.'
+	Write-Host -Object 'Local assets are now up to date.'
 }
 Export-ModuleMember -Function @(
 	'Update-GitHubActionScanVirusAssets'

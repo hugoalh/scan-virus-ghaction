@@ -8,9 +8,9 @@ ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCa
 
 FROM debian:11.5 AS extract-powershell
 COPY --from=core / /
-ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/powershell-7.2.6-linux-x64.tar.gz /tmp/powershell-7.2.6-linux-x64.tar.gz
+ADD https://github.com/PowerShell/PowerShell/releases/download/v7.2.7/powershell-7.2.7-linux-x64.tar.gz /tmp/powershell-7.2.7-linux-x64.tar.gz
 RUN ["mkdir", "--parents", "--verbose", "/opt/microsoft/powershell/7"]
-RUN ["tar", "--extract", "--file=/tmp/powershell-7.2.6-linux-x64.tar.gz", "--directory=/opt/microsoft/powershell/7", "--gzip", "--verbose"]
+RUN ["tar", "--extract", "--file=/tmp/powershell-7.2.7-linux-x64.tar.gz", "--directory=/opt/microsoft/powershell/7", "--gzip", "--verbose"]
 
 FROM debian:11.5 AS extract-assets
 COPY --from=core / /
@@ -30,15 +30,15 @@ RUN ["sed", "-i", "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g", "/etc/locale.gen"
 RUN ["locale-gen"]
 RUN ["update-locale"]
 RUN ["apt-get", "--assume-yes", "install", "--target-release=sid", "clamav", "clamav-base", "clamav-daemon", "clamav-freshclam", "clamdscan", "git", "git-lfs", "yara"]
-RUN ["curl", "-o-", "https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh", "|", "bash"]
-RUN ["nvm", "install", "16.17.0"]
-RUN ["nvm", "use", "16.17.0"]
-RUN ["node", "--version"]
-RUN ["npm", "--global", "install", "npm@latest"]
+# RUN ["curl", "-o-", "https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh", "|", "bash"]
+# RUN ["nvm", "install", "16.18.0"]
+# RUN ["nvm", "use", "16.18.0"]
+# RUN ["node", "--version"]
+# RUN ["npm", "--global", "install", "npm@latest"]
 RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
-RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -MinimumVersion '1.0.2' -Scope 'AllUsers' -AcceptLicense -Verbose; Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -MinimumVersion '1.1.0' -Scope 'AllUsers' -AcceptLicense -Verbose; Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY clamd.conf freshclam.conf /etc/clamav/
 RUN ["freshclam", "--verbose"]
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main /opt/hugoalh/scan-virus-ghaction/assets/

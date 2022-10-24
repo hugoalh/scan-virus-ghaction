@@ -40,26 +40,26 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 > **⚠ Important:** This documentation is v0.10.0 based; To view other release's/tag's/version's documentation, please visit the [releases/tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct release/tag/version.
 
-### 🎯 Entrypoint / Target
+### Getting Started
+
+#### Install (For Self Host)
+
+- GitHub Actions Runner >= v2.297.0
+  - Docker
+
+#### Use
 
 ```yml
 jobs:
   job_id:
-    runs-on: "________"
+    runs-on: "ubuntu-________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction________@<Tag/Version>"
+      - uses: "hugoalh/scan-virus-ghaction@<tag/version>"
 ```
-
-|  | **`jobs.job_id.runs-on`** | **`jobs.job_id.steps[*].uses`** | **Require Software** |
-|:-:|:-:|:-:|:-:|
-| **Default** | `ubuntu-________` | *None* | Docker |
 
 ### 📥 Input
 
-> **ℹ Notice:**
->
-> - All inputs are optional.
-> - Use this action without any inputs will be default to scan current workspace with ClamAV official signatures.
+> **ℹ Notice:** All inputs are optional; Use this action without any inputs will default to scan current workspace with ClamAV official signatures.
 
 #### `input_list_delimiter`
 
@@ -135,7 +135,7 @@ bar	foo
 </td>
 </tr>
 <tr>
-<td align="center">YAML / YML (YAML Ain't Markup Language)</td>
+<td align="center">YAML/YML (YAML Ain't Markup Language)</td>
 <td>
 <ul>
 <li><code>yaml</code></li>
@@ -236,7 +236,7 @@ Example:
 
 #### `git_log_reflogs`
 
-`<Boolean = False>` Include the Git commits which mark as references (e.g.: dead end).
+`<Boolean = False>` Include the Git commits which marked as references (e.g.: dead end commits).
 
 #### `git_reverse`
 
@@ -401,7 +401,7 @@ jobs:
 
 #### GitHub Actions
 
-- [Enabling debug logging](https://docs.github.com/en/actions/managing-workflow-runs/enabling-debug-logging)
+- [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
 
 [assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
 [clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-unofficial-signatures/index.tsv

@@ -25,7 +25,7 @@ inputs:
     required: false
     default: "False"
   git_log_reflogs:
-    description: "{Boolean} Include the Git commits which mark as references."
+    description: "{Boolean} Include the Git commits which marked as references."
     required: false
     default: "False"
   git_reverse:

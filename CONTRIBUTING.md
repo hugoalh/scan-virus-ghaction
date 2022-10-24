@@ -39,7 +39,7 @@ To improve the wiki, create an issue.
 
 This project and repository does not have necessary things to do i18ns and/or translations.
 
-If you want to do i18ns and/or translations on the documentations, documents and/or wiki, please see section "[Documentations, Documents & Wiki](#documentations-documents--wiki)".
+If you want to do i18ns and/or translations on the documentations, documents and/or wiki, please see the section "[Documentations, Documents & Wiki](#documentations-documents--wiki)".
 
 ## Issues
 

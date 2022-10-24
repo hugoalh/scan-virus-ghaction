@@ -12,7 +12,7 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-$Null = Test-GitHubActionsEnvironment -Mandatory# Use `Out-Null` will cause script halted exception.
+Test-GitHubActionsEnvironment -Mandatory
 [Hashtable]$ImportTsvParameters = @{
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
