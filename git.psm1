@@ -45,7 +45,7 @@ Function Get-GitCommitsInformation {
 	[String[]]$PropertySelect = (
 		$GitCommitsRequireProperties |
 			Select-Object -ExpandProperty 'Name'
-	) + $Property |
+	) + ($Property ?? @()) |
 		ForEach-Object -Process { $_.ToLower() } |
 		Select-Object -Unique
 	[Hashtable[]]$GitCommitsPropertiesSelect = $GitCommitsProperties |
@@ -91,10 +91,10 @@ Function Get-GitCommitsInformation {
 					Select-Object -Skip 1 |
 					Select-Object -SkipLast 1 |
 					Join-String -Separator "`n"
-			) -isplit ([RegEx]::Escape("$($DelimiterPerCommitEnd)$($DelimiterPerCommitStart)"))
+			) -isplit ([RegEx]::Escape("`n$DelimiterPerCommitEnd`n$DelimiterPerCommitStart`n"))
 			[PSCustomObject[]]$Result = @()
 			For ([UInt64]$Raw1Line = 0; $Raw1Line -ilt $Raw1.Count; $Raw1Line++) {
-				[String[]]$Raw2 = $Raw1[$Raw1Line] -isplit ([RegEx]::Escape($DelimiterPerCommitProperty))
+				[String[]]$Raw2 = $Raw1[$Raw1Line] -isplit ([RegEx]::Escape("`n$DelimiterPerCommitProperty`n"))
 				If ($GitCommitsPropertiesSelect.Count -ine $Raw2.Count) {
 					Throw 'Columns are not match!'
 				}
