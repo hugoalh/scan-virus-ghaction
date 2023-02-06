@@ -7,7 +7,7 @@ updates:
       time: "00:00"
       timezone: "Etc/UTC"
     labels:
-      - "Platform/Docker 🐳"
+      - "Platform/Docker"
       - "Status/Pending 🔵"
       - "Type/Dependency 📦"
     open-pull-requests-limit: 100
@@ -21,7 +21,7 @@ updates:
       time: "00:00"
       timezone: "Etc/UTC"
     labels:
-      - "Platform/GitHub/Actions :octocat:"
+      - "Platform/GitHub/Actions"
       - "Status/Pending 🔵"
       - "Type/Dependency 📦"
     open-pull-requests-limit: 100
