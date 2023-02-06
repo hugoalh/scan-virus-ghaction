@@ -1,4 +1,4 @@
-name: "Analyze Code - GitHub Super Linter"
+name: "Analyze - GitHub Super Linter"
 on:
   push:
     branches:
@@ -7,22 +7,23 @@ on:
     branches:
       - "**"
     types:
-      - "opened"
       - "edited"
+      - "opened"
       - "reopened"
       - "synchronize"
   workflow_dispatch:
 jobs:
-  analyze-code-ghsl:
-    name: "Analyze Code - GitHub Super Linter"
+  analyze-ghsl:
+    name: "Analyze - GitHub Super Linter"
     runs-on: "ubuntu-latest"
+    if: "${{!(github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.label, format('{0}:', github.repository_owner)))}}"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.1.0"
+        uses: "actions/checkout@v3.3.0"
         with:
           fetch-depth: 0
       - name: "Analyze Repository"
-        uses: "github/super-linter@v4.9.7"
+        uses: "github/super-linter@v4.10.1"
         env:
           DISABLE_ERRORS: "true"
           GITHUB_TOKEN: "${{github.token}}"
