@@ -1,6 +1,6 @@
 name: "Scan Virus"
 author: "hugoalh"
-description: "Scan virus in the GitHub Action workspace."
+description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
   input_list_delimiter:
     description: "{RegEx} Delimiter when the input is type of list."
@@ -14,52 +14,56 @@ inputs:
     description: "{Uri[]} Targets."
     required: false
   git_integrate:
-    description: "{Boolean} Integrate with Git to scan every commits."
+    description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
     required: false
     default: "False"
   git_ignores:
     description: "{Table} Ignores for the Git commits."
     required: false
-  git_log_allbranches:
-    description: "{Boolean} Include the Git commits which not in the default branch."
+  git_include_allbranches:
+    description: "{Boolean} Whether to include the Git commits which not in the default branch."
     required: false
     default: "False"
-  git_log_reflogs:
-    description: "{Boolean} Include the Git commits which marked as references."
+  git_include_reflogs:
+    description: "{Boolean} Whether to include the Git commits which marked as references."
     required: false
     default: "False"
   git_reverse:
-    description: "{Boolean} Reverse the scan order of the Git commits."
+    description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
+  git_saferquery:
+    description: "{Boolean} Whether to query the Git commits meta in a safer way."
+    required: false
+    default: "True"
   clamav_enable:
-    description: "{Boolean} Use ClamAV."
+    description: "{Boolean} Whether to use ClamAV."
     required: false
     default: "True"
   clamav_daemon:
-    description: "{Boolean} Use ClamAV daemon."
+    description: "{Boolean} Whether to use ClamAV daemon."
     required: false
     default: "True"
   clamav_ignores:
     description: "{Table} Ignores for the ClamAV's paths, sessions, and/or signatures."
     required: false
   clamav_multiscan:
-    description: "{Boolean} Use ClamAV multiscan mode."
+    description: "{Boolean} Whether to use ClamAV multiscan mode."
     required: false
     default: "True"
   clamav_reloadpersession:
-    description: "{Boolean} Reload ClamAV per session."
+    description: "{Boolean} Whether to reload ClamAV per session."
     required: false
     default: "False"
   clamav_subcursive:
-    description: "{Boolean} Scan directories subcursively."
+    description: "{Boolean} Whether to scan directories subcursively."
     required: false
     default: "True"
   clamav_unofficialsignatures:
     description: "{RegEx[]} Use ClamAV unofficial signatures."
     required: false
   yara_enable:
-    description: "{Boolean} Use YARA."
+    description: "{Boolean} Whether to use YARA."
     required: false
     default: "False"
   yara_ignores:
@@ -68,16 +72,12 @@ inputs:
   yara_rules:
     description: "{RegEx[]} Use YARA rules."
     required: false
-  yara_toolwarning:
-    description: "{Boolean} Enable YARA tool warning."
-    required: false
-    default: "False"
   update_assets:
-    description: "{Boolean} Update ClamAV unofficial signatures and YARA rules from the assets repository before scan anything."
+    description: "{Boolean} Whether to update ClamAV unofficial signatures and/or YARA rules from the assets repository before scan anything."
     required: false
     default: "True"
   update_clamav:
-    description: "{Boolean} Update ClamAV official signatures via FreshClam before scan anything."
+    description: "{Boolean} Whether to update ClamAV official signatures via FreshClam before scan anything."
     required: false
     default: "True"
 runs:

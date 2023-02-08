@@ -1,18 +1,18 @@
-name: "Scan Virus"
+name: "Scan - Virus"
 on:
   workflow_dispatch:
     inputs:
       git_integrate:
-        description: "{Boolean} Integrate with Git to scan every commits; Require workspace is a Git repository."
+        description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
         default: "True"
       git_reverse:
-        description: "{Boolean} Reverse scan order of the Git commits."
+        description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
         default: "False"
 jobs:
   scan-virus:
-    name: "Scan Virus"
+    name: "Scan - Virus"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"

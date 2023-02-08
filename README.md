@@ -2,7 +2,6 @@
 
 [`ScanVirus.GitHubAction`](https://github.com/hugoalh/scan-virus-ghaction)
 
-![GitHub Action](https://img.shields.io/badge/GitHub%20Action-2088FF?logo=github-actions&logoColor=ffffff&style=flat-square "GitHub Action")
 ![License](https://img.shields.io/static/v1?label=License&message=MIT&style=flat-square "License")
 [![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=Stars&logo=github&logoColor=ffffff&style=flat-square "GitHub Stars")](https://github.com/hugoalh/scan-virus-ghaction/stargazers)
 [![GitHub Contributors](https://img.shields.io/github/contributors/hugoalh/scan-virus-ghaction?label=Contributors&logo=github&logoColor=ffffff&style=flat-square "GitHub Contributors")](https://github.com/hugoalh/scan-virus-ghaction/graphs/contributors)
@@ -21,7 +20,7 @@ A GitHub Action to scan virus (including malicious file and malware) in the GitH
 
 ### 🌟 Feature
 
-- 4\~96% faster than other GitHub Actions with the same purpose, especially when need to scan every Git commits.
+- 4\~96% faster than other GitHub Actions with the same purpose, especially when need to perform scan with multiple sessions (e.g.: Git commits).
 - Ability to ignore specify paths (i.e.: directories and/or files), rules, sessions (e.g.: Git commits), and/or signatures.
 - Ability to scan other things, not limited to only Git repository.
 
@@ -38,7 +37,7 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.10.0 based; To view other release's/tag's/version's documentation, please visit the [releases/tags/versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct release/tag/version.
+> **⚠ Important:** This documentation is v0.10.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
 ### Getting Started
 
@@ -54,7 +53,7 @@ jobs:
   job_id:
     runs-on: "ubuntu-________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction@<tag/version>"
+      - uses: "hugoalh/scan-virus-ghaction@<Version>"
 ```
 
 ### 📥 Input
@@ -71,7 +70,7 @@ jobs:
 
 <table>
 <tr>
-<td align="center"><b>Parser</b></td>
+<td align="center"><b>Parser Name</b></td>
 <td><b>Parser ID</b></td>
 <td><b>Example</b></td>
 </tr>
@@ -166,32 +165,34 @@ When this input is defined (i.e.: network targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
 - [`git_ignores`](#git_ignores)
-- [`git_log_allbranches`](#git_log_allbranches)
-- [`git_log_reflogs`](#git_log_reflogs)
+- [`git_include_allbranches`](#git_include_allbranches)
+- [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
+- [`git_saferquery`](#git_saferquery)
 
 #### `git_integrate`
 
-`<Boolean = False>` Integrate with Git to scan every commits; Require workspace is a Git repository.
+`<Boolean = False>` Whether to integrate with Git to perform scan by the commits; Require workspace is a Git repository.
 
 When this input is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
-- [`git_log_allbranches`](#git_log_allbranches)
-- [`git_log_reflogs`](#git_log_reflogs)
+- [`git_include_allbranches`](#git_include_allbranches)
+- [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
+- [`git_saferquery`](#git_saferquery)
 
 #### `git_ignores`
 
-[`<Table>`](#input_table_parser) Ignores for the Git commits, by table. Available properties (i.e.: keys):
+[`<Table>`](#input_table_parser) Ignores for the Git commits, by table; Available properties:
 
 - **`AuthorDate`:**
   - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
   - `<String>` A string with specify pattern to compare the timestamp:
-    - `$ge %Y-%m-%dT%H:%M:%SZ` Author date that after or equal to this time.
-    - `$gt %Y-%m-%dT%H:%M:%SZ` Author date that after this time.
-    - `$le %Y-%m-%dT%H:%M:%SZ` Author date that before or equal to this time.
-    - `$lt %Y-%m-%dT%H:%M:%SZ` Author date that before this time.
+    - `-ge %Y-%m-%dT%H:%M:%SZ` Author date that after or equal to this time.
+    - `-gt %Y-%m-%dT%H:%M:%SZ` Author date that after this time.
+    - `-le %Y-%m-%dT%H:%M:%SZ` Author date that before or equal to this time.
+    - `-lt %Y-%m-%dT%H:%M:%SZ` Author date that before this time.
 - **`AuthorEmail`:** `<RegEx>`
 - **`AuthorName`:** `<RegEx>`
 - **`Body`:** `<RegEx>`
@@ -199,10 +200,10 @@ When this input is `False`, will ignore inputs:
 - **`CommitterDate`:**
   - `<RegEx>` A regular expression to match the timestamp ISO8601 UTC string (end with `Z`)
   - `<String>` A string with specify pattern to compare the timestamp:
-    - `$ge %Y-%m-%dT%H:%M:%SZ` Committer date that after or equal to this time.
-    - `$gt %Y-%m-%dT%H:%M:%SZ` Committer date that after this time.
-    - `$le %Y-%m-%dT%H:%M:%SZ` Committer date that before or equal to this time.
-    - `$lt %Y-%m-%dT%H:%M:%SZ` Committer date that before this time.
+    - `-ge %Y-%m-%dT%H:%M:%SZ` Committer date that after or equal to this time.
+    - `-gt %Y-%m-%dT%H:%M:%SZ` Committer date that after this time.
+    - `-le %Y-%m-%dT%H:%M:%SZ` Committer date that before or equal to this time.
+    - `-lt %Y-%m-%dT%H:%M:%SZ` Committer date that before this time.
 - **`CommitterEmail`:** `<RegEx>`
 - **`CommitterName`:** `<RegEx>`
 - **`Encoding`:** `<RegEx>`
@@ -225,29 +226,41 @@ When this input is `False`, will ignore inputs:
 Example:
 
 ```yml
-- AuthorName: ^octokit$
-  CommitterDate: $lt 2022-01-01T00:00:00Z
-  CommitterName: ^octokit$
+- AuthorName: "^octocat$"
+  CommitterDate: "-lt 2022-01-01T00:00:00Z"
+  CommitterName: "^octocat$"
 ```
 
-#### `git_log_allbranches`
+> **ℹ Notice:** For GitHub host users, it is highly recommended to ignore old commits due to the time limit of the step execution time (currently is `6 hours`).
 
-`<Boolean = False>` Include the Git commits which not in the default branch.
+#### `git_include_allbranches`
 
-#### `git_log_reflogs`
+`<Boolean = False>` Whether to include the Git commits which not in the default branch.
 
-`<Boolean = False>` Include the Git commits which marked as references (e.g.: dead end commits).
+#### `git_include_reflogs`
+
+`<Boolean = False>` Whether to include the Git commits which marked as references (e.g.: dead end commits).
 
 #### `git_reverse`
 
-`<Boolean = False>` Reverse the scan order of the Git commits.
+`<Boolean = False>` Whether to reverse the scan order of the Git commits.
 
-- **`False`:** From the oldest commit to the newest commit.
-- **`True`:** From the newest commit to the oldest commit.
+- **`False`:** From the newest commit to the oldest commit.
+- **`True`:** From the oldest commit to the newest commit.
+
+#### `git_saferquery`
+
+`<Boolean = True>` Whether to query the Git commits meta in a safer way.
+
+- **`False`:** Fast, but it can cause issues when:
+  - repository contains multiple commits with extremely long commit message,
+  - repository contains extremely high amount of commits,
+  - GitHub Actions runner is out of RAM.
+- **`True`:** Slow, but it will not cause any issues.
 
 #### `clamav_enable`
 
-`<Boolean = True>` Use ClamAV.
+`<Boolean = True>` Whether to use ClamAV.
 
 When this input is `False`, will ignore inputs:
 
@@ -260,7 +273,7 @@ When this input is `False`, will ignore inputs:
 
 #### `clamav_daemon`
 
-`<Boolean = True>` Use ClamAV daemon.
+`<Boolean = True>` Whether to use ClamAV daemon.
 
 When this input is `False`, will ignore inputs:
 
@@ -299,19 +312,19 @@ Example:
 
 #### `clamav_multiscan`
 
-`<Boolean = True>` Use ClamAV multiscan mode; ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
+`<Boolean = True>` Whether to use ClamAV multiscan mode; ClamAV daemon will attempt to scan in parallel using available threads, especially useful on multiprocessor and multi-core systems.
 
 > **⚠ Important:** It is recommended to keep this as enable to have a shorter scanning duration.
 
 #### `clamav_reloadpersession`
 
-`<Boolean = False>` Reload ClamAV per session.
+`<Boolean = False>` Whether to reload ClamAV per session.
 
 > **⚠ Important:** It is recommended to keep this as disable to have a shorter scanning duration.
 
 #### `clamav_subcursive`
 
-`<Boolean = True>` Scan directories subcursively.
+`<Boolean = True>` Whether to scan directories subcursively.
 
 > **⚠ Important:** If input [`clamav_ignores`](#clamav_ignores) acts weird, try to disable this first before report the issues!
 
@@ -323,7 +336,7 @@ Example:
 
 #### `yara_enable`
 
-`<Boolean = False>` Use YARA.
+`<Boolean = False>` Whether to use YARA.
 
 When this input is `False`, will ignore inputs:
 
@@ -351,31 +364,23 @@ Example:
 
 `<RegEx[]>` Use YARA rules, by regular expression and [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
 
-#### `yara_toolwarning`
-
-`<Boolean = False>` Enable YARA tool warning.
-
-> **⚠ Important:** It is recommended to keep this as disable due to YARA rules can have many warnings about deprecated features, while users does not need these informations in most cases.
-
 #### `update_assets`
 
-`<Boolean = True>` Update ClamAV unofficial signatures and YARA rules from the [assets repository][assets-repository] before scan anything.
+`<Boolean = True>` Whether to update ClamAV unofficial signatures and YARA rules from the [assets repository][assets-repository] before scan anything.
 
 > **⚠ Important:**
 >
 > - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
 > - It is recommended to keep this as enable to have the latest assets.
-> - If this action has issues during updates, switch this to disable for offline mode.
 
 #### `update_clamav`
 
-`<Boolean = True>` Update ClamAV official signatures via FreshClam before scan anything.
+`<Boolean = True>` Whether to update ClamAV official signatures via FreshClam before scan anything.
 
 > **⚠ Important:**
 >
 > - When input [`clamav_enable`](#clamav_enable) is `False`, will skip this update in order to save some times.
 > - It is recommended to keep this as enable to have the latest ClamAV official signatures.
-> - If this action has issues during updates, switch this to disable for offline mode.
 
 ### 📤 Output
 
@@ -390,7 +395,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.0.2"
+        uses: "actions/checkout@v3.1.0"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
@@ -404,5 +409,5 @@ jobs:
 - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
 
 [assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
-[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/clamav-unofficial-signatures/index.tsv
-[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/raw/main/yara-rules/index.tsv
+[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/main/clamav-unofficial-signatures/index.tsv
+[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/main/yara-rules/index.tsv

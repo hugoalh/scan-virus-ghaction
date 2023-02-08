@@ -1,11 +1,11 @@
-name: "Announce New Release - Discord"
+name: "Announce - New Release - Discord"
 on:
   release:
     types:
       - "published"
 jobs:
-  announce-new-release-discord:
-    name: "Announce New Release - Discord"
+  announce-newrelease-discord:
+    name: "Announce - New Release - Discord"
     runs-on: "ubuntu-latest"
     steps:
       - uses: "hugoalh/send-discord-webhook-ghaction@v5.0.0"
