@@ -1,14 +1,14 @@
-FROM debian:11.6 AS core
+FROM debian:11.6 AS initial
 ENV DEBIAN_FRONTEND=noninteractive
 
 FROM debian:11.6 AS extract-assets
-COPY --from=core / /
+COPY --from=initial / /
 ADD https://github.com/hugoalh/scan-virus-ghaction-assets/archive/refs/heads/main.tar.gz /tmp/scan-virus-ghaction-assets.tar.gz
 RUN mkdir --parents --verbose /tmp/scan-virus-ghaction-assets
 RUN tar --extract --file=/tmp/scan-virus-ghaction-assets.tar.gz --directory=/tmp/scan-virus-ghaction-assets --gzip --verbose
 
 FROM debian:11.6 AS main
-COPY --from=core / /
+COPY --from=initial / /
 COPY configs/sources.list /etc/apt/sources.list
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes upgrade
@@ -27,5 +27,5 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -Accept
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 RUN freshclam --verbose
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main /opt/hugoalh/scan-virus-ghaction/assets/
-COPY assets.psm1 git.psm1 main.ps1 token.psm1 utility.psm1 /opt/hugoalh/scan-virus-ghaction/
+COPY lib/** /opt/hugoalh/scan-virus-ghaction/
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]

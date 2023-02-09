@@ -4,40 +4,45 @@ Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'
 ) -Scope 'Local'
-Function ConvertFrom-CsvM {
+[String[]]$NeedCleanUpFiles = @()
+Function Add-NeedCleanUpFile {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$File
+	)
+	$Script:NeedCleanUpFiles += $File
+}
+Function ConvertFrom-CsvMultipleLine {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String[]]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
 	)
-	Process {
-		$InputObject |
-			ForEach-Object -Process { [PSCustomObject](
-				[String[]](Convert-FromCsvSToCsvM -InputObject $_ -Delimiter ',') |
-					Join-String -Separator "`n" |
-					ConvertFrom-StringData
-			) } |
-			Write-Output
-	}
+	$InputObject |
+		ForEach-Object -Process { [PSCustomObject](
+			[String[]](Convert-FromCsvSingleLineToCsvMultipleLine -InputObject $_ -Delimiter ',') |
+				Join-String -Separator "`n" |
+				ConvertFrom-StringData
+		) } |
+		Write-Output
 }
-Function Convert-FromCsvSToCsvM {
+Function Convert-FromCsvSingleLineToCsvMultipleLine {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String]$InputObject,
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject,
 		[Parameter(Position = 1)][Char]$Delimiter = ';'
 	)
-	Process {
-		If ($InputObject -inotmatch $Delimiter) {
-			Write-Output -InputObject $InputObject
-			Return
-		}
-		[String[]]$Result = @()
-		ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
-			$Result += $Item.PSObject.Properties.Value
-		}
-		Write-Output -InputObject $Result
+	If ($InputObject -inotmatch $Delimiter) {
+		Write-Output -InputObject $InputObject
+		Return
 	}
+	[String[]]$Result = @()
+	ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
+		$Result += $Item.PSObject.Properties.Value
+	}
+	Write-Output -InputObject $Result
 }
 Function Format-InputList {
 	[CmdletBinding()]
@@ -64,31 +69,31 @@ Function Format-InputTable {
 			'csv' {
 				ConvertFrom-Csv -InputObject $InputObject -Delimiter ',' |
 					Write-Output
-				Return
+				Break
 			}
 			'csv-m' {
 				[String[]]($InputObject -isplit '\r?\n') |
 					Where-Object -FilterScript { $_ -imatch '^.+$' } |
-					ConvertFrom-CsvM |
+					ConvertFrom-CsvMultipleLine |
 					Write-Output
-				Return
+				Break
 			}
 			'csv-s' {
 				$InputObject |
-					Convert-FromCsvSToCsvM |
-					ConvertFrom-CsvM |
+					Convert-FromCsvSingleLineToCsvMultipleLine |
+					ConvertFrom-CsvMultipleLine |
 					Write-Output
-				Return
+				Break
 			}
 			'tsv' {
 				ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t" |
 					Write-Output
-				Return
+				Break
 			}
 			'yaml' {
 				ConvertFrom-Yaml -InputObject $InputObject |
 					Write-Output
-				Return
+				Break
 			}
 		}
 	}
@@ -103,7 +108,8 @@ Function Get-InputBoolean {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name
 	)
-	Write-Output -InputObject [Boolean]::Parse((Get-GitHubActionsInput -Name $Name -Mandatory -EmptyStringAsNull -Trim))
+	[Boolean]::Parse((Get-GitHubActionsInput -Name $Name -Mandatory -EmptyStringAsNull -Trim)) |
+		Write-Output
 }
 Function Get-InputList {
 	[CmdletBinding()]
@@ -135,7 +141,7 @@ Function Get-InputTable {
 	Format-InputTable -Type $Type -InputObject $Raw |
 		Write-Output
 }
-Function Group-ScanVirusToolsIgnores {
+Function Group-Ignores {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	Param (
@@ -173,12 +179,17 @@ Function Optimize-PSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([String])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
 	)
-	Process {
-		$InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '' |
-			Write-Output
-	}
+	$InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '' |
+		Write-Output
+}
+Function Remove-NeedCleanUpFiles {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Remove-Item -LiteralPath $NeedCleanUpFiles -Force:$True -Confirm:$False
+	$Script:NeedCleanUpFiles = @()
 }
 Function Test-StringIsUri {
 	[CmdletBinding()]
@@ -193,11 +204,11 @@ Function Test-StringMatchRegExs {
 	[CmdletBinding()]
 	[OutputType([Boolean])]
 	Param (
-		[Parameter(Mandatory = $true, Position = 0)][String]$Target,
+		[Parameter(Mandatory = $true, Position = 0)][String]$Item,
 		[Parameter(Mandatory = $true, Position = 1)][AllowEmptyCollection()][RegEx[]]$Matchers
 	)
 	ForEach ($Matcher in $Matchers) {
-		If ($Target -imatch $Matcher) {
+		If ($Item -imatch $Matcher) {
 			Write-Output -InputObject $True
 			Return
 		}
@@ -217,23 +228,25 @@ Function Write-OptimizePSFormatDisplay {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
 	)
-	Process {
-		[String]$OutputObject = Optimize-PSFormatDisplay -InputObject $InputObject
-		If ($OutputObject.Length -igt 0) {
-			Write-Host -Object $OutputObject
-		}
+	[String]$Result = Optimize-PSFormatDisplay -InputObject $InputObject
+	If ($Result.Length -igt 0) {
+		Write-Host -Object $Result
 	}
 }
 Export-ModuleMember -Function @(
+	'Add-NeedCleanUpFile',
+	'ConvertFrom-CsvMultipleLine',
+	'Convert-FromCsvSingleLineToCsvMultipleLine',
 	'Format-InputList',
 	'Format-InputTable',
 	'Get-InputBoolean',
 	'Get-InputList',
 	'Get-InputTable',
-	'Group-ScanVirusToolsIgnores',
+	'Group-Ignores',
 	'Optimize-PSFormatDisplay',
+	'Remove-NeedCleanUpFiles',
 	'Test-StringIsUri',
 	'Test-StringMatchRegExs',
 	'Write-NameValue',
