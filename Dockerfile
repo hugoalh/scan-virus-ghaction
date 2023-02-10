@@ -25,7 +25,7 @@ RUN apt-get --assume-yes install powershell
 RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Update-Module -Scope 'AllUsers' -AcceptLicense -Verbose"]
-RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -MinimumVersion '1.1.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -MinimumVersion '1.2.0-beta2' -Scope 'AllUsers' -AllowPrerelease -AcceptLicense -Verbose"]
 RUN ["pwsh", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 RUN freshclam --verbose
