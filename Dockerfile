@@ -9,10 +9,10 @@ RUN tar --extract --file=/tmp/scan-virus-ghaction-assets.tar.gz --directory=/tmp
 
 FROM debian:11.6 AS main
 COPY --from=initial / /
-RUN echo 'deb http://deb.debian.org/debian/ bullseye main contrib' > /etc/apt/sources.list
-RUN echo 'deb-src http://deb.debian.org/debian/ bullseye main contrib' > /etc/apt/sources.list
-RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' > /etc/apt/sources.list
-RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' > /etc/apt/sources.list
+RUN echo 'deb http://deb.debian.org/debian/ bullseye main contrib' >> /etc/apt/sources.list
+RUN echo 'deb-src http://deb.debian.org/debian/ bullseye main contrib' >> /etc/apt/sources.list
+RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
+RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes upgrade
 RUN apt-get --assume-yes install apt-transport-https curl gnupg
