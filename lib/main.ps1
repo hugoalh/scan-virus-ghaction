@@ -160,7 +160,7 @@ If (
 	) -and $UpdateAssetsLocal
 ) {
 	Enter-GitHubActionsLogGroup -Title 'Update local assets.'
-	[Hashtable]$Result = Update-AssetsLocal
+	[Hashtable]$Result = Update-Assets
 	If (!$Result.Continue) {
 		Write-GitHubActionsError -Message $Result.Reason
 		Exit-GitHubActionsLogGroup

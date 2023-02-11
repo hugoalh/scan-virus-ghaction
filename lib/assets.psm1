@@ -1,13 +1,13 @@
 #Requires -PSEdition Core
 #Requires -Version 7.2
-Import-Module -Name @(
-	'hugoalh.GitHubActionsToolkit',
-	(Join-Path -Path $PSScriptRoot -ChildPath 'utility.psm1')
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (
+	@(
+		'datetime',
+		'utility'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-[Hashtable]$DateTimeISOParameters = @{
-	AsUTC = $True
-	UFormat = '%Y-%m-%dT%H:%M:%SZ'
-}
 [Hashtable]$InvokeWebGetRequestParameters = @{
 	MaximumRedirection = 5
 	MaximumRetryCount = 5
@@ -18,13 +18,13 @@ Import-Module -Name @(
 [String]$AssetsMetadataName = 'metadata.json'
 [String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
 [String]$AssetsLocalMetaFullName = Join-Path -Path $AssetsLocalRoot -ChildPath $AssetsMetadataName
-[String]$AssetsLocalOutdatedMessage = 'This is fine, but the local assets maybe outdated.'
 [Uri]$AssetsRemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
 [Uri]$AssetsRemoteMetaUri = "$AssetsRemoteRoot/raw/main/$AssetsMetadataName"
 [Uri]$AssetsRemotePackageUri = "$AssetsRemoteRoot/archive/refs/heads/main.tar.gz"
 [String]$AssetsRemoteOutFileFullName = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote.tar.gz'
 [String]$AssetsRemoteExtractRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets-remote'
-Function Update-AssetsLocal {
+[String]$AssetsLocalOutdatedMessage = 'This is fine, but the local assets maybe outdated.'
+Function Update-Assets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param ()
@@ -42,7 +42,7 @@ Function Update-AssetsLocal {
 		Return
 	}
 	Write-NameValue -Name 'Local Assets Compatibility' -Value $LocalMetadata.Compatibility
-	Write-NameValue -Name 'Local Assets Timestamp' -Value (Get-Date -Date $LocalAssetsTimestamp @DateTimeISOParameters)
+	Write-NameValue -Name 'Local Assets Timestamp' -Value (ConvertTo-DateTimeISOString -InputObject $LocalAssetsTimestamp)
 	Try {
 		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri $AssetsRemoteMetaUri @InvokeWebGetRequestParameters |
 			Select-Object -ExpandProperty 'Content' |
@@ -58,7 +58,7 @@ Function Update-AssetsLocal {
 		Return
 	}
 	Write-NameValue -Name 'Remote Assets Compatibility' -Value $RemoteMetadata.Compatibility
-	Write-NameValue -Name 'Remote Assets Timestamp' -Value (Get-Date -Date $RemoteAssetsTimestamp @DateTimeISOParameters)
+	Write-NameValue -Name 'Remote Assets Timestamp' -Value (ConvertTo-DateTimeISOString -InputObject $RemoteAssetsTimestamp)
 	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
 		Write-GitHubActionsWarning -Message "Unable to update local assets safely! Local assets' compatibility and remote assets' compatibility are not match. $AssetsLocalOutdatedMessage"
 		Write-Output -InputObject @{
@@ -125,5 +125,5 @@ Function Update-AssetsLocal {
 	}
 }
 Export-ModuleMember -Function @(
-	'Update-AssetsLocal'
+	'Update-Assets'
 )

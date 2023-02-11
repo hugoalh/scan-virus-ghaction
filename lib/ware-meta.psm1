@@ -5,6 +5,10 @@ Function Get-WareMeta {
 	[CmdletBinding()]
 	Param ()
 	Write-Host -Object "$($PSStyle.Bold)System [Debian View]:$($PSStyle.BoldOff)"
+	[PSCustomObject]@{
+		StdOut = uname --all
+	} |
+		Format-List
 	uname --all
 	Write-Host -Object "$($PSStyle.Bold)System [PowerShell View]:$($PSStyle.BoldOff)"
 	[PSCustomObject]@{
@@ -37,9 +41,9 @@ Function Get-WareMeta {
 			[PSCustomObject]@{
 				Path = Get-Command -Name $_.Name -CommandType 'Application' |
 					Select-Object -ExpandProperty 'Source'
+				StdOut = Invoke-Expression -Command "$($_.Name) --version"
 			} |
 				Format-List
-			Invoke-Expression -Command "$($_.Name) --version"
 		}
 }
 Export-ModuleMember -Function @(
