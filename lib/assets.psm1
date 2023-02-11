@@ -16,7 +16,7 @@ Import-Module -Name @(
 	UseBasicParsing = $True
 }
 [String]$AssetsMetadataName = 'metadata.json'
-[String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
+[String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
 [String]$AssetsLocalMetaFullName = Join-Path -Path $AssetsLocalRoot -ChildPath $AssetsMetadataName
 [String]$AssetsLocalOutdatedMessage = 'This is fine, but the local assets maybe outdated.'
 [Uri]$AssetsRemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'

@@ -30,6 +30,6 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -Accept
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 RUN freshclam --verbose
 COPY --from=extract-assets /tmp/scan-virus-ghaction-assets/scan-virus-ghaction-assets-main /opt/hugoalh/scan-virus-ghaction/assets/
-COPY lib/** /opt/hugoalh/scan-virus-ghaction/
-RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/initial.ps1"]
-CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/main.ps1"]
+COPY lib/** /opt/hugoalh/scan-virus-ghaction/lib/
+RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/initial.ps1"]
+CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]

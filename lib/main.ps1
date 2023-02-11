@@ -1,7 +1,6 @@
 #Requires -PSEdition Core
 #Requires -Version 7.2
 $Script:ErrorActionPreference = 'Stop'
-Write-Host -Object 'Initialize.'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -9,10 +8,14 @@ Import-Module -Name (
 		'git',
 		'statistics'
 		'token',
-		'utility'
+		'utility',
+		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+Get-WareMeta
+Exit 0
+Write-Host -Object 'Initialize.'
 Test-GitHubActionsEnvironment -Mandatory
 [Hashtable]$ImportTsvParameters = @{
 	Delimiter = "`t"
@@ -22,7 +25,7 @@ Test-GitHubActionsEnvironment -Mandatory
 	FormatString = '- {0}'
 	Separator = "`n"
 }
-[String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath 'assets'
+[String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
 [String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $AssetsLocalRoot -ChildPath 'clamav-signatures-ignore-presets'
 [String[]]$ClamAVUnofficialSignaturesIgnores = @(
