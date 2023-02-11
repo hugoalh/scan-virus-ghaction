@@ -6,8 +6,8 @@ RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/source
 RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes dist-upgrade
-RUN apt-get auto-remove
-RUN apt-get purge
+RUN apt-get --assume-yes auto-remove
+RUN apt-get --assume-yes purge
 
 FROM debian:11.6 AS extract-assets
 COPY --from=initial / /
