@@ -26,6 +26,7 @@ Function Get-WareMeta {
 		WSManStackVersion = $PSVersionTable.WSManStackVersion
 	} |
 		Format-List |
+		Out-String |
 		Write-Display
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
@@ -43,6 +44,7 @@ Function Get-WareMeta {
 				StdOut = Invoke-Expression -Command "$($_.Name) --version"
 			} |
 				Format-List |
+				Out-String |
 				Write-Display
 		}
 }

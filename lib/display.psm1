@@ -4,10 +4,10 @@ Function Write-Display {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][String]$InputObject
 	)
 	Process {
-		[String]$Result = (Out-String -InputObject $InputObject) -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', ''
+		[String]$Result = $InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', ''
 		If ($Result.Length -igt 0) {
 			Write-Host -Object $Result
 		}
