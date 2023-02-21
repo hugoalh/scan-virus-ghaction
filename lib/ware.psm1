@@ -31,10 +31,6 @@ Function Get-SoftwareMeta {
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
-	Write-NameValue -Name 'CompatibleVersions' -Value $PSVersionTable.PSCompatibleVersions
-	Write-NameValue -Name 'RemotingProtocolVersion' -Value $PSVersionTable.PSRemotingProtocolVersion
-	Write-NameValue -Name 'SerializationVersion' -Value $PSVersionTable.SerializationVersion
-	Write-NameValue -Name 'WSManStackVersion' -Value $PSVersionTable.WSManStackVersion
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
 		clamscan = 'ClamAV Scan'

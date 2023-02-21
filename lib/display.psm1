@@ -25,7 +25,7 @@ Function Write-NameValue {
 	[OutputType([Void])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Key')][String]$Name,
-		[Parameter(Position = 1)][AllowEmptyString()][String]$Value
+		[Parameter(Position = 1)][AllowEmptyCollection()][AllowEmptyString()][AllowNull()]$Value
 	)
 	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($Name): $($PSStyle.Reset)$($Value)"
 }

@@ -88,9 +88,11 @@ Function Import-Assets {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	Write-Host -Object 'Local assets are now up to date.'
-	Write-Output -InputObject @{
-		Success = $True
-		Continue = $True
+	If (!$IsInitial.IsPresent) {
+		Write-Output -InputObject @{
+			Success = $True
+			Continue = $True
+		}
 	}
 }
 Function Update-Assets {
