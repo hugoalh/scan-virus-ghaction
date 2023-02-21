@@ -1,5 +1,5 @@
 #Requires -PSEdition Core
-#Requires -Version 7.2
+#Requires -Version 7.3
 [Char[]]$PoolLowerCase = [Char[]]@(97..122)
 [Char[]]$PoolNumber = [String[]]@(0..9)
 [Char[]]$PoolUpperCase = [Char[]]@(65..90)

@@ -1,25 +1,23 @@
 #Requires -PSEdition Core
-#Requires -Version 7.2
+#Requires -Version 7.3
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (
+	@(
+		'display'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
+) -Scope 'Local'
+
 Function Get-WareMeta {
 	[CmdletBinding()]
 	Param ()
-	Write-Host -Object "$($PSStyle.Bold)System [Debian View]:$($PSStyle.BoldOff)"
-	[PSCustomObject]@{
-		StdOut = uname --all
-	} |
-		Format-List
-	uname --all
-	Write-Host -Object "$($PSStyle.Bold)System [PowerShell View]:$($PSStyle.BoldOff)"
-	[PSCustomObject]@{
-		Platform = $PSVersionTable.Platform
-		Version = $PSVersionTable.OS
-	} |
-		Format-List
-	Write-Host -Object "$($PSStyle.Bold)PowerShell (pwsh):$($PSStyle.BoldOff)"
+	Write-Header2 -InputObject 'System: '
+	hwinfo --all
+	Write-Header2 -InputObject 'PowerShell (pwsh): '
 	[PSCustomObject]@{
 		Path = Get-Command -Name 'pwsh' -CommandType 'Application' |
 			Select-Object -ExpandProperty 'Source'
+		System = "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 		Edition = $PSVersionTable.PSEdition
 		Version = $PSVersionTable.PSVersion
 		CompatibleVersions = $PSVersionTable.PSCompatibleVersions
@@ -27,7 +25,8 @@ Function Get-WareMeta {
 		SerializationVersion = $PSVersionTable.SerializationVersion
 		WSManStackVersion = $PSVersionTable.WSManStackVersion
 	} |
-		Format-List
+		Format-List |
+		Write-Display
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
 		clamscan = 'ClamAV Scan'
@@ -37,13 +36,14 @@ Function Get-WareMeta {
 		yara = 'YARA'
 	}).GetEnumerator() |
 		ForEach-Object -Process {
-			Write-Host -Object "$($PSStyle.Bold)$($_.Value) ($($_.Name)):$($PSStyle.BoldOff)"
+			Write-Header2 -InputObject "$($_.Value) ($($_.Name)): "
 			[PSCustomObject]@{
 				Path = Get-Command -Name $_.Name -CommandType 'Application' |
 					Select-Object -ExpandProperty 'Source'
 				StdOut = Invoke-Expression -Command "$($_.Name) --version"
 			} |
-				Format-List
+				Format-List |
+				Write-Display
 		}
 }
 Export-ModuleMember -Function @(

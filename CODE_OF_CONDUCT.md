@@ -36,45 +36,13 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior maybe report to the community leaders responsible for enforcement via [fill this form](https://forms.gle/AXq9hWq2DsJrDNjP7) or send an e-mail.
+Instances of abusive, harassing, or otherwise unacceptable behavior maybe report to the community leaders responsible for enforcement via [fill this form](https://forms.gle/AXq9hWq2DsJrDNjP7).
 
-All new requests may need up to `~96 hours (~4 days)` to begin the process.
-
-> **⚠ Important:**
->
-> All requests will only proceed to further process while:
->
-> - with the correct personal information of the submitter (plaintiff),
-> - with the correct personal information of the defendants and witnesses (if any), and
-> - you (plaintiff), all of the defendants, and all of the witnesses (if any) are in the same community/platform.
->
-> Otherwise the request will mark as invalid immediately, not proceed, and without any notification.
+All new requests may need `~96 hours (~4 days)` to begin the process.
 
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
-
-### Via Send An E-mail
-
-Send an e-mail to either one who listed in here (e-mail address is listed in the profile):
-
-- [hugoalh](https://github.com/hugoalh)
-
-#### Suggested Content List
-
-Please provide as much as you can to help the community leaders for better understand the nature, scope of the possible issues, and triage your request more quickly.
-
-- Your account's platform (e.g.: GitHub, GitLab, ...).
-- Your account's username (e.g.: `@octocat`).
-- Project's ID or repository URI.
-  - Project's ID is displayed at the top part of the Readme (file: `README.md`), below the project display name (i.e.: header), inside a code block.
-- Defendants and witnesses.
-- Are defendants include any staffs, moderators, and/or administrators?
-  - This can affect who will proceed this complaint.
-- Detail of the complaint.
-- Expected actions.
-  - What kind of actions you (plaintiff) want us to apply to punish defendants?
-- Evidences.
 
 ## Enforcement Guidelines
 

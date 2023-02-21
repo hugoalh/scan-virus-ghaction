@@ -1,5 +1,5 @@
 #Requires -PSEdition Core
-#Requires -Version 7.2
+#Requires -Version 7.3
 Import-Module -Name @(
 	(Join-Path -Path $PSScriptRoot -ChildPath 'token.psm1')
 ) -Scope 'Local'

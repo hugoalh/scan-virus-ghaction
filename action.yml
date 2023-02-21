@@ -6,8 +6,8 @@ inputs:
     description: "{RegEx} Delimiter when the input is type of list."
     required: false
     default: ",|;|\\r?\\n"
-  input_table_parser:
-    description: "{String} Parser when the input is type of table."
+  input_table_markup:
+    description: "{String} Markup language when the input is type of table."
     required: false
     default: "yaml"
   targets:
@@ -32,35 +32,15 @@ inputs:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
-  git_saferquery:
-    description: "{Boolean} Whether to query the Git commits meta in a safer way."
-    required: false
-    default: "True"
   clamav_enable:
     description: "{Boolean} Whether to use ClamAV."
-    required: false
-    default: "True"
-  clamav_daemon:
-    description: "{Boolean} Whether to use ClamAV daemon."
     required: false
     default: "True"
   clamav_ignores:
     description: "{Table} Ignores for the ClamAV's paths, sessions, and/or signatures."
     required: false
-  clamav_multiscan:
-    description: "{Boolean} Whether to use ClamAV multiscan mode."
-    required: false
-    default: "True"
-  clamav_reloadpersession:
-    description: "{Boolean} Whether to reload ClamAV per session."
-    required: false
-    default: "False"
-  clamav_subcursive:
-    description: "{Boolean} Whether to scan directories subcursively."
-    required: false
-    default: "True"
   clamav_unofficialsignatures:
-    description: "{RegEx[]} Use ClamAV unofficial signatures."
+    description: "{RegEx[]} ClamAV unofficial signatures to use."
     required: false
   yara_enable:
     description: "{Boolean} Whether to use YARA."
@@ -70,7 +50,7 @@ inputs:
     description: "{Table} Ignores for the YARA's paths, rules, and/or sessions."
     required: false
   yara_rules:
-    description: "{RegEx[]} Use YARA rules."
+    description: "{RegEx[]} YARA rules to use."
     required: false
   update_assets:
     description: "{Boolean} Whether to update ClamAV unofficial signatures and/or YARA rules from the assets repository before scan anything."

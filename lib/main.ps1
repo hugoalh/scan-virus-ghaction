@@ -1,5 +1,5 @@
 #Requires -PSEdition Core
-#Requires -Version 7.2
+#Requires -Version 7.3
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
@@ -46,7 +46,7 @@ Test-GitHubActionsEnvironment -Mandatory
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
 Write-NameValue -Name 'Input_List_Delimiter' -Value $InputListDelimiter
-Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_parser' -Mandatory -EmptyStringAsNull -Trim) {
+Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^c(?:omma|sv)$' {
 		[String]$InputTableParser = 'csv'
 		Break
@@ -96,20 +96,12 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[Boolean]$ClamAVDaemon = Get-InputBoolean -Name 'clamav_daemon'
-Write-NameValue -Name 'ClamAV_Daemon' -Value $ClamAVDaemon
 [PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser
 Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresInput.Count))" -Value (($ClamAVIgnoresInput.Count -ieq 0) ? '(None)' : "`n$(Optimize-PSFormatDisplay -InputObject (
 	$ClamAVIgnoresInput |
 		Format-List -Property '*' |
 		Out-String
 ))")
-[Boolean]$ClamAVMultiScan = Get-InputBoolean -Name 'clamav_multiscan'
-Write-NameValue -Name 'ClamAV_MultiScan' -Value $ClamAVMultiScan
-[Boolean]$ClamAVReloadPerSession = Get-InputBoolean -Name 'clamav_reloadpersession'
-Write-NameValue -Name 'ClamAV_ReloadPerSession' -Value $ClamAVReloadPerSession
-[Boolean]$ClamAVSubcursive = Get-InputBoolean -Name 'clamav_subcursive'
-Write-NameValue -Name 'ClamAV_Subcursive' -Value $ClamAVSubcursive
 [RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
 Write-NameValue -Name "ClamAV_UnofficialSignatures ($($ClamAVUnofficialSignaturesInput.Count))" -Value (($ClamAVUnofficialSignaturesInput.Count -ieq 0) ? '(None)' : "`n$(
 	$ClamAVUnofficialSignaturesInput |
@@ -295,7 +287,7 @@ If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
 	)
 	Exit-GitHubActionsLogGroup
 }
-If ($ClamAVEnable -and $ClamAVDaemon) {
+If ($ClamAVEnable) {
 	Enter-GitHubActionsLogGroup -Title 'Start ClamAV daemon.'
 	Try {
 		clamd
@@ -388,7 +380,7 @@ Function Invoke-Tools {
 		) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
 		Try {
-			[String[]]$ClamAVOutput = Invoke-Expression -Command ($ClamAVDaemon ? "clamdscan --fdpass --file-list=`"$ElementsListClamAVFullName`"$($ClamAVMultiScan ? ' --multiscan' : '')$($ClamAVReloadPerSession ? ' --reload' : '')" : "clamscan --detect-broken=yes --file-list=`"$ElementsListClamAVFullName`" --follow-dir-symlinks=0 --follow-file-symlinks=0 --recursive")
+			[String[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$ElementsListClamAVFullName`" --multiscan"
 			[UInt32]$ClamAVExitCode = $LASTEXITCODE
 		}
 		Catch {
@@ -591,9 +583,9 @@ Else {
 		Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$False
 	}
 }
-If ($ClamAVEnable -and $ClamAVDaemon) {
+If ($ClamAVEnable) {
 	Enter-GitHubActionsLogGroup -Title 'Stop ClamAV daemon.'
-	Get-Process -Name '*clamd*' |
+	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
 		Stop-Process
 	Exit-GitHubActionsLogGroup
 }
