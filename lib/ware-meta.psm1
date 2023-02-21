@@ -11,12 +11,12 @@ Import-Module -Name (
 Function Get-WareMeta {
 	[CmdletBinding()]
 	Param ()
-	Write-Header2 -InputObject 'System: '
+	Write-Header1 -InputObject 'System'
 	hwinfo --all
-	Write-Header2 -InputObject 'PowerShell (pwsh): '
+	Write-Header1 -InputObject 'PowerShell (pwsh)'
 	[PSCustomObject]@{
-		Path = Get-Command -Name 'pwsh' -CommandType 'Application' |
-			Select-Object -ExpandProperty 'Source'
+		Execute = Get-Command -Name 'pwsh' -CommandType 'Application' |
+			Format-List -Property '*'
 		System = "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 		Edition = $PSVersionTable.PSEdition
 		Version = $PSVersionTable.PSVersion
@@ -25,9 +25,7 @@ Function Get-WareMeta {
 		SerializationVersion = $PSVersionTable.SerializationVersion
 		WSManStackVersion = $PSVersionTable.WSManStackVersion
 	} |
-		Format-List |
-		Out-String |
-		Write-Display
+		Format-List
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
 		clamscan = 'ClamAV Scan'
@@ -37,15 +35,13 @@ Function Get-WareMeta {
 		yara = 'YARA'
 	}).GetEnumerator() |
 		ForEach-Object -Process {
-			Write-Header2 -InputObject "$($_.Value) ($($_.Name)): "
+			Write-Header1 -InputObject "$($_.Value) ($($_.Name))"
 			[PSCustomObject]@{
-				Path = Get-Command -Name $_.Name -CommandType 'Application' |
-					Select-Object -ExpandProperty 'Source'
-				StdOut = Invoke-Expression -Command "$($_.Name) --version"
+				Execute = Get-Command -Name $_.Name -CommandType 'Application' |
+					Format-List -Property '*'
+				VersionStdOut = Invoke-Expression -Command "$($_.Name) --version"
 			} |
-				Format-List |
-				Out-String |
-				Write-Display
+				Format-List
 		}
 }
 Export-ModuleMember -Function @(
