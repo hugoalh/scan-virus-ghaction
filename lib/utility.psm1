@@ -175,15 +175,6 @@ Function Group-Ignores {
 	} |
 		Write-Output
 }
-Function Optimize-PSFormatDisplay {
-	[CmdletBinding()]
-	[OutputType([String])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
-	)
-	$InputObject -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', '' |
-		Write-Output
-}
 Function Remove-NeedCleanUpFiles {
 	[CmdletBinding()]
 	[OutputType([Void])]
@@ -215,26 +206,6 @@ Function Test-StringMatchRegExs {
 	}
 	Write-Output -InputObject $False
 }
-Function Write-NameValue {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Key')][String]$Name,
-		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyString()][String]$Value
-	)
-	Write-Host -Object "$($PSStyle.Bold)$($Name):$($PSStyle.BoldOff) $Value"
-}
-Function Write-OptimizePSFormatDisplay {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyString()][Alias('Input', 'Object')][String]$InputObject
-	)
-	[String]$Result = Optimize-PSFormatDisplay -InputObject $InputObject
-	If ($Result.Length -igt 0) {
-		Write-Host -Object $Result
-	}
-}
 Export-ModuleMember -Function @(
 	'Add-NeedCleanUpFile',
 	'ConvertFrom-CsvMultipleLine',
@@ -245,10 +216,7 @@ Export-ModuleMember -Function @(
 	'Get-InputList',
 	'Get-InputTable',
 	'Group-Ignores',
-	'Optimize-PSFormatDisplay',
 	'Remove-NeedCleanUpFiles',
 	'Test-StringIsUri',
-	'Test-StringMatchRegExs',
-	'Write-NameValue',
-	'Write-OptimizePSFormatDisplay'
+	'Test-StringMatchRegExs'
 )

@@ -6,6 +6,7 @@
 }
 Function ConvertTo-DateTimeISOString {
 	[CmdletBinding()]
+	[OutputType([String])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][DateTime]$InputObject
 	)

@@ -3,8 +3,11 @@
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name (
 	@(
-		'ware-meta'
+		'assets',
+		'ware'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Get-WareMeta
+Import-Assets -IsInitial
+Get-HardwareMeta
+Get-SoftwareMeta

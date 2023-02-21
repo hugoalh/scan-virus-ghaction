@@ -9,7 +9,7 @@ Import-Module -Name (
 		'statistics'
 		'token',
 		'utility',
-		'ware-meta'
+		'ware'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
@@ -83,11 +83,9 @@ Write-NameValue -Name "Targets ($($TargetsInput.Count))" -Value (($TargetsInput.
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
 [PSCustomObject[]]$GitIgnoresInput = Get-InputTable -Name 'git_ignores' -Type $InputTableParser
-Write-NameValue -Name "Git_Ignores ($($GitIgnoresInput.Count))" -Value "`n$(Optimize-PSFormatDisplay -InputObject (
-	$GitIgnoresInput |
-		Format-List -Property '*' |
-		Out-String
-))"
+Write-NameValue -Name "Git_Ignores ($($GitIgnoresInput.Count))"
+$GitIgnoresInput |
+	Format-List -Property '*'
 [Boolean]$GitIncludeAllBranches = Get-InputBoolean -Name 'git_include_allbranches'
 Write-NameValue -Name 'Git_Include_AllBranches' -Value $GitIncludeAllBranches
 [Boolean]$GitIncludeRefLogs = Get-InputBoolean -Name 'git_include_reflogs'
@@ -97,11 +95,9 @@ Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
 [PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser
-Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresInput.Count))" -Value (($ClamAVIgnoresInput.Count -ieq 0) ? '(None)' : "`n$(Optimize-PSFormatDisplay -InputObject (
-	$ClamAVIgnoresInput |
-		Format-List -Property '*' |
-		Out-String
-))")
+Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresInput.Count))"
+$ClamAVIgnoresInput |
+	Format-List -Property '*'
 [RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
 Write-NameValue -Name "ClamAV_UnofficialSignatures ($($ClamAVUnofficialSignaturesInput.Count))" -Value (($ClamAVUnofficialSignaturesInput.Count -ieq 0) ? '(None)' : "`n$(
 	$ClamAVUnofficialSignaturesInput |
@@ -110,11 +106,9 @@ Write-NameValue -Name "ClamAV_UnofficialSignatures ($($ClamAVUnofficialSignature
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
 [PSCustomObject[]]$YaraIgnoresInput = Get-InputTable -Name 'yara_ignores' -Type $InputTableParser
-Write-NameValue -Name "YARA_Ignores ($($YaraIgnoresInput.Count))" -Value (($YaraIgnoresInput.Count -ieq 0) ? '(None)' : "`n$(Optimize-PSFormatDisplay -InputObject (
-	$YaraIgnoresInput |
-		Format-List -Property '*' |
-		Out-String
-))")
+Write-NameValue -Name "YARA_Ignores ($($YaraIgnoresInput.Count))"
+$YaraIgnoresInput |
+	Format-List -Property '*'
 [RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
 Write-NameValue -Name "YARA_Rules ($($YaraRulesInput.Count))" -Value (($YaraRulesInput.Count -ieq 0) ? '(None)' : "`n$(
 	$YaraRulesInput |
@@ -228,16 +222,13 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 		$ClamAVUnofficialSignaturesIndexDisplay |
 			Where-Object -FilterScript { $_.Apply }
 	).Count)):"
-	Write-OptimizePSFormatDisplay -InputObject (
-		$ClamAVUnofficialSignaturesIndexDisplay |
-			Format-Table -Property @(
-				'Name',
-				@{ Expression = 'Exist'; Alignment = 'Right' },
-				@{ Expression = 'Select'; Alignment = 'Right' },
-				@{ Expression = 'Apply'; Alignment = 'Right' }
-			) -AutoSize -Wrap |
-			Out-String
-	)
+	$ClamAVUnofficialSignaturesIndexDisplay |
+		Format-Table -Property @(
+			'Name',
+			@{ Expression = 'Exist'; Alignment = 'Right' },
+			@{ Expression = 'Select'; Alignment = 'Right' },
+			@{ Expression = 'Apply'; Alignment = 'Right' }
+		) -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 }
 If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
@@ -275,16 +266,13 @@ If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
 		$YaraRulesIndexDisplay |
 			Where-Object -FilterScript { $_.Apply }
 	).Count)):"
-	Write-OptimizePSFormatDisplay -InputObject (
-		$YaraRulesIndexDisplay |
-			Format-Table -Property @(
-				'Name',
-				@{ Expression = 'Exist'; Alignment = 'Right' },
-				@{ Expression = 'Select'; Alignment = 'Right' },
-				@{ Expression = 'Apply'; Alignment = 'Right' }
-			) -AutoSize -Wrap |
-			Out-String
-	)
+	$YaraRulesIndexDisplay |
+		Format-Table -Property @(
+			'Name',
+			@{ Expression = 'Exist'; Alignment = 'Right' },
+			@{ Expression = 'Select'; Alignment = 'Right' },
+			@{ Expression = 'Apply'; Alignment = 'Right' }
+		) -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -362,15 +350,12 @@ Function Invoke-Tools {
 	$Script:ClamAVTotalElements += $ElementsListClamAV.Count
 	$Script:YaraTotalElements += $ElementsListYara.Count
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`" (Elements: $($Elements.Count); irectory: $ElementsIsDirectoryCount; ClamAV: $($ElementsListClamAV.Count); Yara: $($ElementsListYara.Count)):"
-	Write-OptimizePSFormatDisplay -InputObject (
-		$ElementsListDisplay |
-			Format-Table -Property @(
-				'Element',
-				'Flags',
-				@{ Expression = 'Sizes'; Alignment = 'Right' }
-			) -AutoSize -Wrap |
-			Out-String
-	)
+	$ElementsListDisplay |
+		Format-Table -Property @(
+			'Element',
+			'Flags',
+			@{ Expression = 'Sizes'; Alignment = 'Right' }
+		) -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
 		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
@@ -419,7 +404,7 @@ Function Invoke-Tools {
 			$ClamAVResultError += $Line
 		}
 		If ($ClamAVResultFound.Count -igt 0) {
-			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via ClamAV ($($ClamAVResultFound.Count)): `n$(Optimize-PSFormatDisplay -InputObject (
+			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via ClamAV ($($ClamAVResultFound.Count)): `n$(
 				$ClamAVResultFound.GetEnumerator() |
 					ForEach-Object -Process {
 						[String[]]$IssueSignatures = $_.Value |
@@ -434,7 +419,7 @@ Function Invoke-Tools {
 					Sort-Object -Property 'Element' |
 					Format-List -Property '*' |
 					Out-String
-			))"
+			)"
 			If ($SessionId -inotin $Script:ClamAVIssuesSessions) {
 				$Script:ClamAVIssuesSessions += $SessionId
 			}
@@ -494,7 +479,7 @@ Function Invoke-Tools {
 		}
 		Enter-GitHubActionsLogGroup -Title "YARA result of session `"$SessionTitle`":"
 		If ($YaraResultFound.Count -igt 0) {
-			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via YARA ($($YaraResultFound.Count)): `n$(Optimize-PSFormatDisplay -InputObject (
+			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via YARA ($($YaraResultFound.Count)): `n$(
 				$YaraResultFound.GetEnumerator() |
 					ForEach-Object -Process {
 						[String[]]$IssueRules = $_.Value |
@@ -509,7 +494,7 @@ Function Invoke-Tools {
 					Sort-Object -Property 'Element' |
 					Format-List -Property '*' |
 					Out-String
-			))"
+			)"
 			If ($SessionId -inotin $Script:YaraIssuesSessions) {
 				$Script:YaraIssuesSessions += $SessionId
 			}
@@ -592,86 +577,80 @@ If ($ClamAVEnable) {
 Remove-NeedCleanUpFiles
 Enter-GitHubActionsLogGroup -Title 'Statistics:'
 [UInt64]$TotalIssues = $ClamAVIssuesSessions.Count + $OtherIssuesSessions.Count + $YaraIssuesSessions.Count
-Write-OptimizePSFormatDisplay -InputObject (
-	[PSCustomObject[]]@(
-		[PSCustomObject]@{
-			Name = 'TotalElements_Count'
-			All = $AllTotalElements
-			ClamAV = $ClamAVTotalElements
-			YARA = $YaraTotalElements
-		},
-		[PSCustomObject]@{
-			Name = 'TotalElements_Percentage'
-			ClamAV = ($AllTotalElements -ieq 0) ? 0 : ($ClamAVTotalElements / $AllTotalElements * 100)
-			YARA = ($AllTotalElements -ieq 0) ? 0 : ($YaraTotalElements / $AllTotalElements * 100)
-		},
-		[PSCustomObject]@{
-			Name = 'TotalIssuesSessions_Count'
-			All = $TotalIssues
-			ClamAV = $ClamAVIssuesSessions.Count
-			YARA = $YaraIssuesSessions.Count
-			Other = $OtherIssuesSessions.Count
-		},
-		[PSCustomObject]@{
-			Name = 'TotalIssuesSessions_Percentage'
-			ClamAV = ($TotalIssues -ieq 0) ? 0 : ($ClamAVIssuesSessions.Count / $TotalIssues * 100)
-			YARA = ($TotalIssues -ieq 0) ? 0 : ($YaraIssuesSessions.Count / $TotalIssues * 100)
-			Other = ($TotalIssues -ieq 0) ? 0 : ($OtherIssuesSessions.Count / $TotalIssues * 100)
-		},
-		[PSCustomObject]@{
-			Name = 'TotalSizes_B'
-			All = $AllTotalSizes
-			ClamAV = $ClamAVTotalSizes
-			YARA = $YaraTotalSizes
-		},
-		[PSCustomObject]@{
-			Name = 'TotalSizes_KB'
-			All = $AllTotalSizes / 1KB
-			ClamAV = $ClamAVTotalSizes / 1KB
-			YARA = $YaraTotalSizes / 1KB
-		},
-		[PSCustomObject]@{
-			Name = 'TotalSizes_MB'
-			All = $AllTotalSizes / 1MB
-			ClamAV = $ClamAVTotalSizes / 1MB
-			YARA = $YaraTotalSizes / 1MB
-		},
-		[PSCustomObject]@{
-			Name = 'TotalSizes_GB'
-			All = $AllTotalSizes / 1GB
-			ClamAV = $ClamAVTotalSizes / 1GB
-			YARA = $YaraTotalSizes / 1GB
-		},
-		[PSCustomObject]@{
-			Name = 'TotalSizes_Percentage'
-			ClamAV = $ClamAVTotalSizes / $AllTotalSizes * 100
-			YARA = $YaraTotalSizes / $AllTotalSizes * 100
-		}
-	) |
-		Format-Table -Property @(
-			'Name',
-			@{ Expression = 'All'; Alignment = 'Right' },
-			@{ Expression = 'ClamAV'; Alignment = 'Right' },
-			@{ Expression = 'YARA'; Alignment = 'Right' },
-			@{ Expression = 'Other'; Alignment = 'Right' }
-		) -AutoSize -Wrap |
-		Out-String
-)
+[PSCustomObject[]]@(
+	[PSCustomObject]@{
+		Name = 'TotalElements_Count'
+		All = $AllTotalElements
+		ClamAV = $ClamAVTotalElements
+		YARA = $YaraTotalElements
+	},
+	[PSCustomObject]@{
+		Name = 'TotalElements_Percentage'
+		ClamAV = ($AllTotalElements -ieq 0) ? 0 : ($ClamAVTotalElements / $AllTotalElements * 100)
+		YARA = ($AllTotalElements -ieq 0) ? 0 : ($YaraTotalElements / $AllTotalElements * 100)
+	},
+	[PSCustomObject]@{
+		Name = 'TotalIssuesSessions_Count'
+		All = $TotalIssues
+		ClamAV = $ClamAVIssuesSessions.Count
+		YARA = $YaraIssuesSessions.Count
+		Other = $OtherIssuesSessions.Count
+	},
+	[PSCustomObject]@{
+		Name = 'TotalIssuesSessions_Percentage'
+		ClamAV = ($TotalIssues -ieq 0) ? 0 : ($ClamAVIssuesSessions.Count / $TotalIssues * 100)
+		YARA = ($TotalIssues -ieq 0) ? 0 : ($YaraIssuesSessions.Count / $TotalIssues * 100)
+		Other = ($TotalIssues -ieq 0) ? 0 : ($OtherIssuesSessions.Count / $TotalIssues * 100)
+	},
+	[PSCustomObject]@{
+		Name = 'TotalSizes_B'
+		All = $AllTotalSizes
+		ClamAV = $ClamAVTotalSizes
+		YARA = $YaraTotalSizes
+	},
+	[PSCustomObject]@{
+		Name = 'TotalSizes_KB'
+		All = $AllTotalSizes / 1KB
+		ClamAV = $ClamAVTotalSizes / 1KB
+		YARA = $YaraTotalSizes / 1KB
+	},
+	[PSCustomObject]@{
+		Name = 'TotalSizes_MB'
+		All = $AllTotalSizes / 1MB
+		ClamAV = $ClamAVTotalSizes / 1MB
+		YARA = $YaraTotalSizes / 1MB
+	},
+	[PSCustomObject]@{
+		Name = 'TotalSizes_GB'
+		All = $AllTotalSizes / 1GB
+		ClamAV = $ClamAVTotalSizes / 1GB
+		YARA = $YaraTotalSizes / 1GB
+	},
+	[PSCustomObject]@{
+		Name = 'TotalSizes_Percentage'
+		ClamAV = $ClamAVTotalSizes / $AllTotalSizes * 100
+		YARA = $YaraTotalSizes / $AllTotalSizes * 100
+	}
+) |
+	Format-Table -Property @(
+		'Name',
+		@{ Expression = 'All'; Alignment = 'Right' },
+		@{ Expression = 'ClamAV'; Alignment = 'Right' },
+		@{ Expression = 'YARA'; Alignment = 'Right' },
+		@{ Expression = 'Other'; Alignment = 'Right' }
+	) -AutoSize -Wrap
 Exit-GitHubActionsLogGroup
 If ($TotalIssues -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Issues sessions:'
-	Write-OptimizePSFormatDisplay -InputObject (
-		[PSCustomObject]@{
-			ClamAV = $ClamAVIssuesSessions |
-				Join-String -Separator ', '
-			YARA = $YaraIssuesSessions |
-				Join-String -Separator ', '
-			Other = $OtherIssuesSessions |
-				Join-String -Separator ', '
-		} |
-			Format-List -Property '*' |
-			Out-String
-	)
+	[PSCustomObject]@{
+		ClamAV = $ClamAVIssuesSessions |
+			Join-String -Separator ', '
+		YARA = $YaraIssuesSessions |
+			Join-String -Separator ', '
+		Other = $OtherIssuesSessions |
+			Join-String -Separator ', '
+	} |
+		Format-List -Property '*'
 	Exit-GitHubActionsLogGroup
 }
 If ($TotalIssues -igt 0) {
