@@ -4,7 +4,7 @@ Function Write-Display {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')][PSCustomObject]$InputObject
+		[Parameter(Mandatory = $True, Position = 0, ValueFromPipeline = $True)][Alias('Input', 'Object')]$InputObject
 	)
 	Process {
 		[String]$Result = (Out-String -InputObject $InputObject) -ireplace '^(?:\r?\n)+|(?:\r?\n)+$', ''
