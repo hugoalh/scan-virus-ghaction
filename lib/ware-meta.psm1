@@ -14,9 +14,9 @@ Function Get-WareMeta {
 	Write-Header1 -InputObject 'System'
 	hwinfo --all
 	Write-Header1 -InputObject 'PowerShell (pwsh)'
+	Get-Command -Name 'pwsh' -CommandType 'Application' |
+		Format-List -Property '*'
 	[PSCustomObject]@{
-		Execute = Get-Command -Name 'pwsh' -CommandType 'Application' |
-			Format-List -Property '*'
 		System = "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 		Edition = $PSVersionTable.PSEdition
 		Version = $PSVersionTable.PSVersion
@@ -36,10 +36,10 @@ Function Get-WareMeta {
 	}).GetEnumerator() |
 		ForEach-Object -Process {
 			Write-Header1 -InputObject "$($_.Value) ($($_.Name))"
+			Get-Command -Name $_.Name -CommandType 'Application' |
+				Format-List -Property '*'
 			[PSCustomObject]@{
-				Execute = Get-Command -Name $_.Name -CommandType 'Application' |
-					Format-List -Property '*'
-				VersionStdOut = Invoke-Expression -Command "$($_.Name) --version"
+					VersionStdOut = Invoke-Expression -Command "$($_.Name) --version"
 			} |
 				Format-List
 		}

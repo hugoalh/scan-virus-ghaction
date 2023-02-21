@@ -6,7 +6,7 @@ Function Write-Header1 {
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
 	)
 	[UInt]$BoxSize = [UInt]::Min($InputObject.Length, $Host.UI.RawUI.WindowSize.Width)
-	[String]$BoxBorderW = ' ' * $BoxSize
+	[String]$BoxBorderW = '•' * $BoxSize
 	Write-Host -Object "$($PSStyle.Background.Blue)$($BoxBorderW)$($PSStyle.Reset)"
 	Write-Host -Object "$($PSStyle.Background.Blue)$($PSStyle.Bold)$($InputObject)$($PSStyle.Reset)"
 	Write-Host -Object "$($PSStyle.Background.Blue)$($BoxBorderW)$($PSStyle.Reset)"
