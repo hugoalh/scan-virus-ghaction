@@ -148,5 +148,6 @@ Function Update-Assets {
 	Import-Assets
 }
 Export-ModuleMember -Function @(
+	'Import-Assets',
 	'Update-Assets'
 )
