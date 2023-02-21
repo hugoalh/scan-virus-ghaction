@@ -11,8 +11,8 @@ on:
         required: false
         default: "False"
 jobs:
-  scan-virus:
-    name: "Scan - Virus"
+  scan-virus-package:
+    name: "Scan - Virus - Package"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
