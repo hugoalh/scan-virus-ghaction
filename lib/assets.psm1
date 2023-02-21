@@ -29,7 +29,7 @@ Function Import-Assets {
 		[Switch]$IsInitial
 	)
 	[String]$PackageTempName = (New-Guid).Guid -replace '-', ''
-	[String]$PackageTempRoot = Join-Path -Path $Env:TEMP -ChildPath $PackageTempName
+	[String]$PackageTempRoot = "/tmp/$PackageTempName"
 	[String]$PackageTempFilePath = "$PackageTempRoot.zip"
 	Try {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebGetRequestParameters

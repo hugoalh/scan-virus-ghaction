@@ -21,6 +21,9 @@ Function Get-SoftwareMeta {
 	[OutputType([Void])]
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Software Information: '
+	Write-Header2 -InputObject 'Environment Variables'
+	Get-ChildItem -LiteralPath 'Env:\' |
+		Format-Table -AutoSize -Wrap
 	Write-Header2 -InputObject 'PowerShell (`pwsh`)'
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |
