@@ -6,6 +6,7 @@ Function Write-Header1 {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Title')][String]$Header
 	)
+	Write-Host -Object ''
 	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($Header)$($PSStyle.Reset)"
 	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$('-' * [UInt]::Min($Header.Length, $Host.UI.RawUI.WindowSize.Width))$($PSStyle.Reset)"
 }

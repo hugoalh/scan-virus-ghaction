@@ -12,7 +12,7 @@ Function Get-HardwareMeta {
 	[OutputType([Void])]
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Hardware Information: '
-	Write-Header1 -Title 'HWInfo'
+	Write-Header1 -Header 'HWInfo'
 	hwinfo --all
 	Exit-GitHubActionsLogGroup
 }
@@ -21,10 +21,10 @@ Function Get-SoftwareMeta {
 	[OutputType([Void])]
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Software Information: '
-	Write-Header1 -Title 'Environment Variables'
+	Write-Header1 -Header 'Environment Variables'
 	Get-ChildItem -LiteralPath 'Env:\' |
-		Format-Table -AutoSize -Wrap
-	Write-Header1 -Title 'PowerShell (`pwsh`)'
+		Format-List
+	Write-Header1 -Header 'PowerShell (`pwsh`)'
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |
 		Format-List -Property '*'
@@ -40,7 +40,7 @@ Function Get-SoftwareMeta {
 		yara = 'YARA'
 	}).GetEnumerator() |
 		ForEach-Object -Process {
-			Write-Header1 -Title "$($_.Value) (``$($_.Name)``)"
+			Write-Header1 -Header "$($_.Value) (``$($_.Name)``)"
 			Write-NameValue -Name 'Execute'
 			Get-Command -Name $_.Name -CommandType 'Application' |
 				Format-List -Property '*'

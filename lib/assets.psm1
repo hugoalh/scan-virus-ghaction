@@ -89,14 +89,13 @@ Function Import-Assets {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	If ($Initial.IsPresent) {
-		Get-ChildItem -LiteralPath $LocalRoot -Recurse -Name
+		Get-ChildItem -LiteralPath $LocalRoot -Recurse
+		Return
 	}
-	Else {
-		Write-Host -Object 'Local assets are now up to date.'
-		Write-Output -InputObject @{
-			Success = $True
-			Continue = $True
-		}
+	Write-Host -Object 'Local assets are now up to date.'
+	Write-Output -InputObject @{
+		Success = $True
+		Continue = $True
 	}
 }
 Function Update-Assets {
