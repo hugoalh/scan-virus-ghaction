@@ -36,8 +36,18 @@ Function Write-NameValue {
 	)
 	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($Name): $($PSStyle.Reset)$($Value)"
 }
+Function Write-NameValueStandard {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Key')][String]$Name,
+		[Parameter(Position = 1)][AllowEmptyCollection()][AllowEmptyString()][AllowNull()]$Value
+	)
+	Write-Host -Object "$($PSStyle.Formatting.TableHeader)$($PSStyle.Bold)$($Name): $($PSStyle.Reset)$($Value)"
+}
 Export-ModuleMember -Function @(
 	'Write-Header1',
 	'Write-Header2',
-	'Write-NameValue'
+	'Write-NameValue',
+	'Write-NameValueStandard'
 )

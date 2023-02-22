@@ -23,6 +23,13 @@ Import-Module -Name (
 [Uri]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
 [Uri]$RemoteMetadataFilePath = "$RemoteRoot/raw/main/$MetadataFileName"
 [Uri]$RemotePackageFilePath = "$RemoteRoot/archive/refs/heads/main.zip"
+[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
+[String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-signatures-ignore-presets'
+[String[]]$ClamAVUnofficialSignaturesIgnores = @(
+	'sigwhitelist.ign2'
+)
+[String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial-signatures'
+[String]$YaraRulesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-rules'
 Function Import-Assets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
@@ -89,7 +96,8 @@ Function Import-Assets {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	If ($Initial.IsPresent) {
-		Get-ChildItem -LiteralPath $LocalRoot -Recurse
+		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
+			Format-Table -Property @('Name', 'Length') -AutoSize -Wrap -GroupBy 'Directory'
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
@@ -116,7 +124,7 @@ Function Update-Assets {
 		Return
 	}
 	Write-NameValue -Name 'Assets_Compatibility_Local' -Value $LocalMetadata.Compatibility
-	Write-NameValue -Name 'Assets_Timestamp_Local' -Value (ConvertTo-DateTimeISOString -InputObject $LocalAssetsTimestamp)
+	Write-NameValue -Name 'Assets_Timestamp_Local' -Value (ConvertTo-DateTimeIsoString -InputObject $LocalAssetsTimestamp)
 	Try {
 		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri $RemoteMetadataFilePath @InvokeWebRequestParameters_Get |
 			Select-Object -ExpandProperty 'Content' |
@@ -132,7 +140,7 @@ Function Update-Assets {
 		Return
 	}
 	Write-NameValue -Name 'Assets_Compatibility_Remote' -Value $RemoteMetadata.Compatibility
-	Write-NameValue -Name 'Assets_Timestamp_Remote' -Value (ConvertTo-DateTimeISOString -InputObject $RemoteAssetsTimestamp)
+	Write-NameValue -Name 'Assets_Timestamp_Remote' -Value (ConvertTo-DateTimeIsoString -InputObject $RemoteAssetsTimestamp)
 	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
 		Write-GitHubActionsWarning -Message "Unable to update local assets safely! Local assets' compatibility and remote assets' compatibility are not match. This is fine, but the local assets maybe outdated."
 		Write-Output -InputObject @{

@@ -15,55 +15,41 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+Write-Host -Object 'Initialize.'
 Get-HardwareMeta
 Get-SoftwareMeta
-Exit 0
-Write-Host -Object 'Initialize.'
 Test-GitHubActionsEnvironment -Mandatory
-[Hashtable]$ImportTsvParameters = @{
+Exit 0
+[Hashtable]$ImportCsvParameters_Tsv = @{
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
 }
-[Hashtable]$JoinSingleListParameters = @{
+[Hashtable]$JoinStringParameters_List = @{
 	FormatString = '- {0}'
 	Separator = "`n"
 }
 $CleanupManager = [ScanVirusCleanupDuty]::new()
-[String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
-[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
-[String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $AssetsLocalRoot -ChildPath 'clamav-signatures-ignore-presets'
-[String[]]$ClamAVUnofficialSignaturesIgnores = @(
-	'sigwhitelist.ign2'
-)
-[String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $AssetsLocalRoot -ChildPath 'clamav-unofficial-signatures'
+$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
+$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
+$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::new()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = "$([RegEx]::Escape($Env:GITHUB_WORKSPACE))\/"
-[String]$YaraRulesAssetsRoot = Join-Path -Path $AssetsLocalRoot -ChildPath 'yara-rules'
-[String[]]$ClamAVIssuesSessions = @()
-[String[]]$YaraIssuesSessions = @()
-[String[]]$OtherIssuesSessions = @()
-[UInt64]$AllTotalElements = 0
-[UInt64]$AllTotalSizes = 0
-[UInt64]$ClamAVTotalElements = 0
-[UInt64]$ClamAVTotalSizes = 0
-[UInt64]$YaraTotalElements = 0
-[UInt64]$YaraTotalSizes = 0
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
 Write-NameValue -Name 'Input_List_Delimiter' -Value $InputListDelimiter
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
-	'^c(?:omma|sv)$' {
+	'^csv$' {
 		[String]$InputTableMarkup = 'csv'
 		Break
 	}
-	'^c(?:omma|sv)-?s(?:ingle(?:line)?)?$' {
+	'^csv-?s(?:ingle(?:line)?)?$' {
 		[String]$InputTableMarkup = 'csv-s'
 		Break
 	}
-	'^c(?:omma|sv)-?m(?:ulti(?:ple)?(?:line)?)?$' {
+	'^csv-?m(?:ulti(?:ple)?(?:line)?)?$' {
 		[String]$InputTableMarkup = 'csv-m'
 		Break
 	}
-	'^t(?:ab|sv)$' {
+	'^tsv$' {
 		[String]$InputTableMarkup = 'tsv'
 		Break
 	}
@@ -72,17 +58,17 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 		Break
 	}
 	Default {
-		Write-GitHubActionsFail -Message "``$_`` is not a valid table parser!"
+		Write-GitHubActionsFail -Message "``$_`` is not a valid table markup language!"
 		Throw
 	}
 }
-Write-NameValue -Name 'Input_Table_Parser' -Value $InputTableMarkup
+Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
 [Uri[]]$TargetsInput = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
 Write-NameValue -Name "Targets ($($TargetsInput.Count))" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : "`n$(
 	$TargetsInput |
 		Select-Object -ExpandProperty 'OriginalString' |
-		Join-String @JoinSingleListParameters
+		Join-String @JoinStringParameters_List
 )")
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
@@ -105,7 +91,7 @@ $ClamAVIgnoresInput |
 [RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
 Write-NameValue -Name "ClamAV_UnofficialSignatures ($($ClamAVUnofficialSignaturesInput.Count))" -Value (($ClamAVUnofficialSignaturesInput.Count -ieq 0) ? '(None)' : "`n$(
 	$ClamAVUnofficialSignaturesInput |
-		Join-String @JoinSingleListParameters
+		Join-String @JoinStringParameters_List
 )")
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
@@ -116,7 +102,7 @@ $YaraIgnoresInput |
 [RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
 Write-NameValue -Name "YARA_Rules ($($YaraRulesInput.Count))" -Value (($YaraRulesInput.Count -ieq 0) ? '(None)' : "`n$(
 	$YaraRulesInput |
-		Join-String @JoinSingleListParameters
+		Join-String @JoinStringParameters_List
 )")
 [Boolean]$UpdateAssetsLocal = Get-InputBoolean -Name 'update_assets'
 Write-NameValue -Name 'Update_Assets' -Value $UpdateAssetsLocal
@@ -134,7 +120,7 @@ If ($ClamAVEnable -and $UpdateClamAV) {
 		If ($LASTEXITCODE -ine 0) {
 			Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update ClamAV assets via FreshClam! Mostly will not cause critical issues."
 		}
-		$OtherIssuesSessions += 'FreshClam'
+		$StatisticsIssuesSessions.Other += 'FreshClam'
 	}
 	Catch {
 		Write-GitHubActionsError -Message "Unexpected issues when update ClamAV assets via FreshClam: $_"
@@ -157,13 +143,13 @@ If (
 		Exit 1
 	}
 	If (!$Result.Success) {
-		$OtherIssuesSessions += 'UpdateAssetsLocal'
+		$StatisticsIssuesSessions.Other += 'UpdateAssetsLocal'
 	}
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Import ClamAV unofficial signatures index.'
-	[PSCustomObject[]]$ClamAVUnofficialSignaturesIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @ImportTsvParameters
+	[PSCustomObject[]]$ClamAVUnofficialSignaturesIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$ClamAVUnofficialSignaturesSelect = $ClamAVUnofficialSignaturesIndex |
 		Where-Object -FilterScript { Test-StringMatchRegExs -Item $_.Name -Matchers $ClamAVUnofficialSignaturesInput } |
 		Sort-Object -Property 'Name'
@@ -176,7 +162,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 			[Boolean]$Apply = $Select -and $Exist
 			If (!$Exist) {
 				Write-GitHubActionsWarning -Message "ClamAV unofficial signature ``$Name`` was indexed but not exist! (Please create a bug report!)"
-				$Script:OtherIssuesSessions += "ClamAVUnofficialSignatures/Exist/$Name"
+				$Script:StatisticsIssuesSessions.Other += "ClamAVUnofficialSignatures/Exist/$Name"
 			}
 			If ($Apply) {
 				[String]$DestinationFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -ireplace '\/', '_')
@@ -187,7 +173,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 				Catch {
 					Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ``$Name``! $_"
 					$Apply = $False
-					$Script:OtherIssuesSessions += "ClamAVUnofficialSignatures/Apply/$Name"
+					$Script:StatisticsIssuesSessions.Other += "ClamAVUnofficialSignatures/Apply/$Name"
 				}
 			}
 			Write-Output -InputObject ([PSCustomObject]@{
@@ -211,7 +197,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 				}
 				Catch {
 					Write-GitHubActionsWarning -Message "Unable to apply ClamAV unofficial signatures ignore ``$Name``! $_ This is fine, but the result maybe false positive."
-					$Script:OtherIssuesSessions += "ClamAVUnofficialSignaturesIgnores/Apply/$Name"
+					$Script:StatisticsIssuesSessions.Other += "ClamAVUnofficialSignaturesIgnores/Apply/$Name"
 				}
 			}
 	}
@@ -237,7 +223,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 }
 If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Import YARA rules index.'
-	[PSCustomObject[]]$YaraRulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportTsvParameters
+	[PSCustomObject[]]$YaraRulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$YaraRulesSelect = $YaraRulesIndex |
 		Where-Object -FilterScript { Test-StringMatchRegExs -Item $_.Name -Matchers $YaraRulesInput } |
 		Sort-Object -Property 'Name'
@@ -250,7 +236,7 @@ If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
 			[Boolean]$Apply = $Select -and $Exist
 			If (!$Exist) {
 				Write-GitHubActionsWarning -Message "YARA rule ``$Name`` was indexed but not exist! (Please create a bug report!)"
-				$Script:OtherIssuesSessions += "YARARules/Exist/$Name"
+				$Script:StatisticsIssuesSessions.Other += "YARARules/Exist/$Name"
 			}
 			Write-Output -InputObject ([PSCustomObject]@{
 				Name = $Name
@@ -302,7 +288,7 @@ Function Invoke-Tools {
 	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
 	If ($Elements.Count -ieq 0){
 		Write-GitHubActionsError -Message "Unable to scan session `"$SessionTitle`" due to the workspace is empty! If this is incorrect, probably something went wrong."
-		$Script:OtherIssuesSessions += $SessionId
+		$Script:StatisticsIssuesSessions.Other += $SessionId
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
@@ -328,7 +314,7 @@ Function Invoke-Tools {
 		}
 		Else {
 			$ElementListDisplay.Sizes = $Element.Length
-			$Script:AllTotalSizes += $Element.Length
+			$Script:StatisticsTotalSizes.All += $Element.Length
 		}
 		If ($ClamAVEnable -and !$SkipClamAV -and (
 			($ElementIsDirectory -and $ClamAVSubcursive) -or
@@ -337,22 +323,22 @@ Function Invoke-Tools {
 			$ElementsListClamAV += $Element.FullName
 			$ElementListDisplay.Flags += 'C'
 			If (!$ElementIsDirectory) {
-				$Script:ClamAVTotalSizes += $Element.Length
+				$Script:StatisticsTotalSizes.ClamAV += $Element.Length
 			}
 		}
 		If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(Test-StringMatchRegExs -Item $ElementName -Matchers $YaraIgnores.OnlyPaths.Path)) {
 			$ElementsListYara += $Element.FullName
 			$ElementListDisplay.Flags += 'Y'
-			$Script:YaraTotalSizes += $Element.Length
+			$Script:StatisticsTotalSizes.Yara += $Element.Length
 		}
 		$ElementListDisplay.Flags = $ElementListDisplay.Flags |
 			Sort-Object |
 			Join-String -Separator ''
 		$ElementsListDisplay += [PSCustomObject]$ElementListDisplay
 	}
-	$Script:AllTotalElements += $Elements.Count
-	$Script:ClamAVTotalElements += $ElementsListClamAV.Count
-	$Script:YaraTotalElements += $ElementsListYara.Count
+	$Script:StatisticsTotalElements.All += $Elements.Count
+	$Script:StatisticsTotalElements.ClamAV += $ElementsListClamAV.Count
+	$Script:StatisticsTotalElements.Yara += $ElementsListYara.Count
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`" (Elements: $($Elements.Count); irectory: $ElementsIsDirectoryCount; ClamAV: $($ElementsListClamAV.Count); Yara: $($ElementsListYara.Count)):"
 	$ElementsListDisplay |
 		Format-Table -Property @(
@@ -424,14 +410,14 @@ Function Invoke-Tools {
 					Format-List -Property '*' |
 					Out-String
 			)"
-			If ($SessionId -inotin $Script:ClamAVIssuesSessions) {
-				$Script:ClamAVIssuesSessions += $SessionId
+			If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
+				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 			}
 		}
 		If ($ClamAVResultError.Count -igt 0) {
 			Write-GitHubActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$SessionTitle`":`n$($ClamAVResultError -join "`n")"
-			If ($SessionId -inotin $Script:ClamAVIssuesSessions) {
-				$Script:ClamAVIssuesSessions += $SessionId
+			If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
+				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 			}
 		}
 		Exit-GitHubActionsLogGroup
@@ -476,8 +462,8 @@ Function Invoke-Tools {
 			}
 			Else {
 				Write-GitHubActionsError -Message "Unexpected YARA `"$($YaraRule.Name)`" exit code ``$YaraExitCode`` in session `"$SessionTitle`"!`n$YaraOutput"
-				If ($SessionId -inotin $Script:YaraIssuesSessions) {
-					$Script:YaraIssuesSessions += $SessionId
+				If ($SessionId -inotin $Script:StatisticsIssuesSessions.Yara) {
+					$Script:StatisticsIssuesSessions.Yara += $SessionId
 				}
 			}
 		}
@@ -499,8 +485,8 @@ Function Invoke-Tools {
 					Format-List -Property '*' |
 					Out-String
 			)"
-			If ($SessionId -inotin $Script:YaraIssuesSessions) {
-				$Script:YaraIssuesSessions += $SessionId
+			If ($SessionId -inotin $Script:StatisticsIssuesSessions.Yara) {
+				$Script:StatisticsIssuesSessions.Yara += $SessionId
 			}
 		}
 		Exit-GitHubActionsLogGroup
@@ -540,8 +526,8 @@ If ($Targets.Count -ieq 0) {
 				Continue
 			}
 			Write-GitHubActionsError -Message "Unexpected Git checkout exit code ``$LASTEXITCODE`` in commit $GitSessionTitle!"
-			If ($GitCommitHash -inotin $OtherIssuesSessions) {
-				$OtherIssuesSessions += $GitCommitHash
+			If ($GitCommitHash -inotin $StatisticsIssuesSessions.Other) {
+				$StatisticsIssuesSessions.Other += $GitCommitHash
 			}
 			Exit-GitHubActionsLogGroup
 		}
@@ -579,60 +565,60 @@ If ($ClamAVEnable) {
 }
 $CleanupManager.Cleanup()
 Write-Header1 -Header 'Statistics'
-[UInt64]$TotalIssues = $ClamAVIssuesSessions.Count + $OtherIssuesSessions.Count + $YaraIssuesSessions.Count
+[UInt64]$TotalIssues = $StatisticsIssuesSessions.ClamAV.Count + $StatisticsIssuesSessions.Other.Count + $StatisticsIssuesSessions.Yara.Count
 [PSCustomObject[]]@(
 	[PSCustomObject]@{
 		Name = 'TotalElements_Count'
-		All = $AllTotalElements
-		ClamAV = $ClamAVTotalElements
-		YARA = $YaraTotalElements
+		All = $StatisticsTotalElements.All
+		ClamAV = $StatisticsTotalElements.ClamAV
+		YARA = $StatisticsTotalElements.Yara
 	},
 	[PSCustomObject]@{
 		Name = 'TotalElements_Percentage'
-		ClamAV = ($AllTotalElements -ieq 0) ? 0 : ($ClamAVTotalElements / $AllTotalElements * 100)
-		YARA = ($AllTotalElements -ieq 0) ? 0 : ($YaraTotalElements / $AllTotalElements * 100)
+		ClamAV = ($StatisticsTotalElements.All -ieq 0) ? 0 : ($StatisticsTotalElements.ClamAV / $StatisticsTotalElements.All * 100)
+		YARA = ($StatisticsTotalElements.All -ieq 0) ? 0 : ($StatisticsTotalElements.Yara / $StatisticsTotalElements.All * 100)
 	},
 	[PSCustomObject]@{
 		Name = 'TotalIssuesSessions_Count'
 		All = $TotalIssues
-		ClamAV = $ClamAVIssuesSessions.Count
-		YARA = $YaraIssuesSessions.Count
-		Other = $OtherIssuesSessions.Count
+		ClamAV = $StatisticsIssuesSessions.ClamAV.Count
+		YARA = $StatisticsIssuesSessions.Yara.Count
+		Other = $StatisticsIssuesSessions.Other.Count
 	},
 	[PSCustomObject]@{
 		Name = 'TotalIssuesSessions_Percentage'
-		ClamAV = ($TotalIssues -ieq 0) ? 0 : ($ClamAVIssuesSessions.Count / $TotalIssues * 100)
-		YARA = ($TotalIssues -ieq 0) ? 0 : ($YaraIssuesSessions.Count / $TotalIssues * 100)
-		Other = ($TotalIssues -ieq 0) ? 0 : ($OtherIssuesSessions.Count / $TotalIssues * 100)
+		ClamAV = ($TotalIssues -ieq 0) ? 0 : ($StatisticsIssuesSessions.ClamAV.Count / $TotalIssues * 100)
+		YARA = ($TotalIssues -ieq 0) ? 0 : ($StatisticsIssuesSessions.Yara.Count / $TotalIssues * 100)
+		Other = ($TotalIssues -ieq 0) ? 0 : ($StatisticsIssuesSessions.Other.Count / $TotalIssues * 100)
 	},
 	[PSCustomObject]@{
 		Name = 'TotalSizes_B'
-		All = $AllTotalSizes
-		ClamAV = $ClamAVTotalSizes
-		YARA = $YaraTotalSizes
+		All = $StatisticsTotalSizes.All
+		ClamAV = $StatisticsTotalSizes.ClamAV
+		YARA = $StatisticsTotalSizes.Yara
 	},
 	[PSCustomObject]@{
 		Name = 'TotalSizes_KB'
-		All = $AllTotalSizes / 1KB
-		ClamAV = $ClamAVTotalSizes / 1KB
-		YARA = $YaraTotalSizes / 1KB
+		All = $StatisticsTotalSizes.All / 1KB
+		ClamAV = $StatisticsTotalSizes.ClamAV / 1KB
+		YARA = $StatisticsTotalSizes.Yara / 1KB
 	},
 	[PSCustomObject]@{
 		Name = 'TotalSizes_MB'
-		All = $AllTotalSizes / 1MB
-		ClamAV = $ClamAVTotalSizes / 1MB
-		YARA = $YaraTotalSizes / 1MB
+		All = $StatisticsTotalSizes.All / 1MB
+		ClamAV = $StatisticsTotalSizes.ClamAV / 1MB
+		YARA = $StatisticsTotalSizes.Yara / 1MB
 	},
 	[PSCustomObject]@{
 		Name = 'TotalSizes_GB'
-		All = $AllTotalSizes / 1GB
-		ClamAV = $ClamAVTotalSizes / 1GB
-		YARA = $YaraTotalSizes / 1GB
+		All = $StatisticsTotalSizes.All / 1GB
+		ClamAV = $StatisticsTotalSizes.ClamAV / 1GB
+		YARA = $StatisticsTotalSizes.Yara / 1GB
 	},
 	[PSCustomObject]@{
 		Name = 'TotalSizes_Percentage'
-		ClamAV = $ClamAVTotalSizes / $AllTotalSizes * 100
-		YARA = $YaraTotalSizes / $AllTotalSizes * 100
+		ClamAV = $StatisticsTotalSizes.ClamAV / $StatisticsTotalSizes.All * 100
+		YARA = $StatisticsTotalSizes.Yara / $StatisticsTotalSizes.All * 100
 	}
 ) |
 	Format-Table -Property @(
@@ -645,11 +631,11 @@ Write-Header1 -Header 'Statistics'
 If ($TotalIssues -igt 0) {
 	Write-Header1 -Header 'Issues Sessions'
 	[PSCustomObject]@{
-		ClamAV = $ClamAVIssuesSessions |
+		ClamAV = $StatisticsIssuesSessions.ClamAV |
 			Join-String -Separator ', '
-		YARA = $YaraIssuesSessions |
+		YARA = $StatisticsIssuesSessions.Yara |
 			Join-String -Separator ', '
-		Other = $OtherIssuesSessions |
+		Other = $StatisticsIssuesSessions.Other |
 			Join-String -Separator ', '
 	} |
 		Format-List -Property '*'

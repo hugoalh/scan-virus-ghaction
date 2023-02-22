@@ -22,7 +22,9 @@ Function Get-SoftwareMeta {
 	Write-Header1 -Header 'Software Information'
 	Write-Header2 -Header 'Environment Variables'
 	Get-ChildItem -LiteralPath 'Env:\' |
-		Format-List
+		ForEach-Object -Process {
+			Write-NameValueStandard -Name $_.Name -Value $_.Value
+		}
 	Write-Header2 -Header 'PowerShell (`pwsh`)'
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |
@@ -43,7 +45,10 @@ Function Get-SoftwareMeta {
 			Write-NameValue -Name 'Execute'
 			Get-Command -Name $_.Name -CommandType 'Application' |
 				Format-List -Property '*'
-			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Name) --version")
+			Write-NameValue -Name 'VersionStdOut' -Value (
+				Invoke-Expression -Command "$($_.Name) --version" |
+					Join-String -Separator "`n"
+			)
 		}
 }
 Export-ModuleMember -Function @(
