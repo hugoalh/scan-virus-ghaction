@@ -4,21 +4,18 @@ Function Write-Header1 {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Title')][String]$Header
 	)
-	[UInt]$BoxSize = [UInt]::Min($InputObject.Length, $Host.UI.RawUI.WindowSize.Width)
-	[String]$BoxBorderW = '=' * $BoxSize
-	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($BoxBorderW)$($PSStyle.Reset)"
-	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($InputObject)$($PSStyle.Reset)"
-	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($BoxBorderW)$($PSStyle.Reset)"
+	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($Header)$($PSStyle.Reset)"
+	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$('-' * [UInt]::Min($Header.Length, $Host.UI.RawUI.WindowSize.Width))$($PSStyle.Reset)"
 }
 Function Write-Header2 {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Title')][String]$Header
 	)
-	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Underline)$($PSStyle.Bold)$($InputObject)$($PSStyle.Reset)"
+	Write-Host -Object "$($PSStyle.Foreground.BrightBlue)$($PSStyle.Underline)$($PSStyle.Bold)$($Header)$($PSStyle.Reset)"
 }
 Function Write-NameValue {
 	[CmdletBinding()]

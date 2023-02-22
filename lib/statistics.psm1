@@ -1,10 +1,17 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
-Class ScanVirusStatistics {
-	[UInt64]$TotalElements_All = 0
-	[UInt64]$TotalElements_ClamAV = 0
-	[UInt64]$TotalElements_Yara = 0
-	[UInt64]$TotalSizes_All = 0
-	[UInt64]$TotalSizes_ClamAV = 0
-	[UInt64]$TotalSizes_Yara = 0
+Class ScanVirusStatisticsIssuesSessions {
+	[String[]]$ClamAV = @()
+	[String[]]$Yara = @()
+	[String[]]$Other = @()
+}
+Class ScanVirusStatisticsTotalElements {
+	[UInt64]$All = 0
+	[UInt64]$ClamAV = 0
+	[UInt64]$Yara = 0
+}
+Class ScanVirusStatisticsTotalSizes {
+	[UInt64]$All = 0
+	[UInt64]$ClamAV = 0
+	[UInt64]$Yara = 0
 }

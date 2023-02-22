@@ -5,6 +5,7 @@ Import-Module -Name (
 	@(
 		'datetime',
 		'display',
+		'token',
 		'utility'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
@@ -28,7 +29,7 @@ Function Import-Assets {
 	Param (
 		[Switch]$Initial
 	)
-	[String]$PackageTempName = (New-Guid).Guid -replace '-', ''
+	[String]$PackageTempName = New-RandomToken -Length 32
 	[String]$PackageTempRoot = "/tmp/$PackageTempName"
 	[String]$PackageTempFilePath = "$PackageTempRoot.zip"
 	Try {

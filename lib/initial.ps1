@@ -1,6 +1,7 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
 $Script:ErrorActionPreference = 'Stop'
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'assets',

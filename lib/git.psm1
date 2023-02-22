@@ -40,44 +40,23 @@ Function Get-GitCommits {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Switch]$SaferQuery,
 		[Alias('IncludeAllBranches')][Switch]$AllBranches,
 		[Alias('IncludeReflogs')][Switch]$Reflogs
 	)
-	Try {
-		git rev-parse --is-inside-work-tree *>&1 |
-			Out-Null
-	}
-	Catch {
-		Write-Output -InputObject @{
-			Success = $False
-			Result = 'Git is not installed!'
-		}
-		Return
-	}
-	If ($LASTEXITCODE -ine 0) {
+	[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
+		Join-String -Separator "`n"
+	If ($IsGitRepositoryResult -ine 'True') {
 		Write-Output -InputObject @{
 			Success = $False
 			Result = 'Workspace is not a Git repository!'
 		}
 		Return
 	}
-	If ($SaferQuery.IsPresent) {
-		Do {
-			Try {
-				[String]$DelimiterPerCommitProperty = "=====$(New-RandomToken -Length 16)====="
-			}
-			Catch {
-
-			}
-		}
-		While (($DelimiterPropertyCount / $DelimiterTokenCountPerCommit) -ine 1)
-	}
 	Do {
 		Try {
-			[String]$DelimiterPerCommitStart = "=====S:$(New-RandomToken -Length 16)====="
-			[String]$DelimiterPerCommitProperty = "=====P:$(New-RandomToken -Length 16)====="
-			[String]$DelimiterPerCommitEnd = "=====E:$(New-RandomToken -Length 16)====="
+			[String]$DelimiterPerCommitStart = "=====S:$(New-RandomToken)====="
+			[String]$DelimiterPerCommitProperty = "=====P:$(New-RandomToken)====="
+			[String]$DelimiterPerCommitEnd = "=====E:$(New-RandomToken)====="
 			[String[]]$Raw0 = Invoke-Expression -Command "git --no-pager log$($AllBranches ? ' --all' : '') --format=`"$DelimiterPerCommitStart%n$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
