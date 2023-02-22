@@ -26,7 +26,7 @@ Function Import-Assets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Switch]$IsInitial
+		[Switch]$Initial
 	)
 	[String]$PackageTempName = (New-Guid).Guid -replace '-', ''
 	[String]$PackageTempRoot = "/tmp/$PackageTempName"
@@ -35,7 +35,7 @@ Function Import-Assets {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebGetRequestParameters
 	}
 	Catch {
-		If ($IsInitial.IsPresent) {
+		If ($Initial.IsPresent) {
 			Write-Error -Message "Unable to download remote assets package! $_"
 			Exit 1
 		}
@@ -52,7 +52,7 @@ Function Import-Assets {
 		Expand-Archive -LiteralPath $PackageTempFilePath -DestinationPath $PackageTempRoot
 	}
 	Catch {
-		If ($IsInitial.IsPresent) {
+		If ($Initial.IsPresent) {
 			Write-Error -Message "Unable to extract remote assets package! $_"
 			Exit 1
 		}
@@ -67,13 +67,13 @@ Function Import-Assets {
 		Remove-Item -LiteralPath $PackageTempFilePath -Force -Confirm:$False
 	}
 	Try {
-		If (!$IsInitial.IsPresent) {
+		If (!$Initial.IsPresent) {
 			Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$False
 		}
 		Move-Item -LiteralPath (Join-Path -Path $PackageTempRoot -ChildPath 'scan-virus-ghaction-assets-main') -Destination $LocalRoot -Confirm:$False
 	}
 	Catch {
-		If ($IsInitial.IsPresent) {
+		If ($Initial.IsPresent) {
 			Write-Error -Message "Unable to update local assets package! $_"
 			Exit 1
 		}
@@ -87,8 +87,11 @@ Function Import-Assets {
 	Finally {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
-	Write-Host -Object 'Local assets are now up to date.'
-	If (!$IsInitial.IsPresent) {
+	If ($Initial.IsPresent) {
+		Get-ChildItem -LiteralPath $LocalRoot -Recurse -Name
+	}
+	Else {
+		Write-Host -Object 'Local assets are now up to date.'
 		Write-Output -InputObject @{
 			Success = $True
 			Continue = $True

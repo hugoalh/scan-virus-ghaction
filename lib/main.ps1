@@ -1,19 +1,20 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
+Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'assets',
 		'git',
-		'statistics'
 		'token',
 		'utility',
 		'ware'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Get-WareMeta
+Get-HardwareMeta
+Get-SoftwareMeta
 Exit 0
 Write-Host -Object 'Initialize.'
 Test-GitHubActionsEnvironment -Mandatory
@@ -48,23 +49,23 @@ Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 Write-NameValue -Name 'Input_List_Delimiter' -Value $InputListDelimiter
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^c(?:omma|sv)$' {
-		[String]$InputTableParser = 'csv'
+		[String]$InputTableMarkup = 'csv'
 		Break
 	}
 	'^c(?:omma|sv)-?s(?:ingle(?:line)?)?$' {
-		[String]$InputTableParser = 'csv-s'
+		[String]$InputTableMarkup = 'csv-s'
 		Break
 	}
 	'^c(?:omma|sv)-?m(?:ulti(?:ple)?(?:line)?)?$' {
-		[String]$InputTableParser = 'csv-m'
+		[String]$InputTableMarkup = 'csv-m'
 		Break
 	}
 	'^t(?:ab|sv)$' {
-		[String]$InputTableParser = 'tsv'
+		[String]$InputTableMarkup = 'tsv'
 		Break
 	}
 	'^ya?ml$' {
-		[String]$InputTableParser = 'yaml'
+		[String]$InputTableMarkup = 'yaml'
 		Break
 	}
 	Default {
@@ -72,7 +73,7 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 		Throw
 	}
 }
-Write-NameValue -Name 'Input_Table_Parser' -Value $InputTableParser
+Write-NameValue -Name 'Input_Table_Parser' -Value $InputTableMarkup
 [Uri[]]$TargetsInput = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
 Write-NameValue -Name "Targets ($($TargetsInput.Count))" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : "`n$(
@@ -82,7 +83,7 @@ Write-NameValue -Name "Targets ($($TargetsInput.Count))" -Value (($TargetsInput.
 )")
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
-[PSCustomObject[]]$GitIgnoresInput = Get-InputTable -Name 'git_ignores' -Type $InputTableParser
+[PSCustomObject[]]$GitIgnoresInput = Get-InputTable -Name 'git_ignores' -Type $InputTableMarkup
 Write-NameValue -Name "Git_Ignores ($($GitIgnoresInput.Count))"
 $GitIgnoresInput |
 	Format-List -Property '*'
@@ -94,7 +95,7 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'clamav_ignores' -Type $InputTableParser
+[PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'clamav_ignores' -Type $InputTableMarkup
 Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresInput.Count))"
 $ClamAVIgnoresInput |
 	Format-List -Property '*'
@@ -105,7 +106,7 @@ Write-NameValue -Name "ClamAV_UnofficialSignatures ($($ClamAVUnofficialSignature
 )")
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[PSCustomObject[]]$YaraIgnoresInput = Get-InputTable -Name 'yara_ignores' -Type $InputTableParser
+[PSCustomObject[]]$YaraIgnoresInput = Get-InputTable -Name 'yara_ignores' -Type $InputTableMarkup
 Write-NameValue -Name "YARA_Ignores ($($YaraIgnoresInput.Count))"
 $YaraIgnoresInput |
 	Format-List -Property '*'
