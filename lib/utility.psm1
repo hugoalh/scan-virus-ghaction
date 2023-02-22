@@ -4,15 +4,6 @@ Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'
 ) -Scope 'Local'
-[String[]]$NeedCleanUpFiles = @()
-Function Add-NeedCleanUpFile {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$File
-	)
-	$Script:NeedCleanUpFiles += $File
-}
 Function ConvertFrom-CsvMultipleLine {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
@@ -175,13 +166,6 @@ Function Group-Ignores {
 	} |
 		Write-Output
 }
-Function Remove-NeedCleanUpFiles {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param ()
-	Remove-Item -LiteralPath $NeedCleanUpFiles -Force:$True -Confirm:$False
-	$Script:NeedCleanUpFiles = @()
-}
 Function Test-StringIsUri {
 	[CmdletBinding()]
 	[OutputType([Boolean])]
@@ -207,7 +191,6 @@ Function Test-StringMatchRegExs {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Add-NeedCleanUpFile',
 	'ConvertFrom-CsvMultipleLine',
 	'Convert-FromCsvSingleLineToCsvMultipleLine',
 	'Format-InputList',
@@ -216,7 +199,6 @@ Export-ModuleMember -Function @(
 	'Get-InputList',
 	'Get-InputTable',
 	'Group-Ignores',
-	'Remove-NeedCleanUpFiles',
 	'Test-StringIsUri',
 	'Test-StringMatchRegExs'
 )

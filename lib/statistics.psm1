@@ -11,7 +11,7 @@ Class ScanVirusStatisticsIssuesSessions {
 	[String[]]$Yara = @()
 	[String[]]$Other = @()
 	[Void]ConclusionDisplay() {
-		Write-Header1 -Header "Issues Sessions [$($This.ClamAV.Count + $This.Yara.Count + $This.Other.Count)]"
+		Write-Header2 -Header "Issues Sessions [$($This.ClamAV.Count + $This.Yara.Count + $This.Other.Count)]"
 		Write-NameValue -Name "ClamAV [$($This.ClamAV.Count)]" -Value $This.ClamAV
 		Write-NameValue -Name "Yara [$($This.Yara.Count)]" -Value $This.Yara
 		Write-NameValue -Name "Other [$($This.Other.Count)]" -Value $This.Other

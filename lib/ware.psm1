@@ -11,20 +11,19 @@ Function Get-HardwareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Hardware Information: '
-	Write-Header1 -Header 'HWInfo'
+	Write-Header1 -Header 'Hardware Information'
+	Write-Header2 -Header 'HWInfo'
 	hwinfo --all
-	Exit-GitHubActionsLogGroup
 }
 Function Get-SoftwareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Software Information: '
-	Write-Header1 -Header 'Environment Variables'
+	Write-Header1 -Header 'Software Information'
+	Write-Header2 -Header 'Environment Variables'
 	Get-ChildItem -LiteralPath 'Env:\' |
 		Format-List
-	Write-Header1 -Header 'PowerShell (`pwsh`)'
+	Write-Header2 -Header 'PowerShell (`pwsh`)'
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |
 		Format-List -Property '*'
@@ -40,13 +39,12 @@ Function Get-SoftwareMeta {
 		yara = 'YARA'
 	}).GetEnumerator() |
 		ForEach-Object -Process {
-			Write-Header1 -Header "$($_.Value) (``$($_.Name)``)"
+			Write-Header2 -Header "$($_.Value) (``$($_.Name)``)"
 			Write-NameValue -Name 'Execute'
 			Get-Command -Name $_.Name -CommandType 'Application' |
 				Format-List -Property '*'
 			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Name) --version")
 		}
-	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
 	'Get-HardwareMeta',

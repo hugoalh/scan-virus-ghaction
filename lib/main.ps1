@@ -7,6 +7,7 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'assets',
+		'display',
 		'git',
 		'token',
 		'utility',
@@ -27,6 +28,7 @@ Test-GitHubActionsEnvironment -Mandatory
 	FormatString = '- {0}'
 	Separator = "`n"
 }
+$CleanupManager = [ScanVirusCleanupDuty]::new()
 [String]$AssetsLocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
 [String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $AssetsLocalRoot -ChildPath 'clamav-signatures-ignore-presets'
@@ -180,7 +182,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 				[String]$DestinationFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -ireplace '\/', '_')
 				Try {
 					Copy-Item -LiteralPath $SourceFullName -Destination $DestinationFullName -Confirm:$False
-					Add-NeedCleanUpFile -File $DestinationFullName
+					$Script:CleanupManager.Pending += $DestinationFullName
 				}
 				Catch {
 					Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ``$Name``! $_"
@@ -205,7 +207,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 				[String]$DestinationFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($Name -ireplace '\/', '_')
 				Try {
 					Copy-Item -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $Name) -Destination $DestinationFullName -Confirm:$False
-					Add-NeedCleanUpFile -File $DestinationFullName
+					$Script:CleanupManager.Pending += $DestinationFullName
 				}
 				Catch {
 					Write-GitHubActionsWarning -Message "Unable to apply ClamAV unofficial signatures ignore ``$Name``! $_ This is fine, but the result maybe false positive."
@@ -556,7 +558,7 @@ Else {
 			Continue
 		}
 		Enter-GitHubActionsLogGroup -Title "Fetch file `"$Target`"."
-		[String]$NetworkTemporaryFileFullPath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken -Length 16)
+		[String]$NetworkTemporaryFileFullPath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken -Length 32)
 		Try {
 			Invoke-WebRequest -Uri $Target -UseBasicParsing -Method 'Get' -OutFile $NetworkTemporaryFileFullPath
 		}
@@ -571,13 +573,12 @@ Else {
 	}
 }
 If ($ClamAVEnable) {
-	Enter-GitHubActionsLogGroup -Title 'Stop ClamAV daemon.'
+	Write-Host -Object 'Stop ClamAV daemon.'
 	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
 		Stop-Process
-	Exit-GitHubActionsLogGroup
 }
-Remove-NeedCleanUpFiles
-Enter-GitHubActionsLogGroup -Title 'Statistics:'
+$CleanupManager.Cleanup()
+Write-Header1 -Header 'Statistics'
 [UInt64]$TotalIssues = $ClamAVIssuesSessions.Count + $OtherIssuesSessions.Count + $YaraIssuesSessions.Count
 [PSCustomObject[]]@(
 	[PSCustomObject]@{
@@ -641,9 +642,8 @@ Enter-GitHubActionsLogGroup -Title 'Statistics:'
 		@{ Expression = 'YARA'; Alignment = 'Right' },
 		@{ Expression = 'Other'; Alignment = 'Right' }
 	) -AutoSize -Wrap
-Exit-GitHubActionsLogGroup
 If ($TotalIssues -igt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Issues sessions:'
+	Write-Header1 -Header 'Issues Sessions'
 	[PSCustomObject]@{
 		ClamAV = $ClamAVIssuesSessions |
 			Join-String -Separator ', '

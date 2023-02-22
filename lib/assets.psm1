@@ -10,7 +10,7 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-[Hashtable]$InvokeWebGetRequestParameters = @{
+[Hashtable]$InvokeWebRequestParameters_Get = @{
 	MaximumRedirection = 5
 	MaximumRetryCount = 5
 	Method = 'Get'
@@ -33,7 +33,7 @@ Function Import-Assets {
 	[String]$PackageTempRoot = "/tmp/$PackageTempName"
 	[String]$PackageTempFilePath = "$PackageTempRoot.zip"
 	Try {
-		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebGetRequestParameters
+		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebRequestParameters_Get
 	}
 	Catch {
 		If ($Initial.IsPresent) {
@@ -118,7 +118,7 @@ Function Update-Assets {
 	Write-NameValue -Name 'Assets_Compatibility_Local' -Value $LocalMetadata.Compatibility
 	Write-NameValue -Name 'Assets_Timestamp_Local' -Value (ConvertTo-DateTimeISOString -InputObject $LocalAssetsTimestamp)
 	Try {
-		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri $RemoteMetadataFilePath @InvokeWebGetRequestParameters |
+		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri $RemoteMetadataFilePath @InvokeWebRequestParameters_Get |
 			Select-Object -ExpandProperty 'Content' |
 			ConvertFrom-Json -Depth 100 -NoEnumerate
 		[DateTime]$RemoteAssetsTimestamp = Get-Date -Date $RemoteMetadata.Timestamp -AsUTC

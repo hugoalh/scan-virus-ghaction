@@ -3,18 +3,6 @@
 [Char[]]$PoolLowerCase = [Char[]]@(97..122)
 [Char[]]$PoolNumber = [String[]]@(0..9)
 [Char[]]$PoolUpperCase = [Char[]]@(65..90)
-<#
-.SYNOPSIS
-GitHub Actions - Internal - New Random Token
-.DESCRIPTION
-Generate a new random token.
-.PARAMETER Length
-Length of the random token.
-.PARAMETER WithUpperCase
-Whether to contain upper case letters in the random token.
-.OUTPUTS
-[String] A new random token.
-#>
 Function New-RandomToken {
 	[CmdletBinding()]
 	[OutputType([String])]

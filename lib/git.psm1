@@ -52,81 +52,67 @@ Function Get-GitCommits {
 		}
 		Return
 	}
-	Do {
-		Try {
-			[String]$DelimiterPerCommitStart = "=====S:$(New-RandomToken)====="
-			[String]$DelimiterPerCommitProperty = "=====P:$(New-RandomToken)====="
-			[String]$DelimiterPerCommitEnd = "=====E:$(New-RandomToken)====="
-			[String[]]$Raw0 = Invoke-Expression -Command "git --no-pager log$($AllBranches ? ' --all' : '') --format=`"$DelimiterPerCommitStart%n$(
+	[String[]]$GitCommitsIds = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color$($AllBranches.IsPresent ? ' --all' : '')$($Reflogs.IsPresent ? ' --reflog' : '')"
+	[PSCustomObject[]]$GitCommitsMeta = @()
+	ForEach ($GitCommitId In $GitCommitsIds) {
+		Do {
+			Try {
+				[String]$DelimiterToken = "=====$(New-RandomToken -Length 32)====="
+				[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
-					Join-String -Separator "%n$DelimiterPerCommitProperty%n"
-			)%n$DelimiterPerCommitEnd`" --no-color$($Reflogs ? ' --reflog' : '')"
-			If ($LASTEXITCODE -ine 0) {
-				Throw (
-					$Raw0 |
-						Join-String -Separator "`n"
-				)
+					Join-String -Separator "%n$DelimiterToken%n"
+			)`" --no-color --no-patch $GitCommitId"
+				If ($LASTEXITCODE -ine 0) {
+					Throw (
+						$GitCommitMetaRaw0 |
+							Join-String -Separator "`n"
+					)
+				}
 			}
-		}
-		Catch {
-			Write-Output -InputObject @{
-				Success = $False
-				Result = "Unexpected Git database issue! $_"
+			Catch {
+				Write-Output -InputObject @{
+					Success = $False
+					Result = "Unexpected Git database issue! $_"
+				}
+				Return
 			}
-			Return
+			[UInt64]$DelimiterTokenCount = (
+				$GitCommitMetaRaw0 |
+					Where-Object -FilterScript { $_ -ieq $DelimiterToken }
+			).Count
 		}
-		$Raw0LineGroup = $Raw0 |
-			Group-Object -CaseSensitive
-		[UInt64]$DelimiterStartCount = $Raw0LineGroup |
-			Where-Object -FilterScript { $_.Name -ceq $DelimiterPerCommitStart } |
-			Select-Object -ExpandProperty 'Count'
-		[UInt64]$DelimiterPropertyCount = $Raw0LineGroup |
-			Where-Object -FilterScript { $_.Name -ceq $DelimiterPerCommitProperty } |
-			Select-Object -ExpandProperty 'Count'
-		[UInt64]$DelimiterEndCount = $Raw0LineGroup |
-			Where-Object -FilterScript { $_.Name -ceq $DelimiterPerCommitEnd } |
-			Select-Object -ExpandProperty 'Count'
-	}
-	While (
-		($DelimiterStartCount -ine $DelimiterEndCount) -or
-		(($DelimiterPropertyCount / $DelimiterTokenCountPerCommit) -ine $DelimiterStartCount)
-	)
-	[String[]]$Raw1 = (
-		$Raw0 |
-			Select-Object -Skip 1 |
-			Select-Object -SkipLast 1 |
-			Join-String -Separator "`n"
-	) -csplit ([RegEx]::Escape("`n$DelimiterPerCommitEnd`n$DelimiterPerCommitStart`n"))
-	[PSCustomObject[]]$Result = @()
-	For ([UInt64]$Raw1Line = 0; $Raw1Line -ilt $Raw1.Count; $Raw1Line++) {
-		[String[]]$Raw2 = $Raw1[$Raw1Line] -csplit ([RegEx]::Escape("`n$DelimiterPerCommitProperty`n"))
-		If ($GitCommitsProperties.Count -ine $Raw2.Count) {
+		While ($DelimiterTokenCount -ine $DelimiterTokenCountPerCommit)
+		[String[]]$GitCommitMetaRaw1 = (
+			$GitCommitMetaRaw0 |
+				Join-String -Separator "`n"
+		) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
+		If ($GitCommitsProperties.Count -ine $GitCommitMetaRaw1.Count) {
 			Write-Output -InputObject @{
 				Success = $False
 				Result = 'Unexpected Git database issue! Columns are not match!'
 			}
 			Return
 		}
-		[Hashtable]$Raw2Table = @{}
-		For ([UInt16]$Raw2Line = 0; $Raw2Line -ilt $Raw2.Count; $Raw2Line++) {
-			[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Raw2Line]
-			[String]$Value = $Raw2[$Raw2Line]
+		[Hashtable]$GitCommitMeta = @{}
+		For ([UInt64]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
+			[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
+			[String]$Value = $GitCommitMetaRaw1[$Line]
 			If ($GitCommitsPropertiesCurrent.IsArraySpace) {
-				$Raw2Table[$GitCommitsPropertiesCurrent.Name] = $Value -isplit ' '
+				$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -isplit ' '
 			}
 			ElseIf ($GitCommitsPropertiesCurrent.AsType) {
-				$Raw2Table[$GitCommitsPropertiesCurrent.Name] = $Value -as $GitCommitsPropertiesCurrent.AsType
+				$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -as $GitCommitsPropertiesCurrent.AsType
 			}
 			Else {
-				$Raw2Table[$GitCommitsPropertiesCurrent.Name] = $Value
+				$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value
 			}
 		}
-		$Result += [PSCustomObject]$Raw2Table
+		$GitCommitsMeta += [PSCustomObject]$GitCommitMeta
 	}
 	Write-Output -InputObject @{
 		Success = $True
-		Result = $Result |
+		Result = $GitCommitsMeta |
 			Sort-Object -Property $GitCommitsPropertySorter.Name
 	}
 }
