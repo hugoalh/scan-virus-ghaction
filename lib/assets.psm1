@@ -30,6 +30,10 @@ Import-Module -Name (
 )
 [String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial-signatures'
 [String]$YaraRulesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-rules'
+[Hashtable]$ClamAVCacheParameters = @{
+	Key = 'scan-virus-ghaction-clamav-database-1'
+	LiteralPath = $ClamAVDatabaseRoot
+}
 Function Import-Assets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
@@ -106,6 +110,18 @@ Function Import-Assets {
 		Continue = $True
 	}
 }
+Function Restore-ClamAVDatabase {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Restore-GitHubActionsCache @ClamAVCacheParameters -Timeout 60
+}
+Function Save-ClamAVDatabase {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Save-GitHubActionsCache @ClamAVCacheParameters
+}
 Function Update-Assets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
@@ -162,5 +178,7 @@ Function Update-Assets {
 }
 Export-ModuleMember -Function @(
 	'Import-Assets',
+	'Restore-ClamAVDatabase',
+	'Save-ClamAVDatabase',
 	'Update-Assets'
 )

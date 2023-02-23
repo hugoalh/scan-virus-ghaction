@@ -434,7 +434,7 @@ Function Invoke-Tools {
 		[String[]]$YaraResultIssue = @()
 		ForEach ($YaraRule In $YaraRulesSelect) {
 			Try {
-				[String[]]$YaraOutput = Invoke-Expression -Command "yara --scan-list$($YaraToolWarning ? '' : ' --no-warnings') `"$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $YaraRule.Location)`" `"$ElementsListYaraFullName`""
+				[String[]]$YaraOutput = Invoke-Expression -Command "yara --scan-list `"$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $YaraRule.Location)`" `"$ElementsListYaraFullName`""
 				[UInt32]$YaraExitCode = $LASTEXITCODE
 			}
 			Catch {

@@ -58,7 +58,7 @@ jobs:
 
 ### 📥 Input
 
-> **ℹ Notice:** All inputs are optional; Use this action without any inputs will default to scan current workspace with ClamAV official signatures.
+> **ℹ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official signatures.
 
 #### `input_list_delimiter`
 
@@ -158,10 +158,11 @@ bar	foo
 When this input is defined (i.e.: network targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
-- [`git_ignores`](#git_ignores)
 - [`git_include_allbranches`](#git_include_allbranches)
 - [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
+- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
+- [`ignores_gitcommits_nonlatest`](#ignores_gitcommits_nonlatest)
 
 #### `git_integrate`
 
@@ -169,14 +170,93 @@ When this input is defined (i.e.: network targets), will ignore inputs:
 
 When this input is `False`, will ignore inputs:
 
-- [`git_ignores`](#git_ignores)
 - [`git_include_allbranches`](#git_include_allbranches)
 - [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
+- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
+- [`ignores_gitcommits_nonlatest`](#ignores_gitcommits_nonlatest)
 
-#### `git_ignores`
+#### `git_include_allbranches`
 
-[`<Table>`](#input_table_markup) Ignores for the Git commits, by table; Available properties:
+`<Boolean = False>` Whether to include the Git commits which not in the default branch.
+
+#### `git_include_reflogs`
+
+`<Boolean = False>` Whether to include the Git commits which marked as references (e.g.: dead end commits).
+
+#### `git_reverse`
+
+`<Boolean = False>` Whether to reverse the scan order of the Git commits.
+
+- **`False`:** From the newest commit to the oldest commit.
+- **`True`:** From the oldest commit to the newest commit.
+
+#### `clamav_enable`
+
+`<Boolean = True>` Whether to use ClamAV.
+
+When this input is `False`, will ignore inputs:
+
+- [`clamav_unofficialsignatures`](#clamav_unofficialsignatures)
+- [`update_clamav`](#update_clamav)
+
+#### `clamav_unofficialsignatures`
+
+`<RegEx[]>` Use the ClamAV unofficial signatures, by regular expression and the [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial signatures are not in use.
+
+> **⚠ Important:** It is not recommended to use this due to the ClamAV unofficial signatures have more false positives than the ClamAV official signatures in most cases.
+
+#### `yara_enable`
+
+`<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_rules`](#yara_rules).
+
+> **⚠ Important:** It is not recommended to use this due to the YARA rules can have many false positives in most cases.
+
+#### `yara_rules`
+
+`<RegEx[]>` Use the YARA rules, by regular expression and the [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
+
+> **⚠ Important:** It is not recommended to use this due to the YARA rules can have many false positives in most cases.
+
+#### `update_assets`
+
+`<Boolean = True>` Whether to update the ClamAV unofficial signatures and the YARA rules from the [assets repository][assets-repository] before scan anything.
+
+> **⚠ Important:**
+>
+> - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
+> - It is recommended to keep this default value to have the latest assets.
+
+#### `update_clamav`
+
+`<Boolean = True>` Whether to update the ClamAV official signatures via FreshClam before scan anything.
+
+> **⚠ Important:** It is recommended to keep this default value to have the latest ClamAV official signatures.
+
+#### `ignores_elements`
+
+[`<Table>`](#input_table_markup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
+
+- **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
+- **`Rule`:** `<RegEx>` Index`/`RuleName
+- **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
+- **`Signature`:** `<RegEx>` Platform`.`Category`.`Name`-`SignatureID`-`Revision
+
+Example:
+
+```yml
+ignores_elements: |
+  - Path: "^node_modules"
+```
+
+> **⚠ Important:**
+>
+> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
+> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
+
+#### `ignores_gitcommits_meta`
+
+[`<Table>`](#input_table_markup) Ignores for the Git commits meta, by table; Available properties:
 
 - **`AuthorDate`:**
   - `<RegEx>` A regular expression to match the timestamp in ISO 8601 format
@@ -218,108 +298,27 @@ When this input is `False`, will ignore inputs:
 Example:
 
 ```yml
-- AuthorName: "^octocat$"
-  CommitterDate: "-lt 2022-01-01T00:00:00Z"
-  CommitterName: "^octocat$"
+ignores_gitcommits_meta: |
+  - AuthorName: "^dependabot$"
+  - AuthorDate: "-lt 2022-01-01T00:00:00Z"
+    AuthorName: "^octocat$"
 ```
 
-> **ℹ Notice:** For GitHub host users, it is highly recommended to ignore old commits due to the time limit of the step execution time (currently is `6 hours`).
+#### `ignores_gitcommits_nonlatest`
 
-#### `git_include_allbranches`
+`<UInt>` Ignores for the non latest Git commits, which limit how many of Git commits will scan, affected by and counting after inputs:
 
-`<Boolean = False>` Whether to include the Git commits which not in the default branch.
-
-#### `git_include_reflogs`
-
-`<Boolean = False>` Whether to include the Git commits which marked as references (e.g.: dead end commits).
-
-#### `git_reverse`
-
-`<Boolean = False>` Whether to reverse the scan order of the Git commits.
-
-- **`False`:** From the newest commit to the oldest commit.
-- **`True`:** From the oldest commit to the newest commit.
-
-#### `clamav_enable`
-
-`<Boolean = True>` Whether to use ClamAV.
-
-When this input is `False`, will ignore inputs:
-
-- [`clamav_ignores`](#clamav_ignores)
-- [`clamav_unofficialsignatures`](#clamav_unofficialsignatures)
-
-#### `clamav_ignores`
-
-[`<Table>`](#input_table_markup) Ignores for the ClamAV's paths, sessions, and/or signatures, by table. Available properties (i.e.: keys):
-
-- **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
-- **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
-- **`Signature`:** `<RegEx>` Platform`.`Category`.`Name`-`SignatureID`-`Revision
+- [`git_include_allbranches`](#git_include_allbranches)
+- [`git_include_reflogs`](#git_include_reflogs)
+- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
 
 Example:
 
 ```yml
-- Path: ^node_modules
+ignores_gitcommits_nonlatest: 100
 ```
 
-> **⚠ Important:**
->
-> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
-> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
-
-#### `clamav_unofficialsignatures`
-
-`<RegEx[]>` Use ClamAV unofficial signatures, by regular expression and [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial signatures are not in use.
-
-> **⚠ Important:** It is not recommended to use this due to ClamAV unofficial signatures have more false positives than official signatures in most cases.
-
-#### `yara_enable`
-
-`<Boolean = False>` Whether to use YARA.
-
-When this input is `False`, will ignore inputs:
-
-- [`yara_ignores`](#yara_ignores)
-- [`yara_rules`](#yara_rules)
-
-> **⚠ Important:** It is not recommended to use this due to YARA rules can have many false positives in most cases.
-
-#### `yara_ignores`
-
-[`<Table>`](#input_table_markup) Ignores for the YARA's paths, rules, and/or sessions, by table. Available properties (i.e.: keys):
-
-- **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
-- **`Rule`:** `<RegEx>` Index`/`RuleName
-- **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
-
-Example:
-
-```yml
-- Path: ^node_modules
-```
-
-#### `yara_rules`
-
-`<RegEx[]>` Use YARA rules, by regular expression and [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
-
-#### `update_assets`
-
-`<Boolean = True>` Whether to update ClamAV unofficial signatures and YARA rules from the [assets repository][assets-repository] before scan anything.
-
-> **⚠ Important:**
->
-> - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
-> - It is recommended to keep this as enable to have the latest assets.
-
-#### `update_clamav`
-
-`<Boolean = True>` Whether to update ClamAV official signatures via FreshClam before scan anything.
-
-> **⚠ Important:**
->
-> - When input [`clamav_enable`](#clamav_enable) is `False`, will skip this update in order to save some times.
-> - It is recommended to keep this as enable to have the latest ClamAV official signatures.
+> **ℹ Notice:** For users who use GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
 
 ### 📤 Output
 

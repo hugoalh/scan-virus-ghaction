@@ -22,9 +22,7 @@ Function Get-SoftwareMeta {
 	Write-Header1 -Header 'Software Information'
 	Write-Header2 -Header 'Environment Variables'
 	Get-ChildItem -LiteralPath 'Env:\' |
-		ForEach-Object -Process {
-			Write-NameValueStandard -Name $_.Name -Value $_.Value
-		}
+		Format-Table -AutoSize -Wrap
 	Write-Header2 -Header 'PowerShell (`pwsh`)'
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |

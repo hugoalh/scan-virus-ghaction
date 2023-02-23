@@ -17,9 +17,6 @@ inputs:
     description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
     required: false
     default: "False"
-  git_ignores:
-    description: "{Table} Ignores for the Git commits."
-    required: false
   git_include_allbranches:
     description: "{Boolean} Whether to include the Git commits which not in the default branch."
     required: false
@@ -36,9 +33,6 @@ inputs:
     description: "{Boolean} Whether to use ClamAV."
     required: false
     default: "True"
-  clamav_ignores:
-    description: "{Table} Ignores for the ClamAV's paths, sessions, and/or signatures."
-    required: false
   clamav_unofficialsignatures:
     description: "{RegEx[]} ClamAV unofficial signatures to use."
     required: false
@@ -46,9 +40,6 @@ inputs:
     description: "{Boolean} Whether to use YARA."
     required: false
     default: "False"
-  yara_ignores:
-    description: "{Table} Ignores for the YARA's paths, rules, and/or sessions."
-    required: false
   yara_rules:
     description: "{RegEx[]} YARA rules to use."
     required: false
@@ -60,6 +51,15 @@ inputs:
     description: "{Boolean} Whether to update ClamAV official signatures via FreshClam before scan anything."
     required: false
     default: "True"
+  ignores_elements:
+    description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
+    required: false
+  ignores_gitcommits_meta:
+    description: "{Table} Ignores for the Git commits meta."
+    required: false
+  ignores_gitcommits_nonlatest:
+    description: "{UInt} Ignores for the non latest Git commits."
+    required: false
 runs:
   using: "docker"
   image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.10.0"
