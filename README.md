@@ -347,5 +347,5 @@ jobs:
 - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
 
 [assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
-[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/main/clamav-unofficial-signatures/index.tsv
-[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/main/yara-rules/index.tsv
+[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav-unofficial-signatures/index.tsv
+[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara-rules/index.tsv
