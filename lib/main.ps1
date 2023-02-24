@@ -10,6 +10,7 @@ Import-Module -Name (
 		'display',
 		'git',
 		'input',
+		'pcsp',
 		'token',
 		'utility',
 		'ware'
@@ -147,81 +148,18 @@ If ($UpdateAssetsLocal -and (
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Import ClamAV unofficial signatures index.'
-	[PSCustomObject[]]$ClamAVUnofficialSignaturesIndex = Import-Csv -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath 'index.tsv') @ImportCsvParameters_Tsv
-	[PSCustomObject[]]$ClamAVUnofficialSignaturesSelect = $ClamAVUnofficialSignaturesIndex |
-		Where-Object -FilterScript { Test-StringMatchRegExs -Item $_.Name -Matchers $ClamAVUnofficialSignaturesInput } |
-		Sort-Object -Property 'Name'
-	[PSCustomObject[]]$ClamAVUnofficialSignaturesIndexDisplay = $ClamAVUnofficialSignaturesIndex |
-		ForEach-Object -Process {
-			[String]$SourceFullName = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $_.Location
-			[String]$Name = $_.Name
-			[Boolean]$Exist = Test-Path -LiteralPath $SourceFullName
-			[Boolean]$Select = $Name -iin $ClamAVUnofficialSignaturesSelect.Name
-			[Boolean]$Apply = $Select -and $Exist
-			If (!$Exist) {
-				Write-GitHubActionsWarning -Message "ClamAV unofficial signature ``$Name`` was indexed but not exist! (Please create a bug report!)"
-				$Script:StatisticsIssuesSessions.Other += "ClamAVUnofficialSignatures/Exist/$Name"
-			}
-			If ($Apply) {
-				[String]$DestinationFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($_.Location -ireplace '\/', '_')
-				Try {
-					Copy-Item -LiteralPath $SourceFullName -Destination $DestinationFullName -Confirm:$False
-					$Script:CleanupManager.Pending += $DestinationFullName
-				}
-				Catch {
-					Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ``$Name``! $_"
-					$Apply = $False
-					$Script:StatisticsIssuesSessions.Other += "ClamAVUnofficialSignatures/Apply/$Name"
-				}
-			}
-			Write-Output -InputObject ([PSCustomObject]@{
-				Name = $Name
-				Exist = $Exist
-				Select = $Select
-				Apply = $Apply
-			})
-		}
-	If ((
-		$ClamAVUnofficialSignaturesIndexDisplay |
-			Where-Object -FilterScript { $_.Apply }
-	).Count -igt 0) {
-		$ClamAVUnofficialSignaturesIgnores |
-			ForEach-Object -Process {
-				[String]$Name = $_
-				[String]$DestinationFullName = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($Name -ireplace '\/', '_')
-				Try {
-					Copy-Item -LiteralPath (Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $Name) -Destination $DestinationFullName -Confirm:$False
-					$Script:CleanupManager.Pending += $DestinationFullName
-				}
-				Catch {
-					Write-GitHubActionsWarning -Message "Unable to apply ClamAV unofficial signatures ignore ``$Name``! $_ This is fine, but the result maybe false positive."
-					$Script:StatisticsIssuesSessions.Other += "ClamAVUnofficialSignaturesIgnores/Apply/$Name"
-				}
-			}
+	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures and signatures ignores.'
+	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -SignaturesSelection $ClamAVUnofficialSignaturesInput
+	ForEach ($IssuesSignature In $Result.IssuesSignatures) {
+		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignature:$IssuesSignature"
 	}
-	Exit-GitHubActionsLogGroup
-	Enter-GitHubActionsLogGroup -Title "ClamAV unofficial signatures index (All: $($ClamAVUnofficialSignaturesIndexDisplay.Count); Exist: $((
-		$ClamAVUnofficialSignaturesIndexDisplay |
-			Where-Object -FilterScript { $_.Exist }
-	).Count); Select: $((
-		$ClamAVUnofficialSignaturesIndexDisplay |
-			Where-Object -FilterScript { $_.Select }
-	).Count); Apply: $((
-		$ClamAVUnofficialSignaturesIndexDisplay |
-			Where-Object -FilterScript { $_.Apply }
-	).Count)):"
-	$ClamAVUnofficialSignaturesIndexDisplay |
-		Format-Table -Property @(
-			'Name',
-			@{ Expression = 'Exist'; Alignment = 'Right' },
-			@{ Expression = 'Select'; Alignment = 'Right' },
-			@{ Expression = 'Apply'; Alignment = 'Right' }
-		) -AutoSize -Wrap
+	ForEach ($NeedCleanUpSignature In $Result.NeedCleanUp) {
+		$CleanupManager.Pending += $NeedCleanUpSignature
+	}
 	Exit-GitHubActionsLogGroup
 }
 If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Import YARA rules index.'
+	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
 	[PSCustomObject[]]$YaraRulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$YaraRulesSelect = $YaraRulesIndex |
 		Where-Object -FilterScript { Test-StringMatchRegExs -Item $_.Name -Matchers $YaraRulesInput } |

@@ -1,5 +1,6 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
+
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -10,6 +11,10 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+[Hashtable]$ImportCsvParameters_Tsv = @{
+	Delimiter = "`t"
+	Encoding = 'UTF8NoBOM'
+}
 [Hashtable]$InvokeWebRequestParameters_Get = @{
 	MaximumRedirection = 5
 	MaximumRetryCount = 5
@@ -17,19 +22,21 @@ Import-Module -Name (
 	RetryIntervalSec = 5
 	UseBasicParsing = $True
 }
+[String]$IndexFileName = 'index.tsv'
 [String]$MetadataFileName = 'metadata.json'
 [String]$LocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
+[RegEx]$LocalRootRegEx = [RegEx]::Escape($LocalRoot)
 [String]$LocalMetadataFilePath = Join-Path -Path $LocalRoot -ChildPath $MetadataFileName
 [Uri]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
 [Uri]$RemoteMetadataFilePath = "$RemoteRoot/raw/main/$MetadataFileName"
 [Uri]$RemotePackageFilePath = "$RemoteRoot/archive/refs/heads/main.zip"
 [String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-signatures-ignore-presets'
-[String[]]$ClamAVUnofficialSignaturesIgnores = @(
-	'sigwhitelist.ign2'
-)
+[String]$ClamAVUnofficialSignaturesIgnoresAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $IndexFileName
 [String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial-signatures'
+[String]$ClamAVUnofficialSignaturesAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $IndexFileName
 [String]$YaraRulesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-rules'
+[String]$YaraRulesAssetsIndexFilePath = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $IndexFileName
 [Hashtable]$ClamAVCacheParameters = @{
 	Key = 'scan-virus-ghaction-clamav-database-1'
 	LiteralPath = $ClamAVDatabaseRoot
@@ -41,7 +48,7 @@ Function Import-Assets {
 		[Switch]$Initial
 	)
 	[String]$PackageTempName = New-RandomToken -Length 32
-	[String]$PackageTempRoot = "/tmp/$PackageTempName"
+	[String]$PackageTempRoot = "/tmp/$PackageTempName"# Never use environment variable `RUNNER_TEMP` in here due to it does not exist at image building stage.
 	[String]$PackageTempFilePath = "$PackageTempRoot.zip"
 	Try {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebRequestParameters_Get
@@ -101,7 +108,19 @@ Function Import-Assets {
 	}
 	If ($Initial.IsPresent) {
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
-			Format-Table -Property @('Name', 'Length', 'PSIsContainer') -Wrap -GroupBy 'Directory'
+			ForEach-Object -Process {
+				[PSCustomObject]@{
+					Path = $_.FullName -ireplace $LocalRootRegEx
+					Length = $_.Length
+					IsContainer = $_.PSIsContainer
+				} |
+					Write-Output
+			} |
+			Format-Table -Property @(
+				'Path',
+				@{ Expression = 'Length'; Alignment = 'Right' },
+				@{ Expression = 'IsContainer'; Alignment = 'Right' }
+			) -AutoSize -Wrap
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
@@ -109,6 +128,72 @@ Function Import-Assets {
 		Success = $True
 		Continue = $True
 	}
+}
+Function Register-ClamAVUnofficialSignatures {
+	[CmdletBinding()]
+	[OutputType([Hashtable])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('SignaturesSelections')][RegEx[]]$SignaturesSelection
+	)
+	[PSCustomObject[]]$SignaturesIndexTable = Import-Csv -LiteralPath $ClamAVUnofficialSignaturesAssetsIndexFilePath @ImportCsvParameters_Tsv
+	[String[]]$IssuesSignatures = @()
+	[PSCustomObject[]]$SignaturesOverview = @()
+	ForEach ($Signature In $SignaturesIndexTable) {
+		[String]$FilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $Signature.Location
+		[Boolean]$Exist = Test-Path -LiteralPath $FilePath
+		[Boolean]$Select = Test-StringMatchRegExs -Item $Signature.Name -Matchers $SignaturesSelection
+		If (!$Exist) {
+			Write-GitHubActionsWarning -Message "ClamAV unofficial signature ``$($Signature.Name)`` was indexed but not exist, please create a bug report!"
+			$IssuesSignatures += $Signature.Name
+		}
+		$SignaturesOverview += [PSCustomObject]@{
+			Name = $Signature.Name
+			Exist = $Exist
+			Select = $Select
+			Apply = $Exist -and $Select
+			DatabaseFileName = $_.Location -ireplace '\/', '_'
+			FilePath = $FilePath
+		}
+	}
+	Write-NameValue -Name 'Signatures' -Value "All: $($SignaturesIndexTable.Count); Exist: $(
+		$SignaturesOverview |
+			Where-Object -FilterScript { $_.Exist }
+	); Select: $(
+		$SignaturesOverview |
+			Where-Object -FilterScript { $_.Select }
+	); Apply: $(
+		$SignaturesOverview |
+			Where-Object -FilterScript { $_.Apply }
+	)"
+	$SignaturesOverview |
+		Format-Table -Property @(
+			'Name',
+			@{ Expression = 'Exist'; Alignment = 'Right' },
+			@{ Expression = 'Select'; Alignment = 'Right' },
+			@{ Expression = 'Apply'; Alignment = 'Right' }
+		) -AutoSize -Wrap
+	[String[]]$NeedCleanUp = @()
+	ForEach ($Signature In (
+		$SignaturesOverview |
+			Where-Object -FilterScript { $_.Apply }
+	)) {
+		[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $Signature.DatabaseFileName
+		Try {
+			Copy-Item -LiteralPath $Signature.FilePath -Destination $DestinationFilePath -Confirm:$False
+			$NeedCleanUp += $DestinationFilePath
+		}
+		Catch {
+			Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ``$($Signature.Name)``! $_"
+			$IssuesSignatures += $Signature.Name
+		}
+	}
+	[Hashtable]@{
+		IssuesSignatures = $IssuesSignatures
+		NeedCleanUp = $NeedCleanUp
+	}
+}
+Function Register-YaraRules {
+
 }
 Function Restore-ClamAVDatabase {
 	[CmdletBinding()]
@@ -178,6 +263,8 @@ Function Update-Assets {
 }
 Export-ModuleMember -Function @(
 	'Import-Assets',
+	'Register-ClamAVUnofficialSignatures',
+	'Register-YaraRules',
 	'Restore-ClamAVDatabase',
 	'Save-ClamAVDatabase',
 	'Update-Assets'

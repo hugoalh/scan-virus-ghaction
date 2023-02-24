@@ -3,17 +3,15 @@
 Class ScanVirusCleanupDuty {
 	[String[]]$Pending = @()
 	[Void]Cleanup() {
-		[String[]]$Failed = @()
-		While ($This.Pending.Count -igt 0) {
-			[String]$ElementPop, [String]$ElementRest = $This.Pending
-			$This.Pending = $ElementRest
-			Try {
-				Remove-Item -LiteralPath $ElementPop -Recurse:$(Test-Path -LiteralPath $ElementPop -PathType 'Container') -Force -Confirm:$False
+		$This.Pending = $This.Pending |
+			Where-Object -FilterScript {
+				Try {
+					Remove-Item -LiteralPath $_ -Recurse:$(Test-Path -LiteralPath $_ -PathType 'Container') -Force -Confirm:$False
+					Write-Output -InputObject $False
+				}
+				Catch {
+					Write-Output -InputObject $True
+				}
 			}
-			Catch {
-				$Failed += $ElementPop
-			}
-		}
-		$This.Pending = $Failed
 	}
 }

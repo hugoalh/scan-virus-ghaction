@@ -1,4 +1,4 @@
-FROM debian:11.6 AS initial
+FROM debian:11.6
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
@@ -6,7 +6,7 @@ RUN apt-get --assume-yes update
 RUN apt-get --assume-yes dist-upgrade
 RUN apt-get --assume-yes auto-remove
 RUN apt-get --assume-yes purge
-RUN apt-get --assume-yes install apt-transport-https curl gnupg hwinfo
+RUN apt-get --assume-yes install apt-utils curl gnupg hwinfo
 RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs nodejs yara
 RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
 RUN echo 'deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main' > /etc/apt/sources.list.d/microsoft.list

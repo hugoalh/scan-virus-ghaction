@@ -8,15 +8,15 @@ Function Invoke-Yara {
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Elements', 'File', 'Files')][String[]]$Element,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Rules')][PSCustomObject[]]$Rule
 	)
-	$ElementScanPath = New-TemporaryFile
-	Set-Content -LiteralPath $ElementScanPath -Value (
+	[System.IO.FileInfo]$ElementScanList = New-TemporaryFile
+	Set-Content -LiteralPath $ElementScanList -Value (
 		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	[Hashtable]$ResultFound = @{}
 	ForEach ($RuleEntry In $Rule) {
 		Try {
-			[String[]]$Output = Invoke-Expression -Command "yara --scan-list `"$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $RuleEntry.Location)`" `"$($ElementScanPath.FullName)`""
+			[String[]]$Output = Invoke-Expression -Command "yara --scan-list `"$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $RuleEntry.Location)`" `"$($ElementScanList.FullName)`""
 			[UInt32]$ExitCode = $LASTEXITCODE
 		}
 		Catch {
@@ -25,5 +25,5 @@ Function Invoke-Yara {
 			Exit 1
 		}
 	}
-	Remove-Item -LiteralPath $ElementScanPath -Force -Confirm:$False
+	Remove-Item -LiteralPath $ElementScanList -Force -Confirm:$False
 }
