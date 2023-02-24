@@ -1,6 +1,5 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
-
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -24,35 +23,18 @@ Import-Module -Name (
 }
 [String]$IndexFileName = 'index.tsv'
 [String]$MetadataFileName = 'metadata.json'
-[String]$LocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets' |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
-[RegEx]$LocalRootRegEx = [RegEx]::Escape($LocalRoot)
-[String]$LocalMetadataFilePath = Join-Path -Path $LocalRoot -ChildPath $MetadataFileName |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
+[String]$LocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
+[String]$LocalMetadataFilePath = Join-Path -Path $LocalRoot -ChildPath $MetadataFileName
 [Uri]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
 [Uri]$RemoteMetadataFilePath = "$RemoteRoot/raw/main/$MetadataFileName"
 [Uri]$RemotePackageFilePath = "$RemoteRoot/archive/refs/heads/main.zip"
 [String]$ClamAVDatabaseRoot = '/var/lib/clamav'
-[String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-signatures-ignore-presets' |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
-[String]$ClamAVUnofficialSignaturesIgnoresAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $IndexFileName |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
-[String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial-signatures' |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
-[String]$ClamAVUnofficialSignaturesAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $IndexFileName |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
-[String]$YaraRulesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-rules' |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
-[String]$YaraRulesAssetsIndexFilePath = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $IndexFileName |
-	Resolve-Path |
-	Select-Object -ExpandProperty 'Path'
+[String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-signatures-ignore-presets'
+[String]$ClamAVUnofficialSignaturesIgnoresAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $IndexFileName
+[String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial-signatures'
+[String]$ClamAVUnofficialSignaturesAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $IndexFileName
+[String]$YaraRulesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-rules'
+[String]$YaraRulesAssetsIndexFilePath = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $IndexFileName
 [Hashtable]$ClamAVCacheParameters = @{
 	Key = 'scan-virus-ghaction-clamav-database-1'
 	LiteralPath = $ClamAVDatabaseRoot
@@ -123,6 +105,7 @@ Function Import-Assets {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	If ($Initial.IsPresent) {
+		[RegEx]$LocalRootRegEx = [RegEx]::Escape((Resolve-Path -Path $LocalRoot))
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 			ForEach-Object -Process {
 				[PSCustomObject]@{
