@@ -37,6 +37,7 @@ Function Get-SoftwareMeta {
 		clamscan = 'ClamAV Scan'
 		freshclam = 'FreshClam (ClamAV Updater)'
 		git = 'Git'
+		'git-lfs' = 'Git LFS'
 		node = 'NodeJS'
 		yara = 'YARA'
 	}).GetEnumerator() |
@@ -45,10 +46,8 @@ Function Get-SoftwareMeta {
 			Write-NameValue -Name 'Execute'
 			Get-Command -Name $_.Name -CommandType 'Application' |
 				Format-List -Property '*'
-			Write-NameValue -Name 'VersionStdOut' -Value (
-				Invoke-Expression -Command "$($_.Name) --version" |
-					Join-String -Separator "`n"
-			)
+			Write-NameValue -Name 'VersionStdOut'
+			Invoke-Expression -Command "$($_.Name) --version"
 		}
 	Exit-GitHubActionsLogGroup
 }
