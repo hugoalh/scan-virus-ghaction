@@ -9,6 +9,7 @@ Import-Module -Name (
 		'assets',
 		'display',
 		'git',
+		'input',
 		'token',
 		'utility',
 		'ware'
@@ -63,19 +64,15 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 	}
 }
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
-[Uri[]]$TargetsInput = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
+[Uri[]]$TargetsInput = ((Get-InputList -Name 'targets' -Delimiter $InputListDelimiter) ?? @()) |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets ($($TargetsInput.Count))" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : "`n$(
+Write-NameValue -Name "Targets [$($TargetsInput.Count)]" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : "`n$(
 	$TargetsInput |
 		Select-Object -ExpandProperty 'OriginalString' |
 		Join-String @JoinStringParameters_List
 )")
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
-[PSCustomObject[]]$GitIgnoresInput = Get-InputTable -Name 'git_ignores' -Type $InputTableMarkup
-Write-NameValue -Name "Git_Ignores ($($GitIgnoresInput.Count))"
-$GitIgnoresInput |
-	Format-List -Property '*'
 [Boolean]$GitIncludeAllBranches = Get-InputBoolean -Name 'git_include_allbranches'
 Write-NameValue -Name 'Git_Include_AllBranches' -Value $GitIncludeAllBranches
 [Boolean]$GitIncludeRefLogs = Get-InputBoolean -Name 'git_include_reflogs'
@@ -84,36 +81,40 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'clamav_ignores' -Type $InputTableMarkup
-Write-NameValue -Name "ClamAV_Ignores ($($ClamAVIgnoresInput.Count))"
-$ClamAVIgnoresInput |
-	Format-List -Property '*'
 [RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
-Write-NameValue -Name "ClamAV_UnofficialSignatures ($($ClamAVUnofficialSignaturesInput.Count))" -Value (($ClamAVUnofficialSignaturesInput.Count -ieq 0) ? '(None)' : "`n$(
-	$ClamAVUnofficialSignaturesInput |
-		Join-String @JoinStringParameters_List
-)")
+Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx [$($ClamAVUnofficialSignaturesInput.Count)]"
+$ClamAVUnofficialSignaturesInput |
+	Join-String @JoinStringParameters_List
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[PSCustomObject[]]$YaraIgnoresInput = Get-InputTable -Name 'yara_ignores' -Type $InputTableMarkup
-Write-NameValue -Name "YARA_Ignores ($($YaraIgnoresInput.Count))"
-$YaraIgnoresInput |
-	Format-List -Property '*'
 [RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
-Write-NameValue -Name "YARA_Rules ($($YaraRulesInput.Count))" -Value (($YaraRulesInput.Count -ieq 0) ? '(None)' : "`n$(
-	$YaraRulesInput |
-		Join-String @JoinStringParameters_List
-)")
+Write-NameValue -Name "YARA_Rules_RegEx [$($YaraRulesInput.Count)]"
+$YaraRulesInput |
+	Join-String @JoinStringParameters_List
 [Boolean]$UpdateAssetsLocal = Get-InputBoolean -Name 'update_assets'
 Write-NameValue -Name 'Update_Assets' -Value $UpdateAssetsLocal
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
+[PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'ignores_elements' -Type $InputTableMarkup
+Write-NameValue -Name "Ignores_Elements [$($ClamAVIgnoresInput.Count)]"
+$ClamAVIgnoresInput |
+	Format-List -Property '*'
+[PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Type $InputTableMarkup
+Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]"
+$IgnoresGitCommitsMetaInput |
+	Format-List -Property '*'
+[UInt]$IgnoresGitCommitsNonLatest = Get-GitHubActionsInput -Name 'ignores_gitcommits_nonlatest' -EmptyStringAsNull ?? 0
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 	Throw
 }
-If ($ClamAVEnable -and $UpdateClamAV) {
+If ($ClamAVEnable) {
+	Enter-GitHubActionsLogGroup -Title 'Restore ClamAV database.'
+	Restore-ClamAVDatabase
+	Exit-GitHubActionsLogGroup
+}
+If ($UpdateClamAV -and $ClamAVEnable) {
 	Enter-GitHubActionsLogGroup -Title 'Update ClamAV assets via FreshClam.'
 	Try {
 		freshclam
@@ -129,12 +130,10 @@ If ($ClamAVEnable -and $UpdateClamAV) {
 	}
 	Exit-GitHubActionsLogGroup
 }
-If (
-	(
-		($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) -or
-		($YaraEnable -and $YaraRulesInput.Count -igt 0)
-	) -and $UpdateAssetsLocal
-) {
+If ($UpdateAssetsLocal -and (
+	($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) -or
+	($YaraEnable -and $YaraRulesInput.Count -igt 0)
+)) {
 	Enter-GitHubActionsLogGroup -Title 'Update local assets.'
 	[Hashtable]$Result = Update-Assets
 	If (!$Result.Continue) {

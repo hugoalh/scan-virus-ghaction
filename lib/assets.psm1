@@ -101,7 +101,7 @@ Function Import-Assets {
 	}
 	If ($Initial.IsPresent) {
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
-			Format-Table -Property @('Name', 'Length') -AutoSize -Wrap -GroupBy 'Directory'
+			Format-Table -Property @('Name', 'Length', 'PSIsContainer') -Wrap
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'

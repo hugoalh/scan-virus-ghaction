@@ -31,6 +31,7 @@ Function Get-SoftwareMeta {
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
+	Write-NameValue -Name 'ConsoleWidth' -Value $Host.UI.RawUI.WindowSize.Width
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
 		clamscan = 'ClamAV Scan'
