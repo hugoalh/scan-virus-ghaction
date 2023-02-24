@@ -9,7 +9,7 @@ Function Write-Header1 {
 	[String]$BoxBorderW = ':' * $Host.UI.RawUI.WindowSize.Width
 	[String]$HeaderWhitespace = ' ' * [Math]::Floor([Math]::Max(0, $Host.UI.RawUI.WindowSize.Width - $Header.Length) / 2)
 	Write-Host -Object @"
-$($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($BoxBorderW)$($PSStyle.Reset)
+
 $($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($HeaderWhitespace)$($Header)$($HeaderWhitespace)$($PSStyle.Reset)
 $($PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($BoxBorderW)$($PSStyle.Reset)
 "@

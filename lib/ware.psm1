@@ -11,15 +11,16 @@ Function Get-HardwareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Write-Header1 -Header 'Hardware Information'
+	Enter-GitHubActionsLogGroup -Title 'Hardware Information: '
 	Write-Header2 -Header 'HWInfo'
 	hwinfo --all
+	Exit-GitHubActionsLogGroup
 }
 Function Get-SoftwareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Write-Header1 -Header 'Software Information'
+	Enter-GitHubActionsLogGroup -Title 'Software Information: '
 	Write-Header2 -Header 'Environment Variables'
 	Get-ChildItem -LiteralPath 'Env:\' |
 		Format-Table -AutoSize -Wrap
@@ -48,6 +49,7 @@ Function Get-SoftwareMeta {
 					Join-String -Separator "`n"
 			)
 		}
+	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
 	'Get-HardwareMeta',

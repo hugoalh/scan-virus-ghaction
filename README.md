@@ -178,7 +178,7 @@ When this input is `False`, will ignore inputs:
 
 #### `git_include_allbranches`
 
-`<Boolean = False>` Whether to include the Git commits which not in the default branch.
+`<Boolean = False>` Whether to include the Git commits which not in the current branch.
 
 #### `git_include_reflogs`
 
@@ -202,7 +202,7 @@ When this input is `False`, will ignore inputs:
 
 #### `clamav_unofficialsignatures`
 
-`<RegEx[]>` Use the ClamAV unofficial signatures, by regular expression and the [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial signatures are not in use.
+`<RegEx[]>` ClamAV unofficial signatures to use, by regular expression and the [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial signatures are not in use.
 
 > **⚠ Important:** It is not recommended to use this due to the ClamAV unofficial signatures have more false positives than the ClamAV official signatures in most cases.
 
@@ -214,13 +214,13 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_rules`
 
-`<RegEx[]>` Use the YARA rules, by regular expression and the [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
+`<RegEx[]>` YARA rules to use, by regular expression and the [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
 
 > **⚠ Important:** It is not recommended to use this due to the YARA rules can have many false positives in most cases.
 
 #### `update_assets`
 
-`<Boolean = True>` Whether to update the ClamAV unofficial signatures and the YARA rules from the [assets repository][assets-repository] before scan anything.
+`<Boolean = True>` Whether to update the ClamAV unofficial signatures and/or the YARA rules from the [assets repository][assets-repository] before scan anything.
 
 > **⚠ Important:**
 >

@@ -18,7 +18,7 @@ inputs:
     required: false
     default: "False"
   git_include_allbranches:
-    description: "{Boolean} Whether to include the Git commits which not in the default branch."
+    description: "{Boolean} Whether to include the Git commits which not in the current branch."
     required: false
     default: "False"
   git_include_reflogs:
@@ -44,11 +44,11 @@ inputs:
     description: "{RegEx[]} YARA rules to use."
     required: false
   update_assets:
-    description: "{Boolean} Whether to update ClamAV unofficial signatures and/or YARA rules from the assets repository before scan anything."
+    description: "{Boolean} Whether to update the ClamAV unofficial signatures and/or the YARA rules from the assets repository before scan anything."
     required: false
     default: "True"
   update_clamav:
-    description: "{Boolean} Whether to update ClamAV official signatures via FreshClam before scan anything."
+    description: "{Boolean} Whether to update the ClamAV official signatures via FreshClam before scan anything."
     required: false
     default: "True"
   ignores_elements:
