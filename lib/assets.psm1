@@ -106,7 +106,7 @@ Function Import-Assets {
 	}
 	If ($Initial.IsPresent) {
 		[RegEx]$LocalRootRegEx = [RegEx]::Escape("$(Resolve-Path -Path $LocalRoot)/")
-		Write-NameValue -Name 'Directory' -Value $LocalRoot
+		Write-NameValue -Name 'Directory' -Value (Resolve-Path -Path $LocalRoot).Path
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 			ForEach-Object -Process {
 				[PSCustomObject]@{

@@ -21,6 +21,17 @@ Function Get-SoftwareMeta {
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
 	Get-ChildItem -LiteralPath 'Env:\' |
+		ForEach-Object -Process {
+			If ($_.Name -ieq 'ACTIONS_RUNTIME_TOKEN') {
+				[PSCustomObject]@{
+					Name = $_.Name
+					Value = '***'
+				}
+			}
+			Else {
+				Write-Output -InputObject $_
+			}
+		}
 		Format-Table -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
