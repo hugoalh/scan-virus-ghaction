@@ -14,3 +14,11 @@ Import-Assets -Initial
 Exit-GitHubActionsLogGroup
 Get-HardwareMeta
 Get-SoftwareMeta
+Enter-GitHubActionsLogGroup -Title 'Tweak console.'
+Add-Content -LiteralPath $PROFILE -Value @'
+$Host.UI.RawUI.BufferSize.Width = 160
+$Host.UI.RawUI.MaxPhysicalWindowSize.Width = 160
+$Host.UI.RawUI.MaxWindowSize.Width = 160
+$Host.UI.RawUI.WindowSize.Width = 120
+'@ -Confirm:$False -Encoding 'UTF8NoBOM'
+Exit-GitHubActionsLogGroup
