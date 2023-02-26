@@ -105,7 +105,8 @@ Function Import-Assets {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	If ($Initial.IsPresent) {
-		[RegEx]$LocalRootRegEx = [RegEx]::Escape((Resolve-Path -Path $LocalRoot))
+		[RegEx]$LocalRootRegEx = [RegEx]::Escape("$(Resolve-Path -Path $LocalRoot)/")
+		Write-NameValue -Name 'Directory' -Value $LocalRoot
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 			ForEach-Object -Process {
 				[PSCustomObject]@{
@@ -115,6 +116,7 @@ Function Import-Assets {
 				} |
 					Write-Output
 			} |
+			Sort-Object -Property 'Path' |
 			Format-Table -Property @(
 				'Path',
 				@{ Expression = 'Length'; Alignment = 'Right' },
@@ -198,13 +200,23 @@ Function Restore-ClamAVDatabase {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Restore-GitHubActionsCache @ClamAVCacheParameters -Timeout 60
+	Try {
+		Restore-GitHubActionsCache @ClamAVCacheParameters -Timeout 60
+	}
+	Catch {
+		Write-Warning -Message $_
+	}
 }
 Function Save-ClamAVDatabase {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Save-GitHubActionsCache @ClamAVCacheParameters
+	Try {
+		Save-GitHubActionsCache @ClamAVCacheParameters
+	}
+	Catch {
+		Write-Warning -Message $_
+	}
 }
 Function Update-Assets {
 	[CmdletBinding()]

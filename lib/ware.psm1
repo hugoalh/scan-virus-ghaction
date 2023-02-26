@@ -12,7 +12,6 @@ Function Get-HardwareMeta {
 	[OutputType([Void])]
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Hardware Information: '
-	Write-Header2 -Header 'HWInfo'
 	hwinfo --all
 	Exit-GitHubActionsLogGroup
 }
@@ -20,18 +19,20 @@ Function Get-SoftwareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Software Information: '
-	Write-Header2 -Header 'Environment Variables'
+	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
 	Get-ChildItem -LiteralPath 'Env:\' |
 		Format-Table -AutoSize -Wrap
-	Write-Header2 -Header 'PowerShell (`pwsh`)'
+	Exit-GitHubActionsLogGroup
+	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |
 		Format-List -Property '*'
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
-	Write-NameValue -Name 'ConsoleWidth' -Value $Host.UI.RawUI.WindowSize.Width
+	Write-NameValue -Name 'Host' -Value $Host
+	Write-NameValue -Name 'UI' -Value $Host.UI.RawUI
+	Exit-GitHubActionsLogGroup
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
 		clamscan = 'ClamAV Scan'
@@ -42,14 +43,14 @@ Function Get-SoftwareMeta {
 		yara = 'YARA'
 	}).GetEnumerator() |
 		ForEach-Object -Process {
-			Write-Header2 -Header "$($_.Value) (``$($_.Name)``)"
+			Enter-GitHubActionsLogGroup -Title "$($_.Value) (``$($_.Name)``): "
 			Write-NameValue -Name 'Execute'
 			Get-Command -Name $_.Name -CommandType 'Application' |
 				Format-List -Property '*'
 			Write-NameValue -Name 'VersionStdOut'
 			Invoke-Expression -Command "$($_.Name) --version"
+			Exit-GitHubActionsLogGroup
 		}
-	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
 	'Get-HardwareMeta',

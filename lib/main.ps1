@@ -67,11 +67,11 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
 [Uri[]]$TargetsInput = ((Get-InputList -Name 'targets' -Delimiter $InputListDelimiter) ?? @()) |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets [$($TargetsInput.Count)]" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : "`n$(
+Write-NameValue -Name "Targets [$($TargetsInput.Count)]" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : (
 	$TargetsInput |
 		Select-Object -ExpandProperty 'OriginalString' |
-		Join-String @JoinStringParameters_List
-)")
+		Join-String -Separator ', '
+))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
 [Boolean]$GitIncludeAllBranches = Get-InputBoolean -Name 'git_include_allbranches'
@@ -85,13 +85,13 @@ Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
 [RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
 Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx [$($ClamAVUnofficialSignaturesInput.Count)]"
 $ClamAVUnofficialSignaturesInput |
-	Join-String @JoinStringParameters_List
+	Join-String -Separator ', ' -FormatString '`{0}`'
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
 [RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
 Write-NameValue -Name "YARA_Rules_RegEx [$($YaraRulesInput.Count)]"
 $YaraRulesInput |
-	Join-String @JoinStringParameters_List
+	Join-String -Separator ', ' -FormatString '`{0}`'
 [Boolean]$UpdateAssetsLocal = Get-InputBoolean -Name 'update_assets'
 Write-NameValue -Name 'Update_Assets' -Value $UpdateAssetsLocal
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
@@ -153,9 +153,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 	ForEach ($IssuesSignature In $Result.IssuesSignatures) {
 		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignature:$IssuesSignature"
 	}
-	ForEach ($NeedCleanUpSignature In $Result.NeedCleanUp) {
-		$CleanupManager.Pending += $NeedCleanUpSignature
-	}
+	$CleanupManager.Pending += $Result.NeedCleanUp
 	Exit-GitHubActionsLogGroup
 }
 If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
@@ -500,85 +498,27 @@ If ($ClamAVEnable) {
 	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
 		Stop-Process
 }
-$CleanupManager.Cleanup()
-Write-Header1 -Header 'Statistics'
-[UInt64]$TotalIssues = $StatisticsIssuesSessions.ClamAV.Count + $StatisticsIssuesSessions.Other.Count + $StatisticsIssuesSessions.Yara.Count
-[PSCustomObject[]]@(
-	[PSCustomObject]@{
-		Name = 'TotalElements_Count'
-		All = $StatisticsTotalElements.All
-		ClamAV = $StatisticsTotalElements.ClamAV
-		YARA = $StatisticsTotalElements.Yara
-	},
-	[PSCustomObject]@{
-		Name = 'TotalElements_Percentage'
-		ClamAV = ($StatisticsTotalElements.All -ieq 0) ? 0 : ($StatisticsTotalElements.ClamAV / $StatisticsTotalElements.All * 100)
-		YARA = ($StatisticsTotalElements.All -ieq 0) ? 0 : ($StatisticsTotalElements.Yara / $StatisticsTotalElements.All * 100)
-	},
-	[PSCustomObject]@{
-		Name = 'TotalIssuesSessions_Count'
-		All = $TotalIssues
-		ClamAV = $StatisticsIssuesSessions.ClamAV.Count
-		YARA = $StatisticsIssuesSessions.Yara.Count
-		Other = $StatisticsIssuesSessions.Other.Count
-	},
-	[PSCustomObject]@{
-		Name = 'TotalIssuesSessions_Percentage'
-		ClamAV = ($TotalIssues -ieq 0) ? 0 : ($StatisticsIssuesSessions.ClamAV.Count / $TotalIssues * 100)
-		YARA = ($TotalIssues -ieq 0) ? 0 : ($StatisticsIssuesSessions.Yara.Count / $TotalIssues * 100)
-		Other = ($TotalIssues -ieq 0) ? 0 : ($StatisticsIssuesSessions.Other.Count / $TotalIssues * 100)
-	},
-	[PSCustomObject]@{
-		Name = 'TotalSizes_B'
-		All = $StatisticsTotalSizes.All
-		ClamAV = $StatisticsTotalSizes.ClamAV
-		YARA = $StatisticsTotalSizes.Yara
-	},
-	[PSCustomObject]@{
-		Name = 'TotalSizes_KB'
-		All = $StatisticsTotalSizes.All / 1KB
-		ClamAV = $StatisticsTotalSizes.ClamAV / 1KB
-		YARA = $StatisticsTotalSizes.Yara / 1KB
-	},
-	[PSCustomObject]@{
-		Name = 'TotalSizes_MB'
-		All = $StatisticsTotalSizes.All / 1MB
-		ClamAV = $StatisticsTotalSizes.ClamAV / 1MB
-		YARA = $StatisticsTotalSizes.Yara / 1MB
-	},
-	[PSCustomObject]@{
-		Name = 'TotalSizes_GB'
-		All = $StatisticsTotalSizes.All / 1GB
-		ClamAV = $StatisticsTotalSizes.ClamAV / 1GB
-		YARA = $StatisticsTotalSizes.Yara / 1GB
-	},
-	[PSCustomObject]@{
-		Name = 'TotalSizes_Percentage'
-		ClamAV = $StatisticsTotalSizes.ClamAV / $StatisticsTotalSizes.All * 100
-		YARA = $StatisticsTotalSizes.Yara / $StatisticsTotalSizes.All * 100
+If ($CleanupManager.Pending.Count -igt 0) {
+	Enter-GitHubActionsLogGroup -Title 'Clean up resources.'
+	$CleanupManager.Cleanup()
+	If ($CleanupManager.Pending.Count -igt 0) {
+		Write-GitHubActionsError -Message "Unable to clean up resource(s) automatically [$($CleanupManager.Pending.Count)]: $(
+			$CleanupManager.Pending |
+				Join-String -Separator ', '
+		)"
 	}
-) |
-	Format-Table -Property @(
-		'Name',
-		@{ Expression = 'All'; Alignment = 'Right' },
-		@{ Expression = 'ClamAV'; Alignment = 'Right' },
-		@{ Expression = 'YARA'; Alignment = 'Right' },
-		@{ Expression = 'Other'; Alignment = 'Right' }
-	) -AutoSize -Wrap
-If ($TotalIssues -igt 0) {
-	Write-Header1 -Header 'Issues Sessions'
-	[PSCustomObject]@{
-		ClamAV = $StatisticsIssuesSessions.ClamAV |
-			Join-String -Separator ', '
-		YARA = $StatisticsIssuesSessions.Yara |
-			Join-String -Separator ', '
-		Other = $StatisticsIssuesSessions.Other |
-			Join-String -Separator ', '
-	} |
-		Format-List -Property '*'
 	Exit-GitHubActionsLogGroup
 }
-If ($TotalIssues -igt 0) {
+If ($ClamAVEnable) {
+	Enter-GitHubActionsLogGroup -Title 'Save ClamAV database.'
+	Save-ClamAVDatabase
+	Exit-GitHubActionsLogGroup
+}
+Write-Host -Object 'Statistics.'
+$StatisticsTotalElements.ConclusionDisplay()
+$StatisticsTotalSizes.ConclusionDisplay()
+If ($StatisticsIssuesSessions.GetTotal() -igt 0) {
+	$StatisticsIssuesSessions.ConclusionDisplay()
 	Exit 1
 }
 Exit 0
