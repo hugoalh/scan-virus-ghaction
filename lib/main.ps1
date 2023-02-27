@@ -26,10 +26,6 @@ Exit 0
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
 }
-[Hashtable]$JoinStringParameters_List = @{
-	FormatString = '- {0}'
-	Separator = "`n"
-}
 $CleanupManager = [ScanVirusCleanupDuty]::new()
 $StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
 $StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
