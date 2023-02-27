@@ -37,7 +37,7 @@ Function Get-SoftwareMeta {
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
 	Write-NameValue -Name 'Execute'
 	Get-Command -Name 'pwsh' -CommandType 'Application' |
-		Format-List -Property '*'
+		Format-Table -Property @('Name', 'Path', 'Version', 'Visibility') -AutoSize -Wrap
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
@@ -59,7 +59,7 @@ Function Get-SoftwareMeta {
 			Enter-GitHubActionsLogGroup -Title "$($_.Value) (``$($_.Name)``): "
 			Write-NameValue -Name 'Execute'
 			Get-Command -Name $_.Name -CommandType 'Application' |
-				Format-List -Property '*'
+				Format-Table -Property @('Name', 'Path', 'Version', 'Visibility') -AutoSize -Wrap
 			Write-NameValue -Name 'VersionStdOut'
 			Invoke-Expression -Command "$($_.Name) --version"
 			Exit-GitHubActionsLogGroup

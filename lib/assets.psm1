@@ -191,7 +191,8 @@ Function Register-ClamAVUnofficialSignatures {
 	[Hashtable]@{
 		IssuesSignatures = $IssuesSignatures
 		NeedCleanUp = $NeedCleanUp
-	}
+	} |
+		Write-Output
 }
 Function Register-YaraRules {
 
@@ -279,4 +280,6 @@ Export-ModuleMember -Function @(
 	'Restore-ClamAVDatabase',
 	'Save-ClamAVDatabase',
 	'Update-Assets'
+) -Variable @(
+	'YaraRulesAssetsRoot'
 )
