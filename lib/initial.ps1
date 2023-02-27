@@ -15,7 +15,7 @@ Exit-GitHubActionsLogGroup
 Get-HardwareMeta
 Get-SoftwareMeta
 Enter-GitHubActionsLogGroup -Title 'Tweak console.'
-Add-Content -LiteralPath $PROFILE$PROFILE.AllUsersCurrentHost -Value @'
+Add-Content -LiteralPath $PROFILE.AllUsersAllHosts -Value @'
 $Host.UI.RawUI.BufferSize.Width = 160
 $Host.UI.RawUI.MaxPhysicalWindowSize.Width = 160
 $Host.UI.RawUI.MaxWindowSize.Width = 160
