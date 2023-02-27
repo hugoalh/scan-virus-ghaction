@@ -111,16 +111,16 @@ Function Import-Assets {
 			ForEach-Object -Process {
 				[PSCustomObject]@{
 					Path = $_.FullName -ireplace $LocalRootRegEx
-					Length = $_.Length
-					IsContainer = $_.PSIsContainer
+					Size = $_.Length
+					Flag = $_.PSIsContainer ? 'D' : ''
 				} |
 					Write-Output
 			} |
 			Sort-Object -Property 'Path' |
 			Format-Table -Property @(
-				'Path',
-				@{ Expression = 'Length'; Alignment = 'Right' },
-				@{ Expression = 'IsContainer'; Alignment = 'Right' }
+				@{ Expression = 'Path'; Width = 60 },
+				@{ Expression = 'Size'; Alignment = 'Right' },
+				'Flag'
 			) -AutoSize -Wrap
 		Return
 	}
