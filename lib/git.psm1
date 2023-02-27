@@ -1,7 +1,11 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
-Import-Module -Name @(
-	(Join-Path -Path $PSScriptRoot -ChildPath 'token.psm1')
+Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (
+	@(
+		'token'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [Hashtable[]]$GitCommitsProperties = @(
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; AsSort = $True; AsType = [DateTime] },
@@ -38,18 +42,25 @@ Import-Module -Name @(
 [UInt16]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 Function Get-GitCommits {
 	[CmdletBinding()]
-	[OutputType([Hashtable])]
+	[OutputType([PSCustomObject[]])]
 	Param (
 		[Alias('IncludeAllBranches')][Switch]$AllBranches,
 		[Alias('IncludeReflogs')][Switch]$Reflogs
 	)
-	[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
-		Join-String -Separator "`n"
+	Try {
+		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
+			Join-String -Separator "`n"
+	}
+	Catch {
+		Write-GitHubActionsError -Message @"
+Unable to integrate with Git!
+$_
+If this is incorrect, probably Git database is broken and/or invalid.
+"@
+		Return
+	}
 	If ($IsGitRepositoryResult -ine 'True') {
-		Write-Output -InputObject @{
-			Success = $False
-			Result = 'Workspace is not a Git repository!'
-		}
+		Write-GitHubActionsError -Message 'Workspace is not a Git repository!'
 		Return
 	}
 	[String[]]$GitCommitsIds = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color$($AllBranches.IsPresent ? ' --all' : '')$($Reflogs.IsPresent ? ' --reflog' : '')"
@@ -71,10 +82,10 @@ Function Get-GitCommits {
 				}
 			}
 			Catch {
-				Write-Output -InputObject @{
-					Success = $False
-					Result = "Unexpected Git database issue! $_"
-				}
+				Write-GitHubActionsError -Message @"
+Unexpected Git database issue!
+$_
+"@
 				Return
 			}
 			[UInt64]$DelimiterTokenCount = (
@@ -88,14 +99,14 @@ Function Get-GitCommits {
 				Join-String -Separator "`n"
 		) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
 		If ($GitCommitsProperties.Count -ine $GitCommitMetaRaw1.Count) {
-			Write-Output -InputObject @{
-				Success = $False
-				Result = 'Unexpected Git database issue! Columns are not match!'
-			}
+			Write-GitHubActionsError -Message @'
+Unexpected Git database issue!
+Columns are not match!
+'@
 			Return
 		}
 		[Hashtable]$GitCommitMeta = @{}
-		For ([UInt64]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
+		For ([UInt128]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
 			[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 			[String]$Value = $GitCommitMetaRaw1[$Line]
 			If ($GitCommitsPropertiesCurrent.IsArraySpace) {
@@ -110,11 +121,9 @@ Function Get-GitCommits {
 		}
 		$GitCommitsMeta += [PSCustomObject]$GitCommitMeta
 	}
-	Write-Output -InputObject @{
-		Success = $True
-		Result = $GitCommitsMeta |
-			Sort-Object -Property $GitCommitsPropertySorter.Name
-	}
+	$GitCommitsMeta |
+		Sort-Object -Property $GitCommitsPropertySorter.Name |
+		Write-Output
 }
 Export-ModuleMember -Function @(
 	'Get-GitCommits'

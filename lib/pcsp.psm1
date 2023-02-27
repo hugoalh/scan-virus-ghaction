@@ -15,7 +15,7 @@ Function Invoke-ClamAV {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements', 'File', 'Files')][String[]]$Element
 	)
-	[System.IO.FileInfo]$ElementScanList = New-TemporaryFile
+	$ElementScanList = New-TemporaryFile
 	Set-Content -LiteralPath $ElementScanList -Value (
 		$Element |
 			Join-String -Separator "`n"
@@ -80,7 +80,7 @@ Function Invoke-ClamAV {
 		}
 	}
 	If ($ClamAVResultError.Count -igt 0) {
-		Write-GitHubActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$SessionTitle`":`n$($ClamAVResultError -join "`n")"
+		Write-GitHubActionsError -Message "Unexpected ClamAV result ``$ExitCode`` in session `"$SessionTitle`":`n$($ClamAVResultError -join "`n")"
 		If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
 			$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 		}
@@ -94,7 +94,7 @@ Function Invoke-Yara {
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements', 'File', 'Files')][String[]]$Element,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Rules')][PSCustomObject[]]$Rule
 	)
-	[System.IO.FileInfo]$ElementScanList = New-TemporaryFile
+	$ElementScanList = New-TemporaryFile
 	Set-Content -LiteralPath $ElementScanList -Value (
 		$Element |
 			Join-String -Separator "`n"

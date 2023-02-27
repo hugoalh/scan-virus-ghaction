@@ -21,6 +21,8 @@ Write-Host -Object 'Initialize.'
 Get-HardwareMeta
 Get-SoftwareMeta
 Test-GitHubActionsEnvironment -Mandatory
+Get-GitCommits |
+	Format-List -Property '*'
 Exit 0
 [Hashtable]$ImportCsvParameters_Tsv = @{
 	Delimiter = "`t"
@@ -128,8 +130,8 @@ If ($UpdateClamAV -and $ClamAVEnable) {
 	Exit-GitHubActionsLogGroup
 }
 If ($UpdateAssetsLocal -and (
-	($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) -or
-	($YaraEnable -and $YaraRulesInput.Count -igt 0)
+	($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) -or
+	($YaraEnable -and ($YaraRulesInput.Count -igt 0))
 )) {
 	Enter-GitHubActionsLogGroup -Title 'Update local assets.'
 	[Hashtable]$Result = Update-Assets
@@ -143,7 +145,7 @@ If ($UpdateAssetsLocal -and (
 	}
 	Exit-GitHubActionsLogGroup
 }
-If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
+If ($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures and signatures ignores.'
 	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -SignaturesSelection $ClamAVUnofficialSignaturesInput
 	ForEach ($IssuesSignature In $Result.IssuesSignatures) {
@@ -152,7 +154,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialSignaturesInput.Count -igt 0) {
 	$CleanupManager.Pending += $Result.NeedCleanUp
 	Exit-GitHubActionsLogGroup
 }
-If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
+If ($YaraEnable -and ($YaraRulesInput.Count -igt 0)) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
 	[PSCustomObject[]]$YaraRulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$YaraRulesSelect = $YaraRulesIndex |
@@ -193,7 +195,7 @@ If ($YaraEnable -and $YaraRulesInput.Count -igt 0) {
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' },
 			@{ Expression = 'Apply'; Alignment = 'Right' }
-		) -AutoSize -Wrap
+		) -Wrap
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -225,7 +227,7 @@ Function Invoke-Tools {
 	}
 	[Boolean]$SkipClamAV = Test-StringMatchRegExs -Item $SessionId -Matchers $ClamAVIgnores.OnlySessions.Session
 	[Boolean]$SkipYara = Test-StringMatchRegExs -Item $SessionId -Matchers $YaraIgnores.OnlySessions.Session
-	[UInt64]$ElementsIsDirectoryCount = 0
+	[UInt128]$ElementsIsDirectoryCount = 0
 	[String[]]$ElementsListClamAV = @()
 	[String[]]$ElementsListYara = @()
 	[PSCustomObject[]]$ElementsListDisplay = @()
@@ -276,7 +278,7 @@ Function Invoke-Tools {
 			'Element',
 			'Flags',
 			@{ Expression = 'Sizes'; Alignment = 'Right' }
-		) -AutoSize -Wrap
+		) -Wrap
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
 		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
@@ -429,27 +431,24 @@ If ($Targets.Count -ieq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		Try {
-			[PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs
+		[PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs ?? @()
+		If ($GitCommits.Count -ieq 1) {
+			Write-GitHubActionsWarning -Message @'
+Current Git repository has only 1 commit!
+If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
+'@
 		}
-		Catch {
-			Write-GitHubActionsError -Message "Unable to integrate with Git! $_ If this is incorrect, probably Git database is broken and/or invalid."
-			Throw
-		}
-		If ($GitCommits.Count -ile 1) {
-			Write-GitHubActionsWarning -Message "Current Git repository has only $($GitCommits.Count) commits! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow. (IMPORTANT: Re-run cannot apply the modified workflow!)"
-		}
-		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
-			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex]
+		For ([UInt128]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
+			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex].CommitHash
 			[String]$GitSessionTitle = "$GitCommitHash (#$($GitReverse ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
-				Invoke-Expression -Command "git checkout $GitCommitHash --force --quiet"
+				git checkout $GitCommitHash --force --quiet
 			}
 			Catch {
 				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout (SessionID: $GitCommitHash): $_"
 				Exit-GitHubActionsLogGroup
-				Exit 1
+				Continue
 			}
 			If ($LASTEXITCODE -ieq 0) {
 				Exit-GitHubActionsLogGroup
@@ -498,10 +497,11 @@ If ($CleanupManager.Pending.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Clean up resources.'
 	$CleanupManager.Cleanup()
 	If ($CleanupManager.Pending.Count -igt 0) {
-		Write-GitHubActionsError -Message "Unable to clean up resource(s) automatically [$($CleanupManager.Pending.Count)]: $(
+		Write-GitHubActionsError -Message "Unable to clean up resources automatically [$($CleanupManager.Pending.Count)]: $(
 			$CleanupManager.Pending |
-				Join-String -Separator ', '
+				Join-String -Separator ', ' -FormatString '`{0}`'
 		)"
+		$StatisticsIssuesSessions.Other += 'CleanUp'
 	}
 	Exit-GitHubActionsLogGroup
 }

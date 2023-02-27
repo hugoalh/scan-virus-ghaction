@@ -17,16 +17,16 @@ Function Group-IgnoresElements {
 	[PSCustomObject[]]$OnlySignatures = @()
 	ForEach ($Item In $InputObject) {
 		[String[]]$Keys = $Item.PSObject.Properties.Name
-		If ($Keys.Count -ieq 1 -and $Keys -icontains 'Path') {
+		If (($Keys.Count -ieq 1) -and ($Keys -icontains 'Path')) {
 			$OnlyPaths += $Item
 		}
-		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Rule') {
+		ElseIf (($Keys.Count -ieq 1) -and ($Keys -icontains 'Rule')) {
 			$OnlyRules += $Item
 		}
-		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Session') {
+		ElseIf (($Keys.Count -ieq 1) -and ($Keys -icontains 'Session')) {
 			$OnlySessions += $Item
 		}
-		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Signature') {
+		ElseIf (($Keys.Count -ieq 1) -and ($Keys -icontains 'Signature')) {
 			$OnlySignatures += $Item
 		}
 		Else {
@@ -48,7 +48,7 @@ Function Test-StringIsUri {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][Uri]$InputObject
 	)
-	$Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$' |
+	($Null -ine $InputObject.AbsoluteUri) -and ($InputObject.Scheme -imatch '^https?$') |
 		Write-Output
 }
 Function Test-StringMatchRegExs {

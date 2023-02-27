@@ -1,5 +1,4 @@
 FROM debian:11.6
-ENV COLUMNS=120
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list

@@ -5,13 +5,30 @@ Function Write-NameValue {
 	[OutputType([Void])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Key')][String]$Name,
-		[Parameter(Position = 1)][AllowEmptyCollection()][AllowEmptyString()][AllowNull()]$Value,
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][AllowEmptyString()][AllowNull()]$Value,
 		[Switch]$NewLine,
 		[Switch]$UsePSTableHeaderFormat
 	)
 	[Boolean]$NoNewLine = !$NewLine.IsPresent
 	Write-Host -Object "$($UsePSTableHeaderFormat.IsPresent ? $PSStyle.Formatting.TableHeader : $PSStyle.Foreground.BrightBlue)$($PSStyle.Bold)$($Name): $($PSStyle.Reset)" -NoNewline:$NoNewLine
-	Write-Host -Object $Value
+	If (
+		($Null -ieq $Value) -or
+		($Value -is [Boolean]) -or
+		($Value -is [Int16]) -or
+		($Value -is [Int32]) -or
+		($Value -is [Int64]) -or
+		($Value -is [Int128]) -or
+		($Value -is [String]) -or
+		($Value -is [UInt16]) -or
+		($Value -is [UInt32]) -or
+		($Value -is [UInt64]) -or
+		($Value -is [UInt128])
+	) {
+		Write-Host -Object $Value
+	}
+	Else {
+		Out-Host -InputObject $Value
+	}
 }
 Export-ModuleMember -Function @(
 	'Write-NameValue'

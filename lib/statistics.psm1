@@ -27,15 +27,15 @@ Class ScanVirusStatisticsIssuesSessions {
 		)
 		Exit-GitHubActionsLogGroup
 	}
-	[UInt64]GetTotal() {
+	[UInt128]GetTotal() {
 		Return ($This.ClamAV.Count + $This.Yara.Count + $This.Other.Count)
 	}
 }
 Class ScanVirusStatisticsTotalElements {
-	[UInt64]$Discover = 0
-	[UInt64]$Scan = 0
-	[UInt64]$ClamAV = 0
-	[UInt64]$Yara = 0
+	[UInt128]$Discover = 0
+	[UInt128]$Scan = 0
+	[UInt128]$ClamAV = 0
+	[UInt128]$Yara = 0
 	[Void]ConclusionDisplay() {
 		[Boolean]$IsNoElements = $This.Discover -ieq 0
 		Enter-GitHubActionsLogGroup -Title 'Total Elements: '
@@ -58,15 +58,15 @@ Class ScanVirusStatisticsTotalElements {
 				'Type',
 				@{ Expression = 'Value'; Alignment = 'Right' },
 				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
-			) -AutoSize -Wrap
+			) -Wrap
 		Exit-GitHubActionsLogGroup
 	}
 }
 Class ScanVirusStatisticsTotalSizes {
-	[UInt64]$Discover = 0
-	[UInt64]$Scan = 0
-	[UInt64]$ClamAV = 0
-	[UInt64]$Yara = 0
+	[UInt128]$Discover = 0
+	[UInt128]$Scan = 0
+	[UInt128]$ClamAV = 0
+	[UInt128]$Yara = 0
 	[Void]ConclusionDisplay() {
 		[Boolean]$IsNoSizes = $This.Discover -ieq 0
 		Enter-GitHubActionsLogGroup -Title 'Total Sizes: '
@@ -98,7 +98,7 @@ Class ScanVirusStatisticsTotalSizes {
 				@{ Expression = 'MB'; Alignment = 'Right' },
 				@{ Expression = 'GB'; Alignment = 'Right' },
 				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
-			) -AutoSize -Wrap
+			) -Wrap
 		Exit-GitHubActionsLogGroup
 	}
 }
