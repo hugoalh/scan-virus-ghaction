@@ -11,7 +11,6 @@ Import-Module -Name (
 		'git',
 		'input',
 		'pcsp',
-		'token',
 		'utility',
 		'ware'
 	) |
@@ -61,12 +60,12 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 	}
 }
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
-[Uri[]]$TargetsInput = ((Get-InputList -Name 'targets' -Delimiter $InputListDelimiter) ?? @()) |
+[Uri[]]$Targets = ((Get-InputList -Name 'targets' -Delimiter $InputListDelimiter) ?? @()) |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets [$($TargetsInput.Count)]" -Value (($TargetsInput.Count -ieq 0) ? '(Local)' : (
-	$TargetsInput |
+Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -ieq 0) ? '(Local)' : (
+	$Targets |
 		Select-Object -ExpandProperty 'OriginalString' |
-		Join-String -Separator ', '
+		Join-String -Separator ', ' -FormatString '`{0}`'
 ))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
@@ -404,7 +403,7 @@ If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0
 }
 Else {
 	If ((Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force).Count -igt 0) {
-		Write-GitHubActionsFail -Message 'Require a clean workspace for network targets!'
+		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
 		Exit 1
 	}
 	ForEach ($Target In $Targets) {
@@ -412,19 +411,11 @@ Else {
 			Write-GitHubActionsWarning -Message "``$($Target.OriginalString)`` is not a valid URI!"
 			Continue
 		}
-		Enter-GitHubActionsLogGroup -Title "Fetch file `"$Target`"."
-		[String]$NetworkTemporaryFileFullPath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken -Length 32)
-		Try {
-			Invoke-WebRequest -Uri $Target -UseBasicParsing -Method 'Get' -OutFile $NetworkTemporaryFileFullPath
+		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
+		If ($Null -ine $NetworkTargetFilePath) {
+			Invoke-Tools -SessionId $Target -SessionTitle $Target
+			Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$False
 		}
-		Catch {
-			Write-GitHubActionsError -Message "Unable to fetch file `"$Target`"!"
-			Exit-GitHubActionsLogGroup
-			Continue
-		}
-		Exit-GitHubActionsLogGroup
-		Invoke-Tools -SessionId $Target -SessionTitle $Target
-		Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$False
 	}
 }
 If ($ClamAVEnable) {

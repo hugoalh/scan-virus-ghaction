@@ -5,6 +5,7 @@ Import-Module -Name (
 	@(
 		'datetime',
 		'display',
+		'token',
 		'utility'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
@@ -137,6 +138,26 @@ $_
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
+}
+Function Import-NetworkTarget {
+	[CmdletBinding()]
+	[OutputType([String])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Uri]$Target
+	)
+	Enter-GitHubActionsLogGroup -Title "Fetch file ``$Target``."
+	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken -Length 32)
+	Try {
+		Invoke-WebRequest -Uri $Target -OutFile $NetworkTargetFilePath @InvokeWebRequestParameters_Get
+	}
+	Catch {
+		Write-GitHubActionsError -Message "Unable to fetch file ``$Target``!"
+		Return
+	}
+	Finally {
+		Exit-GitHubActionsLogGroup
+	}
+	Write-Output -InputObject $NetworkTargetFilePath
 }
 Function Register-ClamAVUnofficialSignatures {
 	[CmdletBinding()]
@@ -374,6 +395,7 @@ $_
 }
 Export-ModuleMember -Function @(
 	'Import-Assets',
+	'Import-NetworkTarget',
 	'Register-ClamAVUnofficialSignatures',
 	'Register-YaraRules',
 	'Restore-ClamAVDatabase',
