@@ -17,12 +17,10 @@ Function Write-NameValue {
 		($Value -is [Int16]) -or
 		($Value -is [Int32]) -or
 		($Value -is [Int64]) -or
-		($Value -is [Int128]) -or
 		($Value -is [String]) -or
 		($Value -is [UInt16]) -or
 		($Value -is [UInt32]) -or
-		($Value -is [UInt64]) -or
-		($Value -is [UInt128])
+		($Value -is [UInt64])
 	) {
 		Write-Host -Object $Value
 	}

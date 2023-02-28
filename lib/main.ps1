@@ -227,7 +227,7 @@ Function Invoke-Tools {
 	}
 	[Boolean]$SkipClamAV = Test-StringMatchRegExs -Item $SessionId -Matchers $ClamAVIgnores.OnlySessions.Session
 	[Boolean]$SkipYara = Test-StringMatchRegExs -Item $SessionId -Matchers $YaraIgnores.OnlySessions.Session
-	[UInt128]$ElementsIsDirectoryCount = 0
+	[UInt64]$ElementsIsDirectoryCount = 0
 	[String[]]$ElementsListClamAV = @()
 	[String[]]$ElementsListYara = @()
 	[PSCustomObject[]]$ElementsListDisplay = @()
@@ -438,7 +438,7 @@ Current Git repository has only 1 commit!
 If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
 '@
 		}
-		For ([UInt128]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
+		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
 			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex].CommitHash
 			[String]$GitSessionTitle = "$GitCommitHash (#$($GitReverse ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."

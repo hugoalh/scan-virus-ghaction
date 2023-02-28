@@ -106,7 +106,7 @@ Columns are not match!
 			Return
 		}
 		[Hashtable]$GitCommitMeta = @{}
-		For ([UInt128]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
+		For ([UInt64]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
 			[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 			[String]$Value = $GitCommitMetaRaw1[$Line]
 			If ($GitCommitsPropertiesCurrent.IsArraySpace) {
