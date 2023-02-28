@@ -132,7 +132,7 @@ $_
 				'Path',
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Flag'
-			) -Wrap
+			) -AutoSize -Wrap
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
@@ -181,7 +181,7 @@ Function Register-ClamAVUnofficialSignatures {
 			'Name',
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -Wrap
+		) -AutoSize -Wrap
 	[String[]]$SignaturesDestinationFilePaths = @()
 	ForEach ($Signature In (
 		$SignaturesOverview |
@@ -270,7 +270,7 @@ Function Register-YaraRules {
 			'Name',
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -Wrap
+		) -AutoSize -Wrap
 	$RulesOverview |
 		Where-Object -FilterScript { $_.Apply } |
 		Write-Output

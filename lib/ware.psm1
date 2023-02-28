@@ -35,19 +35,22 @@ Function Get-SoftwareMeta {
 				}
 			}
 		} |
-		Format-Table -Wrap
+		Format-Table -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
 	Write-NameValue -Name 'Execute' -Value (
 		Get-Command -Name 'pwsh' -CommandType 'Application' |
-			Format-Table -Property @('Path', 'Version', 'Visibility') -Wrap
+			Format-Table -Property @('Path', 'Version', 'Visibility') -AutoSize -Wrap
 	) -NewLine
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
 	Write-NameValue -Name 'Host' -Value $Host -NewLine
 	Write-NameValue -Name 'UI' -Value $Host.UI.RawUI -NewLine
-	Write-NameValue -Name 'Module' -Value (Get-InstalledModule) -NewLine
+	Write-NameValue -Name 'Module' -Value (
+		Get-InstalledModule |
+			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize -Wrap
+	) -NewLine
 	Exit-GitHubActionsLogGroup
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'
@@ -62,7 +65,7 @@ Function Get-SoftwareMeta {
 			Enter-GitHubActionsLogGroup -Title "$($_.Value) (``$($_.Name)``): "
 			Write-NameValue -Name 'Execute' -Value (
 				Get-Command -Name $_.Name -CommandType 'Application' |
-					Format-Table -Property @('Path', 'Version', 'Visibility') -Wrap
+					Format-Table -Property @('Path', 'Version', 'Visibility') -AutoSize -Wrap
 			) -NewLine
 			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Name) --version") -NewLine
 			Exit-GitHubActionsLogGroup

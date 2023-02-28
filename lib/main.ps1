@@ -3,7 +3,6 @@
 Using Module .\cleanup-duty.psm1
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
-Write-Host -Object 'Initialize.'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -18,6 +17,7 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+Write-Host -Object 'Initialize.'
 Get-HardwareMeta
 Get-SoftwareMeta
 Test-GitHubActionsEnvironment -Mandatory
@@ -215,7 +215,7 @@ Function Invoke-Tools {
 			'Element',
 			'Flags',
 			@{ Expression = 'Sizes'; Alignment = 'Right' }
-		) -Wrap
+		) -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
 		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
