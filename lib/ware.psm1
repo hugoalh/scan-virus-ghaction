@@ -45,14 +45,9 @@ Function Get-SoftwareMeta {
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
-	Write-NameValue -Name 'Host' -Value (
-		$Host |
-			Format-List -Property '*'
-	) -NewLine
-	Write-NameValue -Name 'UI' -Value (
-		$Host.UI.RawUI |
-			Format-List -Property '*'
-	) -NewLine
+	Write-NameValue -Name 'Host' -Value $Host -NewLine
+	Write-NameValue -Name 'UI' -Value $Host.UI.RawUI -NewLine
+	Write-NameValue -Name 'Module' -Value (Get-InstalledModule) -NewLine
 	Exit-GitHubActionsLogGroup
 	([Ordered]@{
 		clamdscan = 'ClamAV Scan Daemon'

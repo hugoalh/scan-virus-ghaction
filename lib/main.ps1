@@ -3,6 +3,7 @@
 Using Module .\cleanup-duty.psm1
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
+Write-Host -Object 'Initialize.'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -17,17 +18,12 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Write-Host -Object 'Initialize.'
 Get-HardwareMeta
 Get-SoftwareMeta
 Test-GitHubActionsEnvironment -Mandatory
 Get-GitCommits |
 	Format-List -Property '*'
 Exit 0
-[Hashtable]$ImportCsvParameters_Tsv = @{
-	Delimiter = "`t"
-	Encoding = 'UTF8NoBOM'
-}
 $CleanupManager = [ScanVirusCleanupDuty]::new()
 $StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
 $StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
