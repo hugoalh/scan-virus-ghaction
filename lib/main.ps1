@@ -18,12 +18,14 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Write-Host -Object 'Initialize.'
-Get-HardwareMeta
-Get-SoftwareMeta
+If (Get-GitHubActionsIsDebug) {
+	Get-HardwareMeta
+	Get-SoftwareMeta
+}
 Test-GitHubActionsEnvironment -Mandatory
 Get-GitCommits |
 	Format-List -Property '*'
-Exit 0
+Exit 0# Breakpoint
 $CleanupManager = [ScanVirusCleanupDuty]::new()
 $StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
 $StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
@@ -225,7 +227,7 @@ Function Invoke-Tools {
 		) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
 		Try {
-			[String[]]$ClamAVOutput = Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$ElementsListClamAVFullName`" --multiscan"
+			[String[]]$ClamAVOutput = clamdscan --fdpass --file-list="$ElementsListClamAVFullName" --multiscan
 			[UInt32]$ClamAVExitCode = $LASTEXITCODE
 		}
 		Catch {
@@ -304,7 +306,7 @@ Function Invoke-Tools {
 		[String[]]$YaraResultIssue = @()
 		ForEach ($YaraRule In $YaraRulesSelect) {
 			Try {
-				[String[]]$YaraOutput = Invoke-Expression -Command "yara --scan-list `"$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $YaraRule.Location)`" `"$ElementsListYaraFullName`""
+				[String[]]$YaraOutput = yara --scan-list "$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $YaraRule.Location)" "$ElementsListYaraFullName"
 				[UInt32]$YaraExitCode = $LASTEXITCODE
 			}
 			Catch {

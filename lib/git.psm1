@@ -69,11 +69,11 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		Do {
 			Try {
 				[String]$DelimiterToken = "=====$(New-RandomToken -Length 32)====="
-				[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
+				[String[]]$GitCommitMetaRaw0 = git --no-pager show --format="$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
 					Join-String -Separator "%n$DelimiterToken%n"
-			)`" --no-color --no-patch $GitCommitId"
+			)" --no-color --no-patch "$GitCommitId"
 				If ($LASTEXITCODE -ine 0) {
 					Throw (
 						$GitCommitMetaRaw0 |

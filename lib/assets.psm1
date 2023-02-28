@@ -116,23 +116,24 @@ $_
 	}
 	If ($Initial.IsPresent) {
 		$LocalRootResolve = Resolve-Path -Path $LocalRoot
-		[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
+		# [RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
 		Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 			ForEach-Object -Process {
 				[PSCustomObject]@{
-					Path = $_.FullName -ireplace $LocalRootRegEx
+					Name = $_.Name
 					Size = $_.Length
 					Flag = $_.PSIsContainer ? 'D' : ''
+					Directory = $_.Directory
 				} |
 					Write-Output
 			} |
 			Sort-Object -Property 'Path' |
 			Format-Table -Property @(
-				'Path',
+				'Name',
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Flag'
-			) -AutoSize -Wrap
+			) -AutoSize -Wrap -GroupBy 'Directory'
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
