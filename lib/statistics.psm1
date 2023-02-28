@@ -7,10 +7,18 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+Class ScanVirusStatisticsIssuesOperations {
+	[String[]]$Storage = @()
+	[Void]ConclusionDisplay() {
+		Enter-GitHubActionsLogGroup -Title "Issues Operations [$($This.Storage.Count)]: "
+		$This.Storage |
+			Join-String -Separator ', '
+		Exit-GitHubActionsLogGroup
+	}
+}
 Class ScanVirusStatisticsIssuesSessions {
 	[String[]]$ClamAV = @()
 	[String[]]$Yara = @()
-	[String[]]$Other = @()
 	[Void]ConclusionDisplay() {
 		Enter-GitHubActionsLogGroup -Title "Issues Sessions [$($This.GetTotal())]: "
 		Write-NameValue -Name "ClamAV [$($This.ClamAV.Count)]" -Value (
@@ -21,14 +29,10 @@ Class ScanVirusStatisticsIssuesSessions {
 			$This.Yara |
 				Join-String -Separator ', '
 		)
-		Write-NameValue -Name "Other [$($This.Other.Count)]" -Value (
-			$This.Other |
-				Join-String -Separator ', '
-		)
 		Exit-GitHubActionsLogGroup
 	}
 	[UInt64]GetTotal() {
-		Return ($This.ClamAV.Count + $This.Yara.Count + $This.Other.Count)
+		Return ($This.ClamAV.Count + $This.Yara.Count)
 	}
 }
 Class ScanVirusStatisticsTotalElements {

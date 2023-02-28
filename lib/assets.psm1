@@ -56,12 +56,11 @@ Function Import-Assets {
 	}
 	Catch {
 		If ($Initial.IsPresent) {
-			Write-Error -Message "Unable to download the remote assets! $_"
+			Write-Error -Message "Unable to download the remote assets: $_"
 			Exit 1
 		}
 		Write-GitHubActionsWarning -Message @"
-Unable to download the remote assets!
-$_
+Unable to download the remote assets: $_
 This is fine, but the local assets maybe outdated.
 "@
 		Return
@@ -74,15 +73,11 @@ This is fine, but the local assets maybe outdated.
 	}
 	Catch {
 		If ($Initial.IsPresent) {
-			Write-Error -Message @"
-Unable to expand the assets package!
-$_
-"@
+			Write-Error -Message "Unable to expand the assets package: $_"
 			Exit 1
 		}
 		Write-GitHubActionsWarning -Message @"
-Unable to expand the assets package!
-$_
+Unable to expand the assets package: $_
 This is fine, but the local assets maybe outdated.
 "@
 		Return
@@ -99,42 +94,35 @@ This is fine, but the local assets maybe outdated.
 	}
 	Catch {
 		If ($Initial.IsPresent) {
-			Write-Error -Message @"
-Unable to update the local assets!
-$_
-"@
+			Write-Error -Message "Unable to update the local assets: $_"
+			Exit 1
 		}
 		Else {
-			Write-GitHubActionsError -Message @"
-Unable to update the local assets!
-$_
-"@
+			Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
 		}
-		Exit 1
 	}
 	Finally {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	If ($Initial.IsPresent) {
 		$LocalRootResolve = Resolve-Path -Path $LocalRoot
-		# [RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
+		[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
 		Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
+			Sort-Object -Property 'FullName' |
 			ForEach-Object -Process {
 				[PSCustomObject]@{
-					Name = $_.Name
+					Path = $_.FullName -ireplace $LocalRootRegEx, ''
 					Size = $_.Length
 					Flag = $_.PSIsContainer ? 'D' : ''
-					Directory = $_.Directory
 				} |
 					Write-Output
 			} |
-			Sort-Object -Property 'Path' |
 			Format-Table -Property @(
-				'Name',
+				'Path',
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Flag'
-			) -AutoSize -Wrap -GroupBy 'Directory'
+			) -AutoSize -Wrap
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
@@ -151,7 +139,7 @@ Function Import-NetworkTarget {
 		Invoke-WebRequest -Uri $Target -OutFile $NetworkTargetFilePath @InvokeWebRequestParameters_Get
 	}
 	Catch {
-		Write-GitHubActionsError -Message "Unable to fetch file ``$Target``!"
+		Write-GitHubActionsError -Message "Unable to fetch file ``$Target``: $_"
 		Return
 	}
 	Finally {
@@ -165,17 +153,12 @@ Function Register-ClamAVUnofficialSignatures {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('SignaturesSelections')][RegEx[]]$SignaturesSelection
 	)
-	[String[]]$IssuesSignatures = @()
 	[PSCustomObject[]]$SignaturesIndexTable = Import-Csv -LiteralPath $ClamAVUnofficialSignaturesAssetsIndexFilePath @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$SignaturesOverview = @()
 	ForEach ($Signature In $SignaturesIndexTable) {
 		[String]$FilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $Signature.Location
 		[Boolean]$Exist = Test-Path -LiteralPath $FilePath
 		[Boolean]$Select = Test-StringMatchRegExs -Item $Signature.Name -Matchers $SignaturesSelection
-		If (!$Exist) {
-			Write-GitHubActionsWarning -Message "ClamAV unofficial signature ``$($Signature.Name)`` was indexed but not exist, please create a bug report!"
-			$IssuesSignatures += $Signature.Name
-		}
 		$SignaturesOverview += [PSCustomObject]@{
 			Name = $Signature.Name
 			Exist = $Exist
@@ -185,19 +168,31 @@ Function Register-ClamAVUnofficialSignatures {
 			FilePath = $FilePath
 		}
 	}
+	[String[]]$IssuesSignaturesNotExist = $SignaturesOverview |
+		Where-Object -FilterScript { !$_.Exist } |
+		Select-Object -ExpandProperty 'Name'
+	If ($IssuesSignaturesNotExist.Count -igt 0) {
+		Write-GitHubActionsWarning -Message @"
+Some of the ClamAV unofficial signatures were indexed but not exist, please create a bug report!
+$(
+	$IssuesSignaturesNotExist
+		Join-String -Separator ', ' -FormatString '`{0}`'
+)
+"@
+	}
 	Write-NameValue -Name 'All' -Value $SignaturesOverview.Count
 	Write-NameValue -Name 'Exist' -Value (
 		$SignaturesOverview |
 			Where-Object -FilterScript { $_.Exist }
-	)
+	).Count
 	Write-NameValue -Name 'Select' -Value (
 		$SignaturesOverview |
 			Where-Object -FilterScript { $_.Select }
-	)
+	).Count
 	Write-NameValue -Name 'Apply' -Value (
 		$SignaturesOverview |
 			Where-Object -FilterScript { $_.Apply }
-	)
+	).Count
 	$SignaturesOverview |
 		Format-Table -Property @(
 			'Name',
@@ -205,6 +200,7 @@ Function Register-ClamAVUnofficialSignatures {
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize -Wrap
 	[String[]]$SignaturesDestinationFilePaths = @()
+	[String[]]$IssuesSignaturesApply = @()
 	ForEach ($Signature In (
 		$SignaturesOverview |
 			Where-Object -FilterScript { $_.Apply }
@@ -215,15 +211,12 @@ Function Register-ClamAVUnofficialSignatures {
 			$SignaturesDestinationFilePaths += $DestinationFilePath
 		}
 		Catch {
-			Write-GitHubActionsError -Message @"
-Unable to apply ClamAV unofficial signature ``$($Signature.Name)``!
-$_
-"@
-			$IssuesSignatures += $Signature.Name
+			Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ``$($Signature.Name)``: $_"
+			$IssuesSignaturesApply += $Signature.Name
 		}
 	}
-	[String[]]$IssuesIgnores = @()
 	[String[]]$IgnoresDestinationFilePaths = @()
+	[String[]]$IssuesIgnores = @()
 	If ($SignaturesDestinationFilePaths -igt 0) {
 		[PSCustomObject[]]$IgnoresIndexTable = Import-Csv -LiteralPath $ClamAVUnofficialSignaturesIgnoresAssetsIndexFilePath @ImportCsvParameters_Tsv
 		ForEach ($Ignore In $IgnoresIndexTable) {
@@ -234,38 +227,31 @@ $_
 				$IgnoresDestinationFilePaths += $DestinationFilePath
 			}
 			Catch {
-				Write-GitHubActionsError -Message @"
-Unable to apply ClamAV unofficial signature ignore ``$($Ignore.Name)``!
-$_
-"@
+				Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ignore ``$($Ignore.Name)``: $_"
 				$IssuesIgnores += $Ignore.Name
 			}
 		}
 	}
 	[Hashtable]@{
 		IssuesIgnores = $IssuesIgnores
-		IssuesSignatures = $IssuesSignatures
+		IssuesSignaturesApply = $IssuesSignaturesApply
+		IssuesSignaturesNotExist = $IssuesSignaturesNotExist
 		NeedCleanUp = $SignaturesDestinationFilePaths + $IgnoresDestinationFilePaths
 	} |
 		Write-Output
 }
 Function Register-YaraRules {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject[]])]
+	[OutputType([Hashtable])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('RulesSelections')][RegEx[]]$RulesSelection
 	)
-	[String[]]$IssuesRules = @()
 	[PSCustomObject[]]$RulesIndexTable = Import-Csv -LiteralPath $YaraRulesAssetsIndexFilePath @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$RulesOverview = @()
 	ForEach ($Rule In $RulesIndexTable) {
 		[String]$FilePath = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $Rule.Location
 		[Boolean]$Exist = Test-Path -LiteralPath $FilePath
 		[Boolean]$Select = Test-StringMatchRegExs -Item $Rule.Name -Matchers $RulesSelection
-		If (!$Exist) {
-			Write-GitHubActionsWarning -Message "YARA rule ``$($Rule.Name)`` was indexed but not exist, please create a bug report!"
-			$IssuesRules += $Rule.Name
-		}
 		$RulesOverview += [PSCustomObject]@{
 			Name = $Rule.Name
 			Exist = $Exist
@@ -274,27 +260,42 @@ Function Register-YaraRules {
 			FilePath = $FilePath
 		}
 	}
+	[String[]]$IssuesRulesNotExist = $RulesOverview |
+		Where-Object -FilterScript { !$_.Exist } |
+		Select-Object -ExpandProperty 'Name'
+	If ($IssuesRulesNotExist.Count -igt 0) {
+		Write-GitHubActionsWarning -Message @"
+Some of the YARA rules were indexed but not exist, please create a bug report!
+$(
+	$IssuesRulesNotExist
+		Join-String -Separator ', ' -FormatString '`{0}`'
+)
+"@
+	}
 	Write-NameValue -Name 'All' -Value $RulesOverview.Count
 	Write-NameValue -Name 'Exist' -Value (
 		$RulesOverview |
 			Where-Object -FilterScript { $_.Exist }
-	)
+	).Count
 	Write-NameValue -Name 'Select' -Value (
 		$RulesOverview |
 			Where-Object -FilterScript { $_.Select }
-	)
+	).Count
 	Write-NameValue -Name 'Apply' -Value (
 		$RulesOverview |
 			Where-Object -FilterScript { $_.Apply }
-	)
+	).Count
 	$RulesOverview |
 		Format-Table -Property @(
 			'Name',
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize -Wrap
-	$RulesOverview |
-		Where-Object -FilterScript { $_.Apply } |
+	[Hashtable]@{
+		IssuesRulesNotExist = $IssuesRulesNotExist
+		Select = $RulesOverview |
+			Where-Object -FilterScript { $_.Apply }
+	} |
 		Write-Output
 }
 Function Restore-ClamAVDatabase {
@@ -306,7 +307,7 @@ Function Restore-ClamAVDatabase {
 		Restore-GitHubActionsCache @ClamAVCacheParameters -Timeout 60
 	}
 	Catch {
-		Write-Warning -Message $_
+		Write-GitHubActionsNotice -Message $_
 	}
 	Exit-GitHubActionsLogGroup
 }
@@ -318,7 +319,7 @@ Function Save-ClamAVDatabase {
 		Save-GitHubActionsCache @ClamAVCacheParameters
 	}
 	Catch {
-		Write-Warning -Message $_
+		Write-GitHubActionsNotice -Message $_
 	}
 }
 Function Update-Assets {
@@ -332,11 +333,7 @@ Function Update-Assets {
 		[DateTime]$LocalAssetsTimestamp = Get-Date -Date $LocalMetadata.Timestamp -AsUTC
 	}
 	Catch {
-		Write-GitHubActionsFail -Message @"
-Unable to get the local assets metadata!
-$_
-"@
-		Exit 1
+		Write-GitHubActionsFail -Message "Unable to get the local assets metadata: $_"
 	}
 	Write-NameValue -Name 'Assets_Local_Compatibility' -Value $LocalMetadata.Compatibility
 	Write-NameValue -Name 'Assets_Local_Timestamp' -Value (ConvertTo-DateTimeIsoString -InputObject $LocalAssetsTimestamp)
@@ -349,8 +346,7 @@ $_
 	}
 	Catch {
 		Write-GitHubActionsWarning -Message @"
-Unable to get the remote assets metadata!
-$_
+Unable to get the remote assets metadata: $_
 This is fine, but the local assets maybe outdated.
 "@
 		Return
@@ -360,8 +356,7 @@ This is fine, but the local assets maybe outdated.
 	Write-GitHubActionsDebug -Message 'Analyze assets.'
 	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
 		Write-GitHubActionsWarning -Message @'
-Unable to update the local assets safely!
-Local assets' compatibility and remote assets' compatibility are not match.
+Unable to update the local assets safely: Local assets' compatibility and remote assets' compatibility are not match.
 This is fine, but the local assets maybe outdated.
 '@
 		Return
@@ -381,15 +376,17 @@ Function Update-ClamAV {
 	Try {
 		freshclam
 		If ($LASTEXITCODE -ine 0) {
-			Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update ClamAV via FreshClam! Mostly will not cause critical issues."
+			Write-GitHubActionsWarning -Message @"
+Unexpected issues when update ClamAV via FreshClam with exit code ``$LASTEXITCODE``: $_
+This is fine, but the local assets maybe outdated.
+"@
 		}
 	}
 	Catch {
-		Write-GitHubActionsFail -Message @"
-Unexpected issues when update ClamAV via FreshClam!
-$_
+		Write-GitHubActionsWarning -Message @"
+Unexpected issues when update ClamAV via FreshClam: $_
+This is fine, but the local assets maybe outdated.
 "@
-		Exit 1
 	}
 	Exit-GitHubActionsLogGroup
 }

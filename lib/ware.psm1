@@ -22,7 +22,7 @@ Function Get-SoftwareMeta {
 	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
 	Get-ChildItem -LiteralPath 'Env:\' |
 		ForEach-Object -Process {
-			If ($_.Name -ieq 'ACTIONS_RUNTIME_TOKEN') {
+			If ($_.Name -iin @('ACTIONS_RUNTIME_TOKEN')) {
 				[PSCustomObject]@{
 					Name = $_.Name
 					Value = '***'
@@ -38,11 +38,12 @@ Function Get-SoftwareMeta {
 		Format-Table -AutoSize -Wrap
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
-	Write-NameValue -Name 'Execute' -Value (
+	Write-NameValue -Name 'Path' -Value (
 		Get-Command -Name 'pwsh' -CommandType 'Application' |
-			Format-Table -Property @('Path', 'Version', 'Visibility') -AutoSize -Wrap
+			Select-Object -ExpandProperty 'Path' |
+			Join-String -Separator ', ' -FormatString '`{0}`'
 	) -NewLine
-	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform), $($PSVersionTable.OS)"
+	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform); $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
 	Write-NameValue -Name 'Host' -Value $Host -NewLine
@@ -63,9 +64,10 @@ Function Get-SoftwareMeta {
 	}).GetEnumerator() |
 		ForEach-Object -Process {
 			Enter-GitHubActionsLogGroup -Title "$($_.Value) (``$($_.Name)``): "
-			Write-NameValue -Name 'Execute' -Value (
+			Write-NameValue -Name 'Path' -Value (
 				Get-Command -Name $_.Name -CommandType 'Application' |
-					Format-Table -Property @('Path', 'Version', 'Visibility') -AutoSize -Wrap
+					Select-Object -ExpandProperty 'Path' |
+					Join-String -Separator ', ' -FormatString '`{0}`'
 			) -NewLine
 			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Name) --version") -NewLine
 			Exit-GitHubActionsLogGroup

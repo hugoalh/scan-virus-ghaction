@@ -17,50 +17,47 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Write-Host -Object 'Initialize.'
+[ScanVirusCleanupDuty]$CleanupManager = [ScanVirusCleanupDuty]::new()
+[ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::new()
+[ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
+[ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
+[ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::new()
 If (Get-GitHubActionsIsDebug) {
 	Get-HardwareMeta
 	Get-SoftwareMeta
 }
 Test-GitHubActionsEnvironment -Mandatory
-Get-GitCommits |
-	Format-List -Property '*'
-Exit 0# Breakpoint
-$CleanupManager = [ScanVirusCleanupDuty]::new()
-$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
-$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
-$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::new()
-[RegEx]$GitHubActionsWorkspaceRootRegEx = "$([RegEx]::Escape($Env:GITHUB_WORKSPACE))\/"
+[RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
 Write-NameValue -Name 'Input_List_Delimiter' -Value $InputListDelimiter
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^csv$' {
-		[String]$InputTableMarkup = 'csv'
-		Break
-	}
-	'^csv-?s(?:ingle(?:line)?)?$' {
-		[String]$InputTableMarkup = 'csv-s'
+		[String]$InputTableMarkup = 'Csv'
 		Break
 	}
 	'^csv-?m(?:ulti(?:ple)?(?:line)?)?$' {
-		[String]$InputTableMarkup = 'csv-m'
+		[String]$InputTableMarkup = 'CsvM'
+		Break
+	}
+	'^csv-?s(?:ingle(?:line)?)?$' {
+		[String]$InputTableMarkup = 'CsvS'
 		Break
 	}
 	'^tsv$' {
-		[String]$InputTableMarkup = 'tsv'
+		[String]$InputTableMarkup = 'Tsv'
 		Break
 	}
 	'^ya?ml$' {
-		[String]$InputTableMarkup = 'yaml'
+		[String]$InputTableMarkup = 'Yaml'
 		Break
 	}
 	Default {
 		Write-GitHubActionsFail -Message "``$_`` is not a valid table markup language!"
-		Exit 1
 	}
 }
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
-[Uri[]]$Targets = ((Get-InputList -Name 'targets' -Delimiter $InputListDelimiter) ?? @()) |
+[AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
 Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -ieq 0) ? '(Local)' : (
 	$Targets |
@@ -77,33 +74,37 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
-Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx [$($ClamAVUnofficialSignaturesInput.Count)]"
-$ClamAVUnofficialSignaturesInput |
-	Join-String -Separator ', ' -FormatString '`{0}`'
+[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
+Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx [$($ClamAVUnofficialSignaturesInput.Count)]" -Value (
+	$ClamAVUnofficialSignaturesInput |
+		Join-String -Separator ', ' -FormatString '`{0}`'
+)
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
-Write-NameValue -Name "YARA_Rules_RegEx [$($YaraRulesInput.Count)]"
-$YaraRulesInput |
-	Join-String -Separator ', ' -FormatString '`{0}`'
-[Boolean]$UpdateAssetsLocal = Get-InputBoolean -Name 'update_assets'
-Write-NameValue -Name 'Update_Assets' -Value $UpdateAssetsLocal
+[AllowEmptyCollection()][RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
+Write-NameValue -Name "YARA_Rules_RegEx [$($YaraRulesInput.Count)]" -Value (
+	$YaraRulesInput |
+		Join-String -Separator ', ' -FormatString '`{0}`'
+)
+[Boolean]$UpdateAssets = Get-InputBoolean -Name 'update_assets'
+Write-NameValue -Name 'Update_Assets' -Value $UpdateAssets
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
-[PSCustomObject[]]$ClamAVIgnoresInput = Get-InputTable -Name 'ignores_elements' -Type $InputTableMarkup
-Write-NameValue -Name "Ignores_Elements [$($ClamAVIgnoresInput.Count)]"
-$ClamAVIgnoresInput |
-	Format-List -Property '*'
-[PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Type $InputTableMarkup
-Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]"
-$IgnoresGitCommitsMetaInput |
-	Format-List -Property '*'
-[UInt]$IgnoresGitCommitsNonLatest = Get-GitHubActionsInput -Name 'ignores_gitcommits_nonlatest' -EmptyStringAsNull ?? 0
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
+Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value (
+	$IgnoresElementsInput |
+		Format-List -Property '*'
+) -NewLine
+[PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
+Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
+	$IgnoresGitCommitsMetaInput |
+		Format-List -Property '*'
+) -NewLine
+[UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
+Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
-	Exit 1
 }
 If ($ClamAVEnable) {
 	Restore-ClamAVDatabase
@@ -111,7 +112,7 @@ If ($ClamAVEnable) {
 If ($UpdateClamAV -and $ClamAVEnable) {
 	Update-ClamAV
 }
-If ($UpdateAssetsLocal -and (
+If ($UpdateAssets -and (
 	($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) -or
 	($YaraEnable -and ($YaraRulesInput.Count -igt 0))
 )) {
@@ -123,17 +124,25 @@ If ($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
 	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -SignaturesSelection $ClamAVUnofficialSignaturesInput
 	ForEach ($IssueIgnore In $Result.IssuesIgnores) {
-		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignatureIgnore:$IssueIgnore"
+		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialSignature/Ignore:$IssueIgnore"
 	}
-	ForEach ($IssueSignature In $Result.IssuesSignatures) {
-		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignature:$IssueSignature"
+	ForEach ($IssueSignatureApply In $Result.IssuesSignaturesApply) {
+		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialSignature/Apply:$IssueSignatureApply"
+	}
+	ForEach ($IssueSignatureNotExist In $Result.IssuesSignaturesNotExist) {
+		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialSignature/NotExist:$IssueSignatureNotExist"
 	}
 	$CleanupManager.Pending += $Result.NeedCleanUp
 	Exit-GitHubActionsLogGroup
 }
+[PSCustomObject[]]$YaraRulesSelect = @()
 If ($YaraEnable -and ($YaraRulesInput.Count -igt 0)) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
-	[PSCustomObject[]]$YaraRulesSelect = Register-YaraRules
+	[Hashtable]$Result = Register-YaraRules -RulesSelection $YaraRulesInput
+	ForEach ($IssueRuleNotExist In $Result.IssuesRulesNotExist) {
+		$StatisticsIssuesOperations.Storage += "YARA/Rule/NotExist:$IssueRuleNotExist"
+	}
+	$YaraRulesSelect += $Result.Select
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -142,9 +151,7 @@ If ($ClamAVEnable) {
 		clamd
 	}
 	Catch {
-		Write-GitHubActionsError -Message "Unexpected issues when start ClamAV daemon: $_"
-		Exit-GitHubActionsLogGroup
-		Exit 1
+		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"
 	}
 	Exit-GitHubActionsLogGroup
 }
@@ -159,7 +166,7 @@ Function Invoke-Tools {
 	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
 	If ($Elements.Count -ieq 0){
 		Write-GitHubActionsError -Message "Unable to scan session `"$SessionTitle`" due to the workspace is empty! If this is incorrect, probably something went wrong."
-		$Script:StatisticsIssuesSessions.Other += $SessionId
+		$Script:StatisticsIssuesOperations.Storage += "Workspace:$SessionId"
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
@@ -369,7 +376,7 @@ If ($Targets.Count -ieq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		[PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs ?? @()
+		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs
 		If ($GitCommits.Count -ieq 1) {
 			Write-GitHubActionsWarning -Message @'
 Current Git repository has only 1 commit!
@@ -378,13 +385,13 @@ If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0
 		}
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
 			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex].CommitHash
-			[String]$GitSessionTitle = "$GitCommitHash (#$($GitReverse ? ($GitCommits.Count - $GitCommitsIndex) : ($GitCommitsIndex + 1))/$($GitCommits.Count))"
+			[String]$GitSessionTitle = "$GitCommitHash (#$($GitCommitsIndex + 1)/$($GitCommits.Count))"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
 				git checkout $GitCommitHash --force --quiet
 			}
 			Catch {
-				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout (SessionID: $GitCommitHash): $_"
+				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash``: $_"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
@@ -393,10 +400,8 @@ If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0
 				Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
 				Continue
 			}
-			Write-GitHubActionsError -Message "Unexpected Git checkout exit code ``$LASTEXITCODE`` in commit $GitSessionTitle!"
-			If ($GitCommitHash -inotin $StatisticsIssuesSessions.Other) {
-				$StatisticsIssuesSessions.Other += $GitCommitHash
-			}
+			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash`` with exit code ``$LASTEXITCODE``: $_"
+			$StatisticsIssuesOperations.Storage += "Git:$GitCommitHash"
 			Exit-GitHubActionsLogGroup
 		}
 	}
@@ -431,7 +436,7 @@ If ($CleanupManager.Pending.Count -igt 0) {
 			$CleanupManager.Pending |
 				Join-String -Separator ', ' -FormatString '`{0}`'
 		)"
-		$StatisticsIssuesSessions.Other += 'CleanUp'
+		$StatisticsIssuesOperations.Storage += 'CleanUp'
 	}
 	Exit-GitHubActionsLogGroup
 }

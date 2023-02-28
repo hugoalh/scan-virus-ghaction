@@ -88,21 +88,6 @@ bar,foo
 <tr>
 <td>
 <ul>
-<li><code>csv-s</code></li>
-<li><code>csv-singleline</code></li>
-</ul>
-</td>
-<td>
-
-```
-bar=5,foo=10;bar=10,foo=20
-```
-
-</td>
-</tr>
-<tr>
-<td>
-<ul>
 <li><code>csv-m</code></li>
 <li><code>csv-multipleline</code></li>
 </ul>
@@ -112,6 +97,21 @@ bar=5,foo=10;bar=10,foo=20
 ```
 bar=5,foo=10
 bar=10,foo=20
+```
+
+</td>
+</tr>
+<tr>
+<td>
+<ul>
+<li><code>csv-s</code></li>
+<li><code>csv-singleline</code></li>
+</ul>
+</td>
+<td>
+
+```
+bar=5,foo=10;bar=10,foo=20
 ```
 
 </td>
@@ -162,7 +162,7 @@ When this input is defined (i.e.: network targets), will ignore inputs:
 - [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
 - [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
-- [`ignores_gitcommits_nonlatest`](#ignores_gitcommits_nonlatest)
+- [`ignores_gitcommits_nonnewest`](#ignores_gitcommits_nonnewest)
 
 #### `git_integrate`
 
@@ -174,7 +174,7 @@ When this input is `False`, will ignore inputs:
 - [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
 - [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
-- [`ignores_gitcommits_nonlatest`](#ignores_gitcommits_nonlatest)
+- [`ignores_gitcommits_nonnewest`](#ignores_gitcommits_nonnewest)
 
 #### `git_include_allbranches`
 
@@ -304,9 +304,9 @@ ignores_gitcommits_meta: |
     AuthorName: "^octocat$"
 ```
 
-#### `ignores_gitcommits_nonlatest`
+#### `ignores_gitcommits_nonnewest`
 
-`<UInt>` Ignores for the non latest Git commits, which limit how many of Git commits will scan, affected by and counting after inputs:
+`<UInt>` Ignores for the non newest Git commits, which limit how many of the newest Git commits will scan, affected by and counting after inputs:
 
 - [`git_include_allbranches`](#git_include_allbranches)
 - [`git_include_reflogs`](#git_include_reflogs)
@@ -315,7 +315,7 @@ ignores_gitcommits_meta: |
 Example:
 
 ```yml
-ignores_gitcommits_nonlatest: 100
+ignores_gitcommits_nonnewest: 100
 ```
 
 > **ℹ Notice:** For users who use GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).

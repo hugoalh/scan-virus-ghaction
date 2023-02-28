@@ -28,6 +28,15 @@ Function Write-NameValue {
 		Out-Host -InputObject $Value
 	}
 }
+Function Write-Status {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+	)
+	Write-Host -Object "$($PSStyle.Foreground.BrightMagenta)$($InputObject)$($PSStyle.Reset)"
+}
 Export-ModuleMember -Function @(
-	'Write-NameValue'
+	'Write-NameValue',
+	'Write-Status'
 )

@@ -1,22 +1,20 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
 $Script:ErrorActionPreference = 'Stop'
-Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'assets',
+		'display',
 		'ware'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Enter-GitHubActionsLogGroup -Title 'Update ClamAV.'
-freshclam --verbose
-Exit-GitHubActionsLogGroup
-Enter-GitHubActionsLogGroup -Title 'Import assets.'
-Import-Assets -Initial
-Exit-GitHubActionsLogGroup
-Enter-GitHubActionsLogGroup -Title 'Tweak Git.'
-git config --global --add safe.directory *
-Exit-GitHubActionsLogGroup
 Get-HardwareMeta
 Get-SoftwareMeta
+Write-Status -InputObject 'Update ClamAV.'
+freshclam --verbose
+Write-Status -InputObject 'Import assets.'
+Import-Assets -Initial
+Write-Status -InputObject 'Tweak Git.'
+git config --global --add 'safe.directory' '*'
+git config --global --list
