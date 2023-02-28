@@ -88,8 +88,11 @@ Function Format-InputTable {
 		}
 	}
 	Catch {
-		Write-GitHubActionsFail -Message "Invalid ``$Markup`` table syntax! $_"
-		Throw
+		Write-GitHubActionsFail -Message @"
+Invalid ``$Markup`` table syntax!
+$_
+"@
+		Exit 1
 	}
 }
 Function Get-InputBoolean {

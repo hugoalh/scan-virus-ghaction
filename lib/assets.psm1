@@ -143,7 +143,6 @@ Function Register-ClamAVUnofficialSignatures {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('SignaturesSelections')][RegEx[]]$SignaturesSelection
 	)
-	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
 	[String[]]$IssuesSignatures = @()
 	[PSCustomObject[]]$SignaturesIndexTable = Import-Csv -LiteralPath $ClamAVUnofficialSignaturesAssetsIndexFilePath @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$SignaturesOverview = @()
@@ -221,7 +220,6 @@ $_
 			}
 		}
 	}
-	Exit-GitHubActionsLogGroup
 	[Hashtable]@{
 		IssuesIgnores = $IssuesIgnores
 		IssuesSignatures = $IssuesSignatures
@@ -235,7 +233,6 @@ Function Register-YaraRules {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('RulesSelections')][RegEx[]]$RulesSelection
 	)
-	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
 	[String[]]$IssuesRules = @()
 	[PSCustomObject[]]$RulesIndexTable = Import-Csv -LiteralPath $YaraRulesAssetsIndexFilePath @ImportCsvParameters_Tsv
 	[PSCustomObject[]]$RulesOverview = @()
@@ -274,19 +271,22 @@ Function Register-YaraRules {
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -Wrap
-	Exit-GitHubActionsLogGroup
-	Write-Output -InputObject $RulesOverview
+	$RulesOverview |
+		Where-Object -FilterScript { $_.Apply } |
+		Write-Output
 }
 Function Restore-ClamAVDatabase {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Restore ClamAV database.'
 	Try {
 		Restore-GitHubActionsCache @ClamAVCacheParameters -Timeout 60
 	}
 	Catch {
 		Write-Warning -Message $_
 	}
+	Exit-GitHubActionsLogGroup
 }
 Function Save-ClamAVDatabase {
 	[CmdletBinding()]
@@ -314,7 +314,7 @@ Function Update-Assets {
 Unable to get the local assets metadata!
 $_
 "@
-		Throw
+		Exit 1
 	}
 	Write-NameValue -Name 'Assets_Local_Compatibility' -Value $LocalMetadata.Compatibility
 	Write-NameValue -Name 'Assets_Local_Timestamp' -Value (ConvertTo-DateTimeIsoString -InputObject $LocalAssetsTimestamp)
@@ -337,11 +337,11 @@ This is fine, but the local assets maybe outdated.
 	Write-NameValue -Name 'Assets_Remote_Timestamp' -Value (ConvertTo-DateTimeIsoString -InputObject $RemoteAssetsTimestamp)
 	Write-GitHubActionsDebug -Message 'Analyze assets.'
 	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
-		Write-GitHubActionsWarning -Message @"
+		Write-GitHubActionsWarning -Message @'
 Unable to update the local assets safely!
 Local assets' compatibility and remote assets' compatibility are not match.
 This is fine, but the local assets maybe outdated.
-"@
+'@
 		Return
 	}
 	If ($LocalAssetsTimestamp -ige $RemoteAssetsTimestamp) {
@@ -351,11 +351,32 @@ This is fine, but the local assets maybe outdated.
 	Write-Host -Object 'Need to update the local assets.'
 	Import-Assets
 }
+Function Update-ClamAV {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
+	Try {
+		freshclam
+		If ($LASTEXITCODE -ine 0) {
+			Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update ClamAV via FreshClam! Mostly will not cause critical issues."
+		}
+	}
+	Catch {
+		Write-GitHubActionsFail -Message @"
+Unexpected issues when update ClamAV via FreshClam!
+$_
+"@
+		Exit 1
+	}
+	Exit-GitHubActionsLogGroup
+}
 Export-ModuleMember -Function @(
 	'Import-Assets',
 	'Register-ClamAVUnofficialSignatures',
 	'Register-YaraRules',
 	'Restore-ClamAVDatabase',
 	'Save-ClamAVDatabase',
-	'Update-Assets'
+	'Update-Assets',
+	'Update-ClamAV'
 )

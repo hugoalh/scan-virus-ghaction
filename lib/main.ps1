@@ -1,7 +1,7 @@
 #Requires -PSEdition Core
 #Requires -Version 7.3
-## Using Module .\cleanup-duty.psm1
-## Using Module .\statistics.psm1
+Using Module .\cleanup-duty.psm1
+Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
@@ -59,7 +59,7 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 	}
 	Default {
 		Write-GitHubActionsFail -Message "``$_`` is not a valid table markup language!"
-		Throw
+		Exit 1
 	}
 }
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
@@ -106,96 +106,37 @@ $IgnoresGitCommitsMetaInput |
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
-	Throw
+	Exit 1
 }
 If ($ClamAVEnable) {
-	Enter-GitHubActionsLogGroup -Title 'Restore ClamAV database.'
 	Restore-ClamAVDatabase
-	Exit-GitHubActionsLogGroup
 }
 If ($UpdateClamAV -and $ClamAVEnable) {
-	Enter-GitHubActionsLogGroup -Title 'Update ClamAV assets via FreshClam.'
-	Try {
-		freshclam
-		If ($LASTEXITCODE -ine 0) {
-			Write-GitHubActionsWarning -Message "Unexpected exit code ``$LASTEXITCODE`` when update ClamAV assets via FreshClam! Mostly will not cause critical issues."
-		}
-		$StatisticsIssuesSessions.Other += 'FreshClam'
-	}
-	Catch {
-		Write-GitHubActionsError -Message "Unexpected issues when update ClamAV assets via FreshClam: $_"
-		Exit-GitHubActionsLogGroup
-		Exit 1
-	}
-	Exit-GitHubActionsLogGroup
+	Update-ClamAV
 }
 If ($UpdateAssetsLocal -and (
 	($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) -or
 	($YaraEnable -and ($YaraRulesInput.Count -igt 0))
 )) {
 	Enter-GitHubActionsLogGroup -Title 'Update local assets.'
-	[Hashtable]$Result = Update-Assets
-	If (!$Result.Continue) {
-		Write-GitHubActionsError -Message $Result.Reason
-		Exit-GitHubActionsLogGroup
-		Exit 1
-	}
-	If (!$Result.Success) {
-		$StatisticsIssuesSessions.Other += 'UpdateAssetsLocal'
-	}
+	Update-Assets
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) {
-	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures and signatures ignores.'
+	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
 	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -SignaturesSelection $ClamAVUnofficialSignaturesInput
-	ForEach ($IssuesSignature In $Result.IssuesSignatures) {
-		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignature:$IssuesSignature"
+	ForEach ($IssueIgnore In $Result.IssuesIgnores) {
+		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignatureIgnore:$IssueIgnore"
+	}
+	ForEach ($IssueSignature In $Result.IssuesSignatures) {
+		$StatisticsIssuesSessions.Other += "ClamAV/UnofficialSignature:$IssueSignature"
 	}
 	$CleanupManager.Pending += $Result.NeedCleanUp
 	Exit-GitHubActionsLogGroup
 }
 If ($YaraEnable -and ($YaraRulesInput.Count -igt 0)) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
-	[PSCustomObject[]]$YaraRulesIndex = Import-Csv -LiteralPath (Join-Path -Path $YaraRulesAssetsRoot -ChildPath 'index.tsv') @ImportCsvParameters_Tsv
-	[PSCustomObject[]]$YaraRulesSelect = $YaraRulesIndex |
-		Where-Object -FilterScript { Test-StringMatchRegExs -Item $_.Name -Matchers $YaraRulesInput } |
-		Sort-Object -Property 'Name'
-	[PSCustomObject[]]$YaraRulesIndexDisplay = $YaraRulesIndex |
-		ForEach-Object -Process {
-			[String]$SourceFullName = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $_.Location
-			[String]$Name = $_.Name
-			[Boolean]$Exist = Test-Path -LiteralPath $SourceFullName
-			[Boolean]$Select = $Name -iin $YaraRulesSelect.Name
-			[Boolean]$Apply = $Select -and $Exist
-			If (!$Exist) {
-				Write-GitHubActionsWarning -Message "YARA rule ``$Name`` was indexed but not exist! (Please create a bug report!)"
-				$Script:StatisticsIssuesSessions.Other += "YARARules/Exist/$Name"
-			}
-			Write-Output -InputObject ([PSCustomObject]@{
-				Name = $Name
-				Exist = $Exist
-				Select = $Select
-				Apply = $Apply
-			})
-		}
-	Exit-GitHubActionsLogGroup
-	Enter-GitHubActionsLogGroup -Title "YARA rules index (All: $($YaraRulesIndexDisplay.Count); Exist: $((
-		$YaraRulesIndexDisplay |
-			Where-Object -FilterScript { $_.Exist }
-	).Count); Select: $((
-		$YaraRulesIndexDisplay |
-			Where-Object -FilterScript { $_.Select }
-	).Count); Apply: $((
-		$YaraRulesIndexDisplay |
-			Where-Object -FilterScript { $_.Apply }
-	).Count)):"
-	$YaraRulesIndexDisplay |
-		Format-Table -Property @(
-			'Name',
-			@{ Expression = 'Exist'; Alignment = 'Right' },
-			@{ Expression = 'Select'; Alignment = 'Right' },
-			@{ Expression = 'Apply'; Alignment = 'Right' }
-		) -Wrap
+	[PSCustomObject[]]$YaraRulesSelect = Register-YaraRules
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -466,7 +407,7 @@ If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0
 Else {
 	If ((Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force).Count -igt 0) {
 		Write-GitHubActionsFail -Message 'Require a clean workspace for network targets!'
-		Throw
+		Exit 1
 	}
 	ForEach ($Target In $Targets) {
 		If (!(Test-StringIsUri -InputObject $Target)) {
