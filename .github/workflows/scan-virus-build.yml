@@ -1,8 +1,5 @@
 name: "Scan - Virus - Build"
 on:
-  push:
-    branches:
-      - "main"
   workflow_dispatch:
     inputs:
       git_integrate:
@@ -25,8 +22,8 @@ jobs:
       - name: "Scan Repository"
         uses: "hugoalh/scan-virus-ghaction/use/docker-build@main"
         with:
-          git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"
-          git_reverse: "${{github.event.inputs.git_reverse || 'False'}}"
+          git_integrate: "${{github.event.inputs.git_integrate}}"
+          git_reverse: "${{github.event.inputs.git_reverse}}"
           clamav_unofficialsignatures: |
             ^.+$
           yara_enable: "True"
