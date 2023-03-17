@@ -8,7 +8,7 @@ jobs:
     name: "Announce - New Release - Discord"
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "hugoalh/send-discord-webhook-ghaction@v5.0.1"
+      - uses: "hugoalh/send-discord-webhook-ghaction@v5.0.2"
         with:
           key: "${{secrets.DISCORD_HXHS_PROJECTNEWRELEASEANNOUNCER_WEBHOOK}}"
           payload: |
