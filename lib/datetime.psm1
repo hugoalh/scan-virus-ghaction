@@ -1,5 +1,4 @@
-#Requires -PSEdition Core
-#Requires -Version 7.3
+#Requires -PSEdition Core -Version 7.3
 [Hashtable]$GetDateParameters_IsoString = @{
 	AsUTC = $True
 	UFormat = '%Y-%m-%dT%H:%M:%SZ'

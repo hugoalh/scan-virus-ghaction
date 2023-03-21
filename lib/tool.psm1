@@ -1,5 +1,4 @@
-#Requires -PSEdition Core
-#Requires -Version 7.3
+#Requires -PSEdition Core -Version 7.3
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 [RegEx]$GitHubActionsWorkspaceRootRegEx = "$([RegEx]::Escape($Env:GITHUB_WORKSPACE))\/"
 Import-Module -Name (

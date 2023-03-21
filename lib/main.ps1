@@ -1,5 +1,4 @@
-#Requires -PSEdition Core
-#Requires -Version 7.3
+#Requires -PSEdition Core -Version 7.3
 Using Module .\cleanup-duty.psm1
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
@@ -10,7 +9,7 @@ Import-Module -Name (
 		'display',
 		'git',
 		'input',
-		'pcsp',
+		'tool',
 		'utility',
 		'ware'
 	) |

@@ -1,5 +1,4 @@
-#Requires -PSEdition Core
-#Requires -Version 7.3
+#Requires -PSEdition Core -Version 7.3
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -22,7 +21,10 @@ Function Get-SoftwareMeta {
 	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
 	Get-ChildItem -LiteralPath 'Env:\' |
 		ForEach-Object -Process {
-			If ($_.Name -iin @('ACTIONS_RUNTIME_TOKEN')) {
+			If (
+				($_.Name -iin @('ACTIONS_RUNTIME_TOKEN')) -or
+				($_.Name -imatch '_TOKEN$')
+			) {
 				[PSCustomObject]@{
 					Name = $_.Name
 					Value = '***'
@@ -53,23 +55,23 @@ Function Get-SoftwareMeta {
 			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize -Wrap
 	) -NewLine
 	Exit-GitHubActionsLogGroup
-	([Ordered]@{
-		clamdscan = 'ClamAV Scan Daemon'
-		clamscan = 'ClamAV Scan'
-		freshclam = 'FreshClam (ClamAV Updater)'
-		git = 'Git'
-		'git-lfs' = 'Git LFS'
-		node = 'NodeJS'
-		yara = 'YARA'
-	}).GetEnumerator() |
+	@(
+		@{ Bin = 'clamdscan'; Name = 'ClamAV Scan Daemon' },
+		@{ Bin = 'clamscan'; Name = 'ClamAV Scan' },
+		@{ Bin = 'freshclam'; Name = 'FreshClam (ClamAV Updater)' },
+		@{ Bin = 'git'; Name = 'Git' },
+		@{ Bin = 'git-lfs'; Name = 'Git LFS' },
+		@{ Bin = 'node'; Name = 'NodeJS' },
+		@{ Bin = 'yara'; Name = 'YARA' }
+	) |
 		ForEach-Object -Process {
-			Enter-GitHubActionsLogGroup -Title "$($_.Value) (``$($_.Name)``): "
+			Enter-GitHubActionsLogGroup -Title "$($_.Name) (``$($_.Bin)``): "
 			Write-NameValue -Name 'Path' -Value (
-				Get-Command -Name $_.Name -CommandType 'Application' |
+				Get-Command -Name $_.Bin -CommandType 'Application' |
 					Select-Object -ExpandProperty 'Path' |
 					Join-String -Separator ', ' -FormatString '`{0}`'
 			) -NewLine
-			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Name) --version") -NewLine
+			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Bin) --version") -NewLine
 			Exit-GitHubActionsLogGroup
 		}
 }

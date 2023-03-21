@@ -1,5 +1,4 @@
-#Requires -PSEdition Core
-#Requires -Version 7.3
+#Requires -PSEdition Core -Version 7.3
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
@@ -53,8 +52,7 @@ Function Get-GitCommits {
 	}
 	Catch {
 		Write-GitHubActionsError -Message @"
-Unable to integrate with Git!
-$_
+Unable to integrate with Git: $_
 If this is incorrect, probably Git database is broken and/or invalid.
 "@
 		Return
@@ -68,12 +66,12 @@ If this is incorrect, probably Git database is broken and/or invalid.
 	ForEach ($GitCommitId In $GitCommitsIds) {
 		Do {
 			Try {
-				[String]$DelimiterToken = "=====$(New-RandomToken -Length 32)====="
-				[String[]]$GitCommitMetaRaw0 = git --no-pager show --format="$(
-				$GitCommitsProperties |
-					Select-Object -ExpandProperty 'Placeholder' |
-					Join-String -Separator "%n$DelimiterToken%n"
-			)" --no-color --no-patch "$GitCommitId"
+				[String]$DelimiterToken = "=====$(New-RandomToken)====="
+				[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
+					$GitCommitsProperties |
+						Select-Object -ExpandProperty 'Placeholder' |
+						Join-String -Separator "%n$DelimiterToken%n"
+				)`" --no-color --no-patch `"$GitCommitId`""
 				If ($LASTEXITCODE -ine 0) {
 					Throw (
 						$GitCommitMetaRaw0 |
@@ -82,10 +80,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				}
 			}
 			Catch {
-				Write-GitHubActionsError -Message @"
-Unexpected Git database issue!
-$_
-"@
+				Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
 				Return
 			}
 			[UInt64]$DelimiterTokenCount = (
@@ -99,10 +94,7 @@ $_
 				Join-String -Separator "`n"
 		) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
 		If ($GitCommitsProperties.Count -ine $GitCommitMetaRaw1.Count) {
-			Write-GitHubActionsError -Message @'
-Unexpected Git database issue!
-Columns are not match!
-'@
+			Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
 			Return
 		}
 		[Hashtable]$GitCommitMeta = @{}
