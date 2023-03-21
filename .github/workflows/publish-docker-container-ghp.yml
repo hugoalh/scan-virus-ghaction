@@ -1,4 +1,4 @@
-name: "Publish - GitHub Packages - Docker"
+name: "Publish Docker Container - GitHub Packages"
 on:
   push:
     tags:
@@ -16,8 +16,8 @@ env:
   REGISTRY: "ghcr.io"
   IMAGE_NAME: "${{github.repository}}"
 jobs:
-  publish-ghp-docker:
-    name: "Publish - GitHub Packages - Docker"
+  publish-docker-container-ghp:
+    name: "Publish Docker Container - GitHub Packages"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"

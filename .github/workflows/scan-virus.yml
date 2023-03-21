@@ -1,4 +1,4 @@
-name: "Scan - Virus"
+name: "Scan Virus"
 on:
   push:
     branches:
@@ -19,7 +19,7 @@ on:
         default: "true"
 jobs:
   scan-virus:
-    name: "Scan - Virus"
+    name: "Scan Virus"
     runs-on: "ubuntu-latest"
     if: "${{!((github.event_name == 'pull_request') && startsWith(github.event.pull_request.head.label, format('{0}:', github.repository_owner)))}}"
     steps:

@@ -1,4 +1,4 @@
-name: "Scan - Virus - Build"
+name: "Test - Package"
 on:
   workflow_dispatch:
     inputs:
@@ -11,21 +11,16 @@ on:
         required: false
         default: "False"
 jobs:
-  scan-virus-build:
-    name: "Scan - Virus - Build"
+  test-package:
+    name: "Test - Package"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.1.0"
+        uses: "actions/checkout@v3.4.0"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction/use/docker-build@main"
+        uses: "hugoalh/scan-virus-ghaction@main"
         with:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
-          clamav_unofficialsignatures: |
-            ^.+$
-          yara_enable: "True"
-          yara_rules: |
-            ^.+$
