@@ -333,7 +333,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.1.0"
+        uses: "actions/checkout@v3.5.0"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
