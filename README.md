@@ -27,9 +27,9 @@ A GitHub Action to scan virus (including malicious file and malware) in the GitH
 ### 🛡 Tools
 
 - **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
-  - [Unofficial Signatures List][clamav-unofficial-signatures-list]
+  - [Unofficial Assets List][clamav-unofficial-assets-list]
 - **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
-  - [Rules List][yara-rules-list]
+  - [Unofficial Assets List][yara-unofficial-assets-list]
 
 ### ⚠ Disclaimer
 
@@ -43,7 +43,7 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 #### Install (For Self Host)
 
-- GitHub Actions Runner >= v2.297.0
+- GitHub Actions Runner >= v2.303.0
   - Docker
 
 #### Use
@@ -58,7 +58,7 @@ jobs:
 
 ### 📥 Input
 
-> **ℹ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official signatures.
+> **ℹ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official assets.
 
 #### `input_list_delimiter`
 
@@ -197,41 +197,41 @@ When this input is `False`, will ignore inputs:
 
 When this input is `False`, will ignore inputs:
 
-- [`clamav_unofficialsignatures`](#clamav_unofficialsignatures)
+- [`clamav_unofficialassets`](#clamav_unofficialassets)
 - [`update_clamav`](#update_clamav)
 
-#### `clamav_unofficialsignatures`
+#### `clamav_unofficialassets`
 
-`<RegEx[]>` ClamAV unofficial signatures to use, by regular expression and the [ClamAV unofficial signatures list][clamav-unofficial-signatures-list], separate each signature with [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial signatures are not in use.
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the [ClamAV unofficial assets list][clamav-unofficial-assets-list], separate each name by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial assets are not in use.
 
-> **⚠ Important:** It is not recommended to use this due to the ClamAV unofficial signatures have more false positives than the ClamAV official signatures in most cases.
+> **⚠ Important:** It is not recommended to use any of the ClamAV unofficial assets due to these maybe report more false positives than the ClamAV official assets in most cases.
 
 #### `yara_enable`
 
-`<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_rules`](#yara_rules).
+`<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
 
-> **⚠ Important:** It is not recommended to use this due to the YARA rules can have many false positives in most cases.
+> **⚠ Important:** It is not recommended to use any of the YARA unofficial assets due to these maybe report more false positives.
 
-#### `yara_rules`
+#### `yara_unofficialassets`
 
-`<RegEx[]>` YARA rules to use, by regular expression and the [YARA rules list][yara-rules-list], separate each rule by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the rules are not in use.
+`<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial assets are not in use.
 
-> **⚠ Important:** It is not recommended to use this due to the YARA rules can have many false positives in most cases.
+> **⚠ Important:** It is not recommended to use any of the YARA unofficial assets due to these maybe report more false positives.
 
 #### `update_assets`
 
-`<Boolean = True>` Whether to update the ClamAV unofficial signatures and/or the YARA rules from the [assets repository][assets-repository] before scan anything.
+`<Boolean = True>` Whether to update the ClamAV unofficial assets and/or the YARA unofficial assets from the [assets repository][assets-repository] before scan anything.
 
 > **⚠ Important:**
 >
-> - When inputs [`clamav_unofficialsignatures`](#clamav_unofficialsignatures) and [`yara_rules`](#yara_rules) are not defined, will skip this update in order to save some times.
+> - When inputs [`clamav_unofficialassets`](#clamav_unofficialassets) and [`yara_unofficialassets`](#yara_unofficialassets) are not defined, will skip this update in order to save some times.
 > - It is recommended to keep this default value to have the latest assets.
 
 #### `update_clamav`
 
-`<Boolean = True>` Whether to update the ClamAV official signatures via FreshClam before scan anything.
+`<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.
 
-> **⚠ Important:** It is recommended to keep this default value to have the latest ClamAV official signatures.
+> **⚠ Important:** It is recommended to keep this default value to have the latest ClamAV official assets.
 
 #### `ignores_elements`
 
@@ -318,7 +318,7 @@ Example:
 ignores_gitcommits_nonnewest: 100
 ```
 
-> **ℹ Notice:** For users who use GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
+> **ℹ Notice:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
 
 ### 📤 Output
 
@@ -347,5 +347,5 @@ jobs:
 - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
 
 [assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
-[clamav-unofficial-signatures-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav-unofficial-signatures/index.tsv
-[yara-rules-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara-rules/index.tsv
+[clamav-unofficial-assets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav-unofficial/index.tsv
+[yara-unofficial-assets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara/index.tsv

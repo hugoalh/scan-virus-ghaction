@@ -24,8 +24,8 @@ jobs:
         with:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
-          clamav_unofficialsignatures: |
+          clamav_unofficialassets: |
             ^.+$
           yara_enable: "True"
-          yara_rules: |
+          yara_unofficialassets: |
             ^.+$

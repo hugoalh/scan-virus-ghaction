@@ -28,12 +28,10 @@ Import-Module -Name (
 [Uri]$RemoteMetadataFilePath = "$RemoteRoot/raw/main/$MetadataFileName"
 [Uri]$RemotePackageFilePath = "$RemoteRoot/archive/refs/heads/main.zip"
 [String]$ClamAVDatabaseRoot = '/var/lib/clamav'
-[String]$ClamAVUnofficialSignaturesIgnoresAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-signatures-ignore-presets'
-[String]$ClamAVUnofficialSignaturesIgnoresAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $IndexFileName
-[String]$ClamAVUnofficialSignaturesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial-signatures'
-[String]$ClamAVUnofficialSignaturesAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $IndexFileName
-[String]$YaraRulesAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-rules'
-[String]$YaraRulesAssetsIndexFilePath = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $IndexFileName
+[String]$ClamAVUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial'
+[String]$ClamAVUnofficialAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $IndexFileName
+[String]$YaraAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara'
+[String]$YaraAssetsIndexFilePath = Join-Path -Path $YaraAssetsRoot -ChildPath $IndexFileName
 [Hashtable]$ClamAVCacheParameters = @{
 	Key = 'scan-virus-ghaction-database-clamav-1'
 	LiteralPath = $ClamAVDatabaseRoot
@@ -55,8 +53,7 @@ Function Import-Assets {
 	}
 	Catch {
 		If ($Initial.IsPresent) {
-			Write-Error -Message "Unable to download the remote assets: $_"
-			Exit 1
+			Write-GitHubActionsFail -Message "Unable to download the remote assets: $_"
 		}
 		Write-GitHubActionsWarning -Message @"
 Unable to download the remote assets: $_
@@ -66,14 +63,12 @@ This is fine, but the local assets maybe outdated.
 	}
 	Write-GitHubActionsDebug -Message 'Expand the assets package.'
 	Try {
-		New-Item -Path $PackageTempRoot -ItemType 'Directory' -Force -Confirm:$False |
-			Out-Null
+		$Null = New-Item -Path $PackageTempRoot -ItemType 'Directory' -Force -Confirm:$False
 		Expand-Archive -LiteralPath $PackageTempFilePath -DestinationPath $PackageTempRoot
 	}
 	Catch {
 		If ($Initial.IsPresent) {
-			Write-Error -Message "Unable to expand the assets package: $_"
-			Exit 1
+			Write-GitHubActionsFail -Message "Unable to expand the assets package: $_"
 		}
 		Write-GitHubActionsWarning -Message @"
 Unable to expand the assets package: $_
@@ -92,13 +87,7 @@ This is fine, but the local assets maybe outdated.
 		Move-Item -LiteralPath (Join-Path -Path $PackageTempRoot -ChildPath 'scan-virus-ghaction-assets-main') -Destination $LocalRoot -Confirm:$False
 	}
 	Catch {
-		If ($Initial.IsPresent) {
-			Write-Error -Message "Unable to update the local assets: $_"
-			Exit 1
-		}
-		Else {
-			Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
-		}
+		Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
 	}
 	Finally {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
@@ -108,20 +97,21 @@ This is fine, but the local assets maybe outdated.
 		[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
 		Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
 		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
-			Sort-Object -Property 'FullName' |
 			ForEach-Object -Process {
 				[PSCustomObject]@{
-					Path = $_.FullName -ireplace $LocalRootRegEx, ''
+					Directory = $_.Directory.FullName -ireplace $LocalRootRegEx, ''
+					Name = $_.Name
 					Size = $_.Length
 					Flag = $_.PSIsContainer ? 'D' : ''
 				} |
 					Write-Output
 			} |
+			Sort-Object -Property @('Directory', 'Name') |
 			Format-Table -Property @(
-				'Path',
+				'Name',
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Flag'
-			) -AutoSize -Wrap
+			) -AutoSize -Wrap -GroupBy 'Directory'
 		Return
 	}
 	Write-Host -Object 'Local assets are now up to date.'
@@ -133,7 +123,7 @@ Function Import-NetworkTarget {
 		[Parameter(Mandatory = $True, Position = 0)][Uri]$Target
 	)
 	Enter-GitHubActionsLogGroup -Title "Fetch file ``$Target``."
-	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken -Length 32)
+	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken)
 	Try {
 		Invoke-WebRequest -Uri $Target -OutFile $NetworkTargetFilePath @InvokeWebRequestParameters_Get
 	}
@@ -146,53 +136,53 @@ Function Import-NetworkTarget {
 	}
 	Write-Output -InputObject $NetworkTargetFilePath
 }
-Function Register-ClamAVUnofficialSignatures {
+Function Register-ClamAVUnofficialAssets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('SignaturesSelections')][RegEx[]]$SignaturesSelection
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
-	[PSCustomObject[]]$SignaturesIndexTable = Import-Csv -LiteralPath $ClamAVUnofficialSignaturesAssetsIndexFilePath @ImportCsvParameters_Tsv
-	[PSCustomObject[]]$SignaturesOverview = @()
-	ForEach ($Signature In $SignaturesIndexTable) {
-		[String]$FilePath = Join-Path -Path $ClamAVUnofficialSignaturesAssetsRoot -ChildPath $Signature.Location
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVAssetsIndexFilePath @ImportCsvParameters_Tsv
+	[PSCustomObject[]]$Overview = @()
+	ForEach ($Row In $IndexTable) {
+		[String]$FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $Row.Path
 		[Boolean]$Exist = Test-Path -LiteralPath $FilePath
-		[Boolean]$Select = Test-StringMatchRegExs -Item $Signature.Name -Matchers $SignaturesSelection
-		$SignaturesOverview += [PSCustomObject]@{
-			Name = $Signature.Name
+		[Boolean]$Select = Test-StringMatchRegExs -Item $Row.Name -Matchers $Selection
+		$Overview += [PSCustomObject]@{
+			Name = $Row.Name
 			Exist = $Exist
 			Select = $Select
 			Apply = $Exist -and $Select
-			DatabaseFileName = $Signature.Location -ireplace '\/', '_'
+			DatabaseFileName = $Row.Path -ireplace '\/', '_'
 			FilePath = $FilePath
 		}
 	}
-	[String[]]$IssuesSignaturesNotExist = $SignaturesOverview |
+	[String[]]$AssetsNotExist = $Overview |
 		Where-Object -FilterScript { !$_.Exist } |
 		Select-Object -ExpandProperty 'Name'
-	If ($IssuesSignaturesNotExist.Count -igt 0) {
+	If ($AssetsNotExist.Count -igt 0) {
 		Write-GitHubActionsWarning -Message @"
-Some of the ClamAV unofficial signatures were indexed but not exist, please create a bug report!
+Some of the ClamAV unofficial assets were indexed but not exist, please create a bug report!
 $(
-	$IssuesSignaturesNotExist
+	$AssetsNotExist
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 "@
 	}
-	Write-NameValue -Name 'All' -Value $SignaturesOverview.Count
+	Write-NameValue -Name 'All' -Value $Overview.Count
 	Write-NameValue -Name 'Exist' -Value (
-		$SignaturesOverview |
+		$Overview |
 			Where-Object -FilterScript { $_.Exist }
 	).Count
 	Write-NameValue -Name 'Select' -Value (
-		$SignaturesOverview |
+		$Overview |
 			Where-Object -FilterScript { $_.Select }
 	).Count
 	Write-NameValue -Name 'Apply' -Value (
-		$SignaturesOverview |
+		$Overview |
 			Where-Object -FilterScript { $_.Apply }
 	).Count
-	$SignaturesOverview |
+	$Overview |
 		Format-Table -Property @(
 			'Name',
 			@{ Expression = 'Exist'; Alignment = 'Right' },

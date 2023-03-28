@@ -33,22 +33,22 @@ inputs:
     description: "{Boolean} Whether to use ClamAV."
     required: false
     default: "True"
-  clamav_unofficialsignatures:
-    description: "{RegEx[]} ClamAV unofficial signatures to use."
+  clamav_unofficialassets:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
     required: false
   yara_enable:
     description: "{Boolean} Whether to use YARA."
     required: false
     default: "False"
-  yara_rules:
-    description: "{RegEx[]} YARA rules to use."
+  yara_unofficialassets:
+    description: "{RegEx[]} YARA unofficial assets to use."
     required: false
   update_assets:
-    description: "{Boolean} Whether to update the ClamAV unofficial signatures and/or the YARA rules from the assets repository before scan anything."
+    description: "{Boolean} Whether to update the ClamAV unofficial assets and/or the YARA unofficial assets from the assets repository before scan anything."
     required: false
     default: "True"
   update_clamav:
-    description: "{Boolean} Whether to update the ClamAV official signatures via FreshClam before scan anything."
+    description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
     required: false
     default: "True"
   ignores_elements:
