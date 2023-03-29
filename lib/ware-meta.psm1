@@ -34,8 +34,9 @@ Function Get-WareMeta {
 					Write-Output
 			}
 		} |
-		Format-Table -AutoSize |
-		Out-String
+		ForEach-Object -Process {
+			Write-NameValue -Name $_.Name -Value $_.Value
+		}
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
 	Write-NameValue -Name 'Path' -Value (
@@ -45,9 +46,15 @@ Function Get-WareMeta {
 	) -NewLine
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform); $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
-	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion
-	Write-NameValue -Name 'Host' -Value $Host -NewLine
-	Write-NameValue -Name 'UI' -Value $Host.UI.RawUI -NewLine
+	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion.ToString()
+	Write-NameValue -Name 'Host' -Value (
+		$Host |
+			Out-String
+	) -NewLine
+	Write-NameValue -Name 'UI' -Value (
+		$Host.UI.RawUI |
+			Out-String
+	) -NewLine
 	Write-NameValue -Name 'Module' -Value (
 		Get-InstalledModule |
 			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize |
