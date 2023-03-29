@@ -11,19 +11,18 @@ Import-Module -Name (
 		'input',
 		'tool',
 		'utility',
-		'ware'
+		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Write-Host -Object 'Initialize.'
-[ScanVirusCleanupDuty]$CleanupManager = [ScanVirusCleanupDuty]::new()
-[ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::new()
-[ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::new()
-[ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::new()
-[ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::new()
+[ScanVirusCleanupDuty]$CleanupManager = [ScanVirusCleanupDuty]::New()
+[ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
+[ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
+[ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
+[ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::New()
 If (Get-GitHubActionsIsDebug) {
-	Get-HardwareMeta
-	Get-SoftwareMeta
+	Get-WareMeta
 }
 Test-GitHubActionsEnvironment -Mandatory
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
@@ -73,16 +72,16 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialSignaturesInput = Get-InputList -Name 'clamav_unofficialsignatures' -Delimiter $InputListDelimiter
-Write-NameValue -Name "ClamAV_UnofficialSignatures_RegEx [$($ClamAVUnofficialSignaturesInput.Count)]" -Value (
-	$ClamAVUnofficialSignaturesInput |
+[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter
+Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx [$($ClamAVUnofficialAssetsInput.Count)]" -Value (
+	$ClamAVUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[AllowEmptyCollection()][RegEx[]]$YaraRulesInput = Get-InputList -Name 'yara_rules' -Delimiter $InputListDelimiter
-Write-NameValue -Name "YARA_Rules_RegEx [$($YaraRulesInput.Count)]" -Value (
-	$YaraRulesInput |
+[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter
+Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput.Count)]" -Value (
+	$YaraUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 [Boolean]$UpdateAssets = Get-InputBoolean -Name 'update_assets'
@@ -92,12 +91,14 @@ Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
 [AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
 Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value (
 	$IgnoresElementsInput |
-		Format-List -Property '*'
+		Format-List -Property '*' |
+		Out-String
 ) -NewLine
 [PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
 Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
 	$IgnoresGitCommitsMetaInput |
-		Format-List -Property '*'
+		Format-List -Property '*' |
+		Out-String
 ) -NewLine
 [UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
 Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
@@ -105,43 +106,60 @@ Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
-If ($ClamAVEnable) {
-	Restore-ClamAVDatabase
-}
 If ($UpdateClamAV -and $ClamAVEnable) {
 	Update-ClamAV
 }
 If ($UpdateAssets -and (
-	($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) -or
-	($YaraEnable -and ($YaraRulesInput.Count -igt 0))
+	($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) -or
+	($YaraEnable -and $YaraUnofficialAssetsInput.Count -igt 0)
 )) {
 	Enter-GitHubActionsLogGroup -Title 'Update local assets.'
 	Update-Assets
 	Exit-GitHubActionsLogGroup
 }
-If ($ClamAVEnable -and ($ClamAVUnofficialSignaturesInput.Count -igt 0)) {
+If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
-	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -SignaturesSelection $ClamAVUnofficialSignaturesInput
-	ForEach ($IssueIgnore In $Result.IssuesIgnores) {
-		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialSignature/Ignore:$IssueIgnore"
+	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -Selection $ClamAVUnofficialAssetsInput
+	[String[]]$IndexNotExist = $Result.IndexTable |
+		Where-Object -FilterScript { !$_.Exist } |
+		Select-Object -ExpandProperty 'Name'
+	If ($IndexNotExist.Count -igt 0) {
+		Write-GitHubActionsWarning -Message @"
+$($IndexNotExist.Count) ClamAV unofficial assets were indexed but not exist: $(
+	$IndexNotExist |
+		Join-String -Separator ', ' -FormatString '`{0}`'
+)
+Please create a bug report!
+"@
 	}
-	ForEach ($IssueSignatureApply In $Result.IssuesSignaturesApply) {
-		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialSignature/Apply:$IssueSignatureApply"
+	ForEach ($Item In $IndexNotExist) {
+		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$Item"
 	}
-	ForEach ($IssueSignatureNotExist In $Result.IssuesSignaturesNotExist) {
-		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialSignature/NotExist:$IssueSignatureNotExist"
+	ForEach ($ApplyIssue In $Result.ApplyIssues) {
+		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$ApplyIssue"
 	}
-	$CleanupManager.Pending += $Result.NeedCleanUp
+	$CleanupManager.Storage += $Result.ApplyPaths
 	Exit-GitHubActionsLogGroup
 }
-[PSCustomObject[]]$YaraRulesSelect = @()
-If ($YaraEnable -and ($YaraRulesInput.Count -igt 0)) {
+[PSCustomObject[]]$YaraUnofficialAssetsIndexTable = @()
+If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
-	[Hashtable]$Result = Register-YaraRules -RulesSelection $YaraRulesInput
-	ForEach ($IssueRuleNotExist In $Result.IssuesRulesNotExist) {
-		$StatisticsIssuesOperations.Storage += "YARA/Rule/NotExist:$IssueRuleNotExist"
+	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
+	[String[]]$IndexNotExist = $IndexTable |
+		Where-Object -FilterScript { !$_.Exist } |
+		Select-Object -ExpandProperty 'Name'
+	If ($IndexNotExist.Count -igt 0) {
+		Write-GitHubActionsWarning -Message @"
+$($IndexNotExist.Count) YARA unofficial assets were indexed but not exist: $(
+	$IndexNotExist |
+		Join-String -Separator ', ' -FormatString '`{0}`'
+)
+Please create a bug report!
+"@
 	}
-	$YaraRulesSelect += $Result.Select
+	ForEach ($Item In $IndexNotExist) {
+		$StatisticsIssuesOperations.Storage += "YARA/UnofficialAssets/$Item"
+	}
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -164,14 +182,16 @@ Function Invoke-Tools {
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
 	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
 	If ($Elements.Count -ieq 0){
-		Write-GitHubActionsError -Message "Unable to scan session `"$SessionTitle`" due to the workspace is empty! If this is incorrect, probably something went wrong."
-		$Script:StatisticsIssuesOperations.Storage += "Workspace:$SessionId"
+		Write-GitHubActionsError -Message @"
+Unable to scan session `"$SessionTitle`": Workspace is empty!
+If this is incorrect, probably something went wrong.
+"@
+		$Script:StatisticsIssuesOperations.Storage += "Workspace/$SessionId"
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
 	[Boolean]$SkipClamAV = Test-StringMatchRegExs -Item $SessionId -Matchers $ClamAVIgnores.OnlySessions.Session
 	[Boolean]$SkipYara = Test-StringMatchRegExs -Item $SessionId -Matchers $YaraIgnores.OnlySessions.Session
-	[UInt64]$ElementsIsDirectoryCount = 0
 	[String[]]$ElementsListClamAV = @()
 	[String[]]$ElementsListYara = @()
 	[PSCustomObject[]]$ElementsListDisplay = @()
@@ -401,7 +421,7 @@ If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0
 				Continue
 			}
 			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash`` with exit code ``$LASTEXITCODE``: $_"
-			$StatisticsIssuesOperations.Storage += "Git:$GitCommitHash"
+			$StatisticsIssuesOperations.Storage += "Git/$GitCommitHash"
 			Exit-GitHubActionsLogGroup
 		}
 	}
@@ -428,26 +448,15 @@ If ($ClamAVEnable) {
 	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
 		Stop-Process
 }
-If ($CleanupManager.Pending.Count -igt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Clean up resources.'
-	$CleanupManager.Cleanup()
-	If ($CleanupManager.Pending.Count -igt 0) {
-		Write-GitHubActionsError -Message "Unable to clean up resources automatically [$($CleanupManager.Pending.Count)]: $(
-			$CleanupManager.Pending |
-				Join-String -Separator ', ' -FormatString '`{0}`'
-		)"
-		$StatisticsIssuesOperations.Storage += 'CleanUp'
-	}
-	Exit-GitHubActionsLogGroup
-}
-If ($ClamAVEnable) {
-	Enter-GitHubActionsLogGroup -Title 'Save ClamAV database.'
-	Save-ClamAVDatabase
-	Exit-GitHubActionsLogGroup
-}
+Enter-GitHubActionsLogGroup -Title 'Clean up resources.'
+$CleanupManager.Cleanup()
+Exit-GitHubActionsLogGroup
 Write-Host -Object 'Statistics.'
 $StatisticsTotalElements.ConclusionDisplay()
 $StatisticsTotalSizes.ConclusionDisplay()
+If ($StatisticsIssuesOperations.Storage.Count -igt 0) {
+	$StatisticsIssuesOperations.ConclusionDisplay()
+}
 If ($StatisticsIssuesSessions.GetTotal() -igt 0) {
 	$StatisticsIssuesSessions.ConclusionDisplay()
 	Exit 1

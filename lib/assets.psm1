@@ -153,18 +153,6 @@ Function Register-ClamAVUnofficialAssets {
 			} |
 				Write-Output
 		}
-	[String[]]$IndexNotExist = $IndexTable |
-		Where-Object -FilterScript { !$_.Exist } |
-		Select-Object -ExpandProperty 'Name'
-	If ($IndexNotExist.Count -igt 0) {
-		Write-GitHubActionsWarning -Message @"
-$($IndexNotExist.Count) ClamAV unofficial assets were indexed but not exist: $(
-	$IndexNotExist |
-		Join-String -Separator ', ' -FormatString '`{0}`'
-)
-Please create a bug report!
-"@
-	}
 	Write-NameValue -Name 'All' -Value $IndexTable.Count
 	Write-NameValue -Name 'Exist' -Value (
 		$IndexTable |
@@ -227,8 +215,9 @@ Please create a bug report!
 		}
 	}
 	Write-Output -InputObject @{
-		ApplyPaths = $AssetsApplyPaths
 		ApplyIssues = $AssetsApplyIssues
+		ApplyPaths = $AssetsApplyPaths
+		IndexTable = $IndexTable
 	}
 }
 Function Register-YaraUnofficialAssets {
@@ -252,18 +241,6 @@ Function Register-YaraUnofficialAssets {
 			} |
 				Write-Output
 		}
-	[String[]]$IndexNotExist = $IndexTable |
-		Where-Object -FilterScript { !$_.Exist } |
-		Select-Object -ExpandProperty 'Name'
-	If ($IndexNotExist.Count -igt 0) {
-		Write-GitHubActionsWarning -Message @"
-$($IndexNotExist.Count) YARA unofficial assets were indexed but not exist: $(
-	$IndexNotExist |
-		Join-String -Separator ', ' -FormatString '`{0}`'
-)
-Please create a bug report!
-"@
-	}
 	Write-NameValue -Name 'All' -Value $IndexTable.Count
 	Write-NameValue -Name 'Exist' -Value (
 		$IndexTable |
