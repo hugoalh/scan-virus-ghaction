@@ -17,7 +17,7 @@ Import-Module -Name (
 	MaximumRedirection = 5
 	MaximumRetryCount = 5
 	Method = 'Get'
-	RetryIntervalSec = 5
+	RetryIntervalSec = 10
 	UseBasicParsing = $True
 }
 [String]$IndexFileName = 'index.tsv'
@@ -30,12 +30,8 @@ Import-Module -Name (
 [String]$ClamAVDatabaseRoot = '/var/lib/clamav'
 [String]$ClamAVUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial'
 [String]$ClamAVUnofficialAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $IndexFileName
-[String]$YaraAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara'
-[String]$YaraAssetsIndexFilePath = Join-Path -Path $YaraAssetsRoot -ChildPath $IndexFileName
-[Hashtable]$ClamAVCacheParameters = @{
-	Key = 'scan-virus-ghaction-database-clamav-1'
-	LiteralPath = $ClamAVDatabaseRoot
-}
+[String]$YaraUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-unofficial'
+[String]$YaraUnofficialAssetsIndexFilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $IndexFileName
 Function Import-Assets {
 	[CmdletBinding()]
 	[OutputType([Void])]
@@ -45,8 +41,8 @@ Function Import-Assets {
 	Write-GitHubActionsDebug -Message 'Generate the assets package path.'
 	$PackageTempFilePath = New-TemporaryFile
 	$PackageTempRoot = Split-Path -LiteralPath $PackageTempFilePath
-	Write-GitHubActionsDebug -Message "$($PSStyle.Bold)Assets_Package_Root: $($PSStyle.Reset)$($PackageTempRoot)"
-	Write-GitHubActionsDebug -Message "$($PSStyle.Bold)Assets_Package_FilePath: $($PSStyle.Reset)$($PackageTempFilePath.FullName)"
+	Write-GitHubActionsDebug -Message "Assets_Package_Root: $PackageTempRoot"
+	Write-GitHubActionsDebug -Message "Assets_Package_FilePath: $($PackageTempFilePath.FullName)"
 	Write-GitHubActionsDebug -Message 'Download the remote assets.'
 	Try {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebRequestParameters_Get
@@ -92,28 +88,26 @@ This is fine, but the local assets maybe outdated.
 	Finally {
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
-	If ($Initial.IsPresent) {
-		$LocalRootResolve = Resolve-Path -Path $LocalRoot
-		[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
-		Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
-		Get-ChildItem -LiteralPath $LocalRoot -Recurse |
-			ForEach-Object -Process {
-				[PSCustomObject]@{
-					Directory = $_.Directory.FullName -ireplace $LocalRootRegEx, ''
-					Name = $_.Name
-					Size = $_.Length
-					Flag = $_.PSIsContainer ? 'D' : ''
-				} |
-					Write-Output
+	$LocalRootResolve = Resolve-Path -Path $LocalRoot
+	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
+	Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
+	Get-ChildItem -LiteralPath $LocalRoot -Recurse |
+		ForEach-Object -Process {
+			[PSCustomObject]@{
+				Directory = $_.Directory.FullName -ireplace $LocalRootRegEx, ''
+				Name = $_.Name
+				Size = $_.Length
+				Flag = $_.PSIsContainer ? 'D' : ''
 			} |
-			Sort-Object -Property @('Directory', 'Name') |
-			Format-Table -Property @(
-				'Name',
-				@{ Expression = 'Size'; Alignment = 'Right' },
-				'Flag'
-			) -AutoSize -Wrap -GroupBy 'Directory'
-		Return
-	}
+				Write-Output
+		} |
+		Sort-Object -Property @('Directory', 'Name') |
+		Format-Table -Property @(
+			'Name',
+			@{ Expression = 'Size'; Alignment = 'Right' },
+			'Flag'
+		) -AutoSize -GroupBy 'Directory' |
+		Out-String
 	Write-Host -Object 'Local assets are now up to date.'
 }
 Function Import-NetworkTarget {
@@ -142,174 +136,155 @@ Function Register-ClamAVUnofficialAssets {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVAssetsIndexFilePath @ImportCsvParameters_Tsv
-	[PSCustomObject[]]$Overview = @()
-	ForEach ($Row In $IndexTable) {
-		[String]$FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $Row.Path
-		[Boolean]$Exist = Test-Path -LiteralPath $FilePath
-		[Boolean]$Select = Test-StringMatchRegExs -Item $Row.Name -Matchers $Selection
-		$Overview += [PSCustomObject]@{
-			Name = $Row.Name
-			Exist = $Exist
-			Select = $Select
-			Apply = $Exist -and $Select
-			DatabaseFileName = $Row.Path -ireplace '\/', '_'
-			FilePath = $FilePath
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Group.Length -ieq 0 -and $_.Path.Length -igt 0 } |
+		ForEach-Object -Process {
+			[String]$FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
+			[Boolean]$Exist = Test-Path -LiteralPath $FilePath
+			[Boolean]$Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
+			[PSCustomObject]@{
+				Name = $_.Name
+				FilePath = $FilePath
+				DatabaseFileName = $_.Path -ireplace '\/', '_'
+				ApplyIgnores = $_.ApplyIgnores
+				Exist = $Exist
+				Select = $Select
+				Apply = $Exist -and $Select
+			} |
+				Write-Output
 		}
-	}
-	[String[]]$AssetsNotExist = $Overview |
+	[String[]]$IndexNotExist = $IndexTable |
 		Where-Object -FilterScript { !$_.Exist } |
 		Select-Object -ExpandProperty 'Name'
-	If ($AssetsNotExist.Count -igt 0) {
+	If ($IndexNotExist.Count -igt 0) {
 		Write-GitHubActionsWarning -Message @"
-Some of the ClamAV unofficial assets were indexed but not exist, please create a bug report!
-$(
-	$AssetsNotExist
+$($IndexNotExist.Count) ClamAV unofficial assets were indexed but not exist: $(
+	$IndexNotExist |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
+Please create a bug report!
 "@
 	}
-	Write-NameValue -Name 'All' -Value $Overview.Count
+	Write-NameValue -Name 'All' -Value $IndexTable.Count
 	Write-NameValue -Name 'Exist' -Value (
-		$Overview |
+		$IndexTable |
 			Where-Object -FilterScript { $_.Exist }
 	).Count
 	Write-NameValue -Name 'Select' -Value (
-		$Overview |
+		$IndexTable |
 			Where-Object -FilterScript { $_.Select }
 	).Count
 	Write-NameValue -Name 'Apply' -Value (
-		$Overview |
+		$IndexTable |
 			Where-Object -FilterScript { $_.Apply }
 	).Count
-	$Overview |
+	$IndexTable |
 		Format-Table -Property @(
 			'Name',
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -AutoSize -Wrap
-	[String[]]$SignaturesDestinationFilePaths = @()
-	[String[]]$IssuesSignaturesApply = @()
-	ForEach ($Signature In (
-		$SignaturesOverview |
+		) -AutoSize |
+		Out-String
+	[String[]]$AssetsApplyPaths = @()
+	[String[]]$AssetsApplyIssues = @()
+	ForEach ($IndexApply In (
+		$IndexTable |
 			Where-Object -FilterScript { $_.Apply }
 	)) {
-		[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $Signature.DatabaseFileName
+		[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $IndexApply.DatabaseFileName
 		Try {
-			Copy-Item -LiteralPath $Signature.FilePath -Destination $DestinationFilePath -Confirm:$False
-			$SignaturesDestinationFilePaths += $DestinationFilePath
+			Copy-Item -LiteralPath $IndexApply.FilePath -Destination $DestinationFilePath -Confirm:$False
+			$AssetsApplyPaths += $DestinationFilePath
 		}
 		Catch {
-			Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ``$($Signature.Name)``: $_"
-			$IssuesSignaturesApply += $Signature.Name
+			Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial asset ``$($IndexApply.Name)``: $_"
+			$AssetsApplyIssues += $IndexApply.Name
+		}
+		If ($IndexApply.ApplyIgnores.Length -igt 0) {
+			[String[]]$ApplyIgnoresRaw = $IndexApply.ApplyIgnores -isplit ',' |
+				ForEach-Object -Process { $_.Trim() } |
+				Where-Object -FilterScript { $_.Length -igt 0 }
+			ForEach ($ApplyIgnoreRaw In $ApplyIgnoresRaw) {
+				[PSCustomObject]$IndexApplyIgnore = $IndexTable |
+					Where-Object -FilterScript { $_.Name -ieq $ApplyIgnoreRaw }
+					Select-Object -First 1
+				[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $IndexApplyIgnore.DatabaseFileName
+				If (
+					$DestinationFilePath -iin $AssetsApplyPaths -or
+					$IndexApplyIgnore.Name -iin $AssetsApplyIssues
+				) {
+					Continue
+				}
+				Try {
+					Copy-Item -LiteralPath $IndexApplyIgnore.FilePath -Destination $DestinationFilePath -Confirm:$False
+					$AssetsApplyPaths += $DestinationFilePath
+				}
+				Catch {
+					Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial asset ``$($IndexApplyIgnore.Name)``: $_"
+					$AssetsApplyIssues += $IndexApplyIgnore.Name
+				}
+			}
 		}
 	}
-	[String[]]$IgnoresDestinationFilePaths = @()
-	[String[]]$IssuesIgnores = @()
-	If ($SignaturesDestinationFilePaths -igt 0) {
-		[PSCustomObject[]]$IgnoresIndexTable = Import-Csv -LiteralPath $ClamAVUnofficialSignaturesIgnoresAssetsIndexFilePath @ImportCsvParameters_Tsv
-		ForEach ($Ignore In $IgnoresIndexTable) {
-			[String]$FilePath = Join-Path -Path $ClamAVUnofficialSignaturesIgnoresAssetsRoot -ChildPath $Ignore.Location
-			[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath ($Ignore.Location -ireplace '\/', '_')
-			Try {
-				Copy-Item -LiteralPath $FilePath -Destination $DestinationFilePath -Confirm:$False
-				$IgnoresDestinationFilePaths += $DestinationFilePath
-			}
-			Catch {
-				Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial signature ignore ``$($Ignore.Name)``: $_"
-				$IssuesIgnores += $Ignore.Name
-			}
-		}
+	Write-Output -InputObject @{
+		ApplyPaths = $AssetsApplyPaths
+		ApplyIssues = $AssetsApplyIssues
 	}
-	[Hashtable]@{
-		IssuesIgnores = $IssuesIgnores
-		IssuesSignaturesApply = $IssuesSignaturesApply
-		IssuesSignaturesNotExist = $IssuesSignaturesNotExist
-		NeedCleanUp = $SignaturesDestinationFilePaths + $IgnoresDestinationFilePaths
-	} |
-		Write-Output
 }
-Function Register-YaraRules {
+Function Register-YaraUnofficialAssets {
 	[CmdletBinding()]
-	[OutputType([Hashtable])]
+	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('RulesSelections')][RegEx[]]$RulesSelection
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
-	[PSCustomObject[]]$RulesIndexTable = Import-Csv -LiteralPath $YaraRulesAssetsIndexFilePath @ImportCsvParameters_Tsv
-	[PSCustomObject[]]$RulesOverview = @()
-	ForEach ($Rule In $RulesIndexTable) {
-		[String]$FilePath = Join-Path -Path $YaraRulesAssetsRoot -ChildPath $Rule.Location
-		[Boolean]$Exist = Test-Path -LiteralPath $FilePath
-		[Boolean]$Select = Test-StringMatchRegExs -Item $Rule.Name -Matchers $RulesSelection
-		$RulesOverview += [PSCustomObject]@{
-			Name = $Rule.Name
-			Exist = $Exist
-			Select = $Select
-			Apply = $Exist -and $Select
-			FilePath = $FilePath
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $YaraUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Group.Length -ieq 0 -and $_.Path.Length -igt 0 } |
+		ForEach-Object -Process {
+			[String]$FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
+			[Boolean]$Exist = Test-Path -LiteralPath $FilePath
+			[Boolean]$Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
+			[PSCustomObject]@{
+				Name = $_.Name
+				FilePath = $FilePath
+				Exist = $Exist
+				Select = $Select
+				Apply = $Exist -and $Select
+			} |
+				Write-Output
 		}
-	}
-	[String[]]$IssuesRulesNotExist = $RulesOverview |
+	[String[]]$IndexNotExist = $IndexTable |
 		Where-Object -FilterScript { !$_.Exist } |
 		Select-Object -ExpandProperty 'Name'
-	If ($IssuesRulesNotExist.Count -igt 0) {
+	If ($IndexNotExist.Count -igt 0) {
 		Write-GitHubActionsWarning -Message @"
-Some of the YARA rules were indexed but not exist, please create a bug report!
-$(
-	$IssuesRulesNotExist
+$($IndexNotExist.Count) YARA unofficial assets were indexed but not exist: $(
+	$IndexNotExist |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
+Please create a bug report!
 "@
 	}
-	Write-NameValue -Name 'All' -Value $RulesOverview.Count
+	Write-NameValue -Name 'All' -Value $IndexTable.Count
 	Write-NameValue -Name 'Exist' -Value (
-		$RulesOverview |
+		$IndexTable |
 			Where-Object -FilterScript { $_.Exist }
 	).Count
 	Write-NameValue -Name 'Select' -Value (
-		$RulesOverview |
+		$IndexTable |
 			Where-Object -FilterScript { $_.Select }
 	).Count
 	Write-NameValue -Name 'Apply' -Value (
-		$RulesOverview |
+		$IndexTable |
 			Where-Object -FilterScript { $_.Apply }
 	).Count
-	$RulesOverview |
+	$IndexTable |
 		Format-Table -Property @(
 			'Name',
 			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -AutoSize -Wrap
-	[Hashtable]@{
-		IssuesRulesNotExist = $IssuesRulesNotExist
-		Select = $RulesOverview |
-			Where-Object -FilterScript { $_.Apply }
-	} |
-		Write-Output
-}
-Function Restore-ClamAVDatabase {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Restore ClamAV database.'
-	Try {
-		Restore-GitHubActionsCache @ClamAVCacheParameters -Timeout 60
-	}
-	Catch {
-		Write-GitHubActionsNotice -Message $_
-	}
-	Exit-GitHubActionsLogGroup
-}
-Function Save-ClamAVDatabase {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param ()
-	Try {
-		Save-GitHubActionsCache @ClamAVCacheParameters
-	}
-	Catch {
-		Write-GitHubActionsNotice -Message $_
-	}
+		) -AutoSize |
+		Out-String
+	Write-Output -InputObject $IndexTable
 }
 Function Update-Assets {
 	[CmdletBinding()]
@@ -382,10 +357,8 @@ This is fine, but the local assets maybe outdated.
 Export-ModuleMember -Function @(
 	'Import-Assets',
 	'Import-NetworkTarget',
-	'Register-ClamAVUnofficialSignatures',
-	'Register-YaraRules',
-	'Restore-ClamAVDatabase',
-	'Save-ClamAVDatabase',
+	'Register-ClamAVUnofficialAssets',
+	'Register-YaraUnofficialAssets',
 	'Update-Assets',
 	'Update-ClamAV'
 )

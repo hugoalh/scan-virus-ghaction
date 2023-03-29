@@ -6,38 +6,36 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Function Get-HardwareMeta {
+Function Get-WareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Hardware Information: '
 	hwinfo --all
 	Exit-GitHubActionsLogGroup
-}
-Function Get-SoftwareMeta {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
 	Get-ChildItem -LiteralPath 'Env:\' |
 		ForEach-Object -Process {
 			If (
-				($_.Name -iin @('ACTIONS_RUNTIME_TOKEN')) -or
-				($_.Name -imatch '_TOKEN$')
+				$_.Name -iin @('ACTIONS_RUNTIME_TOKEN') -or
+				$_.Name -imatch '_TOKEN$'
 			) {
 				[PSCustomObject]@{
 					Name = $_.Name
 					Value = '***'
-				}
+				} |
+					Write-Output
 			}
 			Else {
 				[PSCustomObject]@{
 					Name = $_.Name
 					Value = $_.Value
-				}
+				} |
+					Write-Output
 			}
 		} |
-		Format-Table -AutoSize -Wrap
+		Format-Table -AutoSize |
+		Out-String
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
 	Write-NameValue -Name 'Path' -Value (
@@ -52,7 +50,8 @@ Function Get-SoftwareMeta {
 	Write-NameValue -Name 'UI' -Value $Host.UI.RawUI -NewLine
 	Write-NameValue -Name 'Module' -Value (
 		Get-InstalledModule |
-			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize -Wrap
+			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize |
+			Out-String
 	) -NewLine
 	Exit-GitHubActionsLogGroup
 	@(
@@ -76,6 +75,5 @@ Function Get-SoftwareMeta {
 		}
 }
 Export-ModuleMember -Function @(
-	'Get-HardwareMeta',
-	'Get-SoftwareMeta'
+	'Get-WareMeta'
 )

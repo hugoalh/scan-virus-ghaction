@@ -222,7 +222,8 @@ Function Invoke-Tools {
 			'Element',
 			'Flags',
 			@{ Expression = 'Sizes'; Alignment = 'Right' }
-		) -AutoSize -Wrap
+		) -AutoSize |
+		Out-String
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
 		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName

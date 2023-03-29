@@ -3,17 +3,16 @@ $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name (
 	@(
 		'assets',
-		'display',
 		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Get-HardwareMeta
-Get-SoftwareMeta
-Write-Status -InputObject 'Update ClamAV.'
+Write-Host -Object 'List ware meta.'
+Get-WareMeta
+Write-Host -Object 'Update ClamAV via FreshClam.'
 freshclam --verbose
-Write-Status -InputObject 'Import assets.'
+Write-Host -Object 'Import assets.'
 Import-Assets -Initial
-Write-Status -InputObject 'Tweak Git.'
-git config --global --add 'safe.directory' '*'
+Write-Host -Object 'Tweak Git.'
+Invoke-Expression -Command "git config --global --add `"safe.directory`" `"*`""
 git config --global --list

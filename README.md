@@ -348,4 +348,4 @@ jobs:
 
 [assets-repository]: https://github.com/hugoalh/scan-virus-ghaction-assets
 [clamav-unofficial-assets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav-unofficial/index.tsv
-[yara-unofficial-assets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara/index.tsv
+[yara-unofficial-assets-list]: https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara-unofficial/index.tsv
