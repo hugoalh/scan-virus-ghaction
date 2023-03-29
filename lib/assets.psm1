@@ -89,7 +89,7 @@ This is fine, but the local assets maybe outdated.
 		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
 	}
 	$LocalRootResolve = Resolve-Path -Path $LocalRoot
-	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
+	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/?")
 	Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
 	Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 		ForEach-Object -Process {
