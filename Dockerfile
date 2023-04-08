@@ -2,6 +2,7 @@ FROM debian:11.6
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes dist-upgrade
+RUN apt-get --assume-yes autoremove
 RUN apt-get --assume-yes install apt-utils curl hwinfo
 RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
 RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
@@ -19,4 +20,4 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -Accept
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 COPY lib/** /opt/hugoalh/scan-virus-ghaction/lib/
 RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/build.ps1"]
-CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
+CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/debug.ps1"]
