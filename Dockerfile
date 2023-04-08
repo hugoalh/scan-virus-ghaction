@@ -1,4 +1,4 @@
-FROM debian:11.6 as base
+FROM debian:11.6 as powershell-extract
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
@@ -9,15 +9,21 @@ ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCa
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/${PS_INSTALL_VERSION}
 ENV PS_PACKAGE=powershell-${PS_VERSION}-linux-x64.tar.gz
 ENV PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE}
-
-FROM debian:11.6 as powershell-extract
-COPY --from=base / /
 ADD ${PS_PACKAGE_URL} /tmp/${PS_PACKAGE}
 RUN mkdir --parents ${PS_INSTALL_FOLDER} --verbose
 RUN tar --extract --gzip --file="/tmp/${PS_PACKAGE}" --directory="${PS_INSTALL_FOLDER}" --verbose
 
 FROM debian:11.6 as main
-COPY --from=base / /
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV PS_INSTALL_VERSION=7
+ENV PS_VERSION=7.3.3
+ENV PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/${PS_INSTALL_VERSION}
+ENV PS_PACKAGE=powershell-${PS_VERSION}-linux-x64.tar.gz
+ENV PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v${PS_VERSION}/${PS_PACKAGE}
 RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 RUN apt-get --assume-yes update
