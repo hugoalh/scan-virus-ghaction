@@ -37,10 +37,10 @@ RUN ln -s ${PS_INSTALL_FOLDER}/pwsh /usr/bin/pwsh
 RUN sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen
 RUN locale-gen
 RUN update-locale
-RUN ["pwsh", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose", "-NonInteractive"]
-RUN ["pwsh", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose", "-NonInteractive"]
-RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.4.0' -Scope 'AllUsers' -AcceptLicense -Verbose", "-NonInteractive"]
-RUN ["pwsh", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose", "-NonInteractive"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.4.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 COPY lib/** /opt/hugoalh/scan-virus-ghaction/lib/
 RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/build.ps1"]
