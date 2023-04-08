@@ -8,7 +8,7 @@ Function Write-NameValue {
 		[Switch]$NewLine
 	)
 	[Boolean]$NoNewLine = !$NewLine.IsPresent
-	Write-Host -Object "${Name}: " -NoNewline:$NoNewLine
+	Write-Host -Object "$($Name): " -NoNewline:$NoNewLine
 	If (
 		$Null -ieq $Value -or
 		$Value -is [Boolean] -or

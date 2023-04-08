@@ -17,5 +17,5 @@ RUN ["pwsh", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -R
 RUN ["pwsh", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 COPY lib/** /opt/hugoalh/scan-virus-ghaction/lib/
-RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/initial.ps1"]
+RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/build.ps1"]
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]

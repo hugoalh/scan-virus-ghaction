@@ -1,4 +1,6 @@
+#!/usr/bin/env pwsh
 #Requires -PSEdition Core -Version 7.3
+Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
@@ -14,118 +16,6 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Write-Host -Object 'Initialize.'
-Class ScanVirusCleanupDuty {
-	[String[]]$Storage = @()
-	[Void]Cleanup() {
-		$This.Storage |
-			ForEach-Object -Process {
-				Remove-Item -LiteralPath $_ -Force -Confirm:$False -ErrorAction 'Continue'
-			}
-		$This.Storage = @()
-	}
-}
-Class ScanVirusStatisticsIssuesOperations {
-	[String[]]$Storage = @()
-	[Void]ConclusionDisplay() {
-		Enter-GitHubActionsLogGroup -Title "Issues Operations [$($This.Storage.Count)]: "
-		$This.Storage |
-			Join-String -Separator ', '
-		Exit-GitHubActionsLogGroup
-	}
-}
-Class ScanVirusStatisticsIssuesSessions {
-	[String[]]$ClamAV = @()
-	[String[]]$Yara = @()
-	[Void]ConclusionDisplay() {
-		Enter-GitHubActionsLogGroup -Title "Issues Sessions [$($This.GetTotal())]: "
-		Write-NameValue -Name "ClamAV [$($This.ClamAV.Count)]" -Value (
-			$This.ClamAV |
-				Join-String -Separator ', '
-		)
-		Write-NameValue -Name "Yara [$($This.Yara.Count)]" -Value (
-			$This.Yara |
-				Join-String -Separator ', '
-		)
-		Exit-GitHubActionsLogGroup
-	}
-	[UInt64]GetTotal() {
-		Return ($This.ClamAV.Count + $This.Yara.Count)
-	}
-}
-Class ScanVirusStatisticsTotalElements {
-	[UInt64]$Discover = 0
-	[UInt64]$Scan = 0
-	[UInt64]$ClamAV = 0
-	[UInt64]$Yara = 0
-	[Void]ConclusionDisplay() {
-		[Boolean]$IsNoElements = $This.Discover -ieq 0
-		Enter-GitHubActionsLogGroup -Title 'Total Elements: '
-		[PSCustomObject[]]$TotalElementsTable = @(
-			[PSCustomObject]@{
-				Type = 'Discover'
-				Value = $This.Discover
-				Percentage = $Null
-			}
-		)
-		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
-			$TotalElementsTable += [PSCustomObject]@{
-				Type = $Type
-				Value = $This[$Type]
-				Percentage = $IsNoElements ? 0 : [Math]::Round(($This[$Type] / $This.Discover * 100), 3)
-			}
-		}
-		$TotalElementsTable |
-			Format-Table -Property @(
-				'Type',
-				@{ Expression = 'Value'; Alignment = 'Right' },
-				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
-			) -AutoSize |
-			Out-String
-		Exit-GitHubActionsLogGroup
-	}
-}
-Class ScanVirusStatisticsTotalSizes {
-	[UInt64]$Discover = 0
-	[UInt64]$Scan = 0
-	[UInt64]$ClamAV = 0
-	[UInt64]$Yara = 0
-	[Void]ConclusionDisplay() {
-		[Boolean]$IsNoSizes = $This.Discover -ieq 0
-		Enter-GitHubActionsLogGroup -Title 'Total Sizes: '
-		[PSCustomObject[]]$TotalSizesTable = @(
-			[PSCustomObject]@{
-				Type = 'Discover'
-				B = $This.Discover
-				KB = [Math]::Round(($This.Discover / 1KB), 3)
-				MB = [Math]::Round(($This.Discover / 1MB), 3)
-				GB = [Math]::Round(($This.Discover / 1GB), 3)
-				Percentage = $Null
-			}
-		)
-		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
-			$TotalSizesTable += [PSCustomObject]@{
-				Type = $Type
-				B = $This[$Type]
-				KB = [Math]::Round(($This[$Type] / 1KB), 3)
-				MB = [Math]::Round(($This[$Type] / 1MB), 3)
-				GB = [Math]::Round(($This[$Type] / 1GB), 3)
-				Percentage = $IsNoSizes ? 0 : [Math]::Round(($This[$Type] / $This.Discover * 100), 3)
-			}
-		}
-		$TotalSizesTable |
-			Format-Table -Property @(
-				'Type',
-				@{ Expression = 'B'; Alignment = 'Right' },
-				@{ Expression = 'KB'; Alignment = 'Right' },
-				@{ Expression = 'MB'; Alignment = 'Right' },
-				@{ Expression = 'GB'; Alignment = 'Right' },
-				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
-			) -AutoSize |
-			Out-String
-		Exit-GitHubActionsLogGroup
-	}
-}
-[ScanVirusCleanupDuty]$CleanupManager = [ScanVirusCleanupDuty]::New()
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
 [ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
@@ -160,7 +50,9 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 		Break
 	}
 	Default {
-		Write-GitHubActionsFail -Message "``$_`` is not a valid table markup language!"
+		Write-GitHubActionsError -Message "``$_`` is not a valid table markup language!"
+		Exit-GitHubActionsLogGroup
+		Exit 1
 	}
 }
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
@@ -212,6 +104,7 @@ Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Co
 [UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
 Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
 Exit-GitHubActionsLogGroup
+<# DEBUG #>Exit 0
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
@@ -247,7 +140,6 @@ Please create a bug report!
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$ApplyIssue"
 	}
-	$CleanupManager.Storage += $Result.ApplyPaths
 	Exit-GitHubActionsLogGroup
 }
 [PSCustomObject[]]$YaraUnofficialAssetsIndexTable = @()
@@ -557,9 +449,6 @@ If ($ClamAVEnable) {
 	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
 		Stop-Process
 }
-Enter-GitHubActionsLogGroup -Title 'Clean up resources.'
-$CleanupManager.Cleanup()
-Exit-GitHubActionsLogGroup
 Write-Host -Object 'Statistics.'
 $StatisticsTotalElements.ConclusionDisplay()
 $StatisticsTotalSizes.ConclusionDisplay()

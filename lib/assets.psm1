@@ -36,7 +36,7 @@ Function Import-Assets {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Switch]$Initial
+		[Switch]$Build
 	)
 	Write-GitHubActionsDebug -Message 'Generate the assets package path.'
 	$PackageTempFilePath = New-TemporaryFile
@@ -48,8 +48,8 @@ Function Import-Assets {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebRequestParameters_Get
 	}
 	Catch {
-		If ($Initial.IsPresent) {
-			Write-GitHubActionsFail -Message "Unable to download the remote assets: $_"
+		If ($Build.IsPresent) {
+			Write-Error -Message "Unable to download the remote assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
 		}
 		Write-GitHubActionsWarning -Message @"
 Unable to download the remote assets: $_
@@ -63,8 +63,8 @@ This is fine, but the local assets maybe outdated.
 		Expand-Archive -LiteralPath $PackageTempFilePath -DestinationPath $PackageTempRoot
 	}
 	Catch {
-		If ($Initial.IsPresent) {
-			Write-GitHubActionsFail -Message "Unable to expand the assets package: $_"
+		If ($Build.IsPresent) {
+			Write-Error -Message "Unable to expand the assets package: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
 		}
 		Write-GitHubActionsWarning -Message @"
 Unable to expand the assets package: $_
@@ -77,12 +77,15 @@ This is fine, but the local assets maybe outdated.
 	}
 	Write-GitHubActionsDebug -Message 'Update the local assets.'
 	Try {
-		If (!$Initial.IsPresent) {
+		If (!$Build.IsPresent) {
 			Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$False
 		}
 		Move-Item -LiteralPath (Join-Path -Path $PackageTempRoot -ChildPath 'scan-virus-ghaction-assets-main') -Destination $LocalRoot -Confirm:$False
 	}
 	Catch {
+		If ($Build.IsPresent) {
+			Write-Error -Message "Unable to update the local assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
+		}
 		Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
 	}
 	Finally {

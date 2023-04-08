@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 #Requires -PSEdition Core -Version 7.3
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name (
@@ -12,7 +13,7 @@ Get-WareMeta
 Write-Host -Object 'Update ClamAV via FreshClam.'
 freshclam --verbose
 Write-Host -Object 'Import assets.'
-Import-Assets -Initial
+Import-Assets -Build
 Write-Host -Object 'Tweak Git.'
 Invoke-Expression -Command "git config --global --add `"safe.directory`" `"*`""
 git config --global --list

@@ -1,6 +1,5 @@
 #Requires -PSEdition Core -Version 7.3
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-[RegEx]$GitHubActionsWorkspaceRootRegEx = "$([RegEx]::Escape($Env:GITHUB_WORKSPACE))\/"
 Import-Module -Name (
 	@(
 		'assets',
@@ -8,83 +7,66 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+[RegEx]$GitHubActionsWorkspaceRootRegEx = "$([RegEx]::Escape($Env:GITHUB_WORKSPACE))\/"
 Function Invoke-ClamAV {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements', 'File', 'Files')][String[]]$Element
 	)
-	$ElementScanList = New-TemporaryFile
-	Set-Content -LiteralPath $ElementScanList -Value (
+	[Hashtable]$Result = @{
+		ElementFound = @{}
+		ErrorMessage = @()
+		ExitCode = 0
+		Output = @()
+	}
+	$ElementScanListFile = New-TemporaryFile
+	Set-Content -LiteralPath $ElementScanListFile -Value (
 		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	Try {
-		[String[]]$Output = clamdscan --fdpass --file-list="$($ElementScanList.FullName)" --multiscan
-		[Int32]$ExitCode = $LASTEXITCODE
+		$Result.Output += clamdscan --fdpass --file-list="$($ElementScanListFile.FullName)" --multiscan
 	}
 	Catch {
-		Write-GitHubActionsError -Message "Unexpected issues when invoke ClamAV (SessionID: $SessionId): $_"
-		Exit-GitHubActionsLogGroup
-		Exit 1
+		$Result.ExitCode = $LASTEXITCODE
+		$Result.ErrorMessage += $_
+		Write-Output -InputObject $Result
+		Return
 	}
-	$Output |
-		Write-GitHubActionsDebug
-	[String[]]$ResultError = @()
-	[Hashtable]$ResultFound = @{}
-	ForEach ($Line In (
-		$Output |
+	Finally {
+		Remove-Item -LiteralPath $ElementScanListFile -Force -Confirm:$False
+	}
+	$Result.ExitCode = $LASTEXITCODE
+	ForEach ($OutputLine In (
+		$Result.Output |
 			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
 	)) {
-		If ($Line -imatch '^[-=]+\s*SCAN SUMMARY\s*[-=]+$') {
+		If ($OutputLine -imatch '^[-=]+\s*SCAN SUMMARY\s*[-=]+$') {
 			Break
 		}
 		If (
-			($Line -imatch ': OK$') -or
-			($Line -imatch '^\s*$')
+			($OutputLine -imatch ': OK$') -or
+			($OutputLine -imatch '^\s*$')
 		) {
 			Continue
 		}
-		If ($Line -imatch ': .+ FOUND$') {
-			[String]$ElementIssue = $Line -ireplace ' FOUND$', ''
-			[String]$Element, [String]$Signature = $ElementIssue -isplit '(?<=^.+?): '
-			If ($Null -ieq $ResultFound[$Element]) {
-				$ResultFound[$Element] = @()
+		If ($OutputLine -imatch ': .+ FOUND$') {
+			[String]$ElementIssue, [String]$Signature = ($OutputLine -ireplace ' FOUND$', '') -isplit '(?<=^.+?): '
+			If ($Null -ieq $Result.ElementFound[$ElementIssue]) {
+				$Result.ElementFound[$ElementIssue] = @()
 			}
-			If ($Signature -inotin $ResultFound[$Element]) {
-				$ResultFound[$Element] += $Signature
+			If ($Signature -inotin $Result.ElementFound[$ElementIssue]) {
+				$Result.ElementFound[$ElementIssue] += $Signature
 			}
 			Continue
 		}
-		$ResultError += $Line
-	}
-	If ($ResultFound.Count -igt 0) {
-		$ResultFound.GetEnumerator() |
-			Sort-Object -Property 'Name' |
-			ForEach-Object -Process {
-				[String[]]$IssueSignatures = $_.Value |
-					Sort-Object -Unique -CaseSensitive
-				Write-NameValue -Name "$($_.Name) [$($IssueSignatures.Count)]" -Value (
-					$IssueSignatures |
-						Join-String -Separator ', '
-				)
-			}
-		Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via ClamAV [$($ResultFound.Count)]: `n$(
-			$ResultFound.GetEnumerator().Name |
-				Sort-Object |
-				Join-String -Separator ', '
-		)"
-		If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
-			$Script:StatisticsIssuesSessions.ClamAV += $SessionId
+		If ($OutputLine.Trim().Length -igt 0) {
+			$Result.ErrorMessage += $OutputLine
+			Continue
 		}
 	}
-	If ($ClamAVResultError.Count -igt 0) {
-		Write-GitHubActionsError -Message "Unexpected ClamAV result ``$ExitCode`` in session `"$SessionTitle`":`n$($ClamAVResultError -join "`n")"
-		If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
-			$Script:StatisticsIssuesSessions.ClamAV += $SessionId
-		}
-	}
-	Remove-Item -LiteralPath $ElementScanList -Force -Confirm:$False
+	Write-Output -InputObject $Result
 }
 Function Invoke-Yara {
 	[CmdletBinding()]
@@ -93,24 +75,49 @@ Function Invoke-Yara {
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements', 'File', 'Files')][String[]]$Element,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Rules')][PSCustomObject[]]$Rule
 	)
-	$ElementScanList = New-TemporaryFile
-	Set-Content -LiteralPath $ElementScanList -Value (
+	[Hashtable]$Result = @{
+		ElementFound = @{}
+		ErrorMessage = @()
+		ExitCode = 0
+		Output = @()
+	}
+	$ElementScanListFile = New-TemporaryFile
+	Set-Content -LiteralPath $ElementScanListFile -Value (
 		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
-	[Hashtable]$ResultFound = @{}
 	ForEach ($RuleEntry In $Rule) {
 		Try {
-			[String[]]$Output = yara --scan-list "$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $RuleEntry.Location)" "$($ElementScanList.FullName)"
-			[Int32]$ExitCode = $LASTEXITCODE
+			$Result.Output += yara --scan-list "$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $RuleEntry.Path)" "$($ElementScanListFile.FullName)"
 		}
 		Catch {
-			Write-GitHubActionsError -Message "Unexpected issues when invoke YARA (SessionID: $SessionId): $_"
-			Exit-GitHubActionsLogGroup
-			Exit 1
+			$Result.ExitCode = [Math]::Max($Result.ExitCode, $LASTEXITCODE)
+			$Result.ErrorMessage += $_
+			Continue
+		}
+		Finally {
+			Remove-Item -LiteralPath $ElementScanListFile -Force -Confirm:$False
+		}
+		$Result.ExitCode = [Math]::Max($Result.ExitCode, $LASTEXITCODE)
+	}
+	ForEach ($OutputLine In $Result.Output) {
+		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
+			[String]$Rule, [String]$ElementIssue = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
+			[String]$YaraRuleName = "$($YaraRule.Name)/$Rule"
+			If ($Null -ieq $Result.ElementFound[$ElementIssue]) {
+				$Result.ElementFound[$ElementIssue] = @()
+			}
+			If ($YaraRuleName -inotin $Result.ElementFound[$ElementIssue]) {
+				$Result.ElementFound[$ElementIssue] += $YaraRuleName
+			}
+			Continue
+		}
+		If ($OutputLine.Trim().Length -igt 0) {
+			$Result.ErrorMessage += $OutputLine
+			Continue
 		}
 	}
-	Remove-Item -LiteralPath $ElementScanList -Force -Confirm:$False
+	Write-Output -InputObject $Result
 }
 Export-ModuleMember -Function @(
 	'Invoke-ClamAV',
