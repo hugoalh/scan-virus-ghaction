@@ -4,8 +4,8 @@ Import-Module -Name (
 	@(
 		'datetime',
 		'display',
-		'token',
-		'utility'
+		'internal',
+		'token'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'

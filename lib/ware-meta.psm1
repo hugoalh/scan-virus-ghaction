@@ -20,22 +20,11 @@ Function Get-WareMeta {
 				$_.Name -iin @('ACTIONS_RUNTIME_TOKEN') -or
 				$_.Name -imatch '_TOKEN$'
 			) {
-				[PSCustomObject]@{
-					Name = $_.Name
-					Value = '***'
-				} |
-					Write-Output
+				Write-NameValue -Name $_.Name -Value '***'
 			}
 			Else {
-				[PSCustomObject]@{
-					Name = $_.Name
-					Value = $_.Value
-				} |
-					Write-Output
+				Write-NameValue -Name $_.Name -Value $_.Value
 			}
-		} |
-		ForEach-Object -Process {
-			Write-NameValue -Name $_.Name -Value $_.Value
 		}
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '

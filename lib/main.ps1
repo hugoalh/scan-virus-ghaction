@@ -8,9 +8,8 @@ Import-Module -Name (
 		'assets',
 		'display',
 		'git',
-		'input',
+		'internal',
 		'tool',
-		'utility',
 		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
@@ -104,7 +103,7 @@ Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Co
 [UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
 Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
 Exit-GitHubActionsLogGroup
-<# DEBUG #>Exit 0
+<# DEBUG
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
@@ -460,3 +459,4 @@ If ($StatisticsIssuesSessions.GetTotal() -igt 0) {
 	Exit 1
 }
 Exit 0
+#>

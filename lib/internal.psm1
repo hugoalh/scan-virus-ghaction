@@ -3,20 +3,6 @@ Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'
 ) -Scope 'Local'
-Function ConvertFrom-CsvM {
-	[CmdletBinding()]
-	[OutputType([PSCustomObject[]])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
-	)
-	$InputObject |
-		ForEach-Object -Process { [PSCustomObject](
-			[String[]](Convert-FromCsvSToCsvM -InputObject $_ -Delimiter ',') |
-				Join-String -Separator "`n" |
-				ConvertFrom-StringData
-		) } |
-		Write-Output
-}
 Function Convert-FromCsvSToCsvM {
 	[CmdletBinding()]
 	[OutputType([String[]])]
@@ -33,6 +19,20 @@ Function Convert-FromCsvSToCsvM {
 		$Result += $Item.PSObject.Properties.Value
 	}
 	Write-Output -InputObject $Result
+}
+Function ConvertFrom-CsvM {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
+	)
+	$InputObject |
+		ForEach-Object -Process { [PSCustomObject](
+			[String[]](Convert-FromCsvSToCsvM -InputObject $_ -Delimiter ',') |
+				Join-String -Separator "`n" |
+				ConvertFrom-StringData
+		) } |
+		Write-Output
 }
 Function Format-InputTable {
 	[CmdletBinding()]
@@ -160,11 +160,71 @@ $_
 "@
 	}
 }
+Function Group-IgnoresElements {
+	[CmdletBinding()]
+	[OutputType([Hashtable])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
+	)
+	[Hashtable]$Result = @{
+		Mixes = @()
+		Paths = @()
+		Rules = @()
+		Sessions = @()
+		Signatures = @()
+	}
+	ForEach ($Item In $InputObject) {
+		[String[]]$Keys = $Item.PSObject.Properties.Name
+		If ($Keys.Count -ieq 1 -and $Keys -icontains 'Path') {
+			$Result.Paths += $Item
+		}
+		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Rule') {
+			$Result.Rules += $Item
+		}
+		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Session') {
+			$Result.Sessions += $Item
+		}
+		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Signature') {
+			$Result.Signatures += $Item
+		}
+		Else {
+			$Result.Mixes += $Item
+		}
+	}
+	Write-Output -InputObject $Result
+}
+Function Test-StringIsUri {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][Uri]$InputObject
+	)
+	$Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$' |
+		Write-Output
+}
+Function Test-StringMatchRegExs {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Item,
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][RegEx[]]$Matchers
+	)
+	ForEach ($Matcher In $Matchers) {
+		If ($Item -imatch $Matcher) {
+			Write-Output -InputObject $True
+			Return
+		}
+	}
+	Write-Output -InputObject $False
+}
 Export-ModuleMember -Function @(
-	'ConvertFrom-CsvM',
 	'Convert-FromCsvSToCsvM',
+	'ConvertFrom-CsvM',
 	'Format-InputTable',
 	'Get-InputBoolean',
 	'Get-InputList',
-	'Get-InputTable'
+	'Get-InputTable',
+	'Group-IgnoresElements',
+	'Test-StringIsUri',
+	'Test-StringMatchRegExs'
 )
