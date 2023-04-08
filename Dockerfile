@@ -13,8 +13,8 @@ ENV PS_PACKAGE_URL=https://github.com/PowerShell/PowerShell/releases/download/v$
 FROM debian:11.6 as powershell-extract
 COPY --from=base / /
 ADD ${PS_PACKAGE_URL} /tmp/${PS_PACKAGE}
-RUN mkdir --verbose --parents ${PS_INSTALL_FOLDER}
-RUN tar --verbose --extract --gzip --file="/tmp/${PS_PACKAGE}" --directory="${PS_INSTALL_FOLDER}"
+RUN mkdir --parents ${PS_INSTALL_FOLDER} --verbose
+RUN tar --extract --gzip --file="/tmp/${PS_PACKAGE}" --directory="${PS_INSTALL_FOLDER}" --verbose
 
 FROM debian:11.6 as main
 COPY --from=base / /
