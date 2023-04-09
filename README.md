@@ -153,9 +153,9 @@ bar	foo
 `<Uri[]>` Targets.
 
 - **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
-- **Network:** Fetch files from the network to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); Require a clean workspace.
+- **Remote:** Fetch files from the remote to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); Require a clean workspace.
 
-When this input is defined (i.e.: network targets), will ignore inputs:
+When this input is defined (i.e.: remote targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
 - [`git_include_allbranches`](#git_include_allbranches)
@@ -237,6 +237,7 @@ When this input is `False`, will ignore inputs:
 
 [`<Table>`](#input_table_markup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
 
+- **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`
 - **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
 - **`Rule`:** `<RegEx>` Index`/`RuleName
 - **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
