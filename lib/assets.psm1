@@ -39,10 +39,11 @@ Function Import-Assets {
 		[Switch]$Build
 	)
 	Write-GitHubActionsDebug -Message 'Generate the assets package path.'
-	$PackageTempFilePath = New-TemporaryFile
-	$PackageTempRoot = Split-Path -LiteralPath $PackageTempFilePath
-	Write-GitHubActionsDebug -Message "Assets_Package_Root: $PackageTempRoot"
-	Write-GitHubActionsDebug -Message "Assets_Package_FilePath: $($PackageTempFilePath.FullName)"
+	$TempRoot = [System.IO.Path]::GetTempPath()
+	$PackageTempDirectoryPath = Join-Path -Path $TempRoot -ChildPath 'scan-virus-ghaction-assets-main'
+	$PackageTempFilePath = Join-Path -Path $TempRoot -ChildPath 'scan-virus-ghaction-assets-main.zip'
+	Write-GitHubActionsDebug -Message "Assets_Package_Root: $PackageTempDirectoryPath"
+	Write-GitHubActionsDebug -Message "Assets_Package_FilePath: $PackageTempFilePath"
 	Write-GitHubActionsDebug -Message 'Download the remote assets.'
 	Try {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebRequestParameters_Get
@@ -59,8 +60,8 @@ This is fine, but the local assets maybe outdated.
 	}
 	Write-GitHubActionsDebug -Message 'Expand the assets package.'
 	Try {
-		$Null = New-Item -Path $PackageTempRoot -ItemType 'Directory' -Force -Confirm:$False
-		Expand-Archive -LiteralPath $PackageTempFilePath -DestinationPath $PackageTempRoot
+		# $Null = New-Item -Path $TempRoot -ItemType 'Directory' -Force -Confirm:$False
+		Expand-Archive -LiteralPath $PackageTempFilePath -DestinationPath $TempRoot
 	}
 	Catch {
 		If ($Build.IsPresent) {
@@ -80,7 +81,7 @@ This is fine, but the local assets maybe outdated.
 		If (!$Build.IsPresent) {
 			Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$False
 		}
-		Move-Item -LiteralPath (Join-Path -Path $PackageTempRoot -ChildPath 'scan-virus-ghaction-assets-main') -Destination $LocalRoot -Confirm:$False
+		Move-Item -LiteralPath $PackageTempDirectoryPath -Destination $LocalRoot -Confirm:$False
 	}
 	Catch {
 		If ($Build.IsPresent) {
@@ -89,7 +90,7 @@ This is fine, but the local assets maybe outdated.
 		Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
 	}
 	Finally {
-		Remove-Item -LiteralPath $PackageTempRoot -Recurse -Force -Confirm:$False
+		Remove-Item -LiteralPath $PackageTempDirectoryPath -Recurse -Force -Confirm:$False
 	}
 	$LocalRootResolve = Resolve-Path -Path $LocalRoot
 	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/?")

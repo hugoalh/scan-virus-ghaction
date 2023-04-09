@@ -1,5 +1,5 @@
 FROM debian:11.6
-ENV COMPlus_EnableDiagnostics=0
+# ENV COMPlus_EnableDiagnostics=0
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'deb http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
 # RUN echo 'deb-src http://deb.debian.org/debian/ sid main contrib' >> /etc/apt/sources.list
@@ -12,7 +12,6 @@ RUN echo 'deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-pro
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install powershell
 RUN apt-get --assume-yes dist-upgrade
-RUN mkdir --parents /tmp --verbose
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.4.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
