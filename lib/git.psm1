@@ -1,7 +1,9 @@
-#Requires -PSEdition Core -Version 7.3
+#Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
+		'datetime',
+		'internal',
 		'token'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
@@ -30,8 +32,7 @@ Import-Module -Name (
 	@{ Name = 'ReflogSubject'; Placeholder = '%gs' },
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
-) |
-	Sort-Object -Property @('Name')
+)
 [Hashtable]$GitCommitsPropertyIndexer = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -First 1
@@ -49,6 +50,9 @@ Function Get-GitCommits {
 	Try {
 		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
 			Join-String -Separator "`n"
+		If ($IsGitRepositoryResult -ine 'True') {
+			Throw 'Workspace is not a Git repository!'
+		}
 	}
 	Catch {
 		Write-GitHubActionsError -Message @"
@@ -57,12 +61,8 @@ If this is incorrect, probably Git database is broken and/or invalid.
 "@
 		Return
 	}
-	If ($IsGitRepositoryResult -ine 'True') {
-		Write-GitHubActionsError -Message 'Workspace is not a Git repository!'
-		Return
-	}
 	Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color$($AllBranches.IsPresent ? ' --all' : '')$($Reflogs.IsPresent ? ' --reflog' : '')" |
-		ForEach-Object -Parallel {
+		ForEach-Object -Process {
 			[String]$GitCommitId = $_
 			Do {
 				Try {
@@ -116,6 +116,76 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		} |
 		Sort-Object -Property @($GitCommitsPropertySorter.Name) |
 		Write-Output
+}
+Function Test-GitCommitIsIgnore {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$GitCommit,
+		[Parameter(Mandatory = $True, Position = 1)][Alias('Ignores')][PSCustomObject[]]$Ignore
+	)
+	ForEach ($IgnoreItem In $Ignore) {
+		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
+			If ($Null -ieq $IgnoreItem[$GitCommitsProperty.Name]) {
+				Continue
+			}
+			Try {
+				If ($GitCommitsProperty.AsType -ieq [DateTime]) {
+					If (($IgnoreItem[$GitCommitsProperty.Name] -as [String]) -imatch '^-[gl][et] \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
+						[String]$CompareOperator, [String]$IgnoreTimestampRaw = $IgnoreItem[$GitCommitsProperty.Name] -isplit ' '
+						[DateTime]$IgnoreTimestamp = Get-Date -Date $IgnoreTimestampRaw
+						If ($CompareOperator -ieq '-ge') {
+							If ($GitCommit[$GitCommitsProperty.Name] -ige $IgnoreTimestamp) {
+								Continue
+							}
+						}
+						ElseIf ($CompareOperator -ieq '-gt') {
+							If ($GitCommit[$GitCommitsProperty.Name] -igt $IgnoreTimestamp) {
+								Continue
+							}
+						}
+						ElseIf ($CompareOperator -ieq '-le') {
+							If ($GitCommit[$GitCommitsProperty.Name] -ile $IgnoreTimestamp) {
+								Continue
+							}
+						}
+						ElseIf ($CompareOperator -ieq '-lt') {
+							If ($GitCommit[$GitCommitsProperty.Name] -ilt $IgnoreTimestamp) {
+								Continue
+							}
+						}
+						Else {
+							Write-Output -InputObject $False
+							Return
+						}
+					}
+					Else {
+						If ((ConvertTo-DateTimeIsoString -InputObject $GitCommit[$GitCommitsProperty.Name]) -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
+							Write-Output -InputObject $False
+							Return
+						}
+					}
+				}
+				ElseIf ($GitCommitsProperty.IsArraySpace) {
+					If (($GitCommit[$GitCommitsProperty.Name] -isplit ' ') -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
+						Write-Output -InputObject $False
+						Return
+					}
+				}
+				Else {
+					If ($GitCommit[$GitCommitsProperty.Name] -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
+						Write-Output -InputObject $False
+						Return
+					}
+				}
+			}
+			Catch {
+				Write-Output -InputObject $False
+				Return
+			}
+		}
+	}
+	Write-Output -InputObject $True
 }
 Export-ModuleMember -Function @(
 	'Get-GitCommits'

@@ -1,4 +1,4 @@
-#Requires -PSEdition Core -Version 7.3
+#Requires -PSEdition Core -Version 7.2
 Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'
@@ -172,6 +172,8 @@ Function Group-IgnoresElements {
 		Rules = @()
 		Sessions = @()
 		Signatures = @()
+		ToolPaths = @()
+		ToolSessions = @()
 	}
 	ForEach ($Item In $InputObject) {
 		[String[]]$Keys = $Item.PSObject.Properties.Name
@@ -186,6 +188,12 @@ Function Group-IgnoresElements {
 		}
 		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Signature') {
 			$Result.Signatures += $Item
+		}
+		ElseIf ($Keys.Count -ieq 2 -and $Keys -icontains 'Path' -and $Keys -icontains 'Tool') {
+			$Result.ToolPaths += $Item
+		}
+		ElseIf ($Keys.Count -ieq 2 -and $Keys -icontains 'Session' -and $Keys -icontains 'Tool') {
+			$Result.ToolSessions += $Item
 		}
 		Else {
 			$Result.Mixes += $Item

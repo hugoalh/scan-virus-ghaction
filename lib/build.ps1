@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-#Requires -PSEdition Core -Version 7.3
+#Requires -PSEdition Core -Version 7.2
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name (
 	@(

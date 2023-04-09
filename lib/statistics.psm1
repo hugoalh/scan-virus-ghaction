@@ -1,4 +1,4 @@
-#Requires -PSEdition Core -Version 7.3
+#Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Class ScanVirusStatisticsIssuesOperations {
 	[String[]]$Storage = @()

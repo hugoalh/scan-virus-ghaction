@@ -1,4 +1,4 @@
-#Requires -PSEdition Core -Version 7.3
+#Requires -PSEdition Core -Version 7.2
 [Char[]]$PoolMain = [String[]]@(0..9) + [Char[]]@(65..90) + [Char[]]@(97..122)
 Function New-RandomToken {
 	[CmdletBinding()]

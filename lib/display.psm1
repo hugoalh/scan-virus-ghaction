@@ -1,4 +1,4 @@
-#Requires -PSEdition Core -Version 7.3
+#Requires -PSEdition Core -Version 7.2
 Function Write-NameValue {
 	[CmdletBinding()]
 	[OutputType([Void])]
