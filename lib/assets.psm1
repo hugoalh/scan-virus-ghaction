@@ -89,9 +89,9 @@ This is fine, but the local assets maybe outdated.
 		}
 		Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
 	}
-	Finally {
-		Remove-Item -LiteralPath $PackageTempDirectoryPath -Recurse -Force -Confirm:$False
-	}
+	# Finally {
+	# 	Remove-Item -LiteralPath $PackageTempDirectoryPath -Recurse -Force -Confirm:$False
+	# }
 	$LocalRootResolve = Resolve-Path -Path $LocalRoot
 	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/?")
 	Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
