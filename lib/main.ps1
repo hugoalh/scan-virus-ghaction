@@ -94,6 +94,7 @@ Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
+[Hashtable]$IgnoresElements = Group-IgnoresElements -InputObject $IgnoresElementsInput
 [PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
 Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
 	$IgnoresGitCommitsMetaInput |
@@ -103,7 +104,6 @@ Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Co
 [UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
 Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
 Exit-GitHubActionsLogGroup
-<# DEBUG
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
@@ -120,7 +120,7 @@ If ($UpdateAssets -and (
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
-	[Hashtable]$Result = Register-ClamAVUnofficialSignatures -Selection $ClamAVUnofficialAssetsInput
+	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
 	[String[]]$IndexNotExist = $Result.IndexTable |
 		Where-Object -FilterScript { !$_.Exist } |
 		Select-Object -ExpandProperty 'Name'
@@ -163,14 +163,7 @@ Please create a bug report!
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
-	Enter-GitHubActionsLogGroup -Title 'Start ClamAV daemon.'
-	Try {
-		clamd
-	}
-	Catch {
-		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"
-	}
-	Exit-GitHubActionsLogGroup
+	Start-ClamAVDaemon
 }
 Function Invoke-Tools {
 	[CmdletBinding()]
@@ -179,8 +172,11 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
+	If (Test-StringMatchRegExs -Item $SessionId -Matchers $IgnoresElements.Sessions) {
+		Write-Host -Object "Skip session `"$SessionTitle`"."
+	}
+	Return
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
-	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
 	If ($Elements.Count -ieq 0){
 		Write-GitHubActionsError -Message @"
 Unable to scan session `"$SessionTitle`": Workspace is empty!
@@ -190,29 +186,15 @@ If this is incorrect, probably something went wrong.
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[Boolean]$SkipClamAV = Test-StringMatchRegExs -Item $SessionId -Matchers $ClamAVIgnores.OnlySessions.Session
-	[Boolean]$SkipYara = Test-StringMatchRegExs -Item $SessionId -Matchers $YaraIgnores.OnlySessions.Session
-	[String[]]$ElementsListClamAV = @()
-	[String[]]$ElementsListYara = @()
-	[PSCustomObject[]]$ElementsListDisplay = @()
-	ForEach ($Element In (
-		$Elements |
-			Sort-Object -Property 'FullName'
-	)) {
-		[Boolean]$ElementIsDirectory = Test-Path -LiteralPath $Element.FullName -PathType 'Container'
-		[String]$ElementName = $Element.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
-		[Hashtable]$ElementListDisplay = @{
-			Element = $ElementName
-			Flags = @()
-		}
-		If ($ElementIsDirectory) {
-			$ElementsIsDirectoryCount += 1
-			$ElementListDisplay.Flags += 'D'
-		}
-		Else {
-			$ElementListDisplay.Sizes = $Element.Length
-			$Script:StatisticsTotalSizes.All += $Element.Length
-		}
+	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
+		Sort-Object -Property @('FullName') |
+		ForEach-Object -Process {
+			[Boolean]$ElementIsDirectory = $_.PSIsContainer
+			[PSCustomObject]@{
+				FullName = $_.FullName
+				Path = $_.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
+				Size = $_.Length
+			}
 		If ($ClamAVEnable -and !$SkipClamAV -and (
 			($ElementIsDirectory -and $ClamAVSubcursive) -or
 			!$ElementIsDirectory
@@ -304,7 +286,7 @@ If this is incorrect, probably something went wrong.
 							Signatures_Count = $IssueSignatures.Count
 						}
 					} |
-					Sort-Object -Property 'Element' |
+					Sort-Object -Property @('Element') |
 					Format-List -Property '*' |
 					Out-String
 			)"
@@ -379,7 +361,7 @@ If this is incorrect, probably something went wrong.
 						} |
 							Write-Output
 					} |
-					Sort-Object -Property 'Element' |
+					Sort-Object -Property @('Element') |
 					Format-List -Property '*' |
 					Out-String
 			)"
@@ -427,7 +409,11 @@ If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0
 	}
 }
 Else {
-	If ((Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force).Count -igt 0) {
+	If ((
+		Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	) -igt 0) {
 		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
 		Exit 1
 	}
@@ -444,9 +430,7 @@ Else {
 	}
 }
 If ($ClamAVEnable) {
-	Write-Host -Object 'Stop ClamAV daemon.'
-	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
-		Stop-Process
+	Stop-ClamAVDaemon
 }
 Write-Host -Object 'Statistics.'
 $StatisticsTotalElements.ConclusionDisplay()
@@ -459,4 +443,3 @@ If ($StatisticsIssuesSessions.GetTotal() -igt 0) {
 	Exit 1
 }
 Exit 0
-#>

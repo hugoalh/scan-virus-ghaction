@@ -117,7 +117,31 @@ Function Invoke-Yara {
 	}
 	Write-Output -InputObject $Result
 }
+Function Start-ClamAVDaemon {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Start ClamAV daemon.'
+	Try {
+		clamd
+	}
+	Catch {
+		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"
+	}
+	Exit-GitHubActionsLogGroup
+}
+Function Stop-ClamAVDaemon {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Stop ClamAV daemon.'
+	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
+		Stop-Process
+	Exit-GitHubActionsLogGroup
+}
 Export-ModuleMember -Function @(
 	'Invoke-ClamAVScan',
-	'Invoke-Yara'
+	'Invoke-Yara',
+	'Start-ClamAVDaemon',
+	'Stop-ClamAVDaemon'
 )

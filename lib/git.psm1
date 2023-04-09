@@ -31,7 +31,7 @@ Import-Module -Name (
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 ) |
-	Sort-Object -Property 'Name'
+	Sort-Object -Property @('Name')
 [Hashtable]$GitCommitsPropertyIndexer = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -First 1
@@ -61,60 +61,60 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		Write-GitHubActionsError -Message 'Workspace is not a Git repository!'
 		Return
 	}
-	[String[]]$GitCommitsIds = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color$($AllBranches.IsPresent ? ' --all' : '')$($Reflogs.IsPresent ? ' --reflog' : '')"
-	[PSCustomObject[]]$GitCommitsMeta = @()
-	ForEach ($GitCommitId In $GitCommitsIds) {
-		Do {
-			Try {
-				[String]$DelimiterToken = "=====$(New-RandomToken)====="
-				[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
-					$GitCommitsProperties |
-						Select-Object -ExpandProperty 'Placeholder' |
-						Join-String -Separator "%n$DelimiterToken%n"
-				)`" --no-color --no-patch `"$GitCommitId`""
-				If ($LASTEXITCODE -ine 0) {
-					Throw (
-						$GitCommitMetaRaw0 |
-							Join-String -Separator "`n"
-					)
+	Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color$($AllBranches.IsPresent ? ' --all' : '')$($Reflogs.IsPresent ? ' --reflog' : '')" |
+		ForEach-Object -Parallel {
+			[String]$GitCommitId = $_
+			Do {
+				Try {
+					[String]$DelimiterToken = "=====$(New-RandomToken)====="
+					[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
+						$GitCommitsProperties |
+							Select-Object -ExpandProperty 'Placeholder' |
+							Join-String -Separator "%n$DelimiterToken%n"
+					)`" --no-color --no-patch `"$GitCommitId`""
+					If ($LASTEXITCODE -ine 0) {
+						Throw (
+							$GitCommitMetaRaw0 |
+								Join-String -Separator "`n"
+						)
+					}
 				}
+				Catch {
+					Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
+					Return
+				}
+				[UInt64]$DelimiterTokenCount = $GitCommitMetaRaw0 |
+					Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
+					Measure-Object |
+					Select-Object -ExpandProperty 'Count'
 			}
-			Catch {
-				Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
+			While ($DelimiterTokenCount -ine $DelimiterTokenCountPerCommit)
+			[String[]]$GitCommitMetaRaw1 = (
+				$GitCommitMetaRaw0 |
+					Join-String -Separator "`n"
+			) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
+			If ($GitCommitsProperties.Count -ine $GitCommitMetaRaw1.Count) {
+				Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
 				Return
 			}
-			[UInt64]$DelimiterTokenCount = (
-				$GitCommitMetaRaw0 |
-					Where-Object -FilterScript { $_ -ieq $DelimiterToken }
-			).Count
-		}
-		While ($DelimiterTokenCount -ine $DelimiterTokenCountPerCommit)
-		[String[]]$GitCommitMetaRaw1 = (
-			$GitCommitMetaRaw0 |
-				Join-String -Separator "`n"
-		) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
-		If ($GitCommitsProperties.Count -ine $GitCommitMetaRaw1.Count) {
-			Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
-			Return
-		}
-		[Hashtable]$GitCommitMeta = @{}
-		For ([UInt64]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
-			[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
-			[String]$Value = $GitCommitMetaRaw1[$Line]
-			If ($GitCommitsPropertiesCurrent.IsArraySpace) {
-				$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -isplit ' '
+			[Hashtable]$GitCommitMeta = @{}
+			For ([UInt64]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
+				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
+				[String]$Value = $GitCommitMetaRaw1[$Line]
+				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
+					$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -isplit ' '
+				}
+				ElseIf ($GitCommitsPropertiesCurrent.AsType) {
+					$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -as $GitCommitsPropertiesCurrent.AsType
+				}
+				Else {
+					$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value
+				}
 			}
-			ElseIf ($GitCommitsPropertiesCurrent.AsType) {
-				$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -as $GitCommitsPropertiesCurrent.AsType
-			}
-			Else {
-				$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value
-			}
-		}
-		$GitCommitsMeta += [PSCustomObject]$GitCommitMeta
-	}
-	$GitCommitsMeta |
-		Sort-Object -Property $GitCommitsPropertySorter.Name |
+			[PSCustomObject]$GitCommitMeta |
+				Write-Output
+		} |
+		Sort-Object -Property @($GitCommitsPropertySorter.Name) |
 		Write-Output
 }
 Export-ModuleMember -Function @(

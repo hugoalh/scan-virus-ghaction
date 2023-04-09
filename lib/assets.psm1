@@ -102,7 +102,7 @@ This is fine, but the local assets maybe outdated.
 			'Path',
 			@{ Expression = 'Size'; Alignment = 'Right' },
 			'Flag'
-		) -AutoSize -GroupBy 'Directory' |
+		) -AutoSize |
 		Out-String
 	Write-Host -Object 'Local assets are now up to date.'
 }
@@ -113,7 +113,7 @@ Function Import-NetworkTarget {
 		[Parameter(Mandatory = $True, Position = 0)][Uri]$Target
 	)
 	Enter-GitHubActionsLogGroup -Title "Fetch file ``$Target``."
-	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath (New-RandomToken)
+	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath "$(New-RandomToken).tmp"
 	Try {
 		Invoke-WebRequest -Uri $Target -OutFile $NetworkTargetFilePath @InvokeWebRequestParameters_Get
 	}
@@ -152,16 +152,22 @@ Function Register-ClamAVUnofficialAssets {
 	Write-NameValue -Name 'All' -Value $IndexTable.Count
 	Write-NameValue -Name 'Exist' -Value (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Exist }
-	).Count
+			Where-Object -FilterScript { $_.Exist } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	)
 	Write-NameValue -Name 'Select' -Value (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Select }
-	).Count
+			Where-Object -FilterScript { $_.Select } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	)
 	Write-NameValue -Name 'Apply' -Value (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Apply }
-	).Count
+			Where-Object -FilterScript { $_.Apply } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	)
 	$IndexTable |
 		Format-Table -Property @(
 			'Name',
@@ -240,16 +246,22 @@ Function Register-YaraUnofficialAssets {
 	Write-NameValue -Name 'All' -Value $IndexTable.Count
 	Write-NameValue -Name 'Exist' -Value (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Exist }
-	).Count
+			Where-Object -FilterScript { $_.Exist } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	)
 	Write-NameValue -Name 'Select' -Value (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Select }
-	).Count
+			Where-Object -FilterScript { $_.Select } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	)
 	Write-NameValue -Name 'Apply' -Value (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Apply }
-	).Count
+			Where-Object -FilterScript { $_.Apply } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	)
 	$IndexTable |
 		Format-Table -Property @(
 			'Name',
