@@ -92,18 +92,14 @@ This is fine, but the local assets maybe outdated.
 	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
 	Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
 	Get-ChildItem -LiteralPath $LocalRoot -Recurse |
-		ForEach-Object -Process {
-			[PSCustomObject]@{
-				Directory = $_.FullName -ireplace $LocalRootRegEx, ''
-				Name = $_.Name
-				Size = $_.Length
-				Flag = $_.PSIsContainer ? 'D' : ''
-			} |
-				Write-Output
-		} |
-		Sort-Object -Property @('Directory', 'Name') |
+		ForEach-Object -Process { [PSCustomObject]@{
+			Path = $_.FullName -ireplace $LocalRootRegEx, ''
+			Size = $_.Length
+			Flag = $_.PSIsContainer ? 'D' : ''
+		}} |
+		Sort-Object -Property @('Path') |
 		Format-Table -Property @(
-			'Name',
+			'Path',
 			@{ Expression = 'Size'; Alignment = 'Right' },
 			'Flag'
 		) -AutoSize -GroupBy 'Directory' |

@@ -10,7 +10,7 @@ Function Get-WareMeta {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Hardware Information: '
+	Enter-GitHubActionsLogGroup -Title 'Hardware: '
 	hwinfo --all
 	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
@@ -32,7 +32,7 @@ Function Get-WareMeta {
 		Get-Command -Name 'pwsh' -CommandType 'Application' |
 			Select-Object -ExpandProperty 'Path' |
 			Join-String -Separator ', ' -FormatString '`{0}`'
-	) -NewLine
+	)
 	Write-NameValue -Name 'System' -Value "$($PSVersionTable.Platform); $($PSVersionTable.OS)"
 	Write-NameValue -Name 'Edition' -Value $PSVersionTable.PSEdition
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion.ToString()
@@ -65,7 +65,7 @@ Function Get-WareMeta {
 				Get-Command -Name $_.Bin -CommandType 'Application' |
 					Select-Object -ExpandProperty 'Path' |
 					Join-String -Separator ', ' -FormatString '`{0}`'
-			) -NewLine
+			)
 			Write-NameValue -Name 'VersionStdOut' -Value (Invoke-Expression -Command "$($_.Bin) --version") -NewLine
 			Exit-GitHubActionsLogGroup
 		}
