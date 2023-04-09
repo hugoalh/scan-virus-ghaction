@@ -38,7 +38,7 @@ Function Import-Assets {
 	Param (
 		[Switch]$Build
 	)
-	Write-GitHubActionsDebug -Message 'Generate the assets package path.'
+	Write-GitHubActionsDebug -Message 'Get the assets package path.'
 	$TempRoot = [System.IO.Path]::GetTempPath()
 	$PackageTempDirectoryPath = Join-Path -Path $TempRoot -ChildPath 'scan-virus-ghaction-assets-main'
 	$PackageTempFilePath = Join-Path -Path $TempRoot -ChildPath 'scan-virus-ghaction-assets-main.zip'
@@ -89,12 +89,12 @@ This is fine, but the local assets maybe outdated.
 		Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
 	}
 	$LocalRootResolve = Resolve-Path -Path $LocalRoot
-	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/?")
+	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
 	Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
 	Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 		ForEach-Object -Process {
 			[PSCustomObject]@{
-				Directory = $_.Directory.FullName -ireplace $LocalRootRegEx, ''
+				Directory = $_.FullName -ireplace $LocalRootRegEx, ''
 				Name = $_.Name
 				Size = $_.Length
 				Flag = $_.PSIsContainer ? 'D' : ''

@@ -26,7 +26,7 @@ Test-GitHubActionsEnvironment -Mandatory
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
-Write-NameValue -Name 'Input_List_Delimiter' -Value $InputListDelimiter
+Write-NameValue -Name 'Input_List_Delimiter' -Value "$InputListDelimiter"
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^csv$' {
 		[String]$InputTableMarkup = 'Csv'
