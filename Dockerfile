@@ -1,4 +1,5 @@
 FROM debian:11.6 as powershell-extract
+ENV COMPlus_EnableDiagnostics=0
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
@@ -14,6 +15,7 @@ RUN mkdir --parents ${PS_INSTALL_FOLDER} --verbose
 RUN tar --extract --gzip --file="/tmp/${PS_PACKAGE}" --directory="${PS_INSTALL_FOLDER}" --verbose
 
 FROM debian:11.6 as main
+ENV COMPlus_EnableDiagnostics=0
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV LANG=en_US.UTF-8
