@@ -25,3 +25,5 @@ jobs:
   scan-virus:
     name: "Scan Virus (Reusable Workflow)"
     uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
+    with:
+      git_deep: "${{github.event.inputs.git_deep}}"
