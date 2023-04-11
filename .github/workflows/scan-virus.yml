@@ -14,20 +14,14 @@ on:
   workflow_dispatch:
     inputs:
       git_deep:
-        description: "{boolean} Scan deeper for Git repository."
+        type: "choice"
+        description: "{Boolean} Scan deeper for Git repository."
         required: false
         default: "true"
+        options:
+          - "true"
+          - "false"
 jobs:
   scan-virus:
-    name: "Scan Virus"
-    runs-on: "ubuntu-latest"
-    if: "${{!(github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.label, format('{0}:', github.repository_owner)))}}"
-    steps:
-      - name: "Checkout Repository"
-        uses: "actions/checkout@v3.5.0"
-        with:
-          fetch-depth: 0
-      - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.6.4"
-        with:
-          git_deep: "${{github.event.inputs.git_deep || 'false'}}"
+    name: "Scan Virus (Reusable Workflow)"
+    uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"

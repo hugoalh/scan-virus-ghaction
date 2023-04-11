@@ -5,35 +5,14 @@ on:
       - "published"
 jobs:
   announce-new-release-discord:
-    name: "Announce New Release - Discord"
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: "hugoalh/send-discord-webhook-ghaction@v5.0.3"
-        with:
-          key: "${{secrets.DISCORD_HXHS_PROJECTNEWRELEASEANNOUNCER_WEBHOOK}}"
-          payload: |
-            embeds:
-              - title: "Scan Virus (GitHub Action)"
-                description: |
-                  > ${{github.event.repository.description}}
-
-                  Version ${{github.event.release.name}} (${{github.event.release.tag_name}}) just released!
-                timestamp: "${{github.event.release.published_at}}"
-                color: "#2088FF"
-                thumbnail:
-                  url: "https://i.imgur.com/6qM8z4w.png"
-                author:
-                  name: "${{github.event.release.author.login}}"
-                  url: "${{github.event.release.author.html_url}}"
-                  icon_url: "${{github.event.release.author.avatar_url}}"
-                fields:
-                  - name: "Repositories"
-                    value: |
-                      **- GitHub (${{github.event.repository.full_name}}):** ${{github.event.repository.html_url}}
-                    inline: false
-                  - name: "Releases"
-                    value: |
-                      **- GitHub (& Changelog):** ${{github.event.release.html_url}}
-                      **- GitHub Marketplace:** https://github.com/marketplace/actions/scan-virus
-                    inline: false
-          wait: "true"
+    name: "Announce New Release - Discord (Reusable Workflow)"
+    uses: "hugoalh/hugoalh/.github/workflows/announce-new-release-discord.yml@main"
+    with:
+      name: "Scan Virus (GitHub Action)"
+      color: "#2088FF"
+      thumbnail: "https://i.imgur.com/6qM8z4w.png"
+      releases: |
+        **- GitHub (& Changelog):** ${{github.event.release.html_url}}
+        **- GitHub Marketplace:** https://github.com/marketplace/actions/scan-virus
+    secrets:
+      DISCORD_WEBHOOK: "${{secrets.DISCORD_HXHS_PROJECTNEWRELEASEANNOUNCER_WEBHOOK}}"
