@@ -39,14 +39,10 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 > **⚠ Important:** This documentation is v0.10.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
-### Getting Started
-
-#### Install (For Self Host)
+### Target
 
 - GitHub Actions Runner >= v2.303.0
   - Docker
-
-#### Use
 
 ```yml
 jobs:
