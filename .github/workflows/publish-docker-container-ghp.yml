@@ -12,47 +12,11 @@ on:
         description: "{boolean} Latest."
         required: false
         default: "false"
-env:
-  REGISTRY: "ghcr.io"
-  IMAGE_NAME: "${{github.repository}}"
 jobs:
   publish-docker-container-ghp:
-    name: "Publish Docker Container - GitHub Packages"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Checkout Repository"
-        uses: "actions/checkout@v3.5.0"
-      - name: "Sign In To Registry ${{env.REGISTRY}}"
-        uses: "docker/login-action@v2.1.0"
-        with:
-          registry: "${{env.REGISTRY}}"
-          username: "${{github.actor}}"
-          password: "${{github.token}}"
-      - name: "Generate Docker Metadata"
-        id: "docker-meta"
-        uses: "docker/metadata-action@v4.3.0"
-        with:
-          images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
-          tags: |
-            type=raw,enable=${{github.event.inputs.tag != ''}},value=${{github.event.inputs.tag}}
-            type=raw,enable=${{github.event.inputs.latest == 'true'}},value=latest
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{version}}
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}.{{minor}}.{{patch}}
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}.{{minor}}
-            type=semver,enable=${{github.event.inputs.tag == ''}},pattern={{major}}
-          labels: |
-            org.opencontainers.image.authors=hugoalh
-            org.opencontainers.image.licenses=MIT
-            org.opencontainers.image.title=Scan Virus (GitHub Action) Image
-            org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
-      - name: "Build & Push Docker Image"
-        uses: "docker/build-push-action@v4.0.0"
-        with:
-          context: "./"
-          file: "Dockerfile"
-          labels: "${{steps.docker-meta.outputs.labels}}"
-          platforms: |
-            linux/amd64
-          pull: "true"
-          push: "true"
-          tags: "${{steps.docker-meta.outputs.tags}}"
+    name: "Publish Docker Container - GitHub Packages (Reusable Workflow)"
+    uses: "hugoalh/hugoalh/.github/workflows/publish-docker-container-ghp.yml@main"
+    with:
+      title: "Scan Virus (GitHub Action) Image"
+      description: "A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace."
+      license: "MIT"
