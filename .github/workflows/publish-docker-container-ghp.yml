@@ -20,3 +20,5 @@ jobs:
       title: "Scan Virus (GitHub Action) Image"
       description: "A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace."
       license: "MIT"
+      tag: "${{github.event.inputs.tag}}"
+      latest: "${{github.event.inputs.latest}}"
