@@ -1,8 +1,7 @@
 # Scan Virus (GitHub Action)
 
-[`ScanVirus.GitHubAction`](https://github.com/hugoalh/scan-virus-ghaction)
-
 ![License](https://img.shields.io/static/v1?label=License&message=MIT&style=flat-square "License")
+[![GitHub Repository](https://img.shields.io/badge/Repository-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub Repository")](https://github.com/hugoalh/scan-virus-ghaction)
 [![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=Stars&logo=github&logoColor=ffffff&style=flat-square "GitHub Stars")](https://github.com/hugoalh/scan-virus-ghaction/stargazers)
 [![GitHub Contributors](https://img.shields.io/github/contributors/hugoalh/scan-virus-ghaction?label=Contributors&logo=github&logoColor=ffffff&style=flat-square "GitHub Contributors")](https://github.com/hugoalh/scan-virus-ghaction/graphs/contributors)
 [![GitHub Issues](https://img.shields.io/github/issues-raw/hugoalh/scan-virus-ghaction?label=Issues&logo=github&logoColor=ffffff&style=flat-square "GitHub Issues")](https://github.com/hugoalh/scan-virus-ghaction/issues)
@@ -39,7 +38,7 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 > **⚠ Important:** This documentation is v0.10.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
-### Target
+### Getting Started
 
 - GitHub Actions Runner >= v2.303.0
   - Docker
