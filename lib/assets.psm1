@@ -110,7 +110,7 @@ Function Register-ClamAVUnofficialAssets {<# Only execute on main stage! #>
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Group.Length -ieq 0 -and $_.Path.Length -igt 0 } |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -igt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
 			Name = $_.Name
 			FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
@@ -186,7 +186,7 @@ Function Register-YaraUnofficialAssets {<# Only execute on main stage! #>
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $YaraUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Group.Length -ieq 0 -and $_.Path.Length -igt 0 } |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -igt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
 			Name = $_.Name
 			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
