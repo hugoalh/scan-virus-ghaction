@@ -213,15 +213,6 @@ When this input is `False`, will ignore inputs:
 
 > **⚠ Important:** It is not recommended to use any of the YARA unofficial assets due to these maybe report more false positives.
 
-#### `update_assets`
-
-`<Boolean = True>` Whether to update the ClamAV unofficial assets and/or the YARA unofficial assets from the [assets repository][assets-repository] before scan anything.
-
-> **⚠ Important:**
->
-> - When inputs [`clamav_unofficialassets`](#clamav_unofficialassets) and [`yara_unofficialassets`](#yara_unofficialassets) are not defined, will skip this update in order to save some times.
-> - It is recommended to keep this default value to have the latest assets.
-
 #### `update_clamav`
 
 `<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.

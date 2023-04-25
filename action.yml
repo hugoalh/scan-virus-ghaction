@@ -43,10 +43,6 @@ inputs:
   yara_unofficialassets:
     description: "{RegEx[]} YARA unofficial assets to use."
     required: false
-  update_assets:
-    description: "{Boolean} Whether to update the ClamAV unofficial assets and/or the YARA unofficial assets from the assets repository before scan anything."
-    required: false
-    default: "True"
   update_clamav:
     description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
     required: false

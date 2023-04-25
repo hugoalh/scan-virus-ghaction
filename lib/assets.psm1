@@ -14,87 +14,65 @@ Import-Module -Name (
 	Encoding = 'UTF8NoBOM'
 }
 [Hashtable]$InvokeWebRequestParameters_Get = @{
-	MaximumRedirection = 5
+	MaximumRedirection = 1
 	MaximumRetryCount = 5
 	Method = 'Get'
 	RetryIntervalSec = 10
 	UseBasicParsing = $True
 }
 [String]$IndexFileName = 'index.tsv'
-[String]$MetadataFileName = 'metadata.json'
-[String]$LocalRoot = Join-Path -Path $PSScriptRoot -ChildPath '../assets'
-[String]$LocalMetadataFilePath = Join-Path -Path $LocalRoot -ChildPath $MetadataFileName
+[String]$LocalRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS
 [Uri]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
-[Uri]$RemoteMetadataFilePath = "$RemoteRoot/raw/main/$MetadataFileName"
 [Uri]$RemotePackageFilePath = "$RemoteRoot/archive/refs/heads/main.zip"
-[String]$ClamAVDatabaseRoot = '/var/lib/clamav'
+[String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
 [String]$ClamAVUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial'
 [String]$ClamAVUnofficialAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $IndexFileName
 [String]$YaraUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-unofficial'
 [String]$YaraUnofficialAssetsIndexFilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $IndexFileName
-Function Import-Assets {
+Function Import-Assets {<# Only execute on build stage! #>
 	[CmdletBinding()]
 	[OutputType([Void])]
-	Param (
-		[Switch]$Build
-	)
-	Write-GitHubActionsDebug -Message 'Get the assets package path.'
+	Param ()
+	Write-Host -Object 'Import assets.'
+	Write-Debug -Message 'Get the assets package path.' -Debug
 	$TempRoot = [System.IO.Path]::GetTempPath()
 	$PackageTempDirectoryPath = Join-Path -Path $TempRoot -ChildPath 'scan-virus-ghaction-assets-main'
 	$PackageTempFilePath = Join-Path -Path $TempRoot -ChildPath 'scan-virus-ghaction-assets-main.zip'
-	Write-GitHubActionsDebug -Message "Assets_Package_Root: $PackageTempDirectoryPath"
-	Write-GitHubActionsDebug -Message "Assets_Package_FilePath: $PackageTempFilePath"
-	Write-GitHubActionsDebug -Message 'Download the remote assets.'
+	Write-Verbose -Message "Assets_Local_Root: $LocalRoot" -Verbose
+	Write-Verbose -Message "Assets_Package_Root: $PackageTempDirectoryPath" -Verbose
+	Write-Verbose -Message "Assets_Package_FilePath: $PackageTempFilePath" -Verbose
+	Write-Debug -Message 'Download the remote assets.' -Debug
 	Try {
 		Invoke-WebRequest -Uri $RemotePackageFilePath -OutFile $PackageTempFilePath @InvokeWebRequestParameters_Get
 	}
 	Catch {
-		If ($Build.IsPresent) {
-			Write-Error -Message "Unable to download the remote assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
-		}
-		Write-GitHubActionsWarning -Message @"
-Unable to download the remote assets: $_
-This is fine, but the local assets maybe outdated.
-"@
+		Write-Error -Message "Unable to download the remote assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
 		Return
 	}
-	Write-GitHubActionsDebug -Message 'Expand the assets package.'
+	Write-Debug -Message 'Expand the assets package.' -Debug
 	Try {
 		Expand-Archive -LiteralPath $PackageTempFilePath -DestinationPath $TempRoot
 	}
 	Catch {
-		If ($Build.IsPresent) {
-			Write-Error -Message "Unable to expand the assets package: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
-		}
-		Write-GitHubActionsWarning -Message @"
-Unable to expand the assets package: $_
-This is fine, but the local assets maybe outdated.
-"@
+		Write-Error -Message "Unable to expand the assets package: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
 		Return
 	}
 	Finally {
 		Remove-Item -LiteralPath $PackageTempFilePath -Force -Confirm:$False
 	}
-	Write-GitHubActionsDebug -Message 'Update the local assets.'
+	Write-Debug -Message 'Update the local assets.' -Debug
 	Try {
-		If (!$Build.IsPresent) {
-			Remove-Item -LiteralPath $LocalRoot -Recurse -Force -Confirm:$False
-		}
 		Move-Item -LiteralPath $PackageTempDirectoryPath -Destination $LocalRoot -Confirm:$False
 	}
 	Catch {
-		If ($Build.IsPresent) {
-			Write-Error -Message "Unable to update the local assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
-		}
-		Write-GitHubActionsFail -Message "Unable to update the local assets: $_"
+		Write-Error -Message "Unable to update the local assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
+		Return
 	}
-	$LocalRootResolve = Resolve-Path -Path $LocalRoot
-	[RegEx]$LocalRootRegEx = [RegEx]::Escape("$($LocalRootResolve.Path)/")
-	Write-NameValue -Name 'Assets_Local_Root' -Value $LocalRootResolve.Path
+	[RegEx]$LocalRootRegEx = "^$([RegEx]::Escape($LocalRoot))"
 	Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 		ForEach-Object -Process { [PSCustomObject]@{
 			Path = $_.FullName -ireplace $LocalRootRegEx, ''
-			Size = $_.Length
+			Size = $_.Length ?? 0
 			Flag = $_.PSIsContainer ? 'D' : ''
 		}} |
 		Sort-Object -Property @('Path') |
@@ -103,10 +81,10 @@ This is fine, but the local assets maybe outdated.
 			@{ Expression = 'Size'; Alignment = 'Right' },
 			'Flag'
 		) -AutoSize |
-		Out-String
-	Write-Host -Object 'Local assets are now up to date.'
+		Out-String |
+		Write-Verbose -Verbose
 }
-Function Import-NetworkTarget {
+Function Import-NetworkTarget {<# Only execute on main stage! #>
 	[CmdletBinding()]
 	[OutputType([String])]
 	Param (
@@ -126,7 +104,7 @@ Function Import-NetworkTarget {
 	}
 	Write-Output -InputObject $NetworkTargetFilePath
 }
-Function Register-ClamAVUnofficialAssets {
+Function Register-ClamAVUnofficialAssets {<# Only execute on main stage! #>
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
@@ -222,7 +200,7 @@ Function Register-ClamAVUnofficialAssets {
 		IndexTable = $IndexTable
 	}
 }
-Function Register-YaraUnofficialAssets {
+Function Register-YaraUnofficialAssets {<# Only execute on main stage! #>
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
@@ -271,79 +249,42 @@ Function Register-YaraUnofficialAssets {
 		Out-String
 	Write-Output -InputObject $IndexTable
 }
-Function Update-Assets {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param ()
-	Write-GitHubActionsDebug -Message 'Get the local assets metadata.'
-	Try {
-		[PSCustomObject]$LocalMetadata = Get-Content -LiteralPath $LocalMetadataFilePath -Raw -Encoding 'UTF8NoBOM' |
-			ConvertFrom-Json -Depth 100 -NoEnumerate
-		[DateTime]$LocalAssetsTimestamp = Get-Date -Date $LocalMetadata.Timestamp -AsUTC
-	}
-	Catch {
-		Write-GitHubActionsFail -Message "Unable to get the local assets metadata: $_"
-	}
-	Write-NameValue -Name 'Assets_Local_Compatibility' -Value $LocalMetadata.Compatibility
-	Write-NameValue -Name 'Assets_Local_Timestamp' -Value (ConvertTo-DateTimeIsoString -InputObject $LocalAssetsTimestamp)
-	Write-GitHubActionsDebug -Message 'Get the remote assets metadata.'
-	Try {
-		[PSCustomObject]$RemoteMetadata = Invoke-WebRequest -Uri $RemoteMetadataFilePath @InvokeWebRequestParameters_Get |
-			Select-Object -ExpandProperty 'Content' |
-			ConvertFrom-Json -Depth 100 -NoEnumerate
-		[DateTime]$RemoteAssetsTimestamp = Get-Date -Date $RemoteMetadata.Timestamp -AsUTC
-	}
-	Catch {
-		Write-GitHubActionsWarning -Message @"
-Unable to get the remote assets metadata: $_
-This is fine, but the local assets maybe outdated.
-"@
-		Return
-	}
-	Write-NameValue -Name 'Assets_Remote_Compatibility' -Value $RemoteMetadata.Compatibility
-	Write-NameValue -Name 'Assets_Remote_Timestamp' -Value (ConvertTo-DateTimeIsoString -InputObject $RemoteAssetsTimestamp)
-	Write-GitHubActionsDebug -Message 'Analyze assets.'
-	If ($RemoteMetadata.Compatibility -ine $LocalMetadata.Compatibility) {
-		Write-GitHubActionsWarning -Message @'
-Unable to update the local assets safely: Local assets' compatibility and remote assets' compatibility are not match.
-This is fine, but the local assets maybe outdated.
-'@
-		Return
-	}
-	If ($LocalAssetsTimestamp -ige $RemoteAssetsTimestamp) {
-		Write-Host -Object 'The local assets are already up to date.'
-		Return
-	}
-	Write-Host -Object 'Need to update the local assets.'
-	Import-Assets
-}
 Function Update-ClamAV {
 	[CmdletBinding()]
 	[OutputType([Void])]
-	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
+	Param (
+		[Switch]$Build
+	)
+	If ($Build.IsPresent) {
+		Write-Host -Object 'Update ClamAV via FreshClam.'
+	}
+	Else {
+		Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
+	}
 	Try {
-		freshclam
+		freshclam --verbose
 		If ($LASTEXITCODE -ine 0) {
-			Write-GitHubActionsWarning -Message @"
-Unexpected issues when update ClamAV via FreshClam with exit code ``$LASTEXITCODE``: $_
-This is fine, but the local assets maybe outdated.
-"@
+			Throw "Exit code is $LASTEXITCODE."
 		}
 	}
 	Catch {
+		If ($Build.IsPresent) {
+			Write-Error -Message "Unexpected issues when update ClamAV via FreshClam: $_" -ErrorAction 'Stop'
+			Return
+		}
 		Write-GitHubActionsWarning -Message @"
 Unexpected issues when update ClamAV via FreshClam: $_
 This is fine, but the local assets maybe outdated.
 "@
 	}
-	Exit-GitHubActionsLogGroup
+	If (!$Build.IsPresent) {
+		Exit-GitHubActionsLogGroup
+	}
 }
 Export-ModuleMember -Function @(
 	'Import-Assets',
 	'Import-NetworkTarget',
 	'Register-ClamAVUnofficialAssets',
 	'Register-YaraUnofficialAssets',
-	'Update-Assets',
 	'Update-ClamAV'
 )

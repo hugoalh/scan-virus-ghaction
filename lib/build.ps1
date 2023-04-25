@@ -10,10 +10,10 @@ Import-Module -Name (
 ) -Scope 'Local'
 Write-Host -Object 'List ware meta.'
 Get-WareMeta
-Write-Host -Object 'Update ClamAV via FreshClam.'
-freshclam --verbose
-Write-Host -Object 'Import assets.'
-Import-Assets -Build
+Update-ClamAV -Build
+Import-Assets
 Write-Host -Object 'Tweak Git.'
-Invoke-Expression -Command "git config --global --add `"safe.directory`" `"*`""
-git config --global --list
+Invoke-Expression -Command "git config --global --add `"safe.directory`" `"*`"" |
+	Write-Verbose -Verbose
+git config --global --list |
+	Write-Verbose -Verbose

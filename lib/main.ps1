@@ -15,6 +15,7 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Write-Host -Object 'Initialize.'
+Test-GitHubActionsEnvironment -Mandatory
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
 [ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
@@ -22,7 +23,6 @@ Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
 	Get-WareMeta
 }
-Test-GitHubActionsEnvironment -Mandatory
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
@@ -84,8 +84,6 @@ Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput
 	$YaraUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
-[Boolean]$UpdateAssets = Get-InputBoolean -Name 'update_assets'
-Write-NameValue -Name 'Update_Assets' -Value $UpdateAssets
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
 [AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
@@ -109,14 +107,6 @@ If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 }
 If ($UpdateClamAV -and $ClamAVEnable) {
 	Update-ClamAV
-}
-If ($UpdateAssets -and (
-	($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) -or
-	($YaraEnable -and $YaraUnofficialAssetsInput.Count -igt 0)
-)) {
-	Enter-GitHubActionsLogGroup -Title 'Update local assets.'
-	Update-Assets
-	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
