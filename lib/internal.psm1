@@ -34,54 +34,6 @@ Function ConvertFrom-CsvM {
 		) } |
 		Write-Output
 }
-Function Format-InputTable {
-	[CmdletBinding()]
-	[OutputType([PSCustomObject[]])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][ValidateSet('csv', 'csv-m', 'csv-s', 'tsv', 'yaml')][String]$Markup,
-		[Parameter(Mandatory = $True, Position = 1)][Alias('Input', 'Object')][String]$InputObject
-	)
-	Try {
-		Switch -Exact ($Markup) {
-			'csv' {
-				ConvertFrom-Csv -InputObject $InputObject -Delimiter ',' |
-					Write-Output
-				Break
-			}
-			'csv-m' {
-				[String[]]($InputObject -isplit '\r?\n') |
-					Where-Object -FilterScript { $_ -imatch '^.+$' } |
-					ConvertFrom-CsvM |
-					Write-Output
-				Break
-			}
-			'csv-s' {
-				$InputObject |
-					Convert-FromCsvSToCsvM |
-					ConvertFrom-CsvM |
-					Write-Output
-				Break
-			}
-			'tsv' {
-				ConvertFrom-Csv -InputObject $InputObject -Delimiter "`t" |
-					Write-Output
-				Break
-			}
-			'yaml' {
-				ConvertFrom-Yaml -InputObject $InputObject |
-					Write-Output
-				Break
-			}
-		}
-	}
-	Catch {
-		Write-GitHubActionsFail -Message @"
-Invalid ``$Markup`` table syntax!
-$_
-"@
-		Exit 1
-	}
-}
 Function Get-InputBoolean {
 	[CmdletBinding()]
 	[OutputType([Boolean])]
@@ -154,10 +106,7 @@ Function Get-InputTable {
 		}
 	}
 	Catch {
-		Write-GitHubActionsFail -Message @"
-Invalid ``$Markup`` table syntax!
-$_
-"@
+		Write-GitHubActionsFail -Message "Invalid $Markup table syntax: $_"
 	}
 }
 Function Group-IgnoresElements {
@@ -228,7 +177,6 @@ Function Test-StringMatchRegExs {
 Export-ModuleMember -Function @(
 	'Convert-FromCsvSToCsvM',
 	'ConvertFrom-CsvM',
-	'Format-InputTable',
 	'Get-InputBoolean',
 	'Get-InputList',
 	'Get-InputTable',

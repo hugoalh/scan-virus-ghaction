@@ -2,7 +2,6 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'datetime',
 		'display',
 		'internal',
 		'token'
@@ -21,10 +20,10 @@ Import-Module -Name (
 	UseBasicParsing = $True
 }
 [String]$IndexFileName = 'index.tsv'
-[String]$LocalRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS
+[ValidateNotNullOrEmpty()][String]$LocalRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS
 [Uri]$RemoteRoot = 'https://github.com/hugoalh/scan-virus-ghaction-assets'
 [Uri]$RemotePackageFilePath = "$RemoteRoot/archive/refs/heads/main.zip"
-[String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
+[ValidateNotNullOrEmpty()][String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
 [String]$ClamAVUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial'
 [String]$ClamAVUnofficialAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $IndexFileName
 [String]$YaraUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-unofficial'
@@ -68,10 +67,10 @@ Function Import-Assets {<# Only execute on build stage! #>
 		Write-Error -Message "Unable to update the local assets: $_" -Category 'InvalidResult' -ErrorAction 'Stop'
 		Return
 	}
-	[RegEx]$LocalRootRegEx = "^$([RegEx]::Escape($LocalRoot))"
+	[RegEx]$LocalRootRegEx = [RegEx]::Escape($LocalRoot)
 	Get-ChildItem -LiteralPath $LocalRoot -Recurse |
 		ForEach-Object -Process { [PSCustomObject]@{
-			Path = $_.FullName -ireplace $LocalRootRegEx, ''
+			Path = $_.FullName -ireplace "^$LocalRootRegEx", ''
 			Size = $_.Length ?? 0
 			Flag = $_.PSIsContainer ? 'D' : ''
 		}} |
@@ -112,52 +111,32 @@ Function Register-ClamAVUnofficialAssets {<# Only execute on main stage! #>
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Group.Length -ieq 0 -and $_.Path.Length -igt 0 } |
-		ForEach-Object -Process {
-			[String]$FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
-			[Boolean]$Exist = Test-Path -LiteralPath $FilePath
-			[Boolean]$Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
-			[PSCustomObject]@{
-				Name = $_.Name
-				FilePath = $FilePath
-				DatabaseFileName = $_.Path -ireplace '\/', '_'
-				ApplyIgnores = $_.ApplyIgnores
-				Exist = $Exist
-				Select = $Select
-				Apply = $Exist -and $Select
-			} |
-				Write-Output
-		}
+		ForEach-Object -Process { [PSCustomObject]@{
+			Name = $_.Name
+			FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
+			DatabaseFileName = $_.Path -ireplace '\/', '_'
+			ApplyIgnores = $_.ApplyIgnores
+			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
+		} }
 	Write-NameValue -Name 'All' -Value $IndexTable.Count
-	Write-NameValue -Name 'Exist' -Value (
-		$IndexTable |
-			Where-Object -FilterScript { $_.Exist } |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-	)
 	Write-NameValue -Name 'Select' -Value (
 		$IndexTable |
 			Where-Object -FilterScript { $_.Select } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	)
-	Write-NameValue -Name 'Apply' -Value (
-		$IndexTable |
-			Where-Object -FilterScript { $_.Apply } |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-	)
 	$IndexTable |
 		Format-Table -Property @(
 			'Name',
-			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String
+		Out-String |
+		Write-Host
 	[String[]]$AssetsApplyPaths = @()
 	[String[]]$AssetsApplyIssues = @()
 	ForEach ($IndexApply In (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Apply }
+			Where-Object -FilterScript { $_.Select }
 	)) {
 		[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $IndexApply.DatabaseFileName
 		Try {
@@ -208,45 +187,25 @@ Function Register-YaraUnofficialAssets {<# Only execute on main stage! #>
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $YaraUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Group.Length -ieq 0 -and $_.Path.Length -igt 0 } |
-		ForEach-Object -Process {
-			[String]$FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
-			[Boolean]$Exist = Test-Path -LiteralPath $FilePath
-			[Boolean]$Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
-			[PSCustomObject]@{
-				Name = $_.Name
-				FilePath = $FilePath
-				Exist = $Exist
-				Select = $Select
-				Apply = $Exist -and $Select
-			} |
-				Write-Output
-		}
+		ForEach-Object -Process { [PSCustomObject]@{
+			Name = $_.Name
+			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
+			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
+		} }
 	Write-NameValue -Name 'All' -Value $IndexTable.Count
-	Write-NameValue -Name 'Exist' -Value (
-		$IndexTable |
-			Where-Object -FilterScript { $_.Exist } |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-	)
 	Write-NameValue -Name 'Select' -Value (
 		$IndexTable |
 			Where-Object -FilterScript { $_.Select } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	)
-	Write-NameValue -Name 'Apply' -Value (
-		$IndexTable |
-			Where-Object -FilterScript { $_.Apply } |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-	)
 	$IndexTable |
 		Format-Table -Property @(
 			'Name',
-			@{ Expression = 'Exist'; Alignment = 'Right' },
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String
+		Out-String |
+		Write-Host
 	Write-Output -InputObject $IndexTable
 }
 Function Update-ClamAV {

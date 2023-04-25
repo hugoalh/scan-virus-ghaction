@@ -8,7 +8,6 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Write-Host -Object 'List ware meta.'
 Get-WareMeta
 Update-ClamAV -Build
 Import-Assets

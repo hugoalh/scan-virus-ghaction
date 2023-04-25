@@ -16,13 +16,11 @@ Import-Module -Name (
 ) -Scope 'Local'
 Write-Host -Object 'Initialize.'
 Test-GitHubActionsEnvironment -Mandatory
+Get-WareMeta
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
 [ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
 [ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::New()
-If (Get-GitHubActionsIsDebug) {
-	Get-WareMeta
-}
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
@@ -111,21 +109,6 @@ If ($UpdateClamAV -and $ClamAVEnable) {
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
-	[String[]]$IndexNotExist = $Result.IndexTable |
-		Where-Object -FilterScript { !$_.Exist } |
-		Select-Object -ExpandProperty 'Name'
-	If ($IndexNotExist.Count -igt 0) {
-		Write-GitHubActionsWarning -Message @"
-$($IndexNotExist.Count) ClamAV unofficial assets were indexed but not exist: $(
-	$IndexNotExist |
-		Join-String -Separator ', ' -FormatString '`{0}`'
-)
-Please create a bug report!
-"@
-	}
-	ForEach ($Item In $IndexNotExist) {
-		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$Item"
-	}
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$ApplyIssue"
 	}
@@ -135,23 +118,9 @@ Please create a bug report!
 If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -igt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
-	[String[]]$IndexNotExist = $IndexTable |
-		Where-Object -FilterScript { !$_.Exist } |
-		Select-Object -ExpandProperty 'Name'
-	If ($IndexNotExist.Count -igt 0) {
-		Write-GitHubActionsWarning -Message @"
-$($IndexNotExist.Count) YARA unofficial assets were indexed but not exist: $(
-	$IndexNotExist |
-		Join-String -Separator ', ' -FormatString '`{0}`'
-)
-Please create a bug report!
-"@
-	}
-	ForEach ($Item In $IndexNotExist) {
-		$StatisticsIssuesOperations.Storage += "YARA/UnofficialAssets/$Item"
-	}
 	Exit-GitHubActionsLogGroup
 }
+Exit 0# DEBUG
 If ($ClamAVEnable) {
 	Start-ClamAVDaemon
 }
@@ -215,7 +184,8 @@ If this is incorrect, probably something went wrong.
 			'Flags',
 			@{ Expression = 'Sizes'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String
+		Out-String |
+		Write-Host
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
 		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
@@ -278,7 +248,8 @@ If this is incorrect, probably something went wrong.
 					} |
 					Sort-Object -Property @('Element') |
 					Format-List -Property '*' |
-					Out-String
+					Out-String |
+					Write-Host
 			)"
 			If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
 				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
@@ -353,7 +324,8 @@ If this is incorrect, probably something went wrong.
 					} |
 					Sort-Object -Property @('Element') |
 					Format-List -Property '*' |
-					Out-String
+					Out-String |
+					Write-Host
 			)"
 			If ($SessionId -inotin $Script:StatisticsIssuesSessions.Yara) {
 				$Script:StatisticsIssuesSessions.Yara += $SessionId
