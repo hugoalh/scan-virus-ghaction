@@ -70,28 +70,28 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter
+[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = (Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter) ?? @()
 Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx [$($ClamAVUnofficialAssetsInput.Count)]" -Value (
 	$ClamAVUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter
+[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = (Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter) ?? @()
 Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput.Count)]" -Value (
 	$YaraUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = (Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup) ?? @()
 Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value (
 	$IgnoresElementsInput |
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
 [Hashtable]$IgnoresElements = Group-IgnoresElements -InputObject $IgnoresElementsInput
-[PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMetaInput = (Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup) ?? @()
 Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
 	$IgnoresGitCommitsMetaInput |
 		Format-List -Property '*' |
