@@ -110,7 +110,7 @@ Function Register-ClamAVUnofficialAssets {<# Only execute on main stage! #>
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -igt 0 } |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
 			Name = $_.Name
 			FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
@@ -147,10 +147,10 @@ Function Register-ClamAVUnofficialAssets {<# Only execute on main stage! #>
 			Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial asset ``$($IndexApply.Name)``: $_"
 			$AssetsApplyIssues += $IndexApply.Name
 		}
-		If ($IndexApply.ApplyIgnores.Length -igt 0) {
+		If ($IndexApply.ApplyIgnores.Length -gt 0) {
 			[String[]]$ApplyIgnoresRaw = $IndexApply.ApplyIgnores -isplit ',' |
 				ForEach-Object -Process { $_.Trim() } |
-				Where-Object -FilterScript { $_.Length -igt 0 }
+				Where-Object -FilterScript { $_.Length -gt 0 }
 			ForEach ($ApplyIgnoreRaw In $ApplyIgnoresRaw) {
 				[PSCustomObject]$IndexApplyIgnore = $IndexTable |
 					Where-Object -FilterScript { $_.Name -ieq $ApplyIgnoreRaw }
@@ -186,7 +186,7 @@ Function Register-YaraUnofficialAssets {<# Only execute on main stage! #>
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $YaraUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -igt 0 } |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
 			Name = $_.Name
 			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path

@@ -98,7 +98,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				Return
 			}
 			[Hashtable]$GitCommitMeta = @{}
-			For ([UInt64]$Line = 0; $Line -ilt $GitCommitMetaRaw1.Count; $Line++) {
+			For ([UInt64]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line++) {
 				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 				[String]$Value = $GitCommitMetaRaw1[$Line]
 				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
@@ -135,22 +135,22 @@ Function Test-GitCommitIsIgnore {
 						[String]$CompareOperator, [String]$IgnoreTimestampRaw = $IgnoreItem[$GitCommitsProperty.Name] -isplit ' '
 						[DateTime]$IgnoreTimestamp = Get-Date -Date $IgnoreTimestampRaw
 						If ($CompareOperator -ieq '-ge') {
-							If ($GitCommit[$GitCommitsProperty.Name] -ige $IgnoreTimestamp) {
+							If ($GitCommit[$GitCommitsProperty.Name] -ge $IgnoreTimestamp) {
 								Continue
 							}
 						}
 						ElseIf ($CompareOperator -ieq '-gt') {
-							If ($GitCommit[$GitCommitsProperty.Name] -igt $IgnoreTimestamp) {
+							If ($GitCommit[$GitCommitsProperty.Name] -gt $IgnoreTimestamp) {
 								Continue
 							}
 						}
 						ElseIf ($CompareOperator -ieq '-le') {
-							If ($GitCommit[$GitCommitsProperty.Name] -ile $IgnoreTimestamp) {
+							If ($GitCommit[$GitCommitsProperty.Name] -le $IgnoreTimestamp) {
 								Continue
 							}
 						}
 						ElseIf ($CompareOperator -ieq '-lt') {
-							If ($GitCommit[$GitCommitsProperty.Name] -ilt $IgnoreTimestamp) {
+							If ($GitCommit[$GitCommitsProperty.Name] -lt $IgnoreTimestamp) {
 								Continue
 							}
 						}

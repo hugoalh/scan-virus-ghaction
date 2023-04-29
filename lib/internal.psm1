@@ -57,7 +57,7 @@ Function Get-InputList {
 	}
 	$Raw -isplit $Delimiter |
 		ForEach-Object -Process { $_.Trim() } |
-		Where-Object -FilterScript { $_.Length -igt 0 } |
+		Where-Object -FilterScript { $_.Length -gt 0 } |
 		Write-Output
 }
 Function Get-InputTable {

@@ -61,7 +61,7 @@ Function Invoke-ClamAVScan {
 			}
 			Continue
 		}
-		If ($OutputLine.Length -igt 0) {
+		If ($OutputLine.Length -gt 0) {
 			$Result.ErrorMessage += $OutputLine
 			Continue
 		}
@@ -110,7 +110,7 @@ Function Invoke-Yara {
 			}
 			Continue
 		}
-		If ($OutputLine.Length -igt 0) {
+		If ($OutputLine.Length -gt 0) {
 			$Result.ErrorMessage += $OutputLine
 			Continue
 		}

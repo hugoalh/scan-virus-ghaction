@@ -106,7 +106,7 @@ If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 If ($UpdateClamAV -and $ClamAVEnable) {
 	Update-ClamAV
 }
-If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) {
+If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
@@ -115,7 +115,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -igt 0) {
 	Exit-GitHubActionsLogGroup
 }
 [PSCustomObject[]]$YaraUnofficialAssetsIndexTable = @()
-If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -igt 0) {
+If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
@@ -187,7 +187,7 @@ If this is incorrect, probably something went wrong.
 		Out-String |
 		Write-Host
 	Exit-GitHubActionsLogGroup
-	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -igt 0)) {
+	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -gt 0)) {
 		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
 		Set-Content -LiteralPath $ElementsListClamAVFullName -Value (
 			$ElementsListClamAV |
@@ -233,7 +233,7 @@ If this is incorrect, probably something went wrong.
 			}
 			$ClamAVResultError += $Line
 		}
-		If ($ClamAVResultFound.Count -igt 0) {
+		If ($ClamAVResultFound.Count -gt 0) {
 			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via ClamAV ($($ClamAVResultFound.Count)): `n$(
 				$ClamAVResultFound.GetEnumerator() |
 					ForEach-Object -Process {
@@ -255,7 +255,7 @@ If this is incorrect, probably something went wrong.
 				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 			}
 		}
-		If ($ClamAVResultError.Count -igt 0) {
+		If ($ClamAVResultError.Count -gt 0) {
 			Write-GitHubActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$SessionTitle`":`n$($ClamAVResultError -join "`n")"
 			If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
 				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
@@ -264,7 +264,7 @@ If this is incorrect, probably something went wrong.
 		Exit-GitHubActionsLogGroup
 		Remove-Item -LiteralPath $ElementsListClamAVFullName -Force -Confirm:$False
 	}
-	If ($YaraEnable -and !$SkipYara -and ($ElementsListYara.Count -igt 0)) {
+	If ($YaraEnable -and !$SkipYara -and ($ElementsListYara.Count -gt 0)) {
 		[String]$ElementsListYaraFullName = (New-TemporaryFile).FullName
 		Set-Content -LiteralPath $ElementsListYaraFullName -Value (
 			$ElementsListYara |
@@ -296,7 +296,7 @@ If this is incorrect, probably something went wrong.
 							$YaraResultFound[$Element] += $YaraRuleName
 						}
 					}
-					ElseIf ($Line.Length -igt 0) {
+					ElseIf ($Line.Length -gt 0) {
 						$YaraResultIssue += $Line
 					}
 				}
@@ -309,7 +309,7 @@ If this is incorrect, probably something went wrong.
 			}
 		}
 		Enter-GitHubActionsLogGroup -Title "YARA result of session `"$SessionTitle`":"
-		If ($YaraResultFound.Count -igt 0) {
+		If ($YaraResultFound.Count -gt 0) {
 			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via YARA ($($YaraResultFound.Count)): `n$(
 				$YaraResultFound.GetEnumerator() |
 					ForEach-Object -Process {
@@ -347,7 +347,7 @@ Current Git repository has only 1 commit!
 If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
 '@
 		}
-		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -ilt $GitCommits.Count; $GitCommitsIndex++) {
+		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex].CommitHash
 			[String]$GitSessionTitle = "$GitCommitHash (#$($GitCommitsIndex + 1)/$($GitCommits.Count))"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
@@ -375,7 +375,7 @@ Else {
 		Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	) -igt 0) {
+	) -gt 0) {
 		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
 		Exit 1
 	}
@@ -397,10 +397,10 @@ If ($ClamAVEnable) {
 Write-Host -Object 'Statistics.'
 $StatisticsTotalElements.ConclusionDisplay()
 $StatisticsTotalSizes.ConclusionDisplay()
-If ($StatisticsIssuesOperations.Storage.Count -igt 0) {
+If ($StatisticsIssuesOperations.Storage.Count -gt 0) {
 	$StatisticsIssuesOperations.ConclusionDisplay()
 }
-If ($StatisticsIssuesSessions.GetTotal() -igt 0) {
+If ($StatisticsIssuesSessions.GetTotal() -gt 0) {
 	$StatisticsIssuesSessions.ConclusionDisplay()
 	Exit 1
 }
