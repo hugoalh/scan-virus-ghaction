@@ -199,19 +199,13 @@ When this input is `False`, will ignore inputs:
 
 `<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the [ClamAV unofficial assets list][clamav-unofficial-assets-list], separate each name by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial assets are not in use.
 
-> **⚠ Important:** It is not recommended to use any of the ClamAV unofficial assets due to these maybe report more false positives than the ClamAV official assets in most cases.
-
 #### `yara_enable`
 
 `<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
 
-> **⚠ Important:** It is not recommended to use any of the YARA unofficial assets due to these maybe report more false positives.
-
 #### `yara_unofficialassets`
 
 `<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial assets are not in use.
-
-> **⚠ Important:** It is not recommended to use any of the YARA unofficial assets due to these maybe report more false positives.
 
 #### `update_clamav`
 
@@ -305,7 +299,7 @@ Example:
 ignores_gitcommits_nonnewest: 100
 ```
 
-> **ℹ Notice:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
+> **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
 
 ### 📤 Output
 
