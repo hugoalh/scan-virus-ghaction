@@ -1,20 +1,11 @@
-FROM debian:11.6 as import-assets
+FROM debian:11.6
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
 ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
 ENV GHACTION_SCANVIRUS_PROGRAM_ROOT=/opt/hugoalh/scan-virus-ghaction/
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS=${GHACTION_SCANVIRUS_PROGRAM_ROOT}assets/
-ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}lib/
-RUN printenv
-ADD https://github.com/hugoalh/scan-virus-ghaction-assets/archive/refs/heads/main.tar.gz /tmp/scan-virus-ghaction-assets-main.tar.gz
-RUN tar --extract --gzip --file=/tmp/scan-virus-ghaction-assets-main.tar.gz --directory=/tmp
-
-FROM debian:11.6 as main
-ENV DEBIAN_FRONTEND=noninteractive
-ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
-ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
-ENV GHACTION_SCANVIRUS_PROGRAM_ROOT=/opt/hugoalh/scan-virus-ghaction/
-ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS=${GHACTION_SCANVIRUS_PROGRAM_ROOT}assets/
+ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}clamav-unofficial/
+ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}yara-unofficial/
 ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}lib/
 RUN printenv
 RUN echo "deb http://deb.debian.org/debian/ sid main contrib" >> /etc/apt/sources.list
@@ -31,10 +22,11 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' 
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+COPY assets/clamav-unofficial/** ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
+COPY assets/yara-unofficial/** ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
-COPY lib/** /opt/hugoalh/scan-virus-ghaction/lib/
+COPY lib/** ${GHACTION_SCANVIRUS_PROGRAM_LIB}
+RUN ls --all --no-group --recursive ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 RUN freshclam --verbose
 RUN git config --global --add "safe.directory" "*" && git config --global --list
-COPY --from=import-assets /tmp/scan-virus-ghaction-assets-main ${GHACTION_SCANVIRUS_PROGRAM_ASSETS}
-RUN ls --all --no-group --recursive ${GHACTION_SCANVIRUS_PROGRAM_ASSETS}
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]

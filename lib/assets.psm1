@@ -19,12 +19,11 @@ Import-Module -Name (
 	RetryIntervalSec = 10
 	UseBasicParsing = $True
 }
-[ValidateNotNullOrEmpty()][String]$LocalRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS
 [ValidateNotNullOrEmpty()][String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
+[ValidateNotNullOrEmpty()][String]$ClamAVUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV
+[ValidateNotNullOrEmpty()][String]$YaraUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA
 [String]$IndexFileName = 'index.tsv'
-[String]$ClamAVUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'clamav-unofficial'
 [String]$ClamAVUnofficialAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $IndexFileName
-[String]$YaraUnofficialAssetsRoot = Join-Path -Path $LocalRoot -ChildPath 'yara-unofficial'
 [String]$YaraUnofficialAssetsIndexFilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $IndexFileName
 Function Import-NetworkTarget {
 	[CmdletBinding()]

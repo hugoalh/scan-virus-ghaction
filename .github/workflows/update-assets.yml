@@ -1,0 +1,36 @@
+name: "Update Assets"
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+concurrency:
+  group: "scan-virus-ghaction-assets-updater"
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: "sh"
+jobs:
+  update-assets:
+    name: "Update Assets"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.5.0"
+        with:
+          fetch-depth: 0
+      - name: "Setup PowerShell Toolkit"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
+      - name: "Config Git"
+        run: |
+          git --no-pager config "user.name" "github-actions"
+          git --no-pager config "user.email" "github-actions@github.com"
+      - name: "Invoke Updater"
+        id: "updater"
+        run: |
+          pwsh -NonInteractive ./assets/_updater.ps1
+      - name: "Push Git Commit"
+        if: "${{steps.updater.outputs.should_push == 'true'}}"
+        run: |
+          git --no-pager add --all
+          git --no-pager commit --message="Update assets on ${{steps.updater.outputs.timestamp}}"
+          git --no-pager push
