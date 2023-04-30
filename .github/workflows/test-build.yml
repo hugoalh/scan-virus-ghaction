@@ -3,13 +3,21 @@ on:
   workflow_dispatch:
     inputs:
       git_integrate:
+        type: "choice"
         description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
         default: "True"
+        options:
+          - "False"
+          - "True"
       git_reverse:
+        type: "choice"
         description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
         default: "False"
+        options:
+          - "False"
+          - "True"
 jobs:
   test-build:
     name: "Test - Build"
