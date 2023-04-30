@@ -119,7 +119,6 @@ If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
-Exit 0# DEBUG
 If ($ClamAVEnable) {
 	Start-ClamAVDaemon
 }
