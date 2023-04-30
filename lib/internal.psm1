@@ -175,8 +175,6 @@ Function Test-StringMatchRegExs {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Convert-FromCsvSToCsvM',
-	'ConvertFrom-CsvM',
 	'Get-InputBoolean',
 	'Get-InputList',
 	'Get-InputTable',

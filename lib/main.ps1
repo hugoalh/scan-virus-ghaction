@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 #Requires -PSEdition Core -Version 7.2
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
@@ -47,9 +46,9 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 		Break
 	}
 	Default {
-		Write-GitHubActionsError -Message "``$_`` is not a valid table markup language!"
-		Exit-GitHubActionsLogGroup
-		Exit 1
+		Write-GitHubActionsFail -Message "``$_`` is not a valid table markup language!" -Finally {
+			Exit-GitHubActionsLogGroup
+		}
 	}
 }
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
