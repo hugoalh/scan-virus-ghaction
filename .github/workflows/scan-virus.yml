@@ -17,10 +17,10 @@ on:
         type: "choice"
         description: "{Boolean} Scan deeper for Git repository."
         required: false
-        default: "true"
+        default: "True"
         options:
-          - "true"
-          - "false"
+          - "False"
+          - "True"
 jobs:
   scan-virus:
     name: "Scan Virus (Reusable Workflow)"
