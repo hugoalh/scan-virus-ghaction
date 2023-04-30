@@ -208,18 +208,11 @@ Function Register-YaraUnofficialAssets {<# Only execute on main stage! #>
 		Write-Host
 	Write-Output -InputObject $IndexTable
 }
-Function Update-ClamAV {
+Function Update-ClamAV {<# Only execute on main stage! #>
 	[CmdletBinding()]
 	[OutputType([Void])]
-	Param (
-		[Switch]$Build
-	)
-	If ($Build.IsPresent) {
-		Write-Host -Object 'Update ClamAV via FreshClam.'
-	}
-	Else {
-		Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
-	}
+	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
 	Try {
 		freshclam --verbose
 		If ($LASTEXITCODE -ine 0) {
@@ -227,18 +220,12 @@ Function Update-ClamAV {
 		}
 	}
 	Catch {
-		If ($Build.IsPresent) {
-			Write-Error -Message "Unexpected issues when update ClamAV via FreshClam: $_" -ErrorAction 'Stop'
-			Return
-		}
 		Write-GitHubActionsWarning -Message @"
 Unexpected issues when update ClamAV via FreshClam: $_
 This is fine, but the local assets maybe outdated.
 "@
 	}
-	If (!$Build.IsPresent) {
-		Exit-GitHubActionsLogGroup
-	}
+	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
 	'Import-Assets',
