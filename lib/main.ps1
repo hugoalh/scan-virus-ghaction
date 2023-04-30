@@ -119,6 +119,9 @@ If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
+
+Exit 0<# DEBUG #>
+
 If ($ClamAVEnable) {
 	Start-ClamAVDaemon
 }
@@ -129,11 +132,45 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
-	If (Test-StringMatchRegExs -Item $SessionId -Matchers $IgnoresElements.Sessions) {
-		Write-Host -Object "Skip session `"$SessionTitle`"."
+	If (Test-StringMatchRegExs -Item $SessionId -Matchers $IgnoresElements.Sessions.Session) {
+		Write-Host -Object "Ignore session `"$SessionTitle`"."
 	}
 	Return
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
+	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
+		Sort-Object -Property @('FullName') |
+		ForEach-Object -Process {
+			[Hashtable]$ElementObject = @{
+				FullName = $_.FullName
+				Path = $_.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
+				Size = $_.Length
+				IsDirectory = $_.PSIsContainer
+			}
+			$ElementObject.SkipAll = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.Paths.Path
+			$ElementObject.SkipClamAV = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers (
+				$IgnoresElements.ToolPaths |
+					Where-Object -FilterScript { 'clamav' -imatch $_.Tool }
+			).Path
+			$ElementObject.SkipYara = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers (
+				$IgnoresElements.ToolPaths |
+					Where-Object -FilterScript { 'yara' -imatch $_.Tool }
+			).Path
+			[String[]]$ElementFlags = @()
+			If ($ElementObject.IsDirectory) {
+				$ElementFlags += 'D'
+			}
+			If (!$ElementObject.IsDirectory -and !$ElementObject.SkipClamAV) {
+				$ElementFlags += 'C'
+			}
+			If (!$ElementObject.IsDirectory -and !$ElementObject.SkipYara) {
+				$ElementFlags += 'Y'
+			}
+			$ElementObject.Flag = $ElementFlags |
+				Sort-Object |
+				Join-String -Separator ''
+			[PSCustomObject]$ElementObject |
+				Write-Output
+		}
 	If ($Elements.Count -ieq 0){
 		Write-GitHubActionsError -Message @"
 Unable to scan session `"$SessionTitle`": Workspace is empty!
@@ -143,126 +180,42 @@ If this is incorrect, probably something went wrong.
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
-		Sort-Object -Property @('FullName') |
-		ForEach-Object -Process {
-			[Boolean]$ElementIsDirectory = $_.PSIsContainer
-			[PSCustomObject]@{
-				FullName = $_.FullName
-				Path = $_.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
-				Size = $_.Length
-			}
-		If ($ClamAVEnable -and !$SkipClamAV -and (
-			($ElementIsDirectory -and $ClamAVSubcursive) -or
-			!$ElementIsDirectory
-		) -and !(Test-StringMatchRegExs -Item $ElementName -Matchers $ClamAVIgnores.OnlyPaths.Path)) {
-			$ElementsListClamAV += $Element.FullName
-			$ElementListDisplay.Flags += 'C'
-			If (!$ElementIsDirectory) {
-				$Script:StatisticsTotalSizes.ClamAV += $Element.Length
-			}
-		}
-		If ($YaraEnable -and !$SkipYara -and !$ElementIsDirectory -and !(Test-StringMatchRegExs -Item $ElementName -Matchers $YaraIgnores.OnlyPaths.Path)) {
-			$ElementsListYara += $Element.FullName
-			$ElementListDisplay.Flags += 'Y'
-			$Script:StatisticsTotalSizes.Yara += $Element.Length
-		}
-		$ElementListDisplay.Flags = $ElementListDisplay.Flags |
-			Sort-Object |
-			Join-String -Separator ''
-		$ElementsListDisplay += [PSCustomObject]$ElementListDisplay
-	}
-	$Script:StatisticsTotalElements.All += $Elements.Count
-	$Script:StatisticsTotalElements.ClamAV += $ElementsListClamAV.Count
-	$Script:StatisticsTotalElements.Yara += $ElementsListYara.Count
-	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`" (Elements: $($Elements.Count); irectory: $ElementsIsDirectoryCount; ClamAV: $($ElementsListClamAV.Count); Yara: $($ElementsListYara.Count)):"
-	$ElementsListDisplay |
+	[UInt32]$ElementsCountAll = $Elements.Count
+	[UInt32]$ElementsCountClamAV = $Elements |
+		Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipClamAV } |
+		Measure-Object |
+		Select-Object -ExpandProperty 'Count'
+	[UInt32]$ElementsCountYara = $Elements |
+		Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipYara } |
+		Measure-Object |
+		Select-Object -ExpandProperty 'Count'
+	$Script:StatisticsTotalElements.All += $ElementsCountAll
+	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
+	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
+	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
+	Write-NameValue -Name 'All' -Value $ElementsCountAll
+	Write-NameValue -Name 'ClamAV' -Value $ElementsCountClamAV
+	Write-NameValue -Name 'Yara' -Value $ElementsCountYara
+	$Elements |
 		Format-Table -Property @(
-			'Element',
-			'Flags',
-			@{ Expression = 'Sizes'; Alignment = 'Right' }
+			'Path',
+			'Flag',
+			@{ Expression = 'Size'; Alignment = 'Right' }
 		) -AutoSize |
 		Out-String |
 		Write-Host
 	Exit-GitHubActionsLogGroup
-	If ($ClamAVEnable -and !$SkipClamAV -and ($ElementsListClamAV.Count -gt 0)) {
-		[String]$ElementsListClamAVFullName = (New-TemporaryFile).FullName
-		Set-Content -LiteralPath $ElementsListClamAVFullName -Value (
-			$ElementsListClamAV |
-				Join-String -Separator "`n"
-		) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
+	If ($ClamAVEnable -and $ElementsCountClamAV -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
-		Try {
-			[String[]]$ClamAVOutput = clamdscan --fdpass --file-list="$ElementsListClamAVFullName" --multiscan
-			[UInt32]$ClamAVExitCode = $LASTEXITCODE
+		[Hashtable]$Result = Invoke-ClamAVScan -Target (
+			$Elements |
+				Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipClamAV }
+		).FullName
+		If ($Result.ExitCode -ne 0) {
+
 		}
-		Catch {
-			Write-GitHubActionsError -Message "Unexpected issues when invoke ClamAV (SessionID: $SessionId): $_"
-			Exit-GitHubActionsLogGroup
-			Exit 1
-		}
-		Enter-GitHubActionsLogGroup -Title "ClamAV result of session `"$SessionTitle`":"
-		[String[]]$ClamAVResultError = @()
-		[Hashtable]$ClamAVResultFound = @{}
-		ForEach ($Line In (
-			$ClamAVOutput |
-				ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
-		)) {
-			If ($Line -cmatch '^[-=]+\s*SCAN SUMMARY\s*[-=]+$') {
-				Break
-			}
-			If (
-				($Line -cmatch ': OK$') -or
-				($Line -imatch '^\s*$')
-			) {
-				Continue
-			}
-			If ($Line -cmatch ': .+ FOUND$') {
-				[String]$ClamAVElementIssue = $Line -creplace ' FOUND$', ''
-				Write-GitHubActionsDebug -Message $ClamAVElementIssue
-				[String]$Element, [String]$Signature = $ClamAVElementIssue -isplit '(?<=^.+?): '
-				If ($Null -ieq $ClamAVResultFound[$Element]) {
-					$ClamAVResultFound[$Element] = @()
-				}
-				If ($Signature -inotin $ClamAVResultFound[$Element]) {
-					$ClamAVResultFound[$Element] += $Signature
-				}
-				Continue
-			}
-			$ClamAVResultError += $Line
-		}
-		If ($ClamAVResultFound.Count -gt 0) {
-			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via ClamAV ($($ClamAVResultFound.Count)): `n$(
-				$ClamAVResultFound.GetEnumerator() |
-					ForEach-Object -Process {
-						[String[]]$IssueSignatures = $_.Value |
-							Sort-Object -Unique -CaseSensitive
-						[PSCustomObject]@{
-							Element = $_.Name
-							Signatures_List = $IssueSignatures |
-								Join-String -Separator ', '
-							Signatures_Count = $IssueSignatures.Count
-						}
-					} |
-					Sort-Object -Property @('Element') |
-					Format-List -Property '*' |
-					Out-String |
-					Write-Host
-			)"
-			If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
-				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
-			}
-		}
-		If ($ClamAVResultError.Count -gt 0) {
-			Write-GitHubActionsError -Message "Unexpected ClamAV result ``$ClamAVExitCode`` in session `"$SessionTitle`":`n$($ClamAVResultError -join "`n")"
-			If ($SessionId -inotin $Script:StatisticsIssuesSessions.ClamAV) {
-				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
-			}
-		}
-		Exit-GitHubActionsLogGroup
-		Remove-Item -LiteralPath $ElementsListClamAVFullName -Force -Confirm:$False
 	}
-	If ($YaraEnable -and !$SkipYara -and ($ElementsListYara.Count -gt 0)) {
+	If ($YaraEnable -and $ElementsCountYara -gt 0) {
 		[String]$ElementsListYaraFullName = (New-TemporaryFile).FullName
 		Set-Content -LiteralPath $ElementsListYaraFullName -Value (
 			$ElementsListYara |
@@ -375,7 +328,6 @@ Else {
 			Select-Object -ExpandProperty 'Count'
 	) -gt 0) {
 		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
-		Exit 1
 	}
 	ForEach ($Target In $Targets) {
 		If (!(Test-StringIsUri -InputObject $Target)) {

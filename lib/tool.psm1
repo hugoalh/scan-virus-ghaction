@@ -126,7 +126,9 @@ Function Start-ClamAVDaemon {
 		clamd
 	}
 	Catch {
-		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"
+		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_" -Finally {
+			Exit-GitHubActionsLogGroup
+		}
 	}
 	Exit-GitHubActionsLogGroup
 }

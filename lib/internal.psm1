@@ -106,7 +106,7 @@ Function Get-InputTable {
 		}
 	}
 	Catch {
-		Write-GitHubActionsFail -Message "Invalid $Markup table syntax: $_"
+		Write-Error -Message "Invalid $Markup table syntax: $_" -ErrorAction 'Stop'
 	}
 }
 Function Group-IgnoresElements {
