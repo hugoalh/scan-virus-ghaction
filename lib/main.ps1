@@ -148,23 +148,17 @@ Function Invoke-Tools {
 				Size = $_.Length
 				IsDirectory = $_.PSIsContainer
 			}
-			$ElementObject.SkipAll = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.Paths.Path
-			$ElementObject.SkipClamAV = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers (
-				$IgnoresElements.ToolPaths |
-					Where-Object -FilterScript { 'clamav' -imatch $_.Tool }
-			).Path
-			$ElementObject.SkipYara = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers (
-				$IgnoresElements.ToolPaths |
-					Where-Object -FilterScript { 'yara' -imatch $_.Tool }
-			).Path
+			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.Paths)
+			$ElementObject.SkipClamAV = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.ClamAVPaths
+			$ElementObject.SkipYara = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.YaraPaths
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
 			}
-			If (!$ElementObject.IsDirectory -and !$ElementObject.SkipClamAV) {
+			If (!$ElementObject.SkipAll -and !$ElementObject.SkipClamAV) {
 				$ElementFlags += 'C'
 			}
-			If (!$ElementObject.IsDirectory -and !$ElementObject.SkipYara) {
+			If (!$ElementObject.SkipAll -and !$ElementObject.SkipYara) {
 				$ElementFlags += 'Y'
 			}
 			$ElementObject.Flag = $ElementFlags |
@@ -182,20 +176,37 @@ If this is incorrect, probably something went wrong.
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[UInt32]$ElementsCountAll = $Elements.Count
+	[UInt32]$ElementsCountDiscover = $Elements.Count
+	[UInt32]$ElementsCountScan = $Elements |
+		Where-Object -FilterScript { !$_.SkipAll } |
+		Measure-Object |
+		Select-Object -ExpandProperty 'Count'
 	[UInt32]$ElementsCountClamAV = $Elements |
-		Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipClamAV } |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipClamAV } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	[UInt32]$ElementsCountYara = $Elements |
-		Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipYara } |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipYara } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	$Script:StatisticsTotalElements.All += $ElementsCountAll
+	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
+	$Script:StatisticsTotalElements.Scan += $ElementsCountScan
 	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
 	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
+	$Script:StatisticsTotalSizes.Discover += $Elements |
+		Measure-Object -Property 'Size' -Sum
+	$Script:StatisticsTotalSizes.Scan += $Elements |
+		Where-Object -FilterScript { !$_.SkipAll } |
+		Measure-Object -Property 'Size' -Sum
+	$Script:StatisticsTotalSizes.ClamAV += $Elements |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipClamAV } |
+		Measure-Object -Property 'Size' -Sum
+	$Script:StatisticsTotalSizes.Yara += $Elements |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipYara } |
+		Measure-Object -Property 'Size' -Sum
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-	Write-NameValue -Name 'All' -Value $ElementsCountAll
+	Write-NameValue -Name 'Discover' -Value $ElementsCountDiscover
+	Write-NameValue -Name 'Scan' -Value $ElementsCountScan
 	Write-NameValue -Name 'ClamAV' -Value $ElementsCountClamAV
 	Write-NameValue -Name 'Yara' -Value $ElementsCountYara
 	$Elements |
@@ -293,34 +304,31 @@ If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs -Descending:$GitReverse
+		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs
 		If ($GitCommits.Count -eq 1) {
 			Write-GitHubActionsWarning -Message @'
 Current Git repository has only 1 commit!
 If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
 '@
 		}
-		[UInt64]$GitCommitsCount = 0
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 			[String]$GitCommit = $GitCommits[$GitCommitsIndex]
-			[String]$GitSessionTitle = "$($GitCommit.CommitHash) (#$($GitCommitsIndex + 1)/$($GitCommits.Count))"
+			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
 				git checkout $GitCommit.CommitHash --force --quiet
+				If ($LASTEXITCODE -ne 0) {
+					Throw "Exit code ``$LASTEXITCODE``"
+				}
 			}
 			Catch {
 				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)``: $_"
+				$StatisticsIssuesOperations.Storage += "Git/$($GitCommit.CommitHash)"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
-			If ($LASTEXITCODE -eq 0) {
-				Exit-GitHubActionsLogGroup
-				Invoke-Tools -SessionId $GitCommit.CommitHash -SessionTitle "Git Commit $GitSessionTitle"
-				Continue
-			}
-			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)`` with exit code ``$LASTEXITCODE``: $_"
-			$StatisticsIssuesOperations.Storage += "Git/$($GitCommit.CommitHash)"
 			Exit-GitHubActionsLogGroup
+			Invoke-Tools -SessionId $GitCommit.CommitHash -SessionTitle "Git Commit $GitSessionTitle"
 		}
 	}
 }
