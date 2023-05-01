@@ -56,7 +56,7 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -ieq 0) ? '(Local)' : (
+Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '(Local)' : (
 	$Targets |
 		Select-Object -ExpandProperty 'OriginalString' |
 		Join-String -Separator ', ' -FormatString '`{0}`'
@@ -108,7 +108,7 @@ If ($UpdateClamAV -and $ClamAVEnable) {
 	Update-ClamAV
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
+	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial assets.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$ApplyIssue"
@@ -117,7 +117,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
 }
 [PSCustomObject[]]$YaraUnofficialAssetsIndexTable = @()
 If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
+	Enter-GitHubActionsLogGroup -Title 'Register YARA unofficial assets.'
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
@@ -173,7 +173,7 @@ Function Invoke-Tools {
 			[PSCustomObject]$ElementObject |
 				Write-Output
 		}
-	If ($Elements.Count -ieq 0){
+	If ($Elements.Count -eq 0){
 		Write-GitHubActionsError -Message @"
 Unable to scan session `"$SessionTitle`": Workspace is empty!
 If this is incorrect, probably something went wrong.
@@ -236,7 +236,7 @@ If this is incorrect, probably something went wrong.
 				Exit-GitHubActionsLogGroup
 				Exit 1
 			}
-			If ($YaraExitCode -ieq 0) {
+			If ($YaraExitCode -eq 0) {
 				ForEach ($Line In $YaraOutput) {
 					If ($Line -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
 						[String]$Rule, [String]$Element = $Line -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
@@ -289,36 +289,37 @@ If this is incorrect, probably something went wrong.
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }
-If ($Targets.Count -ieq 0) {
+If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs
-		If ($GitCommits.Count -ieq 1) {
+		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs -Descending:$GitReverse
+		If ($GitCommits.Count -eq 1) {
 			Write-GitHubActionsWarning -Message @'
 Current Git repository has only 1 commit!
 If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
 '@
 		}
+		[UInt64]$GitCommitsCount = 0
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
-			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex].CommitHash
-			[String]$GitSessionTitle = "$GitCommitHash (#$($GitCommitsIndex + 1)/$($GitCommits.Count))"
+			[String]$GitCommit = $GitCommits[$GitCommitsIndex]
+			[String]$GitSessionTitle = "$($GitCommit.CommitHash) (#$($GitCommitsIndex + 1)/$($GitCommits.Count))"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
-				git checkout $GitCommitHash --force --quiet
+				git checkout $GitCommit.CommitHash --force --quiet
 			}
 			Catch {
-				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash``: $_"
+				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)``: $_"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
-			If ($LASTEXITCODE -ieq 0) {
+			If ($LASTEXITCODE -eq 0) {
 				Exit-GitHubActionsLogGroup
-				Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
+				Invoke-Tools -SessionId $GitCommit.CommitHash -SessionTitle "Git Commit $GitSessionTitle"
 				Continue
 			}
-			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash`` with exit code ``$LASTEXITCODE``: $_"
-			$StatisticsIssuesOperations.Storage += "Git/$GitCommitHash"
+			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)`` with exit code ``$LASTEXITCODE``: $_"
+			$StatisticsIssuesOperations.Storage += "Git/$($GitCommit.CommitHash)"
 			Exit-GitHubActionsLogGroup
 		}
 	}
@@ -339,7 +340,7 @@ Else {
 		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
 		If ($Null -ine $NetworkTargetFilePath) {
 			Invoke-Tools -SessionId $Target -SessionTitle $Target
-			Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$False
+			Remove-Item -LiteralPath $NetworkTargetFilePath -Force -Confirm:$False
 		}
 	}
 }

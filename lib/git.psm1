@@ -73,7 +73,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 							Select-Object -ExpandProperty 'Placeholder' |
 							Join-String -Separator "%n$DelimiterToken%n"
 					)`" --no-color --no-patch `"$GitCommitId`""
-					If ($LASTEXITCODE -ine 0) {
+					If ($LASTEXITCODE -ne 0) {
 						Throw (
 							$GitCommitMetaRaw0 |
 								Join-String -Separator "`n"
@@ -94,7 +94,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				$GitCommitMetaRaw0 |
 					Join-String -Separator "`n"
 			) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
-			If ($GitCommitsProperties.Count -ine $GitCommitMetaRaw1.Count) {
+			If ($GitCommitsProperties.Count -ne $GitCommitMetaRaw1.Count) {
 				Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
 				Return
 			}

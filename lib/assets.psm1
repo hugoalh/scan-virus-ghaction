@@ -160,7 +160,7 @@ Function Update-ClamAV {
 	Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
 	Try {
 		freshclam --verbose
-		If ($LASTEXITCODE -ine 0) {
+		If ($LASTEXITCODE -ne 0) {
 			Throw "Exit code is $LASTEXITCODE."
 		}
 	}
