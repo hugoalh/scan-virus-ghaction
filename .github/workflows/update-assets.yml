@@ -17,6 +17,7 @@ jobs:
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.5.2"
         with:
+          ref: "update-assets"
           fetch-depth: 0
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
