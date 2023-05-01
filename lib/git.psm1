@@ -45,7 +45,8 @@ Function Get-GitCommits {
 	[OutputType([PSCustomObject[]])]
 	Param (
 		[Alias('IncludeAllBranches')][Switch]$AllBranches,
-		[Alias('IncludeReflogs')][Switch]$Reflogs
+		[Alias('IncludeReflogs')][Switch]$Reflogs,
+		[Switch]$Descending
 	)
 	Try {
 		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
@@ -114,7 +115,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 			[PSCustomObject]$GitCommitMeta |
 				Write-Output
 		} |
-		Sort-Object -Property @($GitCommitsPropertySorter.Name) |
+		Sort-Object -Property @($GitCommitsPropertySorter.Name) -Descending:$($Descending.IsPresent) |
 		Write-Output
 }
 Function Test-GitCommitIsIgnore {
@@ -122,7 +123,7 @@ Function Test-GitCommitIsIgnore {
 	[OutputType([Boolean])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$GitCommit,
-		[Parameter(Mandatory = $True, Position = 1)][Alias('Ignores')][PSCustomObject[]]$Ignore
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
 	ForEach ($IgnoreItem In $Ignore) {
 		ForEach ($GitCommitsProperty In $GitCommitsProperties) {

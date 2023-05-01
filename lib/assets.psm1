@@ -19,9 +19,9 @@ Import-Module -Name (
 	RetryIntervalSec = 10
 	UseBasicParsing = $True
 }
-[ValidateNotNullOrEmpty()][String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
-[ValidateNotNullOrEmpty()][String]$ClamAVUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV
-[ValidateNotNullOrEmpty()][String]$YaraUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA
+[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Container' })][String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
+[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Container' })][String]$ClamAVUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV
+[ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Container' })][String]$YaraUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA
 [String]$IndexFileName = 'index.tsv'
 [String]$ClamAVUnofficialAssetsIndexFilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $IndexFileName
 [String]$YaraUnofficialAssetsIndexFilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $IndexFileName
@@ -49,7 +49,7 @@ Function Register-ClamAVUnofficialAssets {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Selections')][RegEx[]]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
@@ -128,7 +128,7 @@ Function Register-YaraUnofficialAssets {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Selections')][RegEx[]]$Selection
+		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Selections')][RegEx[]]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $YaraUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
@@ -173,7 +173,6 @@ This is fine, but the local assets maybe outdated.
 	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
-	'Import-Assets',
 	'Import-NetworkTarget',
 	'Register-ClamAVUnofficialAssets',
 	'Register-YaraUnofficialAssets',
