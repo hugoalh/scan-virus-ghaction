@@ -3382,9 +3382,13 @@ Sanesecurity.Foxhole.Zip_fs3381:CL_TYPE_ZIP:*:(?i)^new inquiry -.{0,50}\.exe$:*:
 Sanesecurity.Foxhole.Rar_fs3382:CL_TYPE_RAR:*:(?i)^po_#.{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3383:CL_TYPE_ZIP:*:(?i)^dhl_awb_no_#awb.{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3384:CL_TYPE_ZIP:*:(?i)^catalogue profile -.{0,50}\.exe$:*:*:*:1:*:*
-Sanesecurity.Foxhole.Zip_fs3385:CL_TYPE_ZIP:*:(?i)^bank details -.{0,50}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3385:CL_TYPE_ZIP:*:(?i)^bank details.{0,50}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs3386:CL_TYPE_RAR:*:(?i)^ref .{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs3387:CL_TYPE_RAR:*:(?i)^new p o\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs3388:CL_TYPE_RAR:*:(?i)^doc (ci,coo,pl,bl).exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3389:CL_TYPE_ZIP:*:(?i)^mtg.{0,50}\.exe$:*:*:*:2:*:*
 Sanesecurity.Foxhole.Zip_fs3390:CL_TYPE_ZIP:*:(?i)\.pdf\.exe$:*:*:*:2:*:*
+Sanesecurity.Foxhole.Zip_fs3391:CL_TYPE_ZIP:*:(?i) pdf\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3392:CL_TYPE_ZIP:*:(?i)^shipping notice\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3393:CL_TYPE_ZIP:*:(?i) purchase order\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3394:CL_TYPE_ZIP:*:(?i)^ref .{0,50}\.exe$:*:*:*:1:*:*
