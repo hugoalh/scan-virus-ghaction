@@ -110,6 +110,23 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryName) {
 	}
 }
 If ($IndexIssuesFileNotExist.Count -gt 0 -or $IndexIssuesFileNotRecord -gt 0) {
+	Write-GitHubActionsWarning -Message @"
+File Not Exist [$($IndexIssuesFileNotExist.Count)]:
+
+$(
+	$IndexIssuesFileNotExist |
+		Sort-Object |
+		Join-String -Separator "`n" -FormatString '- `{0}`'
+)
+
+File Not Record [$($IndexIssuesFileNotRecord.Count)]:
+
+$(
+	$IndexIssuesFileNotRecord |
+		Sort-Object |
+		Join-String -Separator "`n" -FormatString '- `{0}`'
+)
+"@
 	Try {
 		Invoke-WebRequest -Uri "$($Env:GITHUB_API_URL)/repos/$($Env:GITHUB_REPOSITORY)/issues" -Headers @{
 			Accept = 'application/vnd.github+json'
