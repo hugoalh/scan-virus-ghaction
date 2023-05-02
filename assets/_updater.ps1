@@ -109,7 +109,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryName) {
 		}
 	}
 }
-If ($IndexIssuesFileNotExist.Count -gt 0 -or $IndexIssuesFileNotRecord -gt 0) {
+If ($IndexIssuesFileNotExist.Count -gt 0) {
 	Write-GitHubActionsWarning -Message @"
 File Not Exist [$($IndexIssuesFileNotExist.Count)]:
 
@@ -118,7 +118,10 @@ $(
 		Sort-Object |
 		Join-String -Separator "`n" -FormatString '- `{0}`'
 )
-
+"@
+}
+If ($IndexIssuesFileNotRecord -gt 0) {
+	Write-GitHubActionsWarning -Message @"
 File Not Record [$($IndexIssuesFileNotRecord.Count)]:
 
 $(
