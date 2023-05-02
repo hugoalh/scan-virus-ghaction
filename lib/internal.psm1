@@ -68,7 +68,10 @@ Function Get-InputTable {
 		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('Csv', 'CsvM', 'CsvS', 'Tsv', 'Yaml')][String]$Markup
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
-	If ($Null -ieq $Raw) {
+	If (
+		$Null -ieq $Raw -or
+		$Raw -ieq ''
+	) {
 		Write-Output -InputObject @()
 		Return
 	}
