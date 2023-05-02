@@ -85,14 +85,14 @@ Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput
 )
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = (Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup) ?? @()
 Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value (
 	$IgnoresElementsInput |
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
 [Hashtable]$IgnoresElements = Group-IgnoresElements -InputObject $IgnoresElementsInput
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMetaInput = (Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup) ?? @()
 Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
 	$IgnoresGitCommitsMetaInput |
 		Format-List -Property '*' |
