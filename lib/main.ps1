@@ -116,9 +116,6 @@ If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
-
-Exit 0<# DEBUG #>
-
 If ($ClamAVEnable) {
 	Start-ClamAVDaemon
 }
@@ -129,6 +126,12 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
+	If (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+		Session = $SessionId
+	}) -Ignore $IgnoresElements) {
+		Write-Host -Object "Ignore session `"$SessionTitle`"."
+		Return
+	}
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
 	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 		Sort-Object -Property @('FullName') |
@@ -139,17 +142,44 @@ Function Invoke-Tools {
 				Size = $_.Length
 				IsDirectory = $_.PSIsContainer
 			}
-			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.Paths)
-			$ElementObject.SkipClamAV = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.ClamAVPaths
-			$ElementObject.SkipYara = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.YaraPaths
+			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+				Path = $ElementObject.Path
+			}) -Ignore $IgnoresElements) -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+				Path = $ElementObject.Path
+				Session = $SessionId
+			}) -Ignore $IgnoresElements)
+			$ElementObject.SkipClamAV = $ElementObject.SkipAll -or (
+				Test-ElementIsIgnore -Element ([PSCustomObject]@{
+					Path = $ElementObject.Path
+					Tool = 'clamav'
+				}) -Ignore $IgnoresElements
+			) -or (
+				Test-ElementIsIgnore -Element ([PSCustomObject]@{
+					Path = $ElementObject.Path
+					Session = $SessionId
+					Tool = 'clamav'
+				}) -Ignore $IgnoresElements
+			)
+			$ElementObject.SkipYara = $ElementObject.SkipAll -or (
+				Test-ElementIsIgnore -Element ([PSCustomObject]@{
+					Path = $ElementObject.Path
+					Tool = 'yara'
+				}) -Ignore $IgnoresElements
+			) -or (
+				Test-ElementIsIgnore -Element ([PSCustomObject]@{
+					Path = $ElementObject.Path
+					Session = $SessionId
+					Tool = 'yara'
+				}) -Ignore $IgnoresElements
+			)
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
 			}
-			If (!$ElementObject.SkipAll -and !$ElementObject.SkipClamAV) {
+			If (!$ElementObject.SkipClamAV) {
 				$ElementFlags += 'C'
 			}
-			If (!$ElementObject.SkipAll -and !$ElementObject.SkipYara) {
+			If (!$ElementObject.SkipYara) {
 				$ElementFlags += 'Y'
 			}
 			$ElementObject.Flag = $ElementFlags |
@@ -173,11 +203,11 @@ If this is incorrect, probably something went wrong.
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	[UInt32]$ElementsCountClamAV = $Elements |
-		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipClamAV } |
+		Where-Object -FilterScript { !$_.SkipClamAV } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	[UInt32]$ElementsCountYara = $Elements |
-		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipYara } |
+		Where-Object -FilterScript { !$_.SkipYara } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
@@ -190,10 +220,10 @@ If this is incorrect, probably something went wrong.
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object -Property 'Size' -Sum
 	$Script:StatisticsTotalSizes.ClamAV += $Elements |
-		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipClamAV } |
+		Where-Object -FilterScript { !$_.SkipClamAV } |
 		Measure-Object -Property 'Size' -Sum
 	$Script:StatisticsTotalSizes.Yara += $Elements |
-		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipYara } |
+		Where-Object -FilterScript { !$_.SkipYara } |
 		Measure-Object -Property 'Size' -Sum
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
 	Write-NameValue -Name 'Discover' -Value $ElementsCountDiscover
@@ -213,81 +243,102 @@ If this is incorrect, probably something went wrong.
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
 		[Hashtable]$Result = Invoke-ClamAVScan -Target (
 			$Elements |
-				Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipClamAV }
-		).FullName
-		If ($Result.ExitCode -ne 0) {
+				Where-Object -FilterScript { !$_.SkipClamAV } |
+				Select-Object -ExpandProperty 'FullName'
+		)
+		Write-GitHubActionsDebug -Message (
+			$Result.Output |
+				Join-String -Separator "`n"
+		)
+		If ($Result.IsSuccess) {
+			If ($Result.ErrorMessage.Count -gt 0) {
+				Write-GitHubActionsError -Message @"
+Unexpected issue in session `"$SessionTitle`" via ClamAV:
 
+$(
+	$Result.ErrorMessage |
+		Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+				$Script:StatisticsIssuesOperations += "$SessionId/ClamAV"
+			}
+			If ($Result.Found.Count -gt 0) {
+				Write-GitHubActionsError -Message @"
+Found in session `"$SessionTitle`" via ClamAV:
+
+$(
+	$Result.Found.GetEnumerator() |
+		ForEach-Object -Process { "$($_.Name): $(
+			$_.Value |
+				Sort-Object -Unique |
+				Join-String -Separator ', ' -FormatString '`{0}`'
+		)" }
+)
+"@
+				$Script:StatisticsIssuesSessions += "$SessionId/ClamAV"
+			}
+		}
+		Else {
+			Write-GitHubActionsError -Message (
+				$Result.ErrorMessage |
+					Join-String -Separator "`n"
+			)
+			$Script:StatisticsIssuesOperations += "ClamAV/$SessionId"
 		}
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
-		[String]$ElementsListYaraFullName = (New-TemporaryFile).FullName
-		Set-Content -LiteralPath $ElementsListYaraFullName -Value (
-			$ElementsListYara |
-				Join-String -Separator "`n"
-		) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
 		[Hashtable]$YaraResultFound = @{}
 		[String[]]$YaraResultIssue = @()
-		ForEach ($YaraRule In $YaraRulesSelect) {
-			Try {
-				[String[]]$YaraOutput = yara --scan-list "$(Join-Path -Path $YaraRulesAssetsRoot -ChildPath $YaraRule.Location)" "$ElementsListYaraFullName"
-				[UInt32]$YaraExitCode = $LASTEXITCODE
-			}
-			Catch {
-				Write-GitHubActionsError -Message "Unexpected issues when invoke YARA (SessionID: $SessionId): $_"
-				Exit-GitHubActionsLogGroup
-				Exit 1
-			}
-			If ($YaraExitCode -eq 0) {
-				ForEach ($Line In $YaraOutput) {
-					If ($Line -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
-						[String]$Rule, [String]$Element = $Line -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
-						[String]$YaraRuleName = "$($YaraRule.Name)/$Rule"
-						Write-GitHubActionsDebug -Message "$($Element): $YaraRuleName"
-						If ($Null -ieq $YaraResultFound[$Element]) {
-							$YaraResultFound[$Element] = @()
-						}
-						If ($YaraRuleName -inotin $YaraResultFound[$Element]) {
-							$YaraResultFound[$Element] += $YaraRuleName
-						}
-					}
-					ElseIf ($Line.Length -gt 0) {
-						$YaraResultIssue += $Line
-					}
+		ForEach ($YaraUnofficialAsset In (
+			$YaraUnofficialAssetsIndexTable |
+				Where-Object -FilterScript { $_.Select }
+		)) {
+			[Hashtable]$Result = Invoke-Yara -Target (
+				$Elements |
+					Where-Object -FilterScript { !$_.SkipYara } |
+					Select-Object -ExpandProperty 'FullName'
+			) -Asset $YaraUnofficialAsset
+			Write-GitHubActionsDebug -Message (
+				$Result.Output |
+					Join-String -Separator "`n"
+			)
+			If ($Result.IsSuccess) {
+				If ($Result.ErrorMessage.Count -gt 0) {
+					Write-GitHubActionsError -Message @"
+Unexpected issue in session `"$SessionTitle`" via YARA:
+
+$(
+	$Result.ErrorMessage |
+		Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+					$Script:StatisticsIssuesOperations += "$SessionId/YARA"
+				}
+				If ($Result.Found.Count -gt 0) {
+					Write-GitHubActionsError -Message @"
+Found in session `"$SessionTitle`" via YARA:
+
+$(
+	$Result.Found.GetEnumerator() |
+		ForEach-Object -Process { "$($_.Name): $(
+			$_.Value |
+				Sort-Object -Unique |
+				Join-String -Separator ', ' -FormatString '`{0}`'
+		)" }
+)
+"@
+					$Script:StatisticsIssuesSessions += "$SessionId/YARA"
 				}
 			}
 			Else {
-				Write-GitHubActionsError -Message "Unexpected YARA `"$($YaraRule.Name)`" exit code ``$YaraExitCode`` in session `"$SessionTitle`"!`n$YaraOutput"
-				If ($SessionId -inotin $Script:StatisticsIssuesSessions.Yara) {
-					$Script:StatisticsIssuesSessions.Yara += $SessionId
-				}
+				Write-GitHubActionsError -Message (
+					$Result.ErrorMessage |
+						Join-String -Separator "`n"
+				)
+				$Script:StatisticsIssuesOperations += "YARA/$SessionId"
 			}
 		}
-		Enter-GitHubActionsLogGroup -Title "YARA result of session `"$SessionTitle`":"
-		If ($YaraResultFound.Count -gt 0) {
-			Write-GitHubActionsError -Message "Found issues in session `"$SessionTitle`" via YARA ($($YaraResultFound.Count)): `n$(
-				$YaraResultFound.GetEnumerator() |
-					ForEach-Object -Process {
-						[String[]]$IssueRules = $_.Value |
-							Sort-Object -Unique -CaseSensitive
-						[PSCustomObject]@{
-							Element = $_.Name
-							Rules_List = $IssueRules -join ', '
-							Rules_Count = $IssueRules.Count
-						} |
-							Write-Output
-					} |
-					Sort-Object -Property @('Element') |
-					Format-List -Property '*' |
-					Out-String |
-					Write-Host
-			)"
-			If ($SessionId -inotin $Script:StatisticsIssuesSessions.Yara) {
-				$Script:StatisticsIssuesSessions.Yara += $SessionId
-			}
-		}
-		Exit-GitHubActionsLogGroup
-		Remove-Item -LiteralPath $ElementsListYaraFullName -Force -Confirm:$False
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }
