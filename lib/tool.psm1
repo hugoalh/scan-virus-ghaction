@@ -18,6 +18,7 @@ Function Invoke-ClamAVScan {
 		ErrorMessage = @()
 		ExitCode = 0
 		Found = @{}
+		IsSuccess = $False
 		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
@@ -38,6 +39,7 @@ Function Invoke-ClamAVScan {
 		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
 	$Result.ExitCode = $LASTEXITCODE
+	$Result.IsSuccess = $True
 	ForEach ($OutputLine In (
 		$Result.Output |
 			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
@@ -79,6 +81,7 @@ Function Invoke-Yara {
 		ErrorMessage = @()
 		ExitCode = 0
 		Found = @{}
+		IsSuccess = $False
 		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
@@ -99,6 +102,7 @@ Function Invoke-Yara {
 		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
 	$Result.ExitCode = $LASTEXITCODE
+	$Result.IsSuccess = $True
 	ForEach ($OutputLine In $Result.Output) {
 		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
 			[String]$Rule, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
