@@ -116,33 +116,45 @@ Function Group-IgnoresElements {
 		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
 	)
 	[Hashtable]$Result = @{
+		ClamAVPaths = @()
+		ClamAVSessions = @()
 		Mixes = @()
 		Paths = @()
 		Rules = @()
 		Sessions = @()
 		Signatures = @()
-		ToolPaths = @()
-		ToolSessions = @()
+		YaraPaths = @()
+		YaraSessions = @()
 	}
 	ForEach ($Item In $InputObject) {
 		[String[]]$Keys = $Item.PSObject.Properties.Name
-		If ($Keys.Count -ieq 1 -and $Keys -icontains 'Path') {
-			$Result.Paths += $Item
+		If ($Keys.Count -eq 1 -and $Keys -icontains 'Path') {
+			$Result.Paths += $Item.Path
 		}
-		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Rule') {
-			$Result.Rules += $Item
+		ElseIf ($Keys.Count -eq 1 -and $Keys -icontains 'Rule') {
+			$Result.Rules += $Item.Rule
 		}
-		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Session') {
-			$Result.Sessions += $Item
+		ElseIf ($Keys.Count -eq 1 -and $Keys -icontains 'Session') {
+			$Result.Sessions += $Item.Session
 		}
-		ElseIf ($Keys.Count -ieq 1 -and $Keys -icontains 'Signature') {
-			$Result.Signatures += $Item
+		ElseIf ($Keys.Count -eq 1 -and $Keys -icontains 'Signature') {
+			$Result.Signatures += $Item.Signature
 		}
-		ElseIf ($Keys.Count -ieq 2 -and $Keys -icontains 'Path' -and $Keys -icontains 'Tool') {
-			$Result.ToolPaths += $Item
+		ElseIf ($Keys.Count -eq 2 -and $Keys -icontains 'Path' -and $Keys -icontains 'Tool') {
+			If ('clamav' -imatch $Item.Tool) {
+				$Result.ClamAVPaths += $Item.Path
+			}
+			ElseIf ('yara' -imatch $Item.Tool) {
+				$Result.YaraPaths += $Item.Path
+			}
 		}
-		ElseIf ($Keys.Count -ieq 2 -and $Keys -icontains 'Session' -and $Keys -icontains 'Tool') {
-			$Result.ToolSessions += $Item
+		ElseIf ($Keys.Count -eq 2 -and $Keys -icontains 'Session' -and $Keys -icontains 'Tool') {
+			If ('clamav' -imatch $Item.Tool) {
+				$Result.ClamAVSessions += $Item.Session
+			}
+			ElseIf ('yara' -imatch $Item.Tool) {
+				$Result.YaraSessions += $Item.Session
+			}
 		}
 		Else {
 			$Result.Mixes += $Item

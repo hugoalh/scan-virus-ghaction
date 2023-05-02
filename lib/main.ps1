@@ -14,8 +14,10 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
-Get-WareMeta
 Write-Host -Object 'Initialize.'
+If (Get-GitHubActionsIsDebug) {
+	Get-WareMeta
+}
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
 [ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
@@ -54,7 +56,7 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -ieq 0) ? '(Local)' : (
+Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '(Local)' : (
 	$Targets |
 		Select-Object -ExpandProperty 'OriginalString' |
 		Join-String -Separator ', ' -FormatString '`{0}`'
@@ -69,28 +71,28 @@ Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = (Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter) ?? @()
+[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter
 Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx [$($ClamAVUnofficialAssetsInput.Count)]" -Value (
 	$ClamAVUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = (Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter) ?? @()
+[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter
 Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput.Count)]" -Value (
 	$YaraUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = (Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup) ?? @()
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
 Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value (
 	$IgnoresElementsInput |
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
 [Hashtable]$IgnoresElements = Group-IgnoresElements -InputObject $IgnoresElementsInput
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMetaInput = (Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup) ?? @()
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
 Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
 	$IgnoresGitCommitsMetaInput |
 		Format-List -Property '*' |
@@ -106,7 +108,7 @@ If ($UpdateClamAV -and $ClamAVEnable) {
 	Update-ClamAV
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial signatures.'
+	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial assets.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$ApplyIssue"
@@ -115,7 +117,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
 }
 [PSCustomObject[]]$YaraUnofficialAssetsIndexTable = @()
 If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register YARA rules.'
+	Enter-GitHubActionsLogGroup -Title 'Register YARA unofficial assets.'
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
@@ -146,23 +148,17 @@ Function Invoke-Tools {
 				Size = $_.Length
 				IsDirectory = $_.PSIsContainer
 			}
-			$ElementObject.SkipAll = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.Paths.Path
-			$ElementObject.SkipClamAV = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers (
-				$IgnoresElements.ToolPaths |
-					Where-Object -FilterScript { 'clamav' -imatch $_.Tool }
-			).Path
-			$ElementObject.SkipYara = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers (
-				$IgnoresElements.ToolPaths |
-					Where-Object -FilterScript { 'yara' -imatch $_.Tool }
-			).Path
+			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.Paths)
+			$ElementObject.SkipClamAV = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.ClamAVPaths
+			$ElementObject.SkipYara = Test-StringMatchRegExs -Item $ElementObject.Path -Matchers $IgnoresElements.YaraPaths
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
 			}
-			If (!$ElementObject.IsDirectory -and !$ElementObject.SkipClamAV) {
+			If (!$ElementObject.SkipAll -and !$ElementObject.SkipClamAV) {
 				$ElementFlags += 'C'
 			}
-			If (!$ElementObject.IsDirectory -and !$ElementObject.SkipYara) {
+			If (!$ElementObject.SkipAll -and !$ElementObject.SkipYara) {
 				$ElementFlags += 'Y'
 			}
 			$ElementObject.Flag = $ElementFlags |
@@ -171,7 +167,7 @@ Function Invoke-Tools {
 			[PSCustomObject]$ElementObject |
 				Write-Output
 		}
-	If ($Elements.Count -ieq 0){
+	If ($Elements.Count -eq 0){
 		Write-GitHubActionsError -Message @"
 Unable to scan session `"$SessionTitle`": Workspace is empty!
 If this is incorrect, probably something went wrong.
@@ -180,20 +176,37 @@ If this is incorrect, probably something went wrong.
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[UInt32]$ElementsCountAll = $Elements.Count
+	[UInt32]$ElementsCountDiscover = $Elements.Count
+	[UInt32]$ElementsCountScan = $Elements |
+		Where-Object -FilterScript { !$_.SkipAll } |
+		Measure-Object |
+		Select-Object -ExpandProperty 'Count'
 	[UInt32]$ElementsCountClamAV = $Elements |
-		Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipClamAV } |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipClamAV } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	[UInt32]$ElementsCountYara = $Elements |
-		Where-Object -FilterScript { !$_.IsDirectory -and !$_.SkipAll -and !$_.SkipYara } |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipYara } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	$Script:StatisticsTotalElements.All += $ElementsCountAll
+	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
+	$Script:StatisticsTotalElements.Scan += $ElementsCountScan
 	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
 	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
+	$Script:StatisticsTotalSizes.Discover += $Elements |
+		Measure-Object -Property 'Size' -Sum
+	$Script:StatisticsTotalSizes.Scan += $Elements |
+		Where-Object -FilterScript { !$_.SkipAll } |
+		Measure-Object -Property 'Size' -Sum
+	$Script:StatisticsTotalSizes.ClamAV += $Elements |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipClamAV } |
+		Measure-Object -Property 'Size' -Sum
+	$Script:StatisticsTotalSizes.Yara += $Elements |
+		Where-Object -FilterScript { !$_.SkipAll -and !$_.SkipYara } |
+		Measure-Object -Property 'Size' -Sum
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-	Write-NameValue -Name 'All' -Value $ElementsCountAll
+	Write-NameValue -Name 'Discover' -Value $ElementsCountDiscover
+	Write-NameValue -Name 'Scan' -Value $ElementsCountScan
 	Write-NameValue -Name 'ClamAV' -Value $ElementsCountClamAV
 	Write-NameValue -Name 'Yara' -Value $ElementsCountYara
 	$Elements |
@@ -234,7 +247,7 @@ If this is incorrect, probably something went wrong.
 				Exit-GitHubActionsLogGroup
 				Exit 1
 			}
-			If ($YaraExitCode -ieq 0) {
+			If ($YaraExitCode -eq 0) {
 				ForEach ($Line In $YaraOutput) {
 					If ($Line -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
 						[String]$Rule, [String]$Element = $Line -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
@@ -287,37 +300,35 @@ If this is incorrect, probably something went wrong.
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }
-If ($Targets.Count -ieq 0) {
+If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
 		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs
-		If ($GitCommits.Count -ieq 1) {
+		If ($GitCommits.Count -eq 1) {
 			Write-GitHubActionsWarning -Message @'
 Current Git repository has only 1 commit!
 If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
 '@
 		}
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
-			[String]$GitCommitHash = $GitCommits[$GitCommitsIndex].CommitHash
-			[String]$GitSessionTitle = "$GitCommitHash (#$($GitCommitsIndex + 1)/$($GitCommits.Count))"
+			[String]$GitCommit = $GitCommits[$GitCommitsIndex]
+			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
-				git checkout $GitCommitHash --force --quiet
+				git checkout $GitCommit.CommitHash --force --quiet
+				If ($LASTEXITCODE -ne 0) {
+					Throw "Exit code ``$LASTEXITCODE``"
+				}
 			}
 			Catch {
-				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash``: $_"
+				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)``: $_"
+				$StatisticsIssuesOperations.Storage += "Git/$($GitCommit.CommitHash)"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
-			If ($LASTEXITCODE -ieq 0) {
-				Exit-GitHubActionsLogGroup
-				Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
-				Continue
-			}
-			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$GitCommitHash`` with exit code ``$LASTEXITCODE``: $_"
-			$StatisticsIssuesOperations.Storage += "Git/$GitCommitHash"
 			Exit-GitHubActionsLogGroup
+			Invoke-Tools -SessionId $GitCommit.CommitHash -SessionTitle "Git Commit $GitSessionTitle"
 		}
 	}
 }
@@ -337,7 +348,7 @@ Else {
 		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
 		If ($Null -ine $NetworkTargetFilePath) {
 			Invoke-Tools -SessionId $Target -SessionTitle $Target
-			Remove-Item -LiteralPath $NetworkTemporaryFileFullPath -Force -Confirm:$False
+			Remove-Item -LiteralPath $NetworkTargetFilePath -Force -Confirm:$False
 		}
 	}
 }

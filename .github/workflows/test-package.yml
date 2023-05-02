@@ -3,13 +3,21 @@ on:
   workflow_dispatch:
     inputs:
       git_integrate:
+        type: "choice"
         description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
         default: "True"
+        options:
+          - "False"
+          - "True"
       git_reverse:
+        type: "choice"
         description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
         default: "False"
+        options:
+          - "False"
+          - "True"
 jobs:
   test-package:
     name: "Test - Package"
@@ -24,3 +32,8 @@ jobs:
         with:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
+          clamav_unofficialassets: |-
+            ^.+$
+          yara_enable: "True"
+          yara_unofficialassets: |-
+            ^.+$

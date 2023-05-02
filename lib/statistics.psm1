@@ -34,7 +34,7 @@ Class ScanVirusStatisticsTotalElements {
 	[UInt64]$ClamAV = 0
 	[UInt64]$Yara = 0
 	[Void]ConclusionDisplay() {
-		[Boolean]$IsNoElements = $This.Discover -ieq 0
+		[Boolean]$IsNoElements = $This.Discover -eq 0
 		Enter-GitHubActionsLogGroup -Title 'Total Elements: '
 		[PSCustomObject[]]$TotalElementsTable = @(
 			[PSCustomObject]@{
@@ -67,7 +67,7 @@ Class ScanVirusStatisticsTotalSizes {
 	[UInt64]$ClamAV = 0
 	[UInt64]$Yara = 0
 	[Void]ConclusionDisplay() {
-		[Boolean]$IsNoSizes = $This.Discover -ieq 0
+		[Boolean]$IsNoSizes = $This.Discover -eq 0
 		Enter-GitHubActionsLogGroup -Title 'Total Sizes: '
 		[PSCustomObject[]]$TotalSizesTable = @(
 			[PSCustomObject]@{
