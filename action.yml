@@ -17,14 +17,6 @@ inputs:
     description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
     required: false
     default: "False"
-  git_include_allbranches:
-    description: "{Boolean} Whether to include the Git commits which not in the current branch."
-    required: false
-    default: "False"
-  git_include_reflogs:
-    description: "{Boolean} Whether to include the Git commits which marked as references."
-    required: false
-    default: "False"
   git_reverse:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false

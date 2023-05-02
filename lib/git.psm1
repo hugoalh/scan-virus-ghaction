@@ -43,10 +43,7 @@ Import-Module -Name (
 Function Get-GitCommits {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
-	Param (
-		[Alias('IncludeAllBranches')][Switch]$AllBranches,
-		[Alias('IncludeReflogs')][Switch]$Reflogs
-	)
+	Param ()
 	Try {
 		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
 			Join-String -Separator "`n"
@@ -61,9 +58,9 @@ If this is incorrect, probably Git database is broken and/or invalid.
 "@
 		Return
 	}
-	Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color$($AllBranches.IsPresent ? ' --all' : '')$($Reflogs.IsPresent ? ' --reflog' : '')" |
+	Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog" |
 		ForEach-Object -Process {
-			[String]$GitCommitId = $_
+			[String]$GitCommitId = $_# This reassign aims to prevent `$_` got overwrite.
 			Do {
 				Try {
 					[String]$DelimiterToken = "=====$(New-RandomToken)====="
@@ -125,6 +122,7 @@ Function Test-GitCommitIsIgnore {
 		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
 	ForEach ($IgnoreItem In $Ignore) {
+		[UInt16]$IgnoreMatchCount = 0
 		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
 			If ($Null -ieq $IgnoreItem[$GitCommitsProperty.Name]) {
 				Continue
@@ -134,58 +132,57 @@ Function Test-GitCommitIsIgnore {
 					If (($IgnoreItem[$GitCommitsProperty.Name] -as [String]) -imatch '^-[gl][et] \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
 						[String]$CompareOperator, [String]$IgnoreTimestampRaw = $IgnoreItem[$GitCommitsProperty.Name] -isplit ' '
 						[DateTime]$IgnoreTimestamp = Get-Date -Date $IgnoreTimestampRaw
-						If ($CompareOperator -ieq '-ge') {
-							If ($GitCommit[$GitCommitsProperty.Name] -ge $IgnoreTimestamp) {
-								Continue
+						Switch -Exact ($CompareOperator) {
+							'-ge' {
+								If ($GitCommit[$GitCommitsProperty.Name] -ge $IgnoreTimestamp) {
+									$IgnoreMatchCount += 1
+									Break
+								}
 							}
-						}
-						ElseIf ($CompareOperator -ieq '-gt') {
-							If ($GitCommit[$GitCommitsProperty.Name] -gt $IgnoreTimestamp) {
-								Continue
+							'-gt' {
+								If ($GitCommit[$GitCommitsProperty.Name] -gt $IgnoreTimestamp) {
+									$IgnoreMatchCount += 1
+									Break
+								}
 							}
-						}
-						ElseIf ($CompareOperator -ieq '-le') {
-							If ($GitCommit[$GitCommitsProperty.Name] -le $IgnoreTimestamp) {
-								Continue
+							'-le' {
+								If ($GitCommit[$GitCommitsProperty.Name] -le $IgnoreTimestamp) {
+									$IgnoreMatchCount += 1
+									Break
+								}
 							}
-						}
-						ElseIf ($CompareOperator -ieq '-lt') {
-							If ($GitCommit[$GitCommitsProperty.Name] -lt $IgnoreTimestamp) {
-								Continue
+							'-lt' {
+								If ($GitCommit[$GitCommitsProperty.Name] -lt $IgnoreTimestamp) {
+									$IgnoreMatchCount += 1
+									Break
+								}
 							}
-						}
-						Else {
-							Write-Output -InputObject $False
-							Return
 						}
 					}
 					Else {
-						If ((ConvertTo-DateTimeIsoString -InputObject $GitCommit[$GitCommitsProperty.Name]) -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
-							Write-Output -InputObject $False
-							Return
+						If ((ConvertTo-DateTimeIsoString -InputObject $GitCommit[$GitCommitsProperty.Name]) -imatch $IgnoreItem[$GitCommitsProperty.Name]) {
+							$IgnoreMatchCount += 1
 						}
 					}
 				}
 				ElseIf ($GitCommitsProperty.IsArraySpace) {
 					If (($GitCommit[$GitCommitsProperty.Name] -isplit ' ') -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
-						Write-Output -InputObject $False
-						Return
+						$IgnoreMatchCount += 1
 					}
 				}
 				Else {
 					If ($GitCommit[$GitCommitsProperty.Name] -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
-						Write-Output -InputObject $False
-						Return
+						$IgnoreMatchCount += 1
 					}
 				}
 			}
-			Catch {
-				Write-Output -InputObject $False
-				Return
-			}
+			Catch {}
+		}
+		If ($IgnoreMatchCount -ge $IgnoreItem.PSObject.Properties.Name.Count) {
+			Write-Output -InputObject $True
 		}
 	}
-	Write-Output -InputObject $True
+	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
 	'Get-GitCommits'
