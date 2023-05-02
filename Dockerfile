@@ -22,10 +22,10 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' 
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
-COPY assets/clamav-unofficial/** ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
-COPY assets/yara-unofficial/** ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
+COPY assets/clamav-unofficial/* ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
+COPY assets/yara-unofficial/* ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
-COPY lib/** ${GHACTION_SCANVIRUS_PROGRAM_LIB}
+COPY lib/* ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 RUN freshclam --verbose
 RUN git config --global --add "safe.directory" "*" && git config --global --list
