@@ -238,6 +238,7 @@ Rule	neo23x0	neo23x0/apt_netwire_rat	neo23x0/yara/apt_netwire_rat.yar
 Rule	neo23x0	neo23x0/apt_nk_gen	neo23x0/yara/apt_nk_gen.yar		
 Rule	neo23x0	neo23x0/apt_nk_goldbackdoor	neo23x0/yara/apt_nk_goldbackdoor.yar		
 Rule	neo23x0	neo23x0/apt_nk_inkysquid	neo23x0/yara/apt_nk_inkysquid.yar		
+Rule	neo23x0	neo23x0/apt_nk_tradingtech_apr23	neo23x0/yara/apt_nk_tradingtech_apr23.yar		
 Rule	neo23x0	neo23x0/apt_oilrig	neo23x0/yara/apt_oilrig.yar		
 Rule	neo23x0	neo23x0/apt_oilrig_chafer_mar18	neo23x0/yara/apt_oilrig_chafer_mar18.yar		
 Rule	neo23x0	neo23x0/apt_oilrig_oct17	neo23x0/yara/apt_oilrig_oct17.yar		
@@ -686,7 +687,9 @@ Rule	neo23x0	neo23x0/mal_avemaria_rat	neo23x0/yara/mal_avemaria_rat.yar
 Rule	neo23x0	neo23x0/mal_codecov_hack	neo23x0/yara/mal_codecov_hack.yar		
 Rule	neo23x0	neo23x0/mal_crime_unknown	neo23x0/yara/mal_crime_unknown.yar		
 Rule	neo23x0	neo23x0/mal_cryp_rat	neo23x0/yara/mal_cryp_rat.yar		
+Rule	neo23x0	neo23x0/mal_efile_apr23	neo23x0/yara/mal_efile_apr23.yar		
 Rule	neo23x0	neo23x0/mal_lnx_implant_may22	neo23x0/yara/mal_lnx_implant_may22.yar		
+Rule	neo23x0	neo23x0/mal_lockbit_lnx_macos_apr23	neo23x0/yara/mal_lockbit_lnx_macos_apr23.yar		
 Rule	neo23x0	neo23x0/mal_netsha	neo23x0/yara/mal_netsha.yar		
 Rule	neo23x0	neo23x0/mal_passwordstate_backdoor	neo23x0/yara/mal_passwordstate_backdoor.yar		
 Rule	neo23x0	neo23x0/mal_qbot_feb23	neo23x0/yara/mal_qbot_feb23.yar		
