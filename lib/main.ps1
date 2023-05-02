@@ -116,9 +116,6 @@ If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
 	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
-
-Exit 0<# DEBUG #>
-
 If ($ClamAVEnable) {
 	Start-ClamAVDaemon
 }
@@ -254,11 +251,31 @@ If this is incorrect, probably something went wrong.
 				Join-String -Separator "`n"
 		)
 		If ($Result.IsSuccess) {
+			If ($Result.ErrorMessage.Count -gt 0) {
+				Write-GitHubActionsError -Message @"
+Unexpected issue in session `"$SessionTitle`" via ClamAV:
+
+$(
+	$Result.ErrorMessage |
+		Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+				$Script:StatisticsIssuesOperations += "$SessionId/ClamAV"
+			}
 			If ($Result.Found.Count -gt 0) {
-				$Result.Found.GetEnumerator() |
-					ForEach-Object -Process {
-						
-					}
+				Write-GitHubActionsError -Message @"
+Found in session `"$SessionTitle`" via ClamAV:
+
+$(
+	$Result.Found.GetEnumerator() |
+		ForEach-Object -Process { "$($_.Name): $(
+			$_.Value |
+				Sort-Object -Unique |
+				Join-String -Separator ', ' -FormatString '`{0}`'
+		)" }
+)
+"@
+				$Script:StatisticsIssuesSessions += "$SessionId/ClamAV"
 			}
 		}
 		Else {
@@ -273,16 +290,54 @@ If this is incorrect, probably something went wrong.
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
 		[Hashtable]$YaraResultFound = @{}
 		[String[]]$YaraResultIssue = @()
-		ForEach ($YaraRule In (
+		ForEach ($YaraUnofficialAsset In (
 			$YaraUnofficialAssetsIndexTable |
 				Where-Object -FilterScript { $_.Select }
 		)) {
-			[Hashtable]$Result = Invoke-ClamAVScan -Target (
+			[Hashtable]$Result = Invoke-Yara -Target (
 				$Elements |
 					Where-Object -FilterScript { !$_.SkipYara } |
 					Select-Object -ExpandProperty 'FullName'
+			) -Asset $YaraUnofficialAsset
+			Write-GitHubActionsDebug -Message (
+				$Result.Output |
+					Join-String -Separator "`n"
 			)
-			<# [TODO] Use tool function #>
+			If ($Result.IsSuccess) {
+				If ($Result.ErrorMessage.Count -gt 0) {
+					Write-GitHubActionsError -Message @"
+Unexpected issue in session `"$SessionTitle`" via YARA:
+
+$(
+	$Result.ErrorMessage |
+		Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+					$Script:StatisticsIssuesOperations += "$SessionId/YARA"
+				}
+				If ($Result.Found.Count -gt 0) {
+					Write-GitHubActionsError -Message @"
+Found in session `"$SessionTitle`" via YARA:
+
+$(
+	$Result.Found.GetEnumerator() |
+		ForEach-Object -Process { "$($_.Name): $(
+			$_.Value |
+				Sort-Object -Unique |
+				Join-String -Separator ', ' -FormatString '`{0}`'
+		)" }
+)
+"@
+					$Script:StatisticsIssuesSessions += "$SessionId/YARA"
+				}
+			}
+			Else {
+				Write-GitHubActionsError -Message (
+					$Result.ErrorMessage |
+						Join-String -Separator "`n"
+				)
+				$Script:StatisticsIssuesOperations += "YARA/$SessionId"
+			}
 		}
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."

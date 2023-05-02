@@ -90,7 +90,7 @@ Function Invoke-Yara {
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	Try {
-		$Result.Output += Invoke-Expression -Command "yara --scan-list `"$($Entry.FilePath)`" `"$($TargetListFile.FullName)`""
+		$Result.Output += Invoke-Expression -Command "yara --scan-list `"$($Asset.Path)`" `"$($TargetListFile.FullName)`""
 	}
 	Catch {
 		$Result.ExitCode = $LASTEXITCODE
