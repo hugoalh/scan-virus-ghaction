@@ -54,6 +54,7 @@ Function Register-ClamAVUnofficialAssets {
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
+			Type = $_.Type
 			Name = $_.Name
 			FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
 			DatabaseFileName = $_.Path -ireplace '\/', '_'
@@ -69,6 +70,7 @@ Function Register-ClamAVUnofficialAssets {
 	)
 	$IndexTable |
 		Format-Table -Property @(
+			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
@@ -133,6 +135,7 @@ Function Register-YaraUnofficialAssets {
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $YaraUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
+			Type = $_.Type
 			Name = $_.Name
 			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
@@ -146,6 +149,7 @@ Function Register-YaraUnofficialAssets {
 	)
 	$IndexTable |
 		Format-Table -Property @(
+			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |

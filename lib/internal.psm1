@@ -68,10 +68,7 @@ Function Get-InputTable {
 		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('Csv', 'CsvM', 'CsvS', 'Tsv', 'Yaml')][String]$Markup
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
-	If (
-		$Null -ieq $Raw -or
-		$Raw -ieq ''
-	) {
+	If ($Null -ieq $Raw) {
 		Write-Output -InputObject @()
 		Return
 	}
@@ -112,58 +109,35 @@ Function Get-InputTable {
 		Write-Error -Message "Invalid $Markup table syntax: $_" -ErrorAction 'Stop'
 	}
 }
-Function Group-IgnoresElements {
+Function Test-ElementIsIgnore {
 	[CmdletBinding()]
-	[OutputType([Hashtable])]
+	[OutputType([Boolean])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Input', 'Object')][PSCustomObject[]]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$Element,
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
-	[Hashtable]$Result = @{
-		ClamAVPaths = @()
-		ClamAVSessions = @()
-		Mixes = @()
-		Paths = @()
-		Rules = @()
-		Sessions = @()
-		Signatures = @()
-		YaraPaths = @()
-		YaraSessions = @()
-	}
-	ForEach ($Item In $InputObject) {
-		[String[]]$Keys = $Item.PSObject.Properties.Name
-		If ($Keys.Count -eq 1 -and $Keys -icontains 'Path') {
-			$Result.Paths += $Item.Path
+	ForEach ($IgnoreItem In $Ignore) {
+		[String[]]$ElementKeys = $Element.PSObject.Properties.Name
+		[String[]]$IgnoreItemKeys = $IgnoreItem.PSObject.Properties.Name
+		If ($IgnoreItemKeys.Count -ne $ElementKeys.Count) {
+			Continue
 		}
-		ElseIf ($Keys.Count -eq 1 -and $Keys -icontains 'Rule') {
-			$Result.Rules += $Item.Rule
-		}
-		ElseIf ($Keys.Count -eq 1 -and $Keys -icontains 'Session') {
-			$Result.Sessions += $Item.Session
-		}
-		ElseIf ($Keys.Count -eq 1 -and $Keys -icontains 'Signature') {
-			$Result.Signatures += $Item.Signature
-		}
-		ElseIf ($Keys.Count -eq 2 -and $Keys -icontains 'Path' -and $Keys -icontains 'Tool') {
-			If ('clamav' -imatch $Item.Tool) {
-				$Result.ClamAVPaths += $Item.Path
+		[UInt16]$IgnoreMatchCount = 0
+		ForEach ($Property In @('Path', 'Rule', 'Session', 'Signature', 'Tool')) {
+			Try {
+				If ($ElementKeys -icontains $Property -and $IgnoreItemKeys -icontains $Property) {
+					If ($Element[$Property] -imatch $IgnoreItem[$Property]) {
+						$IgnoreMatchCount += 1
+					}
+				}
 			}
-			ElseIf ('yara' -imatch $Item.Tool) {
-				$Result.YaraPaths += $Item.Path
-			}
+			Catch {}
 		}
-		ElseIf ($Keys.Count -eq 2 -and $Keys -icontains 'Session' -and $Keys -icontains 'Tool') {
-			If ('clamav' -imatch $Item.Tool) {
-				$Result.ClamAVSessions += $Item.Session
-			}
-			ElseIf ('yara' -imatch $Item.Tool) {
-				$Result.YaraSessions += $Item.Session
-			}
-		}
-		Else {
-			$Result.Mixes += $Item
+		If ($IgnoreMatchCount -ge $ElementKeys.Count) {
+			Write-Output -InputObject $True
 		}
 	}
-	Write-Output -InputObject $Result
+	Write-Output -InputObject $False
 }
 Function Test-StringIsUri {
 	[CmdletBinding()]
@@ -193,7 +167,7 @@ Export-ModuleMember -Function @(
 	'Get-InputBoolean',
 	'Get-InputList',
 	'Get-InputTable',
-	'Group-IgnoresElements',
+	'Test-ElementIsIgnore',
 	'Test-StringIsUri',
 	'Test-StringMatchRegExs'
 )

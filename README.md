@@ -153,8 +153,6 @@ bar	foo
 When this input is defined (i.e.: remote targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
-- [`git_include_allbranches`](#git_include_allbranches)
-- [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
 - [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
 - [`ignores_gitcommits_nonnewest`](#ignores_gitcommits_nonnewest)
@@ -165,19 +163,9 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 
 When this input is `False`, will ignore inputs:
 
-- [`git_include_allbranches`](#git_include_allbranches)
-- [`git_include_reflogs`](#git_include_reflogs)
 - [`git_reverse`](#git_reverse)
 - [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
 - [`ignores_gitcommits_nonnewest`](#ignores_gitcommits_nonnewest)
-
-#### `git_include_allbranches`
-
-`<Boolean = False>` Whether to include the Git commits which not in the current branch.
-
-#### `git_include_reflogs`
-
-`<Boolean = False>` Whether to include the Git commits which marked as references (e.g.: dead end commits).
 
 #### `git_reverse`
 
@@ -218,15 +206,15 @@ When this input is `False`, will ignore inputs:
 [`<Table>`](#input_table_markup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
 
 - **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`
-- **`Path`:** `<RegEx>` Relative path based at GitHub Action workspace without `./` (e.g.: Path`/`To`/`File`.`Extension)
-- **`Rule`:** `<RegEx>` Index`/`RuleName
-- **`Session`:** `<RegEx>` `Current`, Git commit hash, or HTTP/HTTPS URI
-- **`Signature`:** `<RegEx>` Platform`.`Category`.`Name`-`SignatureID`-`Revision
+- **`Path`:** `<RegEx>` Relative path based on GitHub Action workspace without `./` (e.g.: `path/to/file.extension`)
+- **`Rule`:** `<RegEx>` `{Index}/{RuleName}`
+- **`Session`:** `<RegEx>` Git commit hash
+- **`Signature`:** `<RegEx>` `{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`
 
 Example:
 
 ```yml
-ignores_elements: |
+ignores_elements: |-
   - Path: "^node_modules"
 ```
 
@@ -279,7 +267,7 @@ ignores_elements: |
 Example:
 
 ```yml
-ignores_gitcommits_meta: |
+ignores_gitcommits_meta: |-
   - AuthorName: "^dependabot$"
   - AuthorDate: "-lt 2022-01-01T00:00:00Z"
     AuthorName: "^octocat$"
@@ -287,11 +275,7 @@ ignores_gitcommits_meta: |
 
 #### `ignores_gitcommits_nonnewest`
 
-`<UInt>` Ignores for the non newest Git commits, which limit how many of the newest Git commits will scan, affected by and counting after inputs:
-
-- [`git_include_allbranches`](#git_include_allbranches)
-- [`git_include_reflogs`](#git_include_reflogs)
-- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
+`<UInt>` Ignores for the non newest Git commits, which limit how many of the newest Git commits will scan, affected by and counting after input [`ignores_gitcommits_meta`](#ignores_gitcommits_meta).
 
 Example:
 

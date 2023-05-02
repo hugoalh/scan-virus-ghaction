@@ -63,10 +63,6 @@ Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 
 ))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
-[Boolean]$GitIncludeAllBranches = Get-InputBoolean -Name 'git_include_allbranches'
-Write-NameValue -Name 'Git_Include_AllBranches' -Value $GitIncludeAllBranches
-[Boolean]$GitIncludeRefLogs = Get-InputBoolean -Name 'git_include_reflogs'
-Write-NameValue -Name 'Git_Include_Reflogs' -Value $GitIncludeRefLogs
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
@@ -85,16 +81,15 @@ Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput
 )
 [Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
 Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElementsInput = Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup
-Write-NameValue -Name "Ignores_Elements [$($IgnoresElementsInput.Count)]" -Value (
-	$IgnoresElementsInput |
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElements = (Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup) ?? @()
+Write-NameValue -Name "Ignores_Elements [$($IgnoresElements.Count)]" -Value (
+	$IgnoresElements |
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
-[Hashtable]$IgnoresElements = Group-IgnoresElements -InputObject $IgnoresElementsInput
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMetaInput = Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup
-Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMetaInput.Count)]" -Value (
-	$IgnoresGitCommitsMetaInput |
+[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMeta = (Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup) ?? @()
+Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMeta.Count)]" -Value (
+	$IgnoresGitCommitsMeta |
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
@@ -134,10 +129,6 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
-	If (Test-StringMatchRegExs -Item $SessionId -Matchers $IgnoresElements.Sessions.Session) {
-		Write-Host -Object "Ignore session `"$SessionTitle`"."
-	}
-	Return
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
 	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 		Sort-Object -Property @('FullName') |
@@ -304,16 +295,17 @@ If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -AllBranches:$GitIncludeAllBranches -Reflogs:$GitIncludeRefLogs
-		If ($GitCommits.Count -eq 1) {
-			Write-GitHubActionsWarning -Message @'
-Current Git repository has only 1 commit!
-If this is incorrect, please define `actions/checkout` input `fetch-depth` to `0` and re-trigger the workflow.
-'@
+		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits
+		If ($GitCommits.Count -le 1) {
+			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommits.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
-			[String]$GitCommit = $GitCommits[$GitCommitsIndex]
+			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
 			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
+			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $IgnoresGitCommitsMeta) {
+				Write-Host -Object "Ignore Git commit $GitSessionTitle."
+				Continue
+			}
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
 				git checkout $GitCommit.CommitHash --force --quiet
