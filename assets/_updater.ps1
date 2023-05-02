@@ -62,7 +62,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryName) {
 				$Null = New-Item -Path $OutFilePathParent -ItemType 'Directory' -Confirm:$False
 			}
 			Try {
-				Invoke-WebRequest -Uri $AssetIndexItem.Remote -UseBasicParsing -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -OutFile $OutFilePath
+				Invoke-WebRequest -Uri $AssetIndexItem.Remote -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -OutFile $OutFilePath
 			}
 			Catch {
 				Write-GitHubActionsWarning -Message $_
@@ -127,35 +127,6 @@ $(
 		Join-String -Separator "`n" -FormatString '- `{0}`'
 )
 "@
-	Try {
-		Invoke-WebRequest -Uri "$($Env:GITHUB_API_URL)/repos/$($Env:GITHUB_REPOSITORY)/issues" -Headers @{
-			Accept = 'application/vnd.github+json'
-			Authorization = "Bearer $($Env:GITHUB_TOKEN)"
-			'X-GitHub-Api-Version' = '2022-11-28'
-		} -UseBasicParsing -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Post' -Body (ConvertTo-Json -InputObject @{
-			title = "Assets Index Issue ($TimeCommit)"
-			body = @"
-**File Not Exist [$($IndexIssuesFileNotExist.Count)]:**
-
-$(
-	$IndexIssuesFileNotExist |
-		Sort-Object |
-		Join-String -Separator "`n" -FormatString '- `{0}`'
-)
-
-**File Not Record [$($IndexIssuesFileNotRecord.Count)]:**
-
-$(
-	$IndexIssuesFileNotRecord |
-		Sort-Object |
-		Join-String -Separator "`n" -FormatString '- `{0}`'
-)
-"@
-		})
-	}
-	Catch {
-		Write-GitHubActionsWarning -Message "Unable to create an issue: $_"
-	}
 }
 Write-Host -Object 'Conclusion.'
 Set-GitHubActionsOutput -Name 'should_push' -Value $ShouldPush.ToString().ToLower()
