@@ -29,5 +29,4 @@ COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 RUN freshclam --verbose
 RUN git config --global --add "safe.directory" "*" && git config --global --list
-RUN chmod +x ${GHACTION_SCANVIRUS_PROGRAM_LIB}main.ps1 ${GHACTION_SCANVIRUS_PROGRAM_LIB}pre.ps1
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]

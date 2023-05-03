@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 #Requires -PSEdition Core -Version 7.2
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
@@ -16,6 +15,9 @@ Import-Module -Name (
 ) -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
+If (Get-GitHubAcitonsIsDebug) {
+	Get-WareMeta
+}
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
 [ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
