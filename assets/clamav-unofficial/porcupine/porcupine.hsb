@@ -1,4 +1,6 @@
 62b0c4ac16bbfdf982cf15358cf69f10:329:porcupine.hsb.lite:73
+f5bccca6f16c275e30b2bbd2732c19bc:306816:Porcupine.Win32.Downloader.ModiLoader.C.119991:73
+c399617a690eca6284911685bc11e55f:3476:Porcupine.Exploit.MSOffice.CVE.2018.0802.gen.119990:73
 bea14c9b16adcc34ffdadb9a5b19c025:158486:Porcupine.Backdoor.MSIL.Androm.gen.119311:73
 6b4cf35e763874f592e4fcab61d74ddf:393216:Porcupine.Backdoor.MSIL.Androm.gen.119310:73
 c8fc589f143e5bea9aeb67a7ac26be8d:674816:Porcupine.Trojan.Spy.MSIL.Noon.gen.119290:73
@@ -176,5 +178,3 @@ b784afaa0253cb9e6c5e2242afb6727e:314339:Porcupine.Unclassified.110507:73
 9e991025a92ccbe69abe8712f711807d:140880:Porcupine.Unclassified.110505:73
 c43d672c04d5214ccdd55e264976bdbe:10357:Porcupine.Unclassified.110357:73
 f22d2659f6d06f98043e95f2a74f932d:637440:Porcupine.Trojan.PSW.MSIL.Stealer.gen.110344:73
-639d8133ff9e7daca5868e816a213caa:577536:Porcupine.Trojan.Spy.MSIL.SnakeLogger.gen.110035:73
-7912a6ffa60a70ee03bb676bc9c22170:503689:Porcupine.Trojan.Spy.MSIL.SnakeLogger.gen.110034:73
