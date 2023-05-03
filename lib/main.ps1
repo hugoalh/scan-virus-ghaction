@@ -215,16 +215,20 @@ If this is incorrect, probably something went wrong.
 	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
 	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
 	$Script:StatisticsTotalSizes.Discover += $Elements |
-		Measure-Object -Property 'Size' -Sum
+		Measure-Object -Property 'Size' -Sum |
+		Select-Object -ExpandProperty 'Sum'
 	$Script:StatisticsTotalSizes.Scan += $Elements |
 		Where-Object -FilterScript { !$_.SkipAll } |
-		Measure-Object -Property 'Size' -Sum
+		Measure-Object -Property 'Size' -Sum |
+		Select-Object -ExpandProperty 'Sum'
 	$Script:StatisticsTotalSizes.ClamAV += $Elements |
 		Where-Object -FilterScript { !$_.SkipClamAV } |
-		Measure-Object -Property 'Size' -Sum
+		Measure-Object -Property 'Size' -Sum |
+		Select-Object -ExpandProperty 'Sum'
 	$Script:StatisticsTotalSizes.Yara += $Elements |
 		Where-Object -FilterScript { !$_.SkipYara } |
-		Measure-Object -Property 'Size' -Sum
+		Measure-Object -Property 'Size' -Sum |
+		Select-Object -ExpandProperty 'Sum'
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
 	Write-NameValue -Name 'Discover' -Value $ElementsCountDiscover
 	Write-NameValue -Name 'Scan' -Value $ElementsCountScan
