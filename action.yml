@@ -52,6 +52,9 @@ inputs:
 runs:
   using: "docker"
   image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.10.0"
+  pre-if: "${{runner.debug == 1}}"
+  pre-entrypoint: "/opt/hugoalh/scan-virus-ghaction/lib/pre.ps1"
+  entrypoint: "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"
 branding:
   icon: "shield"
   color: "red"

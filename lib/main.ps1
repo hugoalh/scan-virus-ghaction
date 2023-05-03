@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 #Requires -PSEdition Core -Version 7.2
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
@@ -15,9 +16,6 @@ Import-Module -Name (
 ) -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
-If (Get-GitHubActionsIsDebug) {
-	Get-WareMeta
-}
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
 [ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
@@ -276,7 +274,8 @@ $(
 			$_.Value |
 				Sort-Object -Unique |
 				Join-String -Separator ', ' -FormatString '`{0}`'
-		)" }
+		)" } |
+		Join-String -Separator "`n"
 )
 "@
 				$Script:StatisticsIssuesSessions += "$SessionId/ClamAV"
