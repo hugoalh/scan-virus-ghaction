@@ -99,13 +99,13 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 				[String]$Value = $GitCommitMetaRaw1[$Line]
 				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
-					$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -isplit ' '
+					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -isplit ' '
 				}
 				ElseIf ($GitCommitsPropertiesCurrent.AsType) {
-					$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value -as $GitCommitsPropertiesCurrent.AsType
+					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -as $GitCommitsPropertiesCurrent.AsType
 				}
 				Else {
-					$GitCommitMeta[$GitCommitsPropertiesCurrent.Name] = $Value
+					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
 				}
 			}
 			[PSCustomObject]$GitCommitMeta |
@@ -124,35 +124,35 @@ Function Test-GitCommitIsIgnore {
 	ForEach ($IgnoreItem In $Ignore) {
 		[UInt16]$IgnoreMatchCount = 0
 		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
-			If ($Null -ieq $IgnoreItem[$GitCommitsProperty.Name]) {
+			If ($Null -ieq $IgnoreItem.($GitCommitsProperty.Name)) {
 				Continue
 			}
 			Try {
 				If ($GitCommitsProperty.AsType -ieq [DateTime]) {
-					If (($IgnoreItem[$GitCommitsProperty.Name] -as [String]) -imatch '^-[gl][et] \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
-						[String]$CompareOperator, [String]$IgnoreTimestampRaw = $IgnoreItem[$GitCommitsProperty.Name] -isplit ' '
+					If (($IgnoreItem.($GitCommitsProperty.Name) -as [String]) -imatch '^-[gl][et] \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
+						[String]$CompareOperator, [String]$IgnoreTimestampRaw = $IgnoreItem.($GitCommitsProperty.Name) -isplit ' '
 						[DateTime]$IgnoreTimestamp = Get-Date -Date $IgnoreTimestampRaw
 						Switch -Exact ($CompareOperator) {
 							'-ge' {
-								If ($GitCommit[$GitCommitsProperty.Name] -ge $IgnoreTimestamp) {
+								If ($GitCommit.($GitCommitsProperty.Name) -ge $IgnoreTimestamp) {
 									$IgnoreMatchCount += 1
 									Break
 								}
 							}
 							'-gt' {
-								If ($GitCommit[$GitCommitsProperty.Name] -gt $IgnoreTimestamp) {
+								If ($GitCommit.($GitCommitsProperty.Name) -gt $IgnoreTimestamp) {
 									$IgnoreMatchCount += 1
 									Break
 								}
 							}
 							'-le' {
-								If ($GitCommit[$GitCommitsProperty.Name] -le $IgnoreTimestamp) {
+								If ($GitCommit.($GitCommitsProperty.Name) -le $IgnoreTimestamp) {
 									$IgnoreMatchCount += 1
 									Break
 								}
 							}
 							'-lt' {
-								If ($GitCommit[$GitCommitsProperty.Name] -lt $IgnoreTimestamp) {
+								If ($GitCommit.($GitCommitsProperty.Name) -lt $IgnoreTimestamp) {
 									$IgnoreMatchCount += 1
 									Break
 								}
@@ -160,18 +160,18 @@ Function Test-GitCommitIsIgnore {
 						}
 					}
 					Else {
-						If ((ConvertTo-DateTimeIsoString -InputObject $GitCommit[$GitCommitsProperty.Name]) -imatch $IgnoreItem[$GitCommitsProperty.Name]) {
+						If ((ConvertTo-DateTimeIsoString -InputObject $GitCommit.($GitCommitsProperty.Name)) -imatch $IgnoreItem.($GitCommitsProperty.Name)) {
 							$IgnoreMatchCount += 1
 						}
 					}
 				}
 				ElseIf ($GitCommitsProperty.IsArraySpace) {
-					If (($GitCommit[$GitCommitsProperty.Name] -isplit ' ') -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
+					If (($GitCommit.($GitCommitsProperty.Name) -isplit ' ') -inotmatch $IgnoreItem.($GitCommitsProperty.Name)) {
 						$IgnoreMatchCount += 1
 					}
 				}
 				Else {
-					If ($GitCommit[$GitCommitsProperty.Name] -inotmatch $IgnoreItem[$GitCommitsProperty.Name]) {
+					If ($GitCommit.($GitCommitsProperty.Name) -inotmatch $IgnoreItem.($GitCommitsProperty.Name)) {
 						$IgnoreMatchCount += 1
 					}
 				}
@@ -180,6 +180,7 @@ Function Test-GitCommitIsIgnore {
 		}
 		If ($IgnoreMatchCount -ge $IgnoreItem.PSObject.Properties.Name.Count) {
 			Write-Output -InputObject $True
+			Return
 		}
 	}
 	Write-Output -InputObject $False

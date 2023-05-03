@@ -28,23 +28,27 @@ Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 Write-NameValue -Name 'Input_List_Delimiter' -Value "``$InputListDelimiter``"
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^csv$' {
-		[String]$InputTableMarkup = 'Csv'
+		[String]$InputTableMarkup = 'csv'
 		Break
 	}
-	'^csv-?m(?:ulti(?:ple)?(?:line)?)?$' {
-		[String]$InputTableMarkup = 'CsvM'
+	'^csvm$' {
+		[String]$InputTableMarkup = 'csvm'
 		Break
 	}
-	'^csv-?s(?:ingle(?:line)?)?$' {
-		[String]$InputTableMarkup = 'CsvS'
+	'^csvs$' {
+		[String]$InputTableMarkup = 'csvs'
+		Break
+	}
+	'^json$' {
+		[String]$InputTableMarkup = 'json'
 		Break
 	}
 	'^tsv$' {
-		[String]$InputTableMarkup = 'Tsv'
+		[String]$InputTableMarkup = 'tsv'
 		Break
 	}
 	'^ya?ml$' {
-		[String]$InputTableMarkup = 'Yaml'
+		[String]$InputTableMarkup = 'yaml'
 		Break
 	}
 	Default {
@@ -264,7 +268,7 @@ $(
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-				$Script:StatisticsIssuesOperations += "$SessionId/ClamAV"
+				$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
 			}
 			If ($Result.Found.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
@@ -276,10 +280,11 @@ $(
 			$_.Value |
 				Sort-Object -Unique |
 				Join-String -Separator ', ' -FormatString '`{0}`'
-		)" }
+		)" } |
+		Join-String -Separator "`n"
 )
 "@
-				$Script:StatisticsIssuesSessions += "$SessionId/ClamAV"
+				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 			}
 		}
 		Else {
@@ -287,7 +292,7 @@ $(
 				$Result.ErrorMessage |
 					Join-String -Separator "`n"
 			)
-			$Script:StatisticsIssuesOperations += "ClamAV/$SessionId"
+			$Script:StatisticsIssuesOperations.Storage += "ClamAV/$SessionId"
 		}
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
@@ -317,7 +322,7 @@ $(
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-					$Script:StatisticsIssuesOperations += "$SessionId/YARA"
+					$Script:StatisticsIssuesOperations.Storage += "$SessionId/YARA"
 				}
 				If ($Result.Found.Count -gt 0) {
 					Write-GitHubActionsError -Message @"
@@ -332,7 +337,7 @@ $(
 		)" }
 )
 "@
-					$Script:StatisticsIssuesSessions += "$SessionId/YARA"
+					$Script:StatisticsIssuesSessions.Yara += $SessionId
 				}
 			}
 			Else {
@@ -340,7 +345,7 @@ $(
 					$Result.ErrorMessage |
 						Join-String -Separator "`n"
 				)
-				$Script:StatisticsIssuesOperations += "YARA/$SessionId"
+				$Script:StatisticsIssuesOperations.Storage += "YARA/$SessionId"
 			}
 		}
 	}

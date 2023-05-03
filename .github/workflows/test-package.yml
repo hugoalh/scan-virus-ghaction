@@ -37,3 +37,6 @@ jobs:
           yara_enable: "True"
           yara_unofficialassets: |-
             ^.+$
+          ignores_elements: |-
+            - Path: "\\.yara?$"
+            - Path: "node_modules\\/"

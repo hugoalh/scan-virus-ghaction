@@ -1,12 +1,5 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name (
-	@(
-		'assets',
-		'display'
-	) |
-		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
-) -Scope 'Local'
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Function Invoke-ClamAVScan {
 	[CmdletBinding()]
@@ -55,11 +48,11 @@ Function Invoke-ClamAVScan {
 		}
 		If ($OutputLine -imatch ': .+ FOUND$') {
 			[String]$Element, [String]$Signature = ($OutputLine -ireplace ' FOUND$', '') -isplit '(?<=^.+?): '
-			If ($Null -ieq $Result.Found[$Element]) {
-				$Result.Found[$Element] = @()
+			If ($Null -ieq $Result.Found.($Element)) {
+				$Result.Found.($Element) = @()
 			}
-			If ($Signature -inotin $Result.Found[$Element]) {
-				$Result.Found[$Element] += $Signature
+			If ($Signature -inotin $Result.Found.($Element)) {
+				$Result.Found.($Element) += $Signature
 			}
 			Continue
 		}
@@ -106,11 +99,11 @@ Function Invoke-Yara {
 	ForEach ($OutputLine In $Result.Output) {
 		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
 			[String]$Rule, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
-			If ($Null -ieq $Result.Found[$Element]) {
-				$Result.Found[$Element] = @()
+			If ($Null -ieq $Result.Found.($Element)) {
+				$Result.Found.($Element) = @()
 			}
-			If ($Rule -inotin $Result.Found[$Element]) {
-				$Result.Found[$Element] += $Rule
+			If ($Rule -inotin $Result.Found.($Element)) {
+				$Result.Found.($Element) += $Rule
 			}
 			Continue
 		}

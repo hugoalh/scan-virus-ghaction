@@ -63,85 +63,50 @@ jobs:
 
 `<String = "yaml">` Markup language when the input is type of table.
 
-<table>
-<tr>
-<td><b>Value</b></td>
-<td><b>Example</b></td>
-</tr>
-<tr>
-<td><code>csv</code></td>
-<td>
-
-```csv
-bar,foo
-5,10
-10,20
-```
-
-</td>
-</tr>
-<tr>
-<td>
-<ul>
-<li><code>csv-m</code></li>
-<li><code>csv-multipleline</code></li>
-</ul>
-</td>
-<td>
-
-```
-bar=5,foo=10
-bar=10,foo=20
-```
-
-</td>
-</tr>
-<tr>
-<td>
-<ul>
-<li><code>csv-s</code></li>
-<li><code>csv-singleline</code></li>
-</ul>
-</td>
-<td>
-
-```
-bar=5,foo=10;bar=10,foo=20
-```
-
-</td>
-</tr>
-<tr>
-<td><code>tsv</code></td>
-<td>
-
-```tsv
-bar	foo
-5	10
-10	20
-```
-
-</td>
-</tr>
-<tr>
-<td>
-<ul>
-<li><code>yaml</code></li>
-<li><code>yml</code></li>
-</ul>
-</td>
-<td>
-
-```yml
-- bar: 5
-  foo: 10
-- bar: 10
-  foo: 20
-```
-
-</td>
-</tr>
-</table>
+- **`"csv"` (Comma Separated Values (Standard)):**
+  ```csv
+  bar,foo
+  5,10
+  10,20
+  ```
+- **`"csvm"` (Comma Separated Values (Non Standard Multiple Line)):**
+  ```
+  bar=5,foo=10
+  bar=10,foo=20
+  ```
+- **`"csvs"` (Comma Separated Values (Non Standard Single Line)):**
+  ```
+  bar=5,foo=10;bar=10,foo=20
+  ```
+- **`"json"` (JavaScript Object Notation):**
+  ```json
+  [{"bar":5,"foo":10},{"bar":10,"foo":20}]
+  ```
+  ```json
+  [
+    {
+      "bar": 5,
+      "foo": 10
+    },
+    {
+      "bar": 10,
+      "foo": 20
+    }
+  ]
+  ```
+- **`"tsv"` (Tab Separated Values):**
+  ```tsv
+  bar	foo
+  5	10
+  10	20
+  ```
+- **`"yaml"`/`"yml"` (YAML) *\[Default\]*:**
+  ```yml
+  - bar: 5
+    foo: 10
+  - bar: 10
+    foo: 20
+  ```
 
 #### `targets`
 

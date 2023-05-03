@@ -46,8 +46,8 @@ Class ScanVirusStatisticsTotalElements {
 		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
 			$TotalElementsTable += [PSCustomObject]@{
 				Type = $Type
-				Value = $This[$Type]
-				Percentage = $IsNoElements ? 0 : [Math]::Round(($This[$Type] / $This.Discover * 100), 3)
+				Value = $This.($Type)
+				Percentage = $IsNoElements ? 0 : [Math]::Round(($This.($Type) / $This.Discover * 100), 3)
 			}
 		}
 		$TotalElementsTable |
@@ -82,11 +82,11 @@ Class ScanVirusStatisticsTotalSizes {
 		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
 			$TotalSizesTable += [PSCustomObject]@{
 				Type = $Type
-				B = $This[$Type]
-				KB = [Math]::Round(($This[$Type] / 1KB), 3)
-				MB = [Math]::Round(($This[$Type] / 1MB), 3)
-				GB = [Math]::Round(($This[$Type] / 1GB), 3)
-				Percentage = $IsNoSizes ? 0 : [Math]::Round(($This[$Type] / $This.Discover * 100), 3)
+				B = $This.($Type)
+				KB = [Math]::Round(($This.($Type) / 1KB), 3)
+				MB = [Math]::Round(($This.($Type) / 1MB), 3)
+				GB = [Math]::Round(($This.($Type) / 1GB), 3)
+				Percentage = $IsNoSizes ? 0 : [Math]::Round(($This.($Type) / $This.Discover * 100), 3)
 			}
 		}
 		$TotalSizesTable |

@@ -65,7 +65,7 @@ Function Get-InputTable {
 	[OutputType([PSCustomObject[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
-		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('Csv', 'CsvM', 'CsvS', 'Tsv', 'Yaml')][String]$Markup
+		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csvm', 'csvs', 'json', 'tsv', 'yaml')][String]$Markup
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
@@ -74,32 +74,37 @@ Function Get-InputTable {
 	}
 	Try {
 		Switch -Exact ($Markup) {
-			'Csv' {
+			'csv' {
 				ConvertFrom-Csv -InputObject $Raw -Delimiter ',' |
 					Write-Output
 				Break
 			}
-			'CsvM' {
+			'csvm' {
 				[String[]]($Raw -isplit '\r?\n') |
 					Where-Object -FilterScript { $_ -imatch '^.+$' } |
 					ConvertFrom-CsvM |
 					Write-Output
 				Break
 			}
-			'CsvS' {
+			'csvs' {
 				$Raw |
 					Convert-FromCsvSToCsvM |
 					ConvertFrom-CsvM |
 					Write-Output
 				Break
 			}
-			'Tsv' {
+			'json' {
+				(ConvertFrom-Json -InputObject $Raw -Depth 100) -as [PSCustomObject[]] |
+					Write-Output
+				Break
+			}
+			'tsv' {
 				ConvertFrom-Csv -InputObject $Raw -Delimiter "`t" |
 					Write-Output
 				Break
 			}
-			'Yaml' {
-				ConvertFrom-Yaml -InputObject $Raw |
+			'yaml' {
+				(ConvertFrom-Yaml -InputObject $Raw) -as [PSCustomObject[]] |
 					Write-Output
 				Break
 			}
@@ -126,7 +131,7 @@ Function Test-ElementIsIgnore {
 		ForEach ($Property In @('Path', 'Rule', 'Session', 'Signature', 'Tool')) {
 			Try {
 				If ($ElementKeys -icontains $Property -and $IgnoreItemKeys -icontains $Property) {
-					If ($Element[$Property] -imatch $IgnoreItem[$Property]) {
+					If ($Element.($Property) -imatch $IgnoreItem.($Property)) {
 						$IgnoreMatchCount += 1
 					}
 				}
@@ -135,6 +140,7 @@ Function Test-ElementIsIgnore {
 		}
 		If ($IgnoreMatchCount -ge $ElementKeys.Count) {
 			Write-Output -InputObject $True
+			Return
 		}
 	}
 	Write-Output -InputObject $False
