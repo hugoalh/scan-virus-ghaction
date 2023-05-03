@@ -262,7 +262,7 @@ $(
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-				$Script:StatisticsIssuesOperations += "$SessionId/ClamAV"
+				$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
 			}
 			If ($Result.Found.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
@@ -278,7 +278,7 @@ $(
 		Join-String -Separator "`n"
 )
 "@
-				$Script:StatisticsIssuesSessions += "$SessionId/ClamAV"
+				$Script:StatisticsIssuesSessions.Storage += "$SessionId/ClamAV"
 			}
 		}
 		Else {
@@ -286,7 +286,7 @@ $(
 				$Result.ErrorMessage |
 					Join-String -Separator "`n"
 			)
-			$Script:StatisticsIssuesOperations += "ClamAV/$SessionId"
+			$Script:StatisticsIssuesOperations.Storage += "ClamAV/$SessionId"
 		}
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
@@ -316,7 +316,7 @@ $(
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-					$Script:StatisticsIssuesOperations += "$SessionId/YARA"
+					$Script:StatisticsIssuesOperations.Storage += "$SessionId/YARA"
 				}
 				If ($Result.Found.Count -gt 0) {
 					Write-GitHubActionsError -Message @"
@@ -331,7 +331,7 @@ $(
 		)" }
 )
 "@
-					$Script:StatisticsIssuesSessions += "$SessionId/YARA"
+					$Script:StatisticsIssuesSessions.Storage += "$SessionId/YARA"
 				}
 			}
 			Else {
@@ -339,7 +339,7 @@ $(
 					$Result.ErrorMessage |
 						Join-String -Separator "`n"
 				)
-				$Script:StatisticsIssuesOperations += "YARA/$SessionId"
+				$Script:StatisticsIssuesOperations.Storage += "YARA/$SessionId"
 			}
 		}
 	}
