@@ -28,23 +28,27 @@ Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 Write-NameValue -Name 'Input_List_Delimiter' -Value "``$InputListDelimiter``"
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^csv$' {
-		[String]$InputTableMarkup = 'Csv'
+		[String]$InputTableMarkup = 'csv'
 		Break
 	}
-	'^csv-?m(?:ulti(?:ple)?(?:line)?)?$' {
-		[String]$InputTableMarkup = 'CsvM'
+	'^csvm$' {
+		[String]$InputTableMarkup = 'csvm'
 		Break
 	}
-	'^csv-?s(?:ingle(?:line)?)?$' {
-		[String]$InputTableMarkup = 'CsvS'
+	'^csvs$' {
+		[String]$InputTableMarkup = 'csvs'
+		Break
+	}
+	'^json$' {
+		[String]$InputTableMarkup = 'json'
 		Break
 	}
 	'^tsv$' {
-		[String]$InputTableMarkup = 'Tsv'
+		[String]$InputTableMarkup = 'tsv'
 		Break
 	}
 	'^ya?ml$' {
-		[String]$InputTableMarkup = 'Yaml'
+		[String]$InputTableMarkup = 'yaml'
 		Break
 	}
 	Default {

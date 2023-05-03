@@ -1,12 +1,5 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name (
-	@(
-		'assets',
-		'display'
-	) |
-		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
-) -Scope 'Local'
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Function Invoke-ClamAVScan {
 	[CmdletBinding()]
