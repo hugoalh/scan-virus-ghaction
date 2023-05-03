@@ -38,5 +38,5 @@ jobs:
           yara_unofficialassets: |-
             ^.+$
           ignores_elements: |-
-            - Path: "\.yara?$"
-            - Path: "node_modules\/"
+            - Path: "\\.yara?$"
+            - Path: "node_modules\\/"
