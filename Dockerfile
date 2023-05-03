@@ -26,7 +26,8 @@ COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
 COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
-RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
+RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 RUN freshclam --verbose
 RUN git config --global --add "safe.directory" "*" && git config --global --list
+RUN chmod +x ${GHACTION_SCANVIRUS_PROGRAM_LIB}main.ps1 ${GHACTION_SCANVIRUS_PROGRAM_LIB}pre.ps1
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
