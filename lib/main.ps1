@@ -280,7 +280,7 @@ $(
 		Join-String -Separator "`n"
 )
 "@
-				$Script:StatisticsIssuesSessions.Storage += "$SessionId/ClamAV"
+				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 			}
 		}
 		Else {
@@ -333,7 +333,7 @@ $(
 		)" }
 )
 "@
-					$Script:StatisticsIssuesSessions.Storage += "$SessionId/YARA"
+					$Script:StatisticsIssuesSessions.Yara += $SessionId
 				}
 			}
 			Else {
