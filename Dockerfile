@@ -17,7 +17,6 @@ RUN echo "deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-pro
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install powershell
 RUN apt-get --assume-yes dist-upgrade
-RUN apt-get --assume-yes autoremove
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]

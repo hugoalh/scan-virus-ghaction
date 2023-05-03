@@ -15,7 +15,7 @@ Import-Module -Name (
 ) -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
-If (Get-GitHubAcitonsIsDebug) {
+If (Get-GitHubActionsIsDebug) {
 	Get-WareMeta
 }
 [ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
