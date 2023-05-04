@@ -11,7 +11,6 @@ Function Invoke-ClamAVScan {
 		ErrorMessage = @()
 		ExitCode = 0
 		Found = @{}
-		IsSuccess = $False
 		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
@@ -23,16 +22,12 @@ Function Invoke-ClamAVScan {
 		$Result.Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($TargetListFile.FullName)`" --multiscan"
 	}
 	Catch {
-		$Result.ExitCode = $LASTEXITCODE
-		$Result.ErrorMessage += $_
-		Write-Output -InputObject $Result
-		Return
+		Throw $_
 	}
 	Finally {
 		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
 	$Result.ExitCode = $LASTEXITCODE
-	$Result.IsSuccess = $True
 	ForEach ($OutputLine In (
 		$Result.Output |
 			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
@@ -74,7 +69,6 @@ Function Invoke-Yara {
 		ErrorMessage = @()
 		ExitCode = 0
 		Found = @{}
-		IsSuccess = $False
 		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
@@ -83,19 +77,15 @@ Function Invoke-Yara {
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	Try {
-		$Result.Output += Invoke-Expression -Command "yara --scan-list `"$($Asset.Path)`" `"$($TargetListFile.FullName)`""
+		$Result.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($Asset.Path)`" `"$($TargetListFile.FullName)`""
 	}
 	Catch {
-		$Result.ExitCode = $LASTEXITCODE
-		$Result.ErrorMessage += $_
-		Write-Output -InputObject $Result
-		Return
+		Throw $_
 	}
 	Finally {
 		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
 	$Result.ExitCode = $LASTEXITCODE
-	$Result.IsSuccess = $True
 	ForEach ($OutputLine In $Result.Output) {
 		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
 			[String]$Rule, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"

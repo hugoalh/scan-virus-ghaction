@@ -249,16 +249,16 @@ If this is incorrect, probably something went wrong.
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and $ElementsCountClamAV -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
-		[Hashtable]$Result = Invoke-ClamAVScan -Target (
-			$Elements |
-				Where-Object -FilterScript { !$_.SkipClamAV } |
-				Select-Object -ExpandProperty 'FullName'
-		)
-		Write-GitHubActionsDebug -Message (
-			$Result.Output |
-				Join-String -Separator "`n"
-		)
-		If ($Result.IsSuccess) {
+		Try {
+			[Hashtable]$Result = Invoke-ClamAVScan -Target (
+				$Elements |
+					Where-Object -FilterScript { !$_.SkipClamAV } |
+					Select-Object -ExpandProperty 'FullName'
+			)
+			Write-GitHubActionsDebug -Message (
+				$Result.Output |
+					Join-String -Separator "`n"
+			)
 			If ($Result.ErrorMessage.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via ClamAV:
@@ -287,12 +287,9 @@ $(
 				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
 			}
 		}
-		Else {
-			Write-GitHubActionsError -Message (
-				$Result.ErrorMessage |
-					Join-String -Separator "`n"
-			)
-			$Script:StatisticsIssuesOperations.Storage += "ClamAV/$SessionId"
+		Catch {
+			Write-GitHubActionsError -Message $_
+			$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
 		}
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
@@ -303,50 +300,58 @@ $(
 			$YaraUnofficialAssetsIndexTable |
 				Where-Object -FilterScript { $_.Select }
 		)) {
-			[Hashtable]$Result = Invoke-Yara -Target (
-				$Elements |
-					Where-Object -FilterScript { !$_.SkipYara } |
-					Select-Object -ExpandProperty 'FullName'
-			) -Asset $YaraUnofficialAsset
-			Write-GitHubActionsDebug -Message (
-				$Result.Output |
-					Join-String -Separator "`n"
-			)
-			If ($Result.IsSuccess) {
+			Try {
+				[Hashtable]$Result = Invoke-Yara -Target (
+					$Elements |
+						Where-Object -FilterScript { !$_.SkipYara } |
+						Select-Object -ExpandProperty 'FullName'
+				)
+				Write-GitHubActionsDebug -Message (
+					$Result.Output |
+						Join-String -Separator "`n"
+				)
 				If ($Result.ErrorMessage.Count -gt 0) {
-					Write-GitHubActionsError -Message @"
+					$YaraResultIssue += $Result.ErrorMessage
+				}
+				If ($Result.Found.Count -gt 0) {
+					ForEach ($Found In $Result.Found.GetEnumerator()) {
+						If ($Null -ieq $YaraResultFound.($Found.Name)) {
+							$YaraResultFound.($Found.Name) = @()
+						}
+						$YaraResultFound.($Found.Name) += $Found.Value
+					}
+				}
+			}
+			Catch {
+				$YaraResultIssue += $_
+			}	
+		}
+		If ($YaraResultIssue.Count -gt 0) {
+			Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via YARA:
 
 $(
-	$Result.ErrorMessage |
-		Join-String -Separator "`n" -FormatString '- {0}'
+$YaraResultIssue |
+	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-					$Script:StatisticsIssuesOperations.Storage += "$SessionId/YARA"
-				}
-				If ($Result.Found.Count -gt 0) {
-					Write-GitHubActionsError -Message @"
+			$Script:StatisticsIssuesOperations.Storage += "$SessionId/YARA"
+		}
+		If ($YaraResultFound.Count -gt 0) {
+			Write-GitHubActionsError -Message @"
 Found in session `"$SessionTitle`" via YARA:
 
 $(
-	$Result.Found.GetEnumerator() |
-		ForEach-Object -Process { "$($_.Name): $(
-			$_.Value |
-				Sort-Object -Unique |
-				Join-String -Separator ', ' -FormatString '`{0}`'
-		)" }
+$YaraResultFound.GetEnumerator() |
+	ForEach-Object -Process { "$($_.Name): $(
+		$_.Value |
+			Sort-Object -Unique |
+			Join-String -Separator ', ' -FormatString '`{0}`'
+	)" } |
+	Join-String -Separator "`n"
 )
 "@
-					$Script:StatisticsIssuesSessions.Yara += $SessionId
-				}
-			}
-			Else {
-				Write-GitHubActionsError -Message (
-					$Result.ErrorMessage |
-						Join-String -Separator "`n"
-				)
-				$Script:StatisticsIssuesOperations.Storage += "YARA/$SessionId"
-			}
+			$Script:StatisticsIssuesSessions.Yara += $SessionId
 		}
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
