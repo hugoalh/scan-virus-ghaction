@@ -2,11 +2,11 @@ name: "Scan Virus"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
-  input_list_delimiter:
+  input_listdelimiter:
     description: "{RegEx} Delimiter when the input is type of list."
     required: false
     default: ",|;|\\r?\\n"
-  input_table_markup:
+  input_tablemarkup:
     description: "{String} Markup language when the input is type of table."
     required: false
     default: "yaml"
@@ -17,6 +17,13 @@ inputs:
     description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
     required: false
     default: "False"
+  git_ignores:
+    description: "{Table} Ignores for the Git commits."
+    required: false
+  git_limit:
+    description: "{UInt} Limit on how many Git commits will scan."
+    required: false
+    default: "0"
   git_reverse:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
@@ -28,6 +35,10 @@ inputs:
   clamav_unofficialassets:
     description: "{RegEx[]} ClamAV unofficial assets to use."
     required: false
+  clamav_update:
+    description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
+    required: false
+    default: "True"
   yara_enable:
     description: "{Boolean} Whether to use YARA."
     required: false
@@ -35,20 +46,9 @@ inputs:
   yara_unofficialassets:
     description: "{RegEx[]} YARA unofficial assets to use."
     required: false
-  update_clamav:
-    description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
-    required: false
-    default: "True"
-  ignores_elements:
+  ignores:
     description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
     required: false
-  ignores_gitcommits_meta:
-    description: "{Table} Ignores for the Git commits meta."
-    required: false
-  ignores_gitcommits_count:
-    description: "{UInt} Ignores for the count of Git commits."
-    required: false
-    default: "0"
 runs:
   using: "docker"
   image: "../../Dockerfile"
