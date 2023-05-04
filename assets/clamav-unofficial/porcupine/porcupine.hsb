@@ -1,4 +1,8 @@
 62b0c4ac16bbfdf982cf15358cf69f10:329:porcupine.hsb.lite:73
+a29a20379bf4032c4e15d1ae5533dc32:97468:Porcupine.VBA.Subdoc.B.119995:73
+607eb5c67ac253a1ddc39978be53a92b:518656:Porcupine.MSIL.Kryptik.QME.119994:73
+5ce54a11a3afcec260b0d149d9aadffb:292161:Porcupine.MSIL.Kryptik.QME.119993:73
+5d724e35ac9b3f9fbada923425f83d6c:439417:Porcupine.Backdoor.Win32.Androm.119992:73
 f5bccca6f16c275e30b2bbd2732c19bc:306816:Porcupine.Win32.Downloader.ModiLoader.C.119991:73
 c399617a690eca6284911685bc11e55f:3476:Porcupine.Exploit.MSOffice.CVE.2018.0802.gen.119990:73
 bea14c9b16adcc34ffdadb9a5b19c025:158486:Porcupine.Backdoor.MSIL.Androm.gen.119311:73
@@ -177,4 +181,3 @@ b784afaa0253cb9e6c5e2242afb6727e:314339:Porcupine.Unclassified.110507:73
 7105b90fb38cbfb87c81324292b69102:330179:Porcupine.Unclassified.110506:73
 9e991025a92ccbe69abe8712f711807d:140880:Porcupine.Unclassified.110505:73
 c43d672c04d5214ccdd55e264976bdbe:10357:Porcupine.Unclassified.110357:73
-f22d2659f6d06f98043e95f2a74f932d:637440:Porcupine.Trojan.PSW.MSIL.Stealer.gen.110344:73
