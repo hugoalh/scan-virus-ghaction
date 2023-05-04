@@ -47,6 +47,7 @@ Function Get-GitCommits {
 		[Switch]$SortFromOldest
 	)
 	Try {
+		$Null = git config --global --add 'safe.directory' '/github/workspace'
 		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
 			Join-String -Separator "`n"
 		If ($IsGitRepositoryResult -ine 'True') {
