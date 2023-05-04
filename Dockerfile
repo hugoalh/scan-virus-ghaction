@@ -27,5 +27,5 @@ COPY configs/clamd.conf configs/freshclam.conf /etc/clamav/
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 RUN freshclam --verbose
-RUN git config --global --add "safe.directory" "*" && git config --global --list
+RUN git config --global --add "safe.directory" "/github/workspace" && git config --global --add "safe.directory" "*" && git config --global --list
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
