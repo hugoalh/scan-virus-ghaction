@@ -58,6 +58,7 @@ Function Get-WareMeta {
 		@{ Bin = 'git-lfs'; Name = 'Git LFS' },
 		@{ Bin = 'node'; Name = 'NodeJS' },
 		@{ Bin = 'yara'; Name = 'YARA' }
+		@{ Bin = 'yarac'; Name = 'YARA Compiler' }
 	) |
 		ForEach-Object -Process {
 			Enter-GitHubActionsLogGroup -Title "$($_.Name) (``$($_.Bin)``): "

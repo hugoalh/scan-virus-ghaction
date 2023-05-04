@@ -291,6 +291,7 @@ $(
 			Write-GitHubActionsError -Message $_
 			$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
 		}
+		Exit-GitHubActionsLogGroup
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
@@ -306,10 +307,12 @@ $(
 						Where-Object -FilterScript { !$_.SkipYara } |
 						Select-Object -ExpandProperty 'FullName'
 				) -Asset $YaraUnofficialAsset
-				Write-GitHubActionsDebug -Message (
-					$Result.Output |
-						Join-String -Separator "`n"
-				)
+				If ($Result.Output.Count -gt 0) {
+					Write-GitHubActionsDebug -Message (
+						$Result.Output |
+							Join-String -Separator "`n"
+					)
+				}
 				If ($Result.ErrorMessage.Count -gt 0) {
 					$YaraResultIssue += $Result.ErrorMessage
 				}
@@ -353,6 +356,7 @@ $YaraResultFound.GetEnumerator() |
 "@
 			$Script:StatisticsIssuesSessions.Yara += $SessionId
 		}
+		Exit-GitHubActionsLogGroup
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }

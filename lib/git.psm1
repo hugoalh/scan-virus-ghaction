@@ -21,9 +21,6 @@ Import-Module -Name (
 	@{ Name = 'GPGSignatureKey'; Placeholder = '%GK' },
 	@{ Name = 'GPGSignatureKeyFingerprint'; Placeholder = '%GF' },
 	@{ Name = 'GPGSignaturePrimaryKeyFingerprint'; Placeholder = '%GP' },
-	@{ Name = 'GPGSignatureSigner'; Placeholder = '%GS' },
-	@{ Name = 'GPGSignatureStatus'; Placeholder = '%G?' },
-	@{ Name = 'GPGSignatureTrustLevel'; Placeholder = '%GP' },
 	@{ Name = 'Notes'; Placeholder = '%N'; IsMultipleLine = $True },
 	@{ Name = 'ParentHashes'; Placeholder = '%P'; IsArraySpace = $True },
 	@{ Name = 'ReflogIdentityEmail'; Placeholder = '%ge' },
@@ -189,5 +186,6 @@ Function Test-GitCommitIsIgnore {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Get-GitCommits'
+	'Get-GitCommits',
+	'Test-GitCommitIsIgnore'
 )

@@ -160,9 +160,6 @@ When this input is `False`, will ignore inputs:
 - **`GPGSignatureKey`:** `<RegEx>`
 - **`GPGSignatureKeyFingerprint`:** `<RegEx>`
 - **`GPGSignaturePrimaryKeyFingerprint`:** `<RegEx>`
-- **`GPGSignatureSigner`:** `<RegEx>`
-- **`GPGSignatureStatus`:** `<RegEx>`
-- **`GPGSignatureTrustLevel`:** `<RegEx>`
 - **`Notes`:** `<RegEx>`
 - **`ParentHashes`:** `<RegEx>`
   - For multiple parent hashes in a commit, match any parent hash will cause ignore this commit.
