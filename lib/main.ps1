@@ -97,8 +97,8 @@ Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMeta.Count)]
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
-[UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
-Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
+[UInt]$IgnoresGitCommitsCount = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_count' -EmptyStringAsNull))
+Write-NameValue -Name 'Ignores_GitCommits_Count' -Value $IgnoresGitCommitsCount
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
@@ -360,17 +360,22 @@ If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits
+		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -SortFromOldest:($GitReverse)
 		If ($GitCommits.Count -le 1) {
 			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommits.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
+		[UInt]$GitCommitsPassCount = 0
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
 			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
-			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $IgnoresGitCommitsMeta) {
+			If (
+				($IgnoresGitCommitsCount -gt 0 -and $GitCommitsPassCount -ge $IgnoresGitCommitsCount) -or
+				(Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $IgnoresGitCommitsMeta)
+			) {
 				Write-Host -Object "Ignore Git commit $GitSessionTitle."
 				Continue
 			}
+			$GitCommitsPassCount += 1
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
 				git checkout $GitCommit.CommitHash --force --quiet

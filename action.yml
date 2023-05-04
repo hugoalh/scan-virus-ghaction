@@ -45,8 +45,8 @@ inputs:
   ignores_gitcommits_meta:
     description: "{Table} Ignores for the Git commits meta."
     required: false
-  ignores_gitcommits_nonnewest:
-    description: "{UInt} Ignores for the non newest Git commits."
+  ignores_gitcommits_count:
+    description: "{UInt} Ignores for the count of Git commits."
     required: false
     default: "0"
 runs:

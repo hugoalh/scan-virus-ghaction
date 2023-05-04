@@ -43,7 +43,9 @@ Import-Module -Name (
 Function Get-GitCommits {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
-	Param ()
+	Param (
+		[Switch]$SortFromOldest
+	)
 	Try {
 		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
 			Join-String -Separator "`n"
@@ -111,7 +113,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 			[PSCustomObject]$GitCommitMeta |
 				Write-Output
 		} |
-		Sort-Object -Property $GitCommitsPropertySorter.Name |
+		Sort-Object -Property $GitCommitsPropertySorter.Name -Descending:(!$SortFromOldest.IsPresent) |
 		Write-Output
 }
 Function Test-GitCommitIsIgnore {

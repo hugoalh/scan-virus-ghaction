@@ -238,14 +238,17 @@ ignores_gitcommits_meta: |-
     AuthorName: "^octocat$"
 ```
 
-#### `ignores_gitcommits_nonnewest`
+#### `ignores_gitcommits_count`
 
-`<UInt>` Ignores for the non newest Git commits, which limit how many of the newest Git commits will scan, affected by and counting after input [`ignores_gitcommits_meta`](#ignores_gitcommits_meta).
+`<UInt>` Ignores for the count of Git commits, which limit how many of the Git commits will scan, affected by and counting after inputs:
+
+- [`git_reverse`](#git_reverse)
+- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta).
 
 Example:
 
 ```yml
-ignores_gitcommits_nonnewest: 100
+ignores_gitcommits_count: 100
 ```
 
 > **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
