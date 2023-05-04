@@ -305,7 +305,7 @@ $(
 					$Elements |
 						Where-Object -FilterScript { !$_.SkipYara } |
 						Select-Object -ExpandProperty 'FullName'
-				)
+				) -Asset $YaraUnofficialAsset
 				Write-GitHubActionsDebug -Message (
 					$Result.Output |
 						Join-String -Separator "`n"
