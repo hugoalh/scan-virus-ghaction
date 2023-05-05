@@ -12,7 +12,8 @@ RUN echo "deb http://deb.debian.org/debian/ sid main contrib" >> /etc/apt/source
 RUN apt-get --assume-yes --quiet update
 RUN apt-get --assume-yes --quiet install apt-utils curl hwinfo
 RUN apt-get --assume-yes --quiet install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs nodejs yara
-RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
+RUN ftp https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/trusted.gpg.d/microsoft.asc
+# RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
 RUN echo "deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" > /etc/apt/sources.list.d/microsoft.list
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install powershell
