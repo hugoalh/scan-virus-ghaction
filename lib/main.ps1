@@ -60,7 +60,7 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -Empt
 Write-NameValue -Name 'Input_TableMarkup' -Value $InputTableMarkup
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '(Local)' : (
+Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '{Local}' : (
 	$Targets |
 		Select-Object -ExpandProperty 'OriginalString' |
 		Join-String -Separator ', ' -FormatString '`{0}`'
@@ -71,7 +71,7 @@ Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
 Write-NameValue -Name "Git_Ignores [$($GitIgnores.Count)]" -Value (
 	$GitIgnores |
 		Format-List -Property '*' |
-		Out-String
+		Out-String -Width ([Int]::MaxValue)
 ) -NewLine
 [UInt]$GitLimit = [UInt]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
 Write-NameValue -Name 'Git_Limit' -Value $GitLimit
@@ -97,7 +97,7 @@ Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput
 Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
 	$Ignores |
 		Format-List -Property '*' |
-		Out-String
+		Out-String -Width ([Int]::MaxValue)
 ) -NewLine
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
@@ -180,10 +180,10 @@ Function Invoke-Tools {
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
 			}
-			If (!$ElementObject.SkipClamAV) {
+			If (!$ElementObject.SkipClamAV -and $ClamAVEnable) {
 				$ElementFlags += 'C'
 			}
-			If (!$ElementObject.SkipYara) {
+			If (!$ElementObject.SkipYara -and $YaraEnable) {
 				$ElementFlags += 'Y'
 			}
 			$ElementObject.Flag = $ElementFlags |
@@ -216,8 +216,12 @@ If this is incorrect, probably something went wrong.
 		Select-Object -ExpandProperty 'Count'
 	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
 	$Script:StatisticsTotalElements.Scan += $ElementsCountScan
-	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
-	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
+	If ($ClamAVEnable) {
+		$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
+	}
+	If ($YaraEnable) {
+		$Script:StatisticsTotalElements.Yara += $ElementsCountYara
+	}
 	$Script:StatisticsTotalSizes.Discover += $Elements |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
@@ -225,26 +229,35 @@ If this is incorrect, probably something went wrong.
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	$Script:StatisticsTotalSizes.ClamAV += $Elements |
-		Where-Object -FilterScript { !$_.SkipClamAV } |
-		Measure-Object -Property 'Size' -Sum |
-		Select-Object -ExpandProperty 'Sum'
-	$Script:StatisticsTotalSizes.Yara += $Elements |
-		Where-Object -FilterScript { !$_.SkipYara } |
-		Measure-Object -Property 'Size' -Sum |
-		Select-Object -ExpandProperty 'Sum'
+	If ($ClamAVEnable) {
+		$Script:StatisticsTotalSizes.ClamAV += $Elements |
+			Where-Object -FilterScript { !$_.SkipClamAV } |
+			Measure-Object -Property 'Size' -Sum |
+			Select-Object -ExpandProperty 'Sum'
+	}
+	If ($YaraEnable) {
+		$Script:StatisticsTotalSizes.Yara += $Elements |
+			Where-Object -FilterScript { !$_.SkipYara } |
+			Measure-Object -Property 'Size' -Sum |
+			Select-Object -ExpandProperty 'Sum'
+	}
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-	Write-NameValue -Name 'Discover' -Value $ElementsCountDiscover
-	Write-NameValue -Name 'Scan' -Value $ElementsCountScan
-	Write-NameValue -Name 'ClamAV' -Value $ElementsCountClamAV
-	Write-NameValue -Name 'Yara' -Value $ElementsCountYara
+	[PSCustomObject]@{
+		Discover = $ElementsCountDiscover
+		Scan = $ElementsCountScan
+		ClamAV = $ElementsCountClamAV
+		Yara = $ElementsCountYara
+	} |
+		Format-List -Property '*' |
+		Out-String -Width ([Int]::MaxValue) |
+		Write-Host
 	$Elements |
 		Format-Table -Property @(
 			'Path',
 			'Flag',
 			@{ Expression = 'Size'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String |
+		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	Exit-GitHubActionsLogGroup
 	If ($ClamAVEnable -and $ElementsCountClamAV -gt 0) {

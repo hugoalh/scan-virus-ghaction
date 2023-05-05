@@ -38,16 +38,16 @@ Function Get-WareMeta {
 	Write-NameValue -Name 'Version' -Value $PSVersionTable.PSVersion.ToString()
 	Write-NameValue -Name 'Host' -Value (
 		$Host |
-			Out-String
+			Out-String -Width ([Int]::MaxValue)
 	) -NewLine
 	Write-NameValue -Name 'UI' -Value (
 		$Host.UI.RawUI |
-			Out-String
+			Out-String -Width ([Int]::MaxValue)
 	) -NewLine
 	Write-NameValue -Name 'Module' -Value (
 		Get-InstalledModule |
 			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize |
-			Out-String
+			Out-String -Width ([Int]::MaxValue)
 	) -NewLine
 	Exit-GitHubActionsLogGroup
 	@(

@@ -74,7 +74,7 @@ Function Register-ClamAVUnofficialAssets {
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String |
+		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	[String[]]$AssetsApplyPaths = @()
 	[String[]]$AssetsApplyIssues = @()
@@ -153,7 +153,7 @@ Function Register-YaraUnofficialAssets {
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String |
+		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	Write-Output -InputObject $IndexTable
 }
