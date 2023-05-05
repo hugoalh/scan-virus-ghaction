@@ -3,7 +3,7 @@ $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Enter-GitHubActionsLogGroup -Title 'Initialize.'
 $CurrentWorkingDirectory = Get-Location
-[String[]]$AssetsDirectoryName = @('clamav-unofficial', 'yara-unofficial')
+[String[]]$AssetsDirectoryName = @('clamav-unofficial', 'microsoft', 'yara-unofficial')
 [String[]]$GitIgnores = Get-Content -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '_updater_gitignore.txt') -Encoding 'UTF8NoBOM' |
 	Where-Object -FilterScript { $_.Length -gt 0 }
 [Hashtable]$ImportCsvParameters_Tsv = @{
