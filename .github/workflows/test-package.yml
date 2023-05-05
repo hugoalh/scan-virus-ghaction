@@ -7,14 +7,24 @@ on:
         description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
         default: true
+      git_limit:
+        type: "number"
+        description: "{UInt} Limit on how many Git commits will scan."
+        required: false
+        default: 0
       git_reverse:
         type: "boolean"
         description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
         default: false
+      yara_enable:
+        type: "boolean"
+        description: "{Boolean} Whether to use YARA."
+        required: false
+        default: false
 jobs:
-  test-package:
-    name: "Test - Package"
+  test-build:
+    name: "Test - Build"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
@@ -25,12 +35,17 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           git_integrate: "${{github.event.inputs.git_integrate}}"
+          git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
           clamav_unofficialassets: |-
             ^.+$
-          yara_enable: "True"
+          yara_enable: "${{github.event.inputs.yara_enable}}"
           yara_unofficialassets: |-
             ^.+$
           ignores: |-
-            - Path: "\\.yara?$"
-            - Path: "node_modules\\/"
+            - Path: "^assets\\/clamav-unofficial\\/.+?\\/.+$"
+            - Path: "^assets\\/yara-unofficial\\/.+?\\/.+$"
+            - Path: "^clamav-signatures-ignore-presets\\/"
+            - Path: "^clamav-unofficial-signatures\\/"
+            - Path: "^node_modules\\/"
+            - Path: "^yara-rules\\/"
