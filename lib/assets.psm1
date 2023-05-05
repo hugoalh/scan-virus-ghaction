@@ -53,7 +53,7 @@ Function Register-ClamAVUnofficialAssets {
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Process { [PSCustomObject]@{
+		ForEach-Object -Parallel { [PSCustomObject]@{
 			Type = $_.Type
 			Name = $_.Name
 			FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path
@@ -61,13 +61,16 @@ Function Register-ClamAVUnofficialAssets {
 			ApplyIgnores = $_.ApplyIgnores
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
 		} }
-	Write-NameValue -Name 'All' -Value $IndexTable.Count
-	Write-NameValue -Name 'Select' -Value (
-		$IndexTable |
+	[PSCustomObject]@{
+		All = $IndexTable.Count
+		Select = $IndexTable |
 			Where-Object -FilterScript { $_.Select } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	)
+	} |
+		Format-List -Property '*' |
+		Out-String -Width ([Int]::MaxValue) |
+		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
@@ -140,13 +143,16 @@ Function Register-YaraUnofficialAssets {
 			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
 		} }
-	Write-NameValue -Name 'All' -Value $IndexTable.Count
-	Write-NameValue -Name 'Select' -Value (
-		$IndexTable |
+	[PSCustomObject]@{
+		All = $IndexTable.Count
+		Select = $IndexTable |
 			Where-Object -FilterScript { $_.Select } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	)
+	} |
+		Format-List -Property '*' |
+		Out-String -Width ([Int]::MaxValue) |
+		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',

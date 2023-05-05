@@ -139,7 +139,7 @@ Function Invoke-Tools {
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
 	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 		Sort-Object -Property @('FullName') |
-		ForEach-Object -Process {
+		ForEach-Object -Parallel {
 			[Hashtable]$ElementObject = @{
 				FullName = $_.FullName
 				Path = $_.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
@@ -385,15 +385,20 @@ If ($Targets.Count -eq 0) {
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
 			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
-			If (
-				($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) -or
-				(Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores)
-			) {
-				Write-Host -Object "Ignore Git commit $GitSessionTitle."
+			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
+				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
+				Continue
+			}
+			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores) {
+				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
 				Continue
 			}
 			$GitCommitsPassCount += 1
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
+			$GitCommit |
+				Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
+				Out-String -Width ([Int]::MaxValue) |
+				Write-Host
 			Try {
 				git checkout $GitCommit.CommitHash --force --quiet
 				If ($LASTEXITCODE -ne 0) {

@@ -128,7 +128,7 @@ Function Test-ElementIsIgnore {
 			Continue
 		}
 		[UInt16]$IgnoreMatchCount = 0
-		ForEach ($Property In @('Path', 'Rule', 'Session', 'Signature', 'Tool')) {
+		ForEach ($Property In @('Path', 'Session', 'Symbol', 'Tool')) {
 			Try {
 				If ($ElementKeys -icontains $Property -and $IgnoreItemKeys -icontains $Property) {
 					If ($Element.($Property) -imatch $IgnoreItem.($Property)) {
