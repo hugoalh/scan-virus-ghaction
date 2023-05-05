@@ -77,7 +77,7 @@ Function Invoke-Yara {
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	Try {
-		$Result.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($Asset.Path)`" `"$($TargetListFile.FullName)`""
+		$Result.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($Asset.FilePath)`" `"$($TargetListFile.FullName)`""
 	}
 	Catch {
 		Throw $_

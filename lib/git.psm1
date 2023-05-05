@@ -21,9 +21,6 @@ Import-Module -Name (
 	@{ Name = 'GPGSignatureKey'; Placeholder = '%GK' },
 	@{ Name = 'GPGSignatureKeyFingerprint'; Placeholder = '%GF' },
 	@{ Name = 'GPGSignaturePrimaryKeyFingerprint'; Placeholder = '%GP' },
-	@{ Name = 'GPGSignatureSigner'; Placeholder = '%GS' },
-	@{ Name = 'GPGSignatureStatus'; Placeholder = '%G?' },
-	@{ Name = 'GPGSignatureTrustLevel'; Placeholder = '%GP' },
 	@{ Name = 'Notes'; Placeholder = '%N'; IsMultipleLine = $True },
 	@{ Name = 'ParentHashes'; Placeholder = '%P'; IsArraySpace = $True },
 	@{ Name = 'ReflogIdentityEmail'; Placeholder = '%ge' },
@@ -43,8 +40,11 @@ Import-Module -Name (
 Function Get-GitCommits {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
-	Param ()
+	Param (
+		[Switch]$SortFromOldest
+	)
 	Try {
+		$Null = git config --global --add 'safe.directory' '/github/workspace'
 		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
 			Join-String -Separator "`n"
 		If ($IsGitRepositoryResult -ine 'True') {
@@ -111,7 +111,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 			[PSCustomObject]$GitCommitMeta |
 				Write-Output
 		} |
-		Sort-Object -Property $GitCommitsPropertySorter.Name |
+		Sort-Object -Property $GitCommitsPropertySorter.Name -Descending:(!$SortFromOldest.IsPresent) |
 		Write-Output
 }
 Function Test-GitCommitIsIgnore {
@@ -186,5 +186,6 @@ Function Test-GitCommitIsIgnore {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Get-GitCommits'
+	'Get-GitCommits',
+	'Test-GitCommitIsIgnore'
 )

@@ -24,9 +24,9 @@ If (Get-GitHubActionsIsDebug) {
 [ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
-[RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_list_delimiter' -Mandatory -EmptyStringAsNull
-Write-NameValue -Name 'Input_List_Delimiter' -Value "``$InputListDelimiter``"
-Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -EmptyStringAsNull -Trim) {
+[RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
+Write-NameValue -Name 'Input_ListDelimiter' -Value "``$InputListDelimiter``"
+Switch -RegEx (Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^csv$' {
 		[String]$InputTableMarkup = 'csv'
 		Break
@@ -57,7 +57,7 @@ Switch -RegEx (Get-GitHubActionsInput -Name 'input_table_markup' -Mandatory -Emp
 		}
 	}
 }
-Write-NameValue -Name 'Input_Table_Markup' -Value $InputTableMarkup
+Write-NameValue -Name 'Input_TableMarkup' -Value $InputTableMarkup
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
 Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '(Local)' : (
@@ -67,6 +67,14 @@ Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 
 ))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
+[AllowEmptyCollection()][PSCustomObject[]]$GitIgnores = (Get-InputTable -Name 'git_ignores' -Markup $InputTableMarkup) ?? @()
+Write-NameValue -Name "Git_Ignores [$($GitIgnores.Count)]" -Value (
+	$GitIgnores |
+		Format-List -Property '*' |
+		Out-String
+) -NewLine
+[UInt]$GitLimit = [UInt]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
+Write-NameValue -Name 'Git_Limit' -Value $GitLimit
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
@@ -76,6 +84,8 @@ Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx [$($ClamAVUnofficialAssetsI
 	$ClamAVUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
+[Boolean]$ClamAVUpdate = Get-InputBoolean -Name 'clamav_update'
+Write-NameValue -Name 'ClamAV_Update' -Value $ClamAVUpdate
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
 [AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter
@@ -83,27 +93,17 @@ Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput
 	$YaraUnofficialAssetsInput |
 		Join-String -Separator ', ' -FormatString '`{0}`'
 )
-[Boolean]$UpdateClamAV = Get-InputBoolean -Name 'update_clamav'
-Write-NameValue -Name 'Update_ClamAV' -Value $UpdateClamAV
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresElements = (Get-InputTable -Name 'ignores_elements' -Markup $InputTableMarkup) ?? @()
-Write-NameValue -Name "Ignores_Elements [$($IgnoresElements.Count)]" -Value (
-	$IgnoresElements |
+[AllowEmptyCollection()][PSCustomObject[]]$Ignores = (Get-InputTable -Name 'ignores' -Markup $InputTableMarkup) ?? @()
+Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
+	$Ignores |
 		Format-List -Property '*' |
 		Out-String
 ) -NewLine
-[AllowEmptyCollection()][PSCustomObject[]]$IgnoresGitCommitsMeta = (Get-InputTable -Name 'ignores_gitcommits_meta' -Markup $InputTableMarkup) ?? @()
-Write-NameValue -Name "Ignores_GitCommits_Meta [$($IgnoresGitCommitsMeta.Count)]" -Value (
-	$IgnoresGitCommitsMeta |
-		Format-List -Property '*' |
-		Out-String
-) -NewLine
-[UInt]$IgnoresGitCommitsNonNewest = [UInt]::Parse((Get-GitHubActionsInput -Name 'ignores_gitcommits_nonnewest' -EmptyStringAsNull))
-Write-NameValue -Name 'Ignores_GitCommits_NonNewest' -Value $IgnoresGitCommitsNonNewest
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
-If ($UpdateClamAV -and $ClamAVEnable) {
+If ($ClamAVUpdate -and $ClamAVEnable) {
 	Update-ClamAV
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
@@ -132,7 +132,7 @@ Function Invoke-Tools {
 	)
 	If (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 		Session = $SessionId
-	}) -Ignore $IgnoresElements) {
+	}) -Ignore $Ignores) {
 		Write-Host -Object "Ignore session `"$SessionTitle`"."
 		Return
 	}
@@ -148,33 +148,33 @@ Function Invoke-Tools {
 			}
 			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 				Path = $ElementObject.Path
-			}) -Ignore $IgnoresElements) -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+			}) -Ignore $Ignores) -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 				Path = $ElementObject.Path
 				Session = $SessionId
-			}) -Ignore $IgnoresElements)
+			}) -Ignore $Ignores)
 			$ElementObject.SkipClamAV = $ElementObject.SkipAll -or (
 				Test-ElementIsIgnore -Element ([PSCustomObject]@{
 					Path = $ElementObject.Path
 					Tool = 'clamav'
-				}) -Ignore $IgnoresElements
+				}) -Ignore $Ignores
 			) -or (
 				Test-ElementIsIgnore -Element ([PSCustomObject]@{
 					Path = $ElementObject.Path
 					Session = $SessionId
 					Tool = 'clamav'
-				}) -Ignore $IgnoresElements
+				}) -Ignore $Ignores
 			)
 			$ElementObject.SkipYara = $ElementObject.SkipAll -or (
 				Test-ElementIsIgnore -Element ([PSCustomObject]@{
 					Path = $ElementObject.Path
 					Tool = 'yara'
-				}) -Ignore $IgnoresElements
+				}) -Ignore $Ignores
 			) -or (
 				Test-ElementIsIgnore -Element ([PSCustomObject]@{
 					Path = $ElementObject.Path
 					Session = $SessionId
 					Tool = 'yara'
-				}) -Ignore $IgnoresElements
+				}) -Ignore $Ignores
 			)
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
@@ -291,6 +291,7 @@ $(
 			Write-GitHubActionsError -Message $_
 			$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
 		}
+		Exit-GitHubActionsLogGroup
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
@@ -305,11 +306,13 @@ $(
 					$Elements |
 						Where-Object -FilterScript { !$_.SkipYara } |
 						Select-Object -ExpandProperty 'FullName'
-				)
-				Write-GitHubActionsDebug -Message (
-					$Result.Output |
-						Join-String -Separator "`n"
-				)
+				) -Asset $YaraUnofficialAsset
+				If ($Result.Output.Count -gt 0) {
+					Write-GitHubActionsDebug -Message (
+						$Result.Output |
+							Join-String -Separator "`n"
+					)
+				}
 				If ($Result.ErrorMessage.Count -gt 0) {
 					$YaraResultIssue += $Result.ErrorMessage
 				}
@@ -353,6 +356,7 @@ $YaraResultFound.GetEnumerator() |
 "@
 			$Script:StatisticsIssuesSessions.Yara += $SessionId
 		}
+		Exit-GitHubActionsLogGroup
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }
@@ -360,17 +364,22 @@ If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits
+		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -SortFromOldest:($GitReverse)
 		If ($GitCommits.Count -le 1) {
 			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommits.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
+		[UInt]$GitCommitsPassCount = 0
 		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
 			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
-			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $IgnoresGitCommitsMeta) {
+			If (
+				($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) -or
+				(Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores)
+			) {
 				Write-Host -Object "Ignore Git commit $GitSessionTitle."
 				Continue
 			}
+			$GitCommitsPassCount += 1
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			Try {
 				git checkout $GitCommit.CommitHash --force --quiet

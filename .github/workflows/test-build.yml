@@ -3,21 +3,15 @@ on:
   workflow_dispatch:
     inputs:
       git_integrate:
-        type: "choice"
+        type: "boolean"
         description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
-        default: "True"
-        options:
-          - "False"
-          - "True"
+        default: true
       git_reverse:
-        type: "choice"
+        type: "boolean"
         description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
-        default: "False"
-        options:
-          - "False"
-          - "True"
+        default: false
 jobs:
   test-build:
     name: "Test - Build"
@@ -37,6 +31,6 @@ jobs:
           yara_enable: "True"
           yara_unofficialassets: |-
             ^.+$
-          ignores_elements: |-
+          ignores: |-
             - Path: "\\.yara?$"
             - Path: "node_modules\\/"

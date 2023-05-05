@@ -55,11 +55,11 @@ jobs:
 
 > **ℹ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official assets.
 
-#### `input_list_delimiter`
+#### `input_listdelimiter`
 
 `<RegEx = ",|;|\r?\n">` Delimiter when the input is type of list (i.e.: array), by regular expression.
 
-#### `input_table_markup`
+#### `input_tablemarkup`
 
 `<String = "yaml">` Markup language when the input is type of table.
 
@@ -113,14 +113,14 @@ jobs:
 `<Uri[]>` Targets.
 
 - **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
-- **Remote:** Fetch files from the remote to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); Require a clean workspace.
+- **Remote:** Fetch files from the remote to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
 
 When this input is defined (i.e.: remote targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
+- [`git_ignores`](#git_ignores)
+- [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
-- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
-- [`ignores_gitcommits_nonnewest`](#ignores_gitcommits_nonnewest)
 
 #### `git_integrate`
 
@@ -128,69 +128,13 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 
 When this input is `False`, will ignore inputs:
 
+- [`git_ignores`](#git_ignores)
+- [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
-- [`ignores_gitcommits_meta`](#ignores_gitcommits_meta)
-- [`ignores_gitcommits_nonnewest`](#ignores_gitcommits_nonnewest)
 
-#### `git_reverse`
+#### `git_ignores`
 
-`<Boolean = False>` Whether to reverse the scan order of the Git commits.
-
-- **`False`:** From the newest commit to the oldest commit.
-- **`True`:** From the oldest commit to the newest commit.
-
-#### `clamav_enable`
-
-`<Boolean = True>` Whether to use ClamAV.
-
-When this input is `False`, will ignore inputs:
-
-- [`clamav_unofficialassets`](#clamav_unofficialassets)
-- [`update_clamav`](#update_clamav)
-
-#### `clamav_unofficialassets`
-
-`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the [ClamAV unofficial assets list][clamav-unofficial-assets-list], separate each name by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial assets are not in use.
-
-#### `yara_enable`
-
-`<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
-
-#### `yara_unofficialassets`
-
-`<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_list_delimiter`)](#input_list_delimiter); By default, all of the unofficial assets are not in use.
-
-#### `update_clamav`
-
-`<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.
-
-> **⚠ Important:** It is recommended to keep this default value to have the latest ClamAV official assets.
-
-#### `ignores_elements`
-
-[`<Table>`](#input_table_markup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
-
-- **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`
-- **`Path`:** `<RegEx>` Relative path based on GitHub Action workspace without `./` (e.g.: `path/to/file.extension`)
-- **`Rule`:** `<RegEx>` `{Index}/{RuleName}`
-- **`Session`:** `<RegEx>` Git commit hash
-- **`Signature`:** `<RegEx>` `{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`
-
-Example:
-
-```yml
-ignores_elements: |-
-  - Path: "^node_modules"
-```
-
-> **⚠ Important:**
->
-> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
-> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
-
-#### `ignores_gitcommits_meta`
-
-[`<Table>`](#input_table_markup) Ignores for the Git commits meta, by table; Available properties:
+[`<Table>`](#input_tablemarkup) Ignores for the Git commits, by table; Available properties:
 
 - **`AuthorDate`:**
   - `<RegEx>` A regular expression to match the timestamp in ISO 8601 format
@@ -216,9 +160,6 @@ ignores_elements: |-
 - **`GPGSignatureKey`:** `<RegEx>`
 - **`GPGSignatureKeyFingerprint`:** `<RegEx>`
 - **`GPGSignaturePrimaryKeyFingerprint`:** `<RegEx>`
-- **`GPGSignatureSigner`:** `<RegEx>`
-- **`GPGSignatureStatus`:** `<RegEx>`
-- **`GPGSignatureTrustLevel`:** `<RegEx>`
 - **`Notes`:** `<RegEx>`
 - **`ParentHashes`:** `<RegEx>`
   - For multiple parent hashes in a commit, match any parent hash will cause ignore this commit.
@@ -238,17 +179,78 @@ ignores_gitcommits_meta: |-
     AuthorName: "^octocat$"
 ```
 
-#### `ignores_gitcommits_nonnewest`
+#### `git_limit`
 
-`<UInt>` Ignores for the non newest Git commits, which limit how many of the newest Git commits will scan, affected by and counting after input [`ignores_gitcommits_meta`](#ignores_gitcommits_meta).
+`<UInt>` Limit on how many Git commits will scan, counting is affected by inputs:
+
+- [`git_ignores`](#git_ignores)
+- [`git_reverse`](#git_reverse)
+
+When this is not defined or defined with `0`, means no limit.
 
 Example:
 
 ```yml
-ignores_gitcommits_nonnewest: 100
+ignores_gitcommits_count: 100
 ```
 
 > **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
+
+#### `git_reverse`
+
+`<Boolean = False>` Whether to reverse the scan order of the Git commits.
+
+- **`False`:** From the newest commit to the oldest commit.
+- **`True`:** From the oldest commit to the newest commit.
+
+#### `clamav_enable`
+
+`<Boolean = True>` Whether to use ClamAV.
+
+When this input is `False`, will ignore inputs:
+
+- [`clamav_unofficialassets`](#clamav_unofficialassets)
+- [`clamav_update`](#clamav_update)
+
+#### `clamav_unofficialassets`
+
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the [ClamAV unofficial assets list][clamav-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
+
+#### `clamav_update`
+
+`<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.
+
+> **⚠ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
+
+#### `yara_enable`
+
+`<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
+
+#### `yara_unofficialassets`
+
+`<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
+
+#### `ignores`
+
+[`<Table>`](#input_tablemarkup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
+
+- **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`.
+- **`Path`:** `<RegEx>` Relative path based on GitHub Action workspace without `./` (e.g.: `path/to/file.extension`).
+- **`Rule`:** `<RegEx>` `{Index}/{RuleName}`.
+- **`Session`:** `<RegEx>` Git commit hash.
+- **`Signature`:** `<RegEx>` `{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`.
+
+Example:
+
+```yml
+ignores_elements: |-
+  - Path: "^node_modules"
+```
+
+> **⚠ Important:**
+>
+> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
+> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 
 ### 📤 Output
 
