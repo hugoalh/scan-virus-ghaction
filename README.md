@@ -170,7 +170,7 @@ When this input is `False`, will ignore inputs:
 Example:
 
 ```yml
-ignores_gitcommits_meta: |-
+git_ignores: |-
   - AuthorName: "^dependabot$"
   - AuthorDate: "-lt 2022-01-01T00:00:00Z"
     AuthorName: "^octocat$"
@@ -188,7 +188,7 @@ When this is not defined or defined with `0`, means no limit.
 Example:
 
 ```yml
-ignores_gitcommits_count: 100
+git_limit: 100
 ```
 
 > **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
@@ -231,23 +231,25 @@ When this input is `False`, will ignore inputs:
 
 [`<Table>`](#input_tablemarkup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
 
-- **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`.
 - **`Path`:** `<RegEx>` Relative path based on GitHub Action workspace without `./` (e.g.: `path/to/file.extension`).
-- **`Rule`:** `<RegEx>` `{Index}/{RuleName}`.
 - **`Session`:** `<RegEx>` Git commit hash.
-- **`Signature`:** `<RegEx>` `{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`.
+- **`Symbol`:** `<RegEx>`
+  - Rule (YARA)
+  - Signature (ClamAV) (`{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`)
+- **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`.
 
 Example:
 
 ```yml
-ignores_elements: |-
-  - Path: "^node_modules"
+ignores: |-
+  - Path: "^node_modules\\/"
 ```
 
 > **⚠ Important:**
 >
 > - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
 > - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
+> - YARA rules are have their owned rules name pattern.
 
 ### 📤 Output
 
@@ -267,6 +269,14 @@ jobs:
           fetch-depth: 0
       - name: "Scan Repository"
         uses: "hugoalh/scan-virus-ghaction@v0.10.0"
+        with:
+          git_ignores: |-
+            - AuthorName: "^dependabot$"
+            - AuthorDate: "-lt 2022-01-01T00:00:00Z"
+              AuthorName: "^octocat$"
+          git_limit: 100
+          ignores: |-
+            - Path: "^node_modules\\/"
 ```
 
 ### Guide

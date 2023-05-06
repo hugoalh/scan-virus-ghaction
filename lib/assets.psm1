@@ -61,20 +61,23 @@ Function Register-ClamAVUnofficialAssets {
 			ApplyIgnores = $_.ApplyIgnores
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
 		} }
-	Write-NameValue -Name 'All' -Value $IndexTable.Count
-	Write-NameValue -Name 'Select' -Value (
-		$IndexTable |
+	[PSCustomObject]@{
+		All = $IndexTable.Count
+		Select = $IndexTable |
 			Where-Object -FilterScript { $_.Select } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	)
+	} |
+		Format-List -Property '*' |
+		Out-String -Width ([Int]::MaxValue) |
+		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String |
+		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	[String[]]$AssetsApplyPaths = @()
 	[String[]]$AssetsApplyIssues = @()
@@ -140,20 +143,23 @@ Function Register-YaraUnofficialAssets {
 			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
 		} }
-	Write-NameValue -Name 'All' -Value $IndexTable.Count
-	Write-NameValue -Name 'Select' -Value (
-		$IndexTable |
+	[PSCustomObject]@{
+		All = $IndexTable.Count
+		Select = $IndexTable |
 			Where-Object -FilterScript { $_.Select } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	)
+	} |
+		Format-List -Property '*' |
+		Out-String -Width ([Int]::MaxValue) |
+		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
 		) -AutoSize |
-		Out-String |
+		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	Write-Output -InputObject $IndexTable
 }

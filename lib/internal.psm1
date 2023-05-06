@@ -119,28 +119,37 @@ Function Test-ElementIsIgnore {
 	[OutputType([Boolean])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$Element,
-		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
+		[Parameter(Mandatory = $True, Position = 1)][Alias('Combinations')][String[][]]$Combination,
+		[Parameter(Mandatory = $True, Position = 2)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
-	ForEach ($IgnoreItem In $Ignore) {
-		[String[]]$ElementKeys = $Element.PSObject.Properties.Name
-		[String[]]$IgnoreItemKeys = $IgnoreItem.PSObject.Properties.Name
-		If ($IgnoreItemKeys.Count -ne $ElementKeys.Count) {
-			Continue
-		}
-		[UInt16]$IgnoreMatchCount = 0
-		ForEach ($Property In @('Path', 'Rule', 'Session', 'Signature', 'Tool')) {
-			Try {
-				If ($ElementKeys -icontains $Property -and $IgnoreItemKeys -icontains $Property) {
+	ForEach ($CombinationGroup In $Combination) {
+		ForEach ($IgnoreItem In $Ignore) {
+			[String[]]$IgnoreItemKeys = $IgnoreItem.PSObject.Properties.Name
+			If (
+				$IgnoreItemKeys.Count -ne $CombinationGroup.Count -or
+				$False -iin (
+					$CombinationGroup |
+						ForEach-Object -Process { $_ -iin $IgnoreItemKeys }
+				)
+			) {
+				Continue
+			}
+			[UInt16]$IgnoreMatchCount = 0
+			ForEach ($Property In $CombinationGroup) {
+				If ($Null -ieq $IgnoreItem.($Property)) {
+					Continue
+				}
+				Try {
 					If ($Element.($Property) -imatch $IgnoreItem.($Property)) {
 						$IgnoreMatchCount += 1
 					}
 				}
+				Catch {}
 			}
-			Catch {}
-		}
-		If ($IgnoreMatchCount -ge $ElementKeys.Count) {
-			Write-Output -InputObject $True
-			Return
+			If ($IgnoreMatchCount -ge $CombinationGroup.Count) {
+				Write-Output -InputObject $True
+				Return
+			}
 		}
 	}
 	Write-Output -InputObject $False

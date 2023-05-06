@@ -10,7 +10,7 @@ Function Invoke-ClamAVScan {
 	[Hashtable]$Result = @{
 		ErrorMessage = @()
 		ExitCode = 0
-		Found = @{}
+		Found = @()
 		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
@@ -42,12 +42,10 @@ Function Invoke-ClamAVScan {
 			Continue
 		}
 		If ($OutputLine -imatch ': .+ FOUND$') {
-			[String]$Element, [String]$Signature = ($OutputLine -ireplace ' FOUND$', '') -isplit '(?<=^.+?): '
-			If ($Null -ieq $Result.Found.($Element)) {
-				$Result.Found.($Element) = @()
-			}
-			If ($Signature -inotin $Result.Found.($Element)) {
-				$Result.Found.($Element) += $Signature
+			[String]$Element, [String]$Symbol = ($OutputLine -ireplace ' FOUND$', '') -isplit '(?<=^.+?): '
+			$Result.Found += [PSCustomObject]@{
+				Element = $Element
+				Symbol = $Symbol
 			}
 			Continue
 		}
@@ -68,7 +66,7 @@ Function Invoke-Yara {
 	[Hashtable]$Result = @{
 		ErrorMessage = @()
 		ExitCode = 0
-		Found = @{}
+		Found = @()
 		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
@@ -88,12 +86,10 @@ Function Invoke-Yara {
 	$Result.ExitCode = $LASTEXITCODE
 	ForEach ($OutputLine In $Result.Output) {
 		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
-			[String]$Rule, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
-			If ($Null -ieq $Result.Found.($Element)) {
-				$Result.Found.($Element) = @()
-			}
-			If ($Rule -inotin $Result.Found.($Element)) {
-				$Result.Found.($Element) += $Rule
+			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
+			$Result.Found += [PSCustomObject]@{
+				Element = $Element
+				Symbol = $Symbol
 			}
 			Continue
 		}

@@ -5,27 +5,19 @@ Class ScanVirusStatisticsIssuesOperations {
 	[Void]ConclusionDisplay() {
 		Enter-GitHubActionsLogGroup -Title "Issues Operations [$($This.Storage.Count)]: "
 		$This.Storage |
-			Join-String -Separator ', '
+			Join-String -Separator ', ' |
+			Write-Host
 		Exit-GitHubActionsLogGroup
 	}
 }
 Class ScanVirusStatisticsIssuesSessions {
-	[String[]]$ClamAV = @()
-	[String[]]$Yara = @()
+	[String[]]$Storage = @()
 	[Void]ConclusionDisplay() {
-		Enter-GitHubActionsLogGroup -Title "Issues Sessions [$($This.GetTotal())]: "
-		Write-NameValue -Name "ClamAV [$($This.ClamAV.Count)]" -Value (
-			$This.ClamAV |
-				Join-String -Separator ', '
-		)
-		Write-NameValue -Name "Yara [$($This.Yara.Count)]" -Value (
-			$This.Yara |
-				Join-String -Separator ', '
-		)
+		Enter-GitHubActionsLogGroup -Title "Issues Sessions [$($This.Storage.Count)]: "
+		$This.Storage |
+			Join-String -Separator ', ' |
+			Write-Host
 		Exit-GitHubActionsLogGroup
-	}
-	[UInt64]GetTotal() {
-		Return ($This.ClamAV.Count + $This.Yara.Count)
 	}
 }
 Class ScanVirusStatisticsTotalElements {
@@ -56,7 +48,7 @@ Class ScanVirusStatisticsTotalElements {
 				@{ Expression = 'Value'; Alignment = 'Right' },
 				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
 			) -AutoSize |
-			Out-String |
+			Out-String -Width ([Int]::MaxValue) |
 			Write-Host
 		Exit-GitHubActionsLogGroup
 	}
@@ -98,7 +90,7 @@ Class ScanVirusStatisticsTotalSizes {
 				@{ Expression = 'GB'; Alignment = 'Right' },
 				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
 			) -AutoSize |
-			Out-String |
+			Out-String -Width ([Int]::MaxValue) |
 			Write-Host
 		Exit-GitHubActionsLogGroup
 	}
