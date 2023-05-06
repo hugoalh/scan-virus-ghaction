@@ -56,7 +56,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		Return
 	}
 	Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog" |
-		ForEach-Object -Parallel {
+		ForEach-Object -Process {
 			[String]$GitCommitId = $_# This reassign aims to prevent `$_` got overwrite.
 			Do {
 				Try {

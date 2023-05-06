@@ -53,7 +53,7 @@ Function Register-ClamAVUnofficialAssets {
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath $ClamAVUnofficialAssetsIndexFilePath @ImportCsvParameters_Tsv |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Parallel { [PSCustomObject]@{
+		ForEach-Object -Process { [PSCustomObject]@{
 			Type = $_.Type
 			Name = $_.Name
 			FilePath = Join-Path -Path $ClamAVUnofficialAssetsRoot -ChildPath $_.Path

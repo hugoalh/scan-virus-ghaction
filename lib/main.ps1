@@ -139,7 +139,7 @@ Function Invoke-Tools {
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
 	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 		Sort-Object -Property @('FullName') |
-		ForEach-Object -Parallel {
+		ForEach-Object -Process {
 			[Hashtable]$ElementObject = @{
 				FullName = $_.FullName
 				Path = $_.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
