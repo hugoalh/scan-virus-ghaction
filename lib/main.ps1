@@ -369,7 +369,7 @@ $(
 		Out-String -Width ([Int]::MaxValue)
 )
 "@
-			$Script:StatisticsIssuesSessions += $SessionId
+			$Script:StatisticsIssuesSessions.Storage += $SessionId
 		}
 		If ($ResultFoundIgnore.Count -gt 0) {
 			Write-GitHubActionsWarning -Message @"
@@ -378,7 +378,7 @@ $(
 	$ResultFoundIgnore |
 		Format-Table -Property @(
 			'Path',
-			'Session',
+			'Symbol',
 			@{ Expression = 'Hit'; Alignment = 'Right' }
 		) -AutoSize |
 		Out-String -Width ([Int]::MaxValue)
