@@ -130,12 +130,6 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
-	If (Test-ElementIsIgnore -Element ([PSCustomObject]@{
-		Session = $SessionId
-	}) -Ignore $Ignores) {
-		Write-Host -Object "Ignore session `"$SessionTitle`"."
-		Return
-	}
 	Write-Host -Object "Begin of session `"$SessionTitle`"."
 	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 		Sort-Object -Property @('FullName') |
@@ -148,34 +142,27 @@ Function Invoke-Tools {
 			}
 			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 				Path = $ElementObject.Path
-			}) -Ignore $Ignores) -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+				Session = $SessionId
+			}) -Combination @(
+				@('Path'),
+				@('Path', 'Session')
+			) -Ignore $Ignores)
+			$ElementObject.SkipClamAV = $ElementObject.SkipAll -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 				Path = $ElementObject.Path
 				Session = $SessionId
-			}) -Ignore $Ignores)
-			$ElementObject.SkipClamAV = $ElementObject.SkipAll -or (
-				Test-ElementIsIgnore -Element ([PSCustomObject]@{
-					Path = $ElementObject.Path
-					Tool = 'clamav'
-				}) -Ignore $Ignores
-			) -or (
-				Test-ElementIsIgnore -Element ([PSCustomObject]@{
-					Path = $ElementObject.Path
-					Session = $SessionId
-					Tool = 'clamav'
-				}) -Ignore $Ignores
-			)
-			$ElementObject.SkipYara = $ElementObject.SkipAll -or (
-				Test-ElementIsIgnore -Element ([PSCustomObject]@{
-					Path = $ElementObject.Path
-					Tool = 'yara'
-				}) -Ignore $Ignores
-			) -or (
-				Test-ElementIsIgnore -Element ([PSCustomObject]@{
-					Path = $ElementObject.Path
-					Session = $SessionId
-					Tool = 'yara'
-				}) -Ignore $Ignores
-			)
+				Tool = 'clamav'
+			}) -Combination @(
+				@('Path', 'Tool'),
+				@('Path', 'Session', 'Tool')
+			) -Ignore $Ignores)
+			$ElementObject.SkipYara = $ElementObject.SkipAll -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+				Path = $ElementObject.Path
+				Session = $SessionId
+				Tool = 'yara'
+			}) -Combination @(
+				@('Path', 'Tool'),
+				@('Path', 'Session', 'Tool')
+			) -Ignore $Ignores)
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
@@ -260,6 +247,7 @@ If this is incorrect, probably something went wrong.
 		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	Exit-GitHubActionsLogGroup
+	[PSCustomObject[]]$ResultFound = @()
 	If ($ClamAVEnable -and $ElementsCountClamAV -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
 		Try {
@@ -283,22 +271,7 @@ $(
 "@
 				$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
 			}
-			If ($Result.Found.Count -gt 0) {
-				Write-GitHubActionsError -Message @"
-Found in session `"$SessionTitle`" via ClamAV:
-
-$(
-	$Result.Found.GetEnumerator() |
-		ForEach-Object -Process { "$($_.Name): $(
-			$_.Value |
-				Sort-Object -Unique |
-				Join-String -Separator ', ' -FormatString '`{0}`'
-		)" } |
-		Join-String -Separator "`n"
-)
-"@
-				$Script:StatisticsIssuesSessions.ClamAV += $SessionId
-			}
+			$ResultFound += $Result.Found
 		}
 		Catch {
 			Write-GitHubActionsError -Message $_
@@ -308,7 +281,6 @@ $(
 	}
 	If ($YaraEnable -and $ElementsCountYara -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
-		[Hashtable]$YaraResultFound = @{}
 		[String[]]$YaraResultIssue = @()
 		ForEach ($YaraUnofficialAsset In (
 			$YaraUnofficialAssetsIndexTable |
@@ -329,14 +301,7 @@ $(
 				If ($Result.ErrorMessage.Count -gt 0) {
 					$YaraResultIssue += $Result.ErrorMessage
 				}
-				If ($Result.Found.Count -gt 0) {
-					ForEach ($Found In $Result.Found.GetEnumerator()) {
-						If ($Null -ieq $YaraResultFound.($Found.Name)) {
-							$YaraResultFound.($Found.Name) = @()
-						}
-						$YaraResultFound.($Found.Name) += $Found.Value
-					}
-				}
+				$ResultFound += $Result.Found
 			}
 			Catch {
 				$YaraResultIssue += $_
@@ -353,23 +318,65 @@ $YaraResultIssue |
 "@
 			$Script:StatisticsIssuesOperations.Storage += "$SessionId/YARA"
 		}
-		If ($YaraResultFound.Count -gt 0) {
+		Exit-GitHubActionsLogGroup
+	}
+	If ($ResultFound.Count -gt 0) {
+		[PSCustomObject[]]$ResultFoundNotIgnore = @()
+		[PSCustomObject[]]$ResultFoundIgnore = @()
+		ForEach ($Row In (
+			$ResultFound |
+				Group-Object -Property @('Element', 'Symbol') -NoElement
+		)) {
+			[String]$Element, [String]$Symbol = $Row.Name -isplit ', '
+			[PSCustomObject]$ResultFoundElementObject = [PSCustomObject]@{
+				Path = $Element
+				Symbol = $Symbol
+				Hit = $Row.Count
+			}
+			If (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+				Path = $Element
+				Session = $SessionId
+				Symbol = $Symbol
+			}) -Combination @(
+				@('Symbol'),
+				@('Path', 'Symbol'),
+				@('Path', 'Session', 'Symbol')
+			) -Ignore $Ignores) {
+				$ResultFoundIgnore += $ResultFoundElementObject
+			}
+			Else {
+				$ResultFoundNotIgnore += $ResultFoundElementObject
+			}
+		}
+		If ($ResultFoundNotIgnore.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
-Found in session `"$SessionTitle`" via YARA:
-
+Found in session `"$SessionTitle`":
 $(
-$YaraResultFound.GetEnumerator() |
-	ForEach-Object -Process { "$($_.Name): $(
-		$_.Value |
-			Sort-Object -Unique |
-			Join-String -Separator ', ' -FormatString '`{0}`'
-	)" } |
-	Join-String -Separator "`n"
+	$ResultFoundNotIgnore |
+		Format-Table -Property @(
+			'Path',
+			'Session',
+			@{ Expression = 'Hit'; Alignment = 'Right' }
+		) -AutoSize |
+		Out-String -Width ([Int]::MaxValue)
 )
 "@
-			$Script:StatisticsIssuesSessions.Yara += $SessionId
+			$Script:StatisticsIssuesSessions += $SessionId
 		}
-		Exit-GitHubActionsLogGroup
+		If ($ResultFoundIgnore.Count -gt 0) {
+			Write-GitHubActionsWarning -Message @"
+Found in session `"$SessionTitle`" but ignored:
+$(
+	$ResultFoundIgnore |
+		Format-Table -Property @(
+			'Path',
+			'Session',
+			@{ Expression = 'Hit'; Alignment = 'Right' }
+		) -AutoSize |
+		Out-String -Width ([Int]::MaxValue)
+)
+"@
+		}
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }
@@ -431,7 +438,7 @@ Else {
 		}
 		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
 		If ($Null -ine $NetworkTargetFilePath) {
-			Invoke-Tools -SessionId $Target -SessionTitle $Target
+			Invoke-Tools -SessionId $Target.ToString() -SessionTitle $Target.ToString()
 			Remove-Item -LiteralPath $NetworkTargetFilePath -Force -Confirm:$False
 		}
 	}
@@ -445,7 +452,7 @@ $StatisticsTotalSizes.ConclusionDisplay()
 If ($StatisticsIssuesOperations.Storage.Count -gt 0) {
 	$StatisticsIssuesOperations.ConclusionDisplay()
 }
-If ($StatisticsIssuesSessions.GetTotal() -gt 0) {
+If ($StatisticsIssuesSessions.Storage.Count -gt 0) {
 	$StatisticsIssuesSessions.ConclusionDisplay()
 	Exit 1
 }
