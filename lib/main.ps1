@@ -193,49 +193,57 @@ If this is incorrect, probably something went wrong.
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	[UInt32]$ElementsCountClamAV = $Elements |
-		Where-Object -FilterScript { !$_.SkipClamAV } |
-		Measure-Object |
-		Select-Object -ExpandProperty 'Count'
-	[UInt32]$ElementsCountYara = $Elements |
-		Where-Object -FilterScript { !$_.SkipYara } |
-		Measure-Object |
-		Select-Object -ExpandProperty 'Count'
-	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
-	$Script:StatisticsTotalElements.Scan += $ElementsCountScan
-	If ($ClamAVEnable) {
-		$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
-	}
-	If ($YaraEnable) {
-		$Script:StatisticsTotalElements.Yara += $ElementsCountYara
-	}
-	$Script:StatisticsTotalSizes.Discover += $Elements |
+	[UInt32]$ElementsCountClamAV = $ClamAVEnable ? (
+		$Elements |
+			Where-Object -FilterScript { !$_.SkipClamAV } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	) : 0
+	[UInt32]$ElementsCountYara = $YaraEnable ? (
+		$Elements |
+			Where-Object -FilterScript { !$_.SkipYara } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	) : 0
+	[UInt32]$ElementsSizeDiscover = $Elements |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	$Script:StatisticsTotalSizes.Scan += $Elements |
+	[UInt32]$ElementsSizeScan = $Elements |
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	If ($ClamAVEnable) {
-		$Script:StatisticsTotalSizes.ClamAV += $Elements |
+	[UInt32]$ElementsSizeClamAV = $ClamAVEnable ? (
+		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
-	}
-	If ($YaraEnable) {
-		$Script:StatisticsTotalSizes.Yara += $Elements |
+	) : 0
+	[UInt32]$ElementsSizeYara = $YaraEnable ? (
+		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
-	}
+	) : 0
+	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
+	$Script:StatisticsTotalElements.Scan += $ElementsCountScan
+	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
+	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
+	$Script:StatisticsTotalSizes.Discover += $ElementsSizeDiscover
+	$Script:StatisticsTotalSizes.Scan += $ElementsSizeScan
+	$Script:StatisticsTotalSizes.ClamAV += $ElementsSizeClamAV
+	$Script:StatisticsTotalSizes.Yara += $ElementsSizeYara
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-	[PSCustomObject]@{
-		Discover = $ElementsCountDiscover
-		Scan = $ElementsCountScan
-		ClamAV = $ElementsCountClamAV
-		Yara = $ElementsCountYara
-	} |
-		Format-List -Property '*' |
+	@(
+		[PSCustomObject]@{ Type = 'Discover'; Count = $ElementsCountDiscover; Size = $ElementsSizeDiscover }
+		[PSCustomObject]@{ Type = 'Scan'; Count = $ElementsCountScan; Size = $ElementsSizeScan }
+		[PSCustomObject]@{ Type = 'ClamAV'; Count = $ElementsCountClamAV; Size = $ElementsSizeClamAV }
+		[PSCustomObject]@{ Type = 'Yara'; Count = $ElementsCountYara; Size = $ElementsSizeYara }
+	) |
+		Format-Table -Property @(
+			'Type',
+			@{ Expression = 'Count'; Alignment = 'Right' },
+			@{ Expression = 'Size'; Alignment = 'Right' }
+		) -AutoSize |
 		Out-String -Width ([Int]::MaxValue) |
 		Write-Host
 	$Elements |
