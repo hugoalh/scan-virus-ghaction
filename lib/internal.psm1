@@ -146,7 +146,7 @@ Function Test-ElementIsIgnore {
 				}
 				Catch {}
 			}
-			If ($IgnoreMatchCount -ge $ElementKeys.Count) {
+			If ($IgnoreMatchCount -ge $CombinationGroup.Count) {
 				Write-Output -InputObject $True
 				Return
 			}
