@@ -363,7 +363,7 @@ $(
 	$ResultFoundNotIgnore |
 		Format-Table -Property @(
 			'Path',
-			'Session',
+			'Symbol',
 			@{ Expression = 'Hit'; Alignment = 'Right' }
 		) -AutoSize |
 		Out-String -Width ([Int]::MaxValue)
