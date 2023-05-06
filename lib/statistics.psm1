@@ -47,8 +47,8 @@ Class ScanVirusStatisticsTotalElements {
 				'Type',
 				@{ Expression = 'Value'; Alignment = 'Right' },
 				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
-			) -AutoSize |
-			Out-String -Width ([Int]::MaxValue) |
+			) -AutoSize -Wrap |
+			Out-String -Width 120 |
 			Write-Host
 		Exit-GitHubActionsLogGroup
 	}
@@ -89,8 +89,8 @@ Class ScanVirusStatisticsTotalSizes {
 				@{ Expression = 'MB'; Alignment = 'Right' },
 				@{ Expression = 'GB'; Alignment = 'Right' },
 				@{ Expression = 'Percentage'; Name = '%'; Alignment = 'Right' }
-			) -AutoSize |
-			Out-String -Width ([Int]::MaxValue) |
+			) -AutoSize -Wrap |
+			Out-String -Width 120 |
 			Write-Host
 		Exit-GitHubActionsLogGroup
 	}

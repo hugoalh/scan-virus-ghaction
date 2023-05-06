@@ -70,15 +70,15 @@ Function Register-ClamAVUnofficialAssets {
 			Select-Object -ExpandProperty 'Count'
 	} |
 		Format-List -Property '*' |
-		Out-String -Width ([Int]::MaxValue) |
+		Out-String -Width 120 |
 		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -AutoSize |
-		Out-String -Width ([Int]::MaxValue) |
+		) -AutoSize -Wrap |
+		Out-String -Width 120 |
 		Write-Host
 	[String[]]$AssetsApplyPaths = @()
 	[String[]]$AssetsApplyIssues = @()
@@ -153,15 +153,15 @@ Function Register-YaraUnofficialAssets {
 			Select-Object -ExpandProperty 'Count'
 	} |
 		Format-List -Property '*' |
-		Out-String -Width ([Int]::MaxValue) |
+		Out-String -Width 120 |
 		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -AutoSize |
-		Out-String -Width ([Int]::MaxValue) |
+		) -AutoSize -Wrap |
+		Out-String -Width 120 |
 		Write-Host
 	Write-Output -InputObject $IndexTable
 }

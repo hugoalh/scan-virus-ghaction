@@ -71,7 +71,7 @@ Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
 Write-NameValue -Name "Git_Ignores [$($GitIgnores.Count)]" -Value (
 	$GitIgnores |
 		Format-List -Property '*' |
-		Out-String -Width ([Int]::MaxValue)
+		Out-String -Width 120
 ) -NewLine
 [UInt]$GitLimit = [UInt]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
 Write-NameValue -Name 'Git_Limit' -Value $GitLimit
@@ -97,7 +97,7 @@ Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput
 Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
 	$Ignores |
 		Format-List -Property '*' |
-		Out-String -Width ([Int]::MaxValue)
+		Out-String -Width 120
 ) -NewLine
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
@@ -243,16 +243,16 @@ If this is incorrect, probably something went wrong.
 			'Type',
 			@{ Expression = 'Count'; Alignment = 'Right' },
 			@{ Expression = 'Size'; Alignment = 'Right' }
-		) -AutoSize |
-		Out-String -Width ([Int]::MaxValue) |
+		) -AutoSize -Wrap |
+		Out-String -Width 120 |
 		Write-Host
 	$Elements |
 		Format-Table -Property @(
 			'Path',
 			'Flag',
 			@{ Expression = 'Size'; Alignment = 'Right' }
-		) -AutoSize |
-		Out-String -Width ([Int]::MaxValue) |
+		) -AutoSize -Wrap |
+		Out-String -Width 120 |
 		Write-Host
 	Exit-GitHubActionsLogGroup
 	[PSCustomObject[]]$ResultFound = @()
@@ -333,7 +333,8 @@ $YaraResultIssue |
 		[PSCustomObject[]]$ResultFoundIgnore = @()
 		ForEach ($Row In (
 			$ResultFound |
-				Group-Object -Property @('Element', 'Symbol') -NoElement
+				Group-Object -Property @('Element', 'Symbol') -NoElement |
+				Sort-Object -Property 'Name'
 		)) {
 			[String]$Element, [String]$Symbol = $Row.Name -isplit ', '
 			[PSCustomObject]$ResultFoundElementObject = [PSCustomObject]@{
@@ -365,8 +366,8 @@ $(
 			'Path',
 			'Symbol',
 			@{ Expression = 'Hit'; Alignment = 'Right' }
-		) -AutoSize |
-		Out-String -Width ([Int]::MaxValue)
+		) -AutoSize -Wrap |
+		Out-String -Width 120
 )
 "@
 			$Script:StatisticsIssuesSessions.Storage += $SessionId
@@ -380,8 +381,8 @@ $(
 			'Path',
 			'Symbol',
 			@{ Expression = 'Hit'; Alignment = 'Right' }
-		) -AutoSize |
-		Out-String -Width ([Int]::MaxValue)
+		) -AutoSize -Wrap |
+		Out-String -Width 120
 )
 "@
 		}
@@ -412,7 +413,7 @@ If ($Targets.Count -eq 0) {
 			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 			$GitCommit |
 				Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
-				Out-String -Width ([Int]::MaxValue) |
+				Out-String -Width 120 |
 				Write-Host
 			Try {
 				git checkout $GitCommit.CommitHash --force --quiet

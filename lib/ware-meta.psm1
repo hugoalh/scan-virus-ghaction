@@ -24,7 +24,7 @@ Function Get-WareMeta {
 		} -End {
 			[PSCustomObject]$Result |
 				Format-List |
-				Out-String -Width ([Int]::MaxValue) |
+				Out-String -Width 120 |
 				Write-Host
 		}
 	Exit-GitHubActionsLogGroup
@@ -37,15 +37,15 @@ Function Get-WareMeta {
 		Edition = $PSVersionTable.PSEdition
 		Version = $PSVersionTable.PSVersion.ToString()
 		Host = $Host |
-			Out-String -Width ([Int]::MaxValue)
+			Out-String -Width 120
 		UI = $Host.UI.RawUI |
-			Out-String -Width ([Int]::MaxValue)
+			Out-String -Width 120
 		Module = Get-InstalledModule |
-			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize |
-			Out-String -Width ([Int]::MaxValue)
+			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize -Wrap |
+			Out-String -Width 120
 	} |
 		Format-List |
-		Out-String -Width ([Int]::MaxValue) |
+		Out-String -Width 120 |
 		Write-Host
 	Exit-GitHubActionsLogGroup
 	@(
@@ -68,7 +68,7 @@ Function Get-WareMeta {
 					Join-String -Separator "`n"
 			} |
 				Format-List |
-				Out-String -Width ([Int]::MaxValue) |
+				Out-String -Width 120 |
 				Write-Host
 			Exit-GitHubActionsLogGroup
 		}
