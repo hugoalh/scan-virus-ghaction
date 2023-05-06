@@ -60,7 +60,8 @@ Function Register-ClamAVUnofficialAssets {
 			DatabaseFileName = $_.Path -ireplace '\/', '_'
 			ApplyIgnores = $_.ApplyIgnores
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
-		} }
+		} } |
+		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject]@{
 		All = $IndexTable.Count
 		Select = $IndexTable |
@@ -142,7 +143,8 @@ Function Register-YaraUnofficialAssets {
 			Name = $_.Name
 			FilePath = Join-Path -Path $YaraUnofficialAssetsRoot -ChildPath $_.Path
 			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
-		} }
+		} } |
+		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject]@{
 		All = $IndexTable.Count
 		Select = $IndexTable |

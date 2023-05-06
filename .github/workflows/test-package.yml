@@ -42,10 +42,3 @@ jobs:
           yara_enable: "${{github.event.inputs.yara_enable}}"
           yara_unofficialassets: |-
             ^.+$
-          ignores: |-
-            - Path: "^assets\\/clamav-unofficial\\/.+?\\/.+$"
-            - Path: "^assets\\/yara-unofficial\\/.+?\\/.+$"
-            - Path: "^clamav-signatures-ignore-presets\\/"
-            - Path: "^clamav-unofficial-signatures\\/"
-            - Path: "^node_modules\\/"
-            - Path: "^yara-rules\\/"
