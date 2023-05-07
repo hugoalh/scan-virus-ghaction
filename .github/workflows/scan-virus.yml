@@ -14,28 +14,34 @@ on:
   workflow_dispatch:
     inputs:
       git_integrate:
-        type: "boolean"
+        type: "choice"
         description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
-        default: false
+        default: "False"
+        options:
+          - "False"
+          - "True"
       git_limit:
-        type: "number"
+        type: "string"
         description: "{UInt} Limit on how many Git commits will scan."
         required: false
-        default: 0
+        default: "0"
       git_reverse:
-        type: "boolean"
+        type: "choice"
         description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
-        default: false
+        default: "False"
+        options:
+          - "False"
+          - "True"
 jobs:
   scan-virus:
     name: "Scan Virus (Reusable Workflow)"
     uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
     with:
-      git_integrate: "${{github.event.inputs.git_integrate || false}}"
-      git_limit: "${{github.event.inputs.git_limit || 0}}"
-      git_reverse: "${{github.event.inputs.git_reverse || false}}"
+      git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"
+      git_limit: "${{github.event.inputs.git_limit || '0'}}"
+      git_reverse: "${{github.event.inputs.git_reverse || 'False'}}"
       ignores: |
         - Path: "\\.[chln]db$"
         - Path: "\\.hsb$"

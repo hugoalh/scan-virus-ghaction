@@ -10,10 +10,13 @@ on:
         description: "{string} Tag."
         required: true
       latest:
-        type: "boolean"
+        type: "choice"
         description: "{boolean} Latest."
         required: false
-        default: false
+        default: "false"
+        options:
+          - "false"
+          - "true"
 jobs:
   publish-docker-container-ghp:
     name: "Publish Docker Container - GitHub Packages (Reusable Workflow)"
