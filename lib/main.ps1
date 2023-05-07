@@ -25,7 +25,7 @@ If (Get-GitHubActionsIsDebug) {
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
-Write-NameValue -Name 'Input_ListDelimiter' -Value "``$InputListDelimiter``"
+Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter.ToString()
 Switch -RegEx (Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim) {
 	'^csv$' {
 		[String]$InputTableMarkup = 'csv'
@@ -248,9 +248,9 @@ If this is incorrect, probably something went wrong.
 		Write-Host
 	$Elements |
 		Format-Table -Property @(
-			'Path',
 			'Flag',
-			@{ Expression = 'Size'; Alignment = 'Right' }
+			@{ Expression = 'Size'; Alignment = 'Right' },
+			'Path'
 		) -AutoSize -Wrap |
 		Out-String -Width 120 |
 		Write-Host
@@ -363,9 +363,9 @@ Found in session `"$SessionTitle`":
 $(
 	$ResultFoundNotIgnore |
 		Format-Table -Property @(
+			@{ Expression = 'Hit'; Alignment = 'Right' },
 			'Path',
-			'Symbol',
-			@{ Expression = 'Hit'; Alignment = 'Right' }
+			'Symbol'
 		) -AutoSize -Wrap |
 		Out-String -Width 120
 )
@@ -378,9 +378,9 @@ Found in session `"$SessionTitle`" but ignored:
 $(
 	$ResultFoundIgnore |
 		Format-Table -Property @(
+			@{ Expression = 'Hit'; Alignment = 'Right' },
 			'Path',
-			'Symbol',
-			@{ Expression = 'Hit'; Alignment = 'Right' }
+			'Symbol'
 		) -AutoSize -Wrap |
 		Out-String -Width 120
 )

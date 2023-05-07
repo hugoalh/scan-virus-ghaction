@@ -37,12 +37,12 @@ Function Get-WareMeta {
 		Edition = $PSVersionTable.PSEdition
 		Version = $PSVersionTable.PSVersion.ToString()
 		Host = $Host |
-			Out-String -Width 120
+			Out-String -Width 80
 		UI = $Host.UI.RawUI |
-			Out-String -Width 120
+			Out-String -Width 80
 		Module = Get-InstalledModule |
 			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize -Wrap |
-			Out-String -Width 120
+			Out-String -Width 80
 	} |
 		Format-List |
 		Out-String -Width 120 |
