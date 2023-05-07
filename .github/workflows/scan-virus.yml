@@ -13,17 +13,29 @@ on:
       - "synchronize"
   workflow_dispatch:
     inputs:
-      git_deep:
-        type: "choice"
-        description: "{Boolean} Scan deeper for Git repository."
+      git_integrate:
+        type: "boolean"
+        description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
-        default: "True"
-        options:
-          - "False"
-          - "True"
+        default: false
+      git_limit:
+        type: "number"
+        description: "{UInt} Limit on how many Git commits will scan."
+        required: false
+        default: 0
+      git_reverse:
+        type: "boolean"
+        description: "{Boolean} Whether to reverse the scan order of the Git commits."
+        required: false
+        default: false
 jobs:
   scan-virus:
     name: "Scan Virus (Reusable Workflow)"
     uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
     with:
-      git_deep: "${{github.event.inputs.git_deep}}"
+      git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"
+      git_limit: "${{github.event.inputs.git_limit || '0'}}"
+      git_reverse: "${{github.event.inputs.git_reverse || 'False'}}"
+      ignores: |
+        -Path: "^(?:assets\\/)?(?:clamav|yara).+?\\/(?:\\/.+?)*(?!index\.tsv)$"
+        -Path: "^node_modules\\/"
