@@ -37,5 +37,5 @@ jobs:
       git_limit: "${{github.event.inputs.git_limit || 0}}"
       git_reverse: "${{github.event.inputs.git_reverse || false}}"
       ignores: |
-        -Path: "^(?:assets\\/)?(?:clamav|yara).+?\\/(?:\\/.+?)*(?!index\.tsv)$"
-        -Path: "^node_modules\\/"
+        - Path: "^(?:assets\\/)?(?:clamav|yara).+?\\/(?:\\/.+?)*(?!index\.tsv)$"
+        - Path: "^node_modules\\/"
