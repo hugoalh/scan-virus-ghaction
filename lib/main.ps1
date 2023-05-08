@@ -364,8 +364,8 @@ $(
 	$ResultFoundNotIgnore |
 		Format-Table -Property @(
 			@{ Expression = 'Hit'; Alignment = 'Right' },
-			'Path',
-			'Symbol'
+			'Symbol',
+			'Path'
 		) -AutoSize -Wrap |
 		Out-String -Width 120
 )
@@ -379,8 +379,8 @@ $(
 	$ResultFoundIgnore |
 		Format-Table -Property @(
 			@{ Expression = 'Hit'; Alignment = 'Right' },
-			'Path',
-			'Symbol'
+			'Symbol',
+			'Path'
 		) -AutoSize -Wrap |
 		Out-String -Width 120
 )
