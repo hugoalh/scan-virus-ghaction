@@ -44,7 +44,11 @@ jobs:
       git_reverse: "${{github.event.inputs.git_reverse || 'False'}}"
       ignores: |
         - Path: "\\.[chln]db$"
+          Symbol: ".+"
         - Path: "\\.hsb$"
+          Symbol: ".+"
         - Path: "\\.ign2?$"
+          Symbol: ".+"
         - Path: "\\.yara?$"
+          Symbol: ".+"
         - Path: "^node_modules\\/"
