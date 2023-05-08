@@ -3,25 +3,34 @@ on:
   workflow_dispatch:
     inputs:
       git_integrate:
-        type: "boolean"
+        type: "choice"
         description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
         required: false
-        default: true
+        default: "True"
+        options:
+          - "False"
+          - "True"
       git_limit:
-        type: "number"
+        type: "string"
         description: "{UInt} Limit on how many Git commits will scan."
         required: false
-        default: 0
+        default: "0"
       git_reverse:
-        type: "boolean"
+        type: "choice"
         description: "{Boolean} Whether to reverse the scan order of the Git commits."
         required: false
-        default: false
+        default: "False"
+        options:
+          - "False"
+          - "True"
       yara_enable:
-        type: "boolean"
+        type: "choice"
         description: "{Boolean} Whether to use YARA."
         required: false
-        default: false
+        default: "False"
+        options:
+          - "False"
+          - "True"
 jobs:
   test-build:
     name: "Test - Build"
