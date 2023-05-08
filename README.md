@@ -191,7 +191,7 @@ Example:
 git_limit: 100
 ```
 
-> **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the time limit of the step execution time (currently is `6 hours`).
+> **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
 
 #### `git_reverse`
 
