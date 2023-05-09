@@ -7,14 +7,14 @@ on:
         description: "{String} Package."
         required: true
 jobs:
-  resolve-package:
-    name: "Resolve Package"
+  scan-virus-npm:
+    name: "Scan Virus - NPM - ${{github.event.inputs.package}}"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
-      - name: "Resolve Package"
-        id: "resolve-package"
+      - name: "Resolve Package Tarball"
+        id: "resolve-package-tarball"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
           [String]$Package = '${{github.event.inputs.package}}'
@@ -29,12 +29,7 @@ jobs:
               Join-String -Separator ','
           )
         shell: "pwsh"
-    outputs:
-      urls: "${{steps.resolve-package.outputs.urls}}"
-  scan-virus-npm:
-    name: "Scan Virus - NPM - ${{github.event.inputs.package}}"
-    needs:
-      - "resolve-package"
-    uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
-    with:
-      targets: "${{needs.resolve-package.outputs.urls}}"
+      - name: "Scan Virus"
+        uses: "hugoalh/scan-virus-ghaction@main"
+        with:
+          targets: "${{steps.resolve-package-tarball.outputs.urls}}"
