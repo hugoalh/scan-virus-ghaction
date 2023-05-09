@@ -1,0 +1,14 @@
+name: "Scan Virus - Remote"
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        type: "string"
+        description: "{Uri[]} Targets."
+        required: true
+jobs:
+  scan-virus-remote:
+    name: "Scan Virus - Remote"
+    uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
+    with:
+      targets: "${{github.event.inputs.targets}}"

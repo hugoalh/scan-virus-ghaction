@@ -1,0 +1,40 @@
+name: "Scan Virus - NPM"
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        type: "string"
+        description: "{String} Package."
+        required: true
+jobs:
+  resolve-package:
+    name: "Resolve Package"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Setup PowerShell Toolkit"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
+      - name: "Resolve Package"
+        id: "resolve-package"
+        run: |
+          Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+          [String]$Package = '${{github.event.inputs.package}}'
+          [PSCustomObject]$Content = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{'Content-Type' = 'application/json'} -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+              Select-Object -ExpandProperty 'Content' |
+              ConvertFrom-Json -Depth 100
+          If ($Content.error -ieq 'Not found') {
+            Write-Error -Message "`"$Package`" is not found!" -ErrorAction 'Stop'
+          }
+          Set-GitHubActionsOutput -Name 'urls' -Value (
+            $Content.versions.PSObject.Properties.Value.dist.tarball |
+              Join-String -Separator ','
+          )
+        shell: "pwsh"
+    outputs:
+      urls: "${{steps.resolve-package.outputs.urls}}"
+  scan-virus-npm:
+    name: "Scan Virus - NPM - ${{github.event.inputs.package}}"
+    needs:
+      - "resolve-package"
+    uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
+    with:
+      targets: "${{needs.resolve-package.outputs.urls}}"
