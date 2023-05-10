@@ -31,7 +31,7 @@ jobs:
             If ($Content.error -ieq 'Not found') {
               Write-GitHubActionsWarning -Message "``$Package`` is not found!"
             }
-            Group += @{
+            $Group += @{
               name = $Package
               urls = $Content.versions.PSObject.Properties.Value.dist.tarball |
                 Join-String -Separator "`n"
