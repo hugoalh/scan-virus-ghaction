@@ -53,9 +53,10 @@ jobs:
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-packages.outputs.group)}}"
+      fail-fast: false
     steps:
       - name: "Scan Virus - NPM - ${{fromJson(matrix.group).name}}"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           input_listdelimiter: "\\r?\\n"
-          targets: "${{fromJson(matrix).urls}}"
+          targets: "${{fromJson(matrix.group).urls}}"
