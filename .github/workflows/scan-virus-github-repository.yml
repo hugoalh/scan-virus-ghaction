@@ -1,0 +1,48 @@
+name: "Scan Virus - GitHub Repository"
+on:
+  workflow_dispatch:
+    inputs:
+      repositories:
+        type: "string"
+        description: "{String[]} GitHub repositories."
+        required: true
+jobs:
+  resolve-repositories:
+    name: "Resolve Repositories"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Setup PowerShell Toolkit"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
+      - name: "Resolve Repositories"
+        id: "resolve-repositories"
+        run: |
+          Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+          [String[]]$Repositories = '${{github.event.inputs.repositories}}' -isplit ',|;' |
+            ForEach-Object -Process { $_.Trim() } |
+            Where-Object -FilterScript { $_.Length -gt 0 }
+          Set-GitHubActionsOutput -Name 'repositories' -Value (
+            $Repositories |
+              ConvertTo-Json -Depth 100 -Compress
+          )
+        shell: "pwsh"
+    outputs:
+      group: "${{steps.resolve-repositories.outputs.repositories}}"
+  scan-virus-github-repository:
+    name: "Scan Virus - GitHub Repository - ${{matrix.group}}"
+    runs-on: "ubuntu-latest"
+    needs:
+      - "resolve-repositories"
+    strategy:
+      matrix:
+        group: "${{fromJson(needs.resolve-repositories.outputs.group)}}"
+      fail-fast: false
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.5.2"
+        with:
+          repository: "${{matrix.group}}"
+          fetch-depth: 0
+      - name: "Scan Virus"
+        uses: "hugoalh/scan-virus-ghaction@main"
+        with:
+          git_integrate: "True"

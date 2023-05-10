@@ -2,10 +2,6 @@ name: "Scan Virus - NPM"
 on:
   workflow_dispatch:
     inputs:
-      input_listdelimiter:
-        description: "{RegEx} Delimiter when the input is type of list."
-        required: false
-        default: ",|;|\\r?\\n"
       packages:
         type: "string"
         description: "{String[]} Packages."
@@ -22,25 +18,30 @@ jobs:
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
           [String[]]$Packages = '${{github.event.inputs.packages}}' -isplit ',|;' |
+            ForEach-Object -Process { $_.Trim() } |
             Where-Object -FilterScript { $_.Length -gt 0 }
-          [String[]]$Group = @()
+          [Hashtable[]]$Group = @()
           ForEach ($Package In $Packages) {
-            [PSCustomObject]$Content = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{'Content-Type' = 'application/json'} -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+            [PSCustomObject]$PackageMeta = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{'Content-Type' = 'application/json'} -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
               Select-Object -ExpandProperty 'Content' |
               ConvertFrom-Json -Depth 100
-            If ($Content.error -ieq 'Not found') {
+            If ($PackageMeta.error -ieq 'Not found') {
               Write-GitHubActionsWarning -Message "``$Package`` is not found!"
             }
+            [String[]]$PackageTarballUri = $PackageMeta.versions.PSObject.Properties.Value.dist.tarball
             $Group += @{
               name = $Package
-              urls = $Content.versions.PSObject.Properties.Value.dist.tarball |
+              uris = $PackageTarballUri |
                 Join-String -Separator "`n"
-            } |
-              ConvertTo-Json -Depth 100
+            }
           }
           Set-GitHubActionsOutput -Name 'group' -Value (
             $Group |
-              ConvertTo-Json -Depth 100
+              ForEach-Object -Process {
+                $_ |
+                  ConvertTo-Json -Depth 100 -Compress
+              } |
+              ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
     outputs:
@@ -55,8 +56,8 @@ jobs:
         group: "${{fromJson(needs.resolve-packages.outputs.group)}}"
       fail-fast: false
     steps:
-      - name: "Scan Virus - NPM - ${{fromJson(matrix.group).name}}"
+      - name: "Scan Virus"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           input_listdelimiter: "\\r?\\n"
-          targets: "${{fromJson(matrix.group).urls}}"
+          targets: "${{fromJson(matrix.group).uris}}"
