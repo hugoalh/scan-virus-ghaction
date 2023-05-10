@@ -19,7 +19,8 @@ jobs:
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
           [String[]]$Repositories = '${{github.event.inputs.repositories}}' -isplit ',|;' |
             ForEach-Object -Process { $_.Trim() } |
-            Where-Object -FilterScript { $_.Length -gt 0 }
+            Where-Object -FilterScript { $_.Length -gt 0 } |
+            Sort-Object -Unique
           Set-GitHubActionsOutput -Name 'repositories' -Value (
             $Repositories |
               ConvertTo-Json -Depth 100 -Compress

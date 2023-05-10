@@ -19,7 +19,8 @@ jobs:
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
           [String[]]$Packages = '${{github.event.inputs.packages}}' -isplit ',|;' |
             ForEach-Object -Process { $_.Trim() } |
-            Where-Object -FilterScript { $_.Length -gt 0 }
+            Where-Object -FilterScript { $_.Length -gt 0 } |
+            Sort-Object -Unique
           [Hashtable[]]$Group = @()
           ForEach ($Package In $Packages) {
             [PSCustomObject]$PackageMeta = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{'Content-Type' = 'application/json'} -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
