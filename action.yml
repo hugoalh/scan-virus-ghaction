@@ -49,6 +49,15 @@ inputs:
   ignores:
     description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
     required: false
+  summary_found:
+    description: "{String} Whether to list all of the elements which found virus in the GitHub Actions step summary."
+    required: false
+    default: "None"
+  summary_statistics:
+    description: "{String} Whether to list statistics in the GitHub Actions step summary."
+    required: false
+    default: "None"
+    deprecationMessage: "Not in use yet!"
 runs:
   using: "docker"
   image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.10.1"

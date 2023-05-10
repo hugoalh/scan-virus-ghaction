@@ -51,3 +51,4 @@ jobs:
           yara_enable: "${{github.event.inputs.yara_enable}}"
           yara_unofficialassets: |-
             ^.+$
+          summary_found: "Clone"

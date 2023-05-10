@@ -251,6 +251,26 @@ ignores: |-
 > - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 > - YARA rules are have their owned rules name pattern.
 
+#### `summary_found`
+
+**(>= v0.11.0)** `<String = "None">` Whether to list all of the elements which found virus in the GitHub Actions step summary.
+
+- **`"None"`:** Disable.
+- **`"Clone"`:** Keep emit annotations.
+- **`"Redirect"`:** Not emit annotations.
+
+> **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
+
+#### `summary_statistics`
+
+**\[Not In Use Yet\]** `<String = "None">` Whether to list statistics in the GitHub Actions step summary.
+
+- **`"None"`:** Disable.
+- **`"Clone"`:** Keep to log.
+- **`"Redirect"`:** Not to log.
+
+> **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
+
 ### 📤 Output
 
 *N/A*

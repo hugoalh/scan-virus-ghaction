@@ -8,6 +8,7 @@ Import-Module -Name (
 		'display',
 		'git',
 		'internal',
+		'step-summary'
 		'tool',
 		'ware-meta'
 	) |
@@ -23,6 +24,7 @@ If (Get-GitHubActionsIsDebug) {
 [ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
 [ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
+[String[]]$StepSummaryChoices = @('None', 'Clone', 'Redirect')
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
 Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter.ToString()
@@ -99,6 +101,16 @@ Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
 		Format-List -Property '*' |
 		Out-String -Width 120
 ) -NewLine
+[String]$SummaryFound = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
+If ($SummaryFound -inotin $StepSummaryChoices) {
+	Write-GitHubActionsFail -Message "``$_`` is not a valid summary usage! Must be either one of these: $(
+		$StepSummaryChoices |
+			Join-String -Separator ', ' -FormatString '"{0}"'
+	)" -Finally {
+		Exit-GitHubActionsLogGroup
+	}
+}
+Write-NameValue -Name 'Summary_Found' -Value $SummaryFound
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
@@ -358,7 +370,8 @@ $YaraResultIssue |
 			}
 		}
 		If ($ResultFoundNotIgnore.Count -gt 0) {
-			Write-GitHubActionsError -Message @"
+			If ($SummaryFound -ine 'Redirect') {
+				Write-GitHubActionsError -Message @"
 Found in session `"$SessionTitle`":
 $(
 	$ResultFoundNotIgnore |
@@ -370,10 +383,15 @@ $(
 		Out-String -Width 120
 )
 "@
+			}
+			If ($SummaryFound -ine 'None') {
+				Add-StepSummaryFound -Session $SessionId -Indicator '🔴' -Issue $ResultFoundNotIgnore
+			}
 			$Script:StatisticsIssuesSessions.Storage += $SessionId
 		}
 		If ($ResultFoundIgnore.Count -gt 0) {
-			Write-GitHubActionsWarning -Message @"
+			If ($SummaryFound -ine 'Redirect') {
+				Write-GitHubActionsWarning -Message @"
 Found in session `"$SessionTitle`" but ignored:
 $(
 	$ResultFoundIgnore |
@@ -385,6 +403,10 @@ $(
 		Out-String -Width 120
 )
 "@
+			}
+			If ($SummaryFound -ine 'None') {
+				Add-StepSummaryFound -Session $SessionId -Indicator '🟡' -Issue $ResultFoundIgnore
+			}
 		}
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
