@@ -92,7 +92,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				Return
 			}
 			[Hashtable]$GitCommitMeta = @{}
-			For ([UInt128]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line++) {
+			For ([UInt128]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line += 1) {
 				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 				[String]$Value = $GitCommitMetaRaw1[$Line]
 				If ($GitCommitsPropertiesCurrent.IsArraySpace) {

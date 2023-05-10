@@ -398,7 +398,7 @@ If ($Targets.Count -eq 0) {
 			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommits.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
 		[UInt128]$GitCommitsPassCount = 0
-		For ([UInt128]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
+		For ([UInt128]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex += 1) {
 			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
 			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
 			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
@@ -440,7 +440,7 @@ Else {
 	) -gt 0) {
 		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
 	}
-	For ([UInt128]$TargetsIndex = 0; $TargetsIndex -lt $Targets.Count; $TargetsIndex++) {
+	For ([UInt128]$TargetsIndex = 0; $TargetsIndex -lt $Targets.Count; $TargetsIndex += 1) {
 		[String]$Target = $Targets[$TargetsIndex]
 		If (!(Test-StringIsUri -InputObject $Target)) {
 			Write-GitHubActionsWarning -Message "``$($Target.OriginalString)`` is not a valid URI!"
