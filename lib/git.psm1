@@ -77,7 +77,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 					Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
 					Return
 				}
-				[UInt128]$DelimiterTokenCount = $GitCommitMetaRaw0 |
+				[UInt64]$DelimiterTokenCount = $GitCommitMetaRaw0 |
 					Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
 					Measure-Object |
 					Select-Object -ExpandProperty 'Count'
@@ -92,7 +92,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				Return
 			}
 			[Hashtable]$GitCommitMeta = @{}
-			For ([UInt128]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line += 1) {
+			For ([UInt64]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line += 1) {
 				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 				[String]$Value = $GitCommitMetaRaw1[$Line]
 				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
@@ -119,7 +119,7 @@ Function Test-GitCommitIsIgnore {
 		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
 	ForEach ($IgnoreItem In $Ignore) {
-		[UInt128]$IgnoreMatchCount = 0
+		[UInt64]$IgnoreMatchCount = 0
 		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
 			If ($Null -ieq $IgnoreItem.($GitCommitsProperty.Name)) {
 				Continue
