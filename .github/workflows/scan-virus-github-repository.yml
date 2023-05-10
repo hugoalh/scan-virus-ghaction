@@ -8,7 +8,7 @@ on:
         required: true
 jobs:
   resolve-repositories:
-    name: "Resolve Repositories"
+    name: "(Resolve Repositories)"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Setup PowerShell Toolkit"
@@ -28,7 +28,7 @@ jobs:
     outputs:
       group: "${{steps.resolve-repositories.outputs.repositories}}"
   scan-virus-github-repository:
-    name: "Scan Virus - GitHub Repository - ${{matrix.group}}"
+    name: "${{matrix.group}}"
     runs-on: "ubuntu-latest"
     needs:
       - "resolve-repositories"
