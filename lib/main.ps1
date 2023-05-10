@@ -73,7 +73,7 @@ Write-NameValue -Name "Git_Ignores [$($GitIgnores.Count)]" -Value (
 		Format-List -Property '*' |
 		Out-String -Width 120
 ) -NewLine
-[UInt]$GitLimit = [UInt]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
+[UInt128]$GitLimit = [UInt128]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
 Write-NameValue -Name 'Git_Limit' -Value $GitLimit
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
 Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
@@ -188,37 +188,37 @@ If this is incorrect, probably something went wrong.
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[UInt32]$ElementsCountDiscover = $Elements.Count
-	[UInt32]$ElementsCountScan = $Elements |
+	[UInt128]$ElementsCountDiscover = $Elements.Count
+	[UInt128]$ElementsCountScan = $Elements |
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	[UInt32]$ElementsCountClamAV = $ClamAVEnable ? (
+	[UInt128]$ElementsCountClamAV = $ClamAVEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	) : 0
-	[UInt32]$ElementsCountYara = $YaraEnable ? (
+	[UInt128]$ElementsCountYara = $YaraEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	) : 0
-	[UInt32]$ElementsSizeDiscover = $Elements |
+	[UInt128]$ElementsSizeDiscover = $Elements |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	[UInt32]$ElementsSizeScan = $Elements |
+	[UInt128]$ElementsSizeScan = $Elements |
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	[UInt32]$ElementsSizeClamAV = $ClamAVEnable ? (
+	[UInt128]$ElementsSizeClamAV = $ClamAVEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
 	) : 0
-	[UInt32]$ElementsSizeYara = $YaraEnable ? (
+	[UInt128]$ElementsSizeYara = $YaraEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object -Property 'Size' -Sum |
@@ -397,8 +397,8 @@ If ($Targets.Count -eq 0) {
 		If ($GitCommits.Count -le 1) {
 			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommits.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
-		[UInt]$GitCommitsPassCount = 0
-		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
+		[UInt128]$GitCommitsPassCount = 0
+		For ([UInt128]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex++) {
 			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
 			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
 			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
@@ -440,14 +440,15 @@ Else {
 	) -gt 0) {
 		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
 	}
-	ForEach ($Target In $Targets) {
+	For ([UInt128]$TargetsIndex = 0; $TargetsIndex -lt $Targets.Count; $TargetsIndex++) {
+		[String]$Target = $Targets[$TargetsIndex]
 		If (!(Test-StringIsUri -InputObject $Target)) {
 			Write-GitHubActionsWarning -Message "``$($Target.OriginalString)`` is not a valid URI!"
 			Continue
 		}
 		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
 		If ($Null -ine $NetworkTargetFilePath) {
-			Invoke-Tools -SessionId $Target.ToString() -SessionTitle $Target.ToString()
+			Invoke-Tools -SessionId $Target.ToString() -SessionTitle "Remote Target $Target [#$($TargetsIndex + 1)/$($Targets.Count)]"
 			Remove-Item -LiteralPath $NetworkTargetFilePath -Force -Confirm:$False
 		}
 	}

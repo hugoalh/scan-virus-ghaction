@@ -33,7 +33,7 @@ Import-Module -Name (
 [Hashtable]$GitCommitsPropertySorter = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsSort } |
 	Select-Object -First 1
-[UInt16]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
+[Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 Function Get-GitCommits {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
@@ -77,7 +77,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 					Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
 					Return
 				}
-				[UInt64]$DelimiterTokenCount = $GitCommitMetaRaw0 |
+				[UInt128]$DelimiterTokenCount = $GitCommitMetaRaw0 |
 					Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
 					Measure-Object |
 					Select-Object -ExpandProperty 'Count'
@@ -92,7 +92,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				Return
 			}
 			[Hashtable]$GitCommitMeta = @{}
-			For ([UInt64]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line++) {
+			For ([UInt128]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line++) {
 				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 				[String]$Value = $GitCommitMetaRaw1[$Line]
 				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
@@ -119,7 +119,7 @@ Function Test-GitCommitIsIgnore {
 		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
 	ForEach ($IgnoreItem In $Ignore) {
-		[UInt16]$IgnoreMatchCount = 0
+		[UInt128]$IgnoreMatchCount = 0
 		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
 			If ($Null -ieq $IgnoreItem.($GitCommitsProperty.Name)) {
 				Continue

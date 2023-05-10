@@ -21,10 +21,10 @@ Class ScanVirusStatisticsIssuesSessions {
 	}
 }
 Class ScanVirusStatisticsTotalElements {
-	[UInt64]$Discover = 0
-	[UInt64]$Scan = 0
-	[UInt64]$ClamAV = 0
-	[UInt64]$Yara = 0
+	[UInt128]$Discover = 0
+	[UInt128]$Scan = 0
+	[UInt128]$ClamAV = 0
+	[UInt128]$Yara = 0
 	[Void]ConclusionDisplay() {
 		[Boolean]$IsNoElements = $This.Discover -eq 0
 		Enter-GitHubActionsLogGroup -Title 'Total Elements: '
@@ -54,10 +54,10 @@ Class ScanVirusStatisticsTotalElements {
 	}
 }
 Class ScanVirusStatisticsTotalSizes {
-	[UInt64]$Discover = 0
-	[UInt64]$Scan = 0
-	[UInt64]$ClamAV = 0
-	[UInt64]$Yara = 0
+	[UInt128]$Discover = 0
+	[UInt128]$Scan = 0
+	[UInt128]$ClamAV = 0
+	[UInt128]$Yara = 0
 	[Void]ConclusionDisplay() {
 		[Boolean]$IsNoSizes = $This.Discover -eq 0
 		Enter-GitHubActionsLogGroup -Title 'Total Sizes: '

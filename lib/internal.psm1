@@ -134,7 +134,7 @@ Function Test-ElementIsIgnore {
 			) {
 				Continue
 			}
-			[UInt16]$IgnoreMatchCount = 0
+			[UInt128]$IgnoreMatchCount = 0
 			ForEach ($Property In $CombinationGroup) {
 				If ($Null -ieq $IgnoreItem.($Property)) {
 					Continue
