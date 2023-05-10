@@ -2,6 +2,10 @@ name: "Scan Virus - Remote"
 on:
   workflow_dispatch:
     inputs:
+      input_listdelimiter:
+        description: "{RegEx} Delimiter when the input is type of list."
+        required: false
+        default: ",|;|\\r?\\n"
       targets:
         type: "string"
         description: "{Uri[]} Targets."
@@ -14,4 +18,5 @@ jobs:
       - name: "Scan Virus"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
+          input_listdelimiter: "${{github.event.inputs.input_listdelimiter}}"
           targets: "${{github.event.inputs.targets}}"

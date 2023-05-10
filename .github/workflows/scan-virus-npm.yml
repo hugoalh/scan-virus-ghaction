@@ -2,34 +2,59 @@ name: "Scan Virus - NPM"
 on:
   workflow_dispatch:
     inputs:
-      package:
+      input_listdelimiter:
+        description: "{RegEx} Delimiter when the input is type of list."
+        required: false
+        default: ",|;|\\r?\\n"
+      packages:
         type: "string"
-        description: "{String} Package."
+        description: "{String[]} Packages."
         required: true
 jobs:
-  scan-virus-npm:
-    name: "Scan Virus - NPM - ${{github.event.inputs.package}}"
+  resolve-packages:
+    name: "Resolve Packages"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
-      - name: "Resolve Package Tarball"
-        id: "resolve-package-tarball"
+      - name: "Resolve Packages"
+        id: "resolve-packages"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-          [String]$Package = '${{github.event.inputs.package}}'
-          [PSCustomObject]$Content = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{'Content-Type' = 'application/json'} -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+          [String[]]$Packages = '${{github.event.inputs.packages}}' -isplit ',|;' |
+            Where-Object -FilterScript { $_.Length -gt 0 }
+          [String[]]$Group = @()
+          ForEach ($Package In $Packages) {
+            [PSCustomObject]$Content = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{'Content-Type' = 'application/json'} -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
               Select-Object -ExpandProperty 'Content' |
               ConvertFrom-Json -Depth 100
-          If ($Content.error -ieq 'Not found') {
-            Write-Error -Message "`"$Package`" is not found!" -ErrorAction 'Stop'
+            If ($Content.error -ieq 'Not found') {
+              Write-GitHubActionsWarning -Message "``$Package`` is not found!"
+            }
+            Group += @{
+              name = $Package
+              urls = $Content.versions.PSObject.Properties.Value.dist.tarball |
+                Join-String -Separator "`n"
+            } |
+              ConvertTo-Json -Depth 100
           }
-          Set-GitHubActionsOutput -Name 'urls' -Value (
-            $Content.versions.PSObject.Properties.Value.dist.tarball |
-              Join-String -Separator ','
+          Set-GitHubActionsOutput -Name 'group' -Value (
+            $Group |
+              ConvertTo-Json -Depth 100
           )
         shell: "pwsh"
-      - name: "Scan Virus"
+    outputs:
+      group: "${{steps.resolve-packages.outputs.group}}"
+  scan-virus-npm:
+    name: "Scan Virus - NPM - ${{fromJson(matrix).name}}"
+    runs-on: "ubuntu-latest"
+    needs:
+      - "resolve-packages"
+    strategy:
+      matrix: "${{fromJson(needs.resolve-packages.outputs.group)}}"
+    steps:
+      - name: "Scan Virus - NPM - ${{fromJson(matrix).name}}"
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
-          targets: "${{steps.resolve-package-tarball.outputs.urls}}"
+          input_listdelimiter: "\\r?\\n"
+          targets: "${{fromJson(matrix).urls}}"
