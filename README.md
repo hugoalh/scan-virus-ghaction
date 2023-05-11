@@ -255,9 +255,9 @@ ignores: |-
 
 **(>= v0.11.0)** `<String = "None">` Whether to list all of the elements which found virus in the GitHub Actions step summary.
 
-- **`"None"`:** Disable.
-- **`"Clone"`:** Keep emit annotations.
-- **`"Redirect"`:** Not emit annotations.
+- **`"None"`:** Disable, and record into the log.
+- **`"Clone"`:** Enable, and still record into the log.
+- **`"Redirect"`:** Enable, and will not record into the log.
 
 > **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
 
@@ -265,9 +265,9 @@ ignores: |-
 
 **(>= v0.11.0)** `<String = "None">` Whether to list statistics in the GitHub Actions step summary.
 
-- **`"None"`:** Disable.
-- **`"Clone"`:** Keep to log.
-- **`"Redirect"`:** Not to log.
+- **`"None"`:** Disable, and record into the log.
+- **`"Clone"`:** Enable, and still record into the log.
+- **`"Redirect"`:** Enable, and will not record into the log.
 
 > **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
 

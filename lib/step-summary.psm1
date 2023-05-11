@@ -56,7 +56,7 @@ Function Add-StepSummaryStatistics {
 		[Parameter(Mandatory = $True, Position = 3)][AllowEmptyCollection()][String[]]$IssuesSessions
 	)
 	Ensure-StepSummaryFileExist
-	[String]$Result = @"
+	[String[]]$Result = @(@"
 
 # Statistics
 
@@ -79,7 +79,7 @@ $(
 		ForEach-Object -Process { "| $($_.Type) | $($_.B) | $($_.KB) | $($_.MB) | $($_.GB) | $($_.Percentage ?? '') |" } |
 		Join-String -Separator "`n"
 )
-"@
+"@)
 	If ($IssuesOperations.Count -gt 0) {
 		$Result += @"
 
@@ -104,7 +104,10 @@ $(
 )
 "@
 	}
-	Add-GitHubActionsStepSummary -Value $Result
+	Add-GitHubActionsStepSummary -Value (
+		$Result |
+			Join-String -Separator "`n"
+	)
 }
 Export-ModuleMember -Function @(
 	'Add-StepSummaryFound',
