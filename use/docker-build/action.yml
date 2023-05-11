@@ -9,7 +9,7 @@ inputs:
   input_tablemarkup:
     description: "{String} Markup language when the input is type of table."
     required: false
-    default: "yaml"
+    default: "YAML"
   targets:
     description: "{Uri[]} Targets."
     required: false
