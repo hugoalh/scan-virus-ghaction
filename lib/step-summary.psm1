@@ -87,7 +87,7 @@ $(
 
 $(
 	$IssuesOperations |
-		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ }
+		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
@@ -99,7 +99,7 @@ $(
 
 $(
 	$IssuesSessions |
-		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ }
+		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
