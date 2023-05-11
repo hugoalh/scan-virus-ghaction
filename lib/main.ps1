@@ -22,7 +22,6 @@ If (Get-GitHubActionsIsDebug) {
 }
 [ScanVirusStatistics]$Statistics = [ScanVirusStatistics]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
-[String[]]$StepSummaryChoices = @('None', 'Clone', 'Redirect')
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
 Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter.ToString()
@@ -86,17 +85,6 @@ Catch {
 		Exit-GitHubActionsLogGroup
 	}
 }
-<#
-[String]$SummaryFound = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
-If ($SummaryFound -inotin $StepSummaryChoices) {
-	Write-GitHubActionsFail -Message "``$_`` is not a valid found summary usage! Must be either one of these: $(
-		$StepSummaryChoices |
-			Join-String -Separator ', ' -FormatString '"{0}"'
-	)" -Finally {
-		Exit-GitHubActionsLogGroup
-	}
-}
-#>
 Write-NameValue -Name 'Summary_Found' -Value $SummaryFound.ToString()
 Try {
 	[String]$SummaryStatisticsInput = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
@@ -107,17 +95,6 @@ Catch {
 		Exit-GitHubActionsLogGroup
 	}
 }
-<#
-[String]$SummaryStatistics = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
-If ($SummaryStatistics -inotin $StepSummaryChoices) {
-	Write-GitHubActionsFail -Message "``$_`` is not a valid statistics summary usage! Must be either one of these: $(
-		$StepSummaryChoices |
-			Join-String -Separator ', ' -FormatString '"{0}"'
-	)" -Finally {
-		Exit-GitHubActionsLogGroup
-	}
-}
-#>
 Write-NameValue -Name 'Summary_Statistics' -Value $SummaryStatistics.ToString()
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
