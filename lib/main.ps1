@@ -19,10 +19,7 @@ Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
 	Get-WareMeta
 }
-[ScanVirusStatisticsIssuesOperations]$StatisticsIssuesOperations = [ScanVirusStatisticsIssuesOperations]::New()
-[ScanVirusStatisticsIssuesSessions]$StatisticsIssuesSessions = [ScanVirusStatisticsIssuesSessions]::New()
-[ScanVirusStatisticsTotalElements]$StatisticsTotalElements = [ScanVirusStatisticsTotalElements]::New()
-[ScanVirusStatisticsTotalSizes]$StatisticsTotalSizes = [ScanVirusStatisticsTotalSizes]::New()
+[ScanVirusStatistics]$Statistics = [ScanVirusStatistics]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 [String[]]$StepSummaryChoices = @('None', 'Clone', 'Redirect')
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
@@ -122,7 +119,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial assets.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
-		$StatisticsIssuesOperations.Storage += "ClamAV/UnofficialAssets/$ApplyIssue"
+		$Statistics.IssuesOperations += "ClamAV/UnofficialAssets/$ApplyIssue"
 	}
 	Exit-GitHubActionsLogGroup
 }
@@ -196,7 +193,7 @@ Function Invoke-Tools {
 Unable to scan session `"$SessionTitle`": Workspace is empty!
 If this is incorrect, probably something went wrong.
 "@
-		$Script:StatisticsIssuesOperations.Storage += "Workspace/$SessionId"
+		$Script:Statistics.IssuesOperations += "Workspace/$SessionId"
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
@@ -236,14 +233,19 @@ If this is incorrect, probably something went wrong.
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
 	) : 0
-	$Script:StatisticsTotalElements.Discover += $ElementsCountDiscover
-	$Script:StatisticsTotalElements.Scan += $ElementsCountScan
-	$Script:StatisticsTotalElements.ClamAV += $ElementsCountClamAV
-	$Script:StatisticsTotalElements.Yara += $ElementsCountYara
-	$Script:StatisticsTotalSizes.Discover += $ElementsSizeDiscover
-	$Script:StatisticsTotalSizes.Scan += $ElementsSizeScan
-	$Script:StatisticsTotalSizes.ClamAV += $ElementsSizeClamAV
-	$Script:StatisticsTotalSizes.Yara += $ElementsSizeYara
+	Try {
+		$Script:Statistics.TotalElementsDiscover += $ElementsCountDiscover
+		$Script:Statistics.TotalElementsScan += $ElementsCountScan
+		$Script:Statistics.TotalElementsClamAV += $ElementsCountClamAV
+		$Script:Statistics.TotalElementsYara += $ElementsCountYara
+		$Script:Statistics.TotalSizesDiscover += $ElementsSizeDiscover
+		$Script:Statistics.TotalSizesScan += $ElementsSizeScan
+		$Script:Statistics.TotalSizesClamAV += $ElementsSizeClamAV
+		$Script:Statistics.TotalSizesYara += $ElementsSizeYara
+	}
+	Catch {
+		$Script:Statistics.IsOverflow = $True
+	}
 	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
 	@(
 		[PSCustomObject]@{ Type = 'Discover'; Count = $ElementsCountDiscover; Size = $ElementsSizeDiscover }
@@ -289,13 +291,13 @@ $(
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-				$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
+				$Script:Statistics.IssuesOperations += "$SessionId/ClamAV"
 			}
 			$ResultFound += $Result.Found
 		}
 		Catch {
 			Write-GitHubActionsError -Message $_
-			$Script:StatisticsIssuesOperations.Storage += "$SessionId/ClamAV"
+			$Script:Statistics.IssuesOperations += "$SessionId/ClamAV"
 		}
 		Exit-GitHubActionsLogGroup
 	}
@@ -336,7 +338,7 @@ $YaraResultIssue |
 	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-			$Script:StatisticsIssuesOperations.Storage += "$SessionId/YARA"
+			$Script:Statistics.IssuesOperations += "$SessionId/YARA"
 		}
 		Exit-GitHubActionsLogGroup
 	}
@@ -387,7 +389,7 @@ $(
 			If ($SummaryFound -ine 'None') {
 				Add-StepSummaryFound -Session $SessionId -Indicator '🔴' -Issue $ResultFoundNotIgnore
 			}
-			$Script:StatisticsIssuesSessions.Storage += $SessionId
+			$Script:Statistics.IssuesSessions += $SessionId
 		}
 		If ($ResultFoundIgnore.Count -gt 0) {
 			If ($SummaryFound -ine 'Redirect') {
@@ -445,7 +447,7 @@ If ($Targets.Count -eq 0) {
 			}
 			Catch {
 				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)``: $_"
-				$StatisticsIssuesOperations.Storage += "Git/$($GitCommit.CommitHash)"
+				$Statistics.IssuesOperations += "Git/$($GitCommit.CommitHash)"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
@@ -478,14 +480,5 @@ Else {
 If ($ClamAVEnable) {
 	Stop-ClamAVDaemon
 }
-Write-Host -Object 'Statistics.'
-$StatisticsTotalElements.ConclusionDisplay()
-$StatisticsTotalSizes.ConclusionDisplay()
-If ($StatisticsIssuesOperations.Storage.Count -gt 0) {
-	$StatisticsIssuesOperations.ConclusionDisplay()
-}
-If ($StatisticsIssuesSessions.Storage.Count -gt 0) {
-	$StatisticsIssuesSessions.ConclusionDisplay()
-	Exit 1
-}
-Exit 0
+$Statistics.ConclusionDisplay()
+Exit $Statistics.GetExitCode()

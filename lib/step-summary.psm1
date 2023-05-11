@@ -6,7 +6,8 @@ Function Escape-MarkdownCharacter {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
 	)
-	$InputObject -ireplace '\r?\n', ' ' -ireplace '\\', '\\' -ireplace '\|', '\|' -ireplace '\*', '\*' -ireplace '_', '\_' -ireplace '\[', '\[' -ireplace '\]', '\]'
+	$InputObject -ireplace '\r?\n', '<br />' -ireplace '\\', '\\' -ireplace '\|', '\|' -ireplace '\*', '\*' -ireplace '_', '\_' -ireplace '\[', '\[' -ireplace '\]', '\]' -ireplace '^>', '\>' -ireplace '^-', '\-' |
+		Write-Output
 }
 Function Ensure-StepSummaryFileExist {
 	[CmdletBinding()]
@@ -31,15 +32,19 @@ Function Add-StepSummaryFound {
 	)
 	Ensure-StepSummaryFileExist -Content @'
 # Found
-
-|  | **Session** | **Path** | **Symbol** | **Hit** |
-|:-:|:-:|:--|:--|--:|
 '@
-	Add-GitHubActionsStepSummary -Value (
-		$Issue |
-			ForEach-Object -Process { "| $Indicator | $(Escape-MarkdownCharacter -InputObject $Session) | $(Escape-MarkdownCharacter -InputObject $_.Path) | $(Escape-MarkdownCharacter -InputObject $_.Symbol) | $($_.Hit) |" } |
-			Join-String -Separator "`n"
-	)
+	Add-GitHubActionsStepSummary -Value @"
+
+## $(Escape-MarkdownCharacter -InputObject $Session)
+
+|  | **Path** | **Symbol** | **Hit** |
+|:-:|:--|:--|--:|
+$(
+	$Issue |
+		ForEach-Object -Process { "| $Indicator | $(Escape-MarkdownCharacter -InputObject $_.Path) | $(Escape-MarkdownCharacter -InputObject $_.Symbol) | $($_.Hit) |" } |
+		Join-String -Separator "`n"
+)
+"@
 }
 Export-ModuleMember -Function @(
 	'Add-StepSummaryFound'
