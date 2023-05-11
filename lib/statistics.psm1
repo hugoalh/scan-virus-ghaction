@@ -25,7 +25,7 @@ Class ScanVirusStatistics {
 			$TotalElementsTable += [PSCustomObject]@{
 				Type = $Type
 				Value = $This.("TotalElements$($Type)")
-				Percentage = $IsNoElements ? 0 : [Math]::Floor(($This.("TotalElements$($Type)") / $This.TotalElementsDiscover * 100), 3)
+				Percentage = $IsNoElements ? 0 : [Math]::Round(($This.("TotalElements$($Type)") / $This.TotalElementsDiscover * 100), 3)
 			}
 		}
 		Return $TotalElementsTable
@@ -36,9 +36,9 @@ Class ScanVirusStatistics {
 			[PSCustomObject]@{
 				Type = 'Discover'
 				B = $This.TotalSizesDiscover
-				KB = [Math]::Floor(($This.TotalSizesDiscover / 1KB), 3)
-				MB = [Math]::Floor(($This.TotalSizesDiscover / 1MB), 3)
-				GB = [Math]::Floor(($This.TotalSizesDiscover / 1GB), 3)
+				KB = [Math]::Round(($This.TotalSizesDiscover / 1KB), 3)
+				MB = [Math]::Round(($This.TotalSizesDiscover / 1MB), 3)
+				GB = [Math]::Round(($This.TotalSizesDiscover / 1GB), 3)
 				Percentage = $Null
 			}
 		)
@@ -46,10 +46,10 @@ Class ScanVirusStatistics {
 			$TotalSizesTable += [PSCustomObject]@{
 				Type = $Type
 				B = $This.("TotalSizes$($Type)")
-				KB = [Math]::Floor(($This.("TotalSizes$($Type)") / 1KB), 3)
-				MB = [Math]::Floor(($This.("TotalSizes$($Type)") / 1MB), 3)
-				GB = [Math]::Floor(($This.("TotalSizes$($Type)") / 1GB), 3)
-				Percentage = $IsNoSizes ? 0 : [Math]::Floor(($This.("TotalSizes$($Type)") / $This.TotalSizesDiscover * 100), 3)
+				KB = [Math]::Round(($This.("TotalSizes$($Type)") / 1KB), 3)
+				MB = [Math]::Round(($This.("TotalSizes$($Type)") / 1MB), 3)
+				GB = [Math]::Round(($This.("TotalSizes$($Type)") / 1GB), 3)
+				Percentage = $IsNoSizes ? 0 : [Math]::Round(($This.("TotalSizes$($Type)") / $This.TotalSizesDiscover * 100), 3)
 			}
 		}
 		Return $TotalSizesTable
