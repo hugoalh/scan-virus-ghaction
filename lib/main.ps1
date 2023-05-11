@@ -57,18 +57,18 @@ Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
 [Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
 Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
 [AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter
-Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx [$($ClamAVUnofficialAssetsInput.Count)]" -Value (
+Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx" -Value (
 	$ClamAVUnofficialAssetsInput |
-		Join-String -Separator ', ' -FormatString '`{0}`'
+		Join-String -Separator '|'
 )
 [Boolean]$ClamAVUpdate = Get-InputBoolean -Name 'clamav_update'
 Write-NameValue -Name 'ClamAV_Update' -Value $ClamAVUpdate
 [Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
 Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
 [AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter
-Write-NameValue -Name "YARA_UnofficialAssets_RegEx [$($YaraUnofficialAssetsInput.Count)]" -Value (
+Write-NameValue -Name "YARA_UnofficialAssets_RegEx" -Value (
 	$YaraUnofficialAssetsInput |
-		Join-String -Separator ', ' -FormatString '`{0}`'
+		Join-String -Separator '|'
 )
 [AllowEmptyCollection()][PSCustomObject[]]$Ignores = (Get-InputTable -Name 'ignores' -Markup $InputTableMarkup) ?? @()
 Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
