@@ -263,7 +263,7 @@ ignores: |-
 
 #### `summary_statistics`
 
-**\[Not In Use Yet\]** `<String = "None">` Whether to list statistics in the GitHub Actions step summary.
+**(>= v0.11.0)** `<String = "None">` Whether to list statistics in the GitHub Actions step summary.
 
 - **`"None"`:** Disable.
 - **`"Clone"`:** Keep to log.

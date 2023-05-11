@@ -100,7 +100,7 @@ Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
 ) -NewLine
 [String]$SummaryFound = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
 If ($SummaryFound -inotin $StepSummaryChoices) {
-	Write-GitHubActionsFail -Message "``$_`` is not a valid summary usage! Must be either one of these: $(
+	Write-GitHubActionsFail -Message "``$_`` is not a valid found summary usage! Must be either one of these: $(
 		$StepSummaryChoices |
 			Join-String -Separator ', ' -FormatString '"{0}"'
 	)" -Finally {
@@ -108,6 +108,16 @@ If ($SummaryFound -inotin $StepSummaryChoices) {
 	}
 }
 Write-NameValue -Name 'Summary_Found' -Value $SummaryFound
+[String]$SummaryStatistics = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
+If ($SummaryStatistics -inotin $StepSummaryChoices) {
+	Write-GitHubActionsFail -Message "``$_`` is not a valid statistics summary usage! Must be either one of these: $(
+		$StepSummaryChoices |
+			Join-String -Separator ', ' -FormatString '"{0}"'
+	)" -Finally {
+		Exit-GitHubActionsLogGroup
+	}
+}
+Write-NameValue -Name 'Summary_Statistics' -Value $SummaryStatistics
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
@@ -480,5 +490,10 @@ Else {
 If ($ClamAVEnable) {
 	Stop-ClamAVDaemon
 }
-$Statistics.ConclusionDisplay()
+If ($SummaryStatistics -ine 'Redirect') {
+	$Statistics.ConclusionDisplay()
+}
+If ($SummaryStatistics -ine 'None') {
+	$Statistics.ConclusionSummary()
+}
 Exit $Statistics.GetExitCode()

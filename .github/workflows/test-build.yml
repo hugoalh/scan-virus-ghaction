@@ -52,3 +52,4 @@ jobs:
           yara_unofficialassets: |-
             ^.+$
           summary_found: "Clone"
+          summary_statistics: "Clone"

@@ -1,5 +1,11 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (
+	@(
+		'step-summary'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
+) -Scope 'Local'
 Class ScanVirusStatistics {
 	[String[]]$IssuesOperations = @()
 	[String[]]$IssuesSessions = @()
@@ -94,6 +100,12 @@ $(
 		Out-String -Width 120
 )
 "@
+	}
+	[Void]ConclusionSummary() {
+		If ($This.IsOverflow) {
+			Return
+		}
+		Add-StepSummaryStatistics -TotalElements $This.GetTotalElementsTable() -TotalSizes $This.GetTotalSizesTable() -IssuesOperations $This.IssuesOperations -IssuesSessions $This.IssuesSessions
 	}
 	[Byte]GetExitCode() {
 		Return (($This.IssuesSessions.Count -gt 0) ? 1 : 0)
