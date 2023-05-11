@@ -1,4 +1,5 @@
 #Requires -PSEdition Core -Version 7.2
+Using Module .\enum.psm1
 Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'
@@ -65,7 +66,7 @@ Function Get-InputTable {
 	[OutputType([PSCustomObject[]])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
-		[Parameter(Mandatory = $True, Position = 1)][ValidateSet('csv', 'csvm', 'csvs', 'json', 'tsv', 'yaml')][String]$Markup
+		[Parameter(Mandatory = $True, Position = 1)][ScanVirusInputTableMarkup]$Markup
 	)
 	$Raw = Get-GitHubActionsInput -Name $Name -EmptyStringAsNull
 	If ($Null -ieq $Raw) {
@@ -73,37 +74,37 @@ Function Get-InputTable {
 		Return
 	}
 	Try {
-		Switch -Exact ($Markup) {
-			'csv' {
+		Switch ($Markup.GetHashCode()) {
+			([ScanVirusInputTableMarkup]::CSV).GetHashCode() {
 				ConvertFrom-Csv -InputObject $Raw -Delimiter ',' |
 					Write-Output
 				Break
 			}
-			'csvm' {
+			([ScanVirusInputTableMarkup]::CSVM).GetHashCode() {
 				[String[]]($Raw -isplit '\r?\n') |
 					Where-Object -FilterScript { $_ -imatch '^.+$' } |
 					ConvertFrom-CsvM |
 					Write-Output
 				Break
 			}
-			'csvs' {
+			([ScanVirusInputTableMarkup]::CSVS).GetHashCode() {
 				$Raw |
 					Convert-FromCsvSToCsvM |
 					ConvertFrom-CsvM |
 					Write-Output
 				Break
 			}
-			'json' {
+			([ScanVirusInputTableMarkup]::JSON).GetHashCode() {
 				(ConvertFrom-Json -InputObject $Raw -Depth 100) -as [PSCustomObject[]] |
 					Write-Output
 				Break
 			}
-			'tsv' {
+			([ScanVirusInputTableMarkup]::TSV).GetHashCode() {
 				ConvertFrom-Csv -InputObject $Raw -Delimiter "`t" |
 					Write-Output
 				Break
 			}
-			'yaml' {
+			([ScanVirusInputTableMarkup]::YAML).GetHashCode() {
 				(ConvertFrom-Yaml -InputObject $Raw) -as [PSCustomObject[]] |
 					Write-Output
 				Break
@@ -111,7 +112,7 @@ Function Get-InputTable {
 		}
 	}
 	Catch {
-		Write-Error -Message "Invalid $Markup table syntax: $_" -ErrorAction 'Stop'
+		Write-GitHubActionsFail -Message "Invalid $($Markup.ToString()) table syntax: $_"
 	}
 }
 Function Test-ElementIsIgnore {

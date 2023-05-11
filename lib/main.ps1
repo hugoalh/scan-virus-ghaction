@@ -1,4 +1,5 @@
 #Requires -PSEdition Core -Version 7.2
+Using Module .\enum.psm1
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
@@ -25,38 +26,16 @@ If (Get-GitHubActionsIsDebug) {
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
 Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter.ToString()
-Switch -RegEx (Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim) {
-	'^csv$' {
-		[String]$InputTableMarkup = 'csv'
-		Break
-	}
-	'^csvm$' {
-		[String]$InputTableMarkup = 'csvm'
-		Break
-	}
-	'^csvs$' {
-		[String]$InputTableMarkup = 'csvs'
-		Break
-	}
-	'^json$' {
-		[String]$InputTableMarkup = 'json'
-		Break
-	}
-	'^tsv$' {
-		[String]$InputTableMarkup = 'tsv'
-		Break
-	}
-	'^ya?ml$' {
-		[String]$InputTableMarkup = 'yaml'
-		Break
-	}
-	Default {
-		Write-GitHubActionsFail -Message "``$_`` is not a valid table markup language!" -Finally {
-			Exit-GitHubActionsLogGroup
-		}
+Try {
+	[String]$InputTableMarkupInput = Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim
+	[ScanVirusInputTableMarkup]$InputTableMarkup = [ScanVirusInputTableMarkup]::($InputTableMarkupInput)
+}
+Catch {
+	Write-GitHubActionsFail -Message "``$InputTableMarkupInput`` is not a valid table markup language: $_" -Finally {
+		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Input_TableMarkup' -Value $InputTableMarkup
+Write-NameValue -Name 'Input_TableMarkup' -Value $InputTableMarkup.ToString()
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
 Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '{Local}' : (
@@ -98,6 +77,16 @@ Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
 		Format-List -Property '*' |
 		Out-String -Width 120
 ) -NewLine
+Try {
+	[String]$SummaryFoundInput = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
+	[ScanVirusStepSummaryChoices]$SummaryFound = [ScanVirusStepSummaryChoices]::($SummaryFoundInput)
+}
+Catch {
+	Write-GitHubActionsFail -Message "``$SummaryFoundInput`` is not a valid found summary usage: $_" -Finally {
+		Exit-GitHubActionsLogGroup
+	}
+}
+<#
 [String]$SummaryFound = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
 If ($SummaryFound -inotin $StepSummaryChoices) {
 	Write-GitHubActionsFail -Message "``$_`` is not a valid found summary usage! Must be either one of these: $(
@@ -107,7 +96,18 @@ If ($SummaryFound -inotin $StepSummaryChoices) {
 		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Summary_Found' -Value $SummaryFound
+#>
+Write-NameValue -Name 'Summary_Found' -Value $SummaryFound.ToString()
+Try {
+	[String]$SummaryStatisticsInput = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
+	[ScanVirusStepSummaryChoices]$SummaryStatistics = [ScanVirusStepSummaryChoices]::($SummaryStatisticsInput)
+}
+Catch {
+	Write-GitHubActionsFail -Message "``$SummaryStatisticsInput`` is not a valid statistics summary usage: $_" -Finally {
+		Exit-GitHubActionsLogGroup
+	}
+}
+<#
 [String]$SummaryStatistics = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
 If ($SummaryStatistics -inotin $StepSummaryChoices) {
 	Write-GitHubActionsFail -Message "``$_`` is not a valid statistics summary usage! Must be either one of these: $(
@@ -117,7 +117,8 @@ If ($SummaryStatistics -inotin $StepSummaryChoices) {
 		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Summary_Statistics' -Value $SummaryStatistics
+#>
+Write-NameValue -Name 'Summary_Statistics' -Value $SummaryStatistics.ToString()
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
@@ -382,7 +383,7 @@ $YaraResultIssue |
 			}
 		}
 		If ($ResultFoundNotIgnore.Count -gt 0) {
-			If ($SummaryFound -ine 'Redirect') {
+			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
 				Write-GitHubActionsError -Message @"
 Found in session `"$SessionTitle`":
 $(
@@ -396,13 +397,13 @@ $(
 )
 "@
 			}
-			If ($SummaryFound -ine 'None') {
+			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
 				Add-StepSummaryFound -Session $SessionId -Indicator '🔴' -Issue $ResultFoundNotIgnore
 			}
 			$Script:Statistics.IssuesSessions += $SessionId
 		}
 		If ($ResultFoundIgnore.Count -gt 0) {
-			If ($SummaryFound -ine 'Redirect') {
+			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
 				Write-GitHubActionsWarning -Message @"
 Found in session `"$SessionTitle`" but ignored:
 $(
@@ -416,7 +417,7 @@ $(
 )
 "@
 			}
-			If ($SummaryFound -ine 'None') {
+			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
 				Add-StepSummaryFound -Session $SessionId -Indicator '🟡' -Issue $ResultFoundIgnore
 			}
 		}
@@ -490,10 +491,10 @@ Else {
 If ($ClamAVEnable) {
 	Stop-ClamAVDaemon
 }
-If ($SummaryStatistics -ine 'Redirect') {
+If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
 	$Statistics.ConclusionDisplay()
 }
-If ($SummaryStatistics -ine 'None') {
+If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
 	$Statistics.ConclusionSummary()
 }
 Exit $Statistics.GetExitCode()
