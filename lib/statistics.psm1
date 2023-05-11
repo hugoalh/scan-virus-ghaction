@@ -59,7 +59,7 @@ Class ScanVirusStatistics {
 			Write-GitHubActionsNotice -Message 'Statistics is not display: Overflow'
 			Return
 		}
-		[PSCustomObject]$DisplayList = [PSCustomObject]@{
+		$DisplayList = [Ordered]@{
 			TotalElements = $This.GetTotalElementsTable() |
 				Format-Table -Property @(
 					'Type',
@@ -89,7 +89,7 @@ Class ScanVirusStatistics {
 		Write-GitHubActionsNotice -Message @"
 Statistics:
 $(
-	$DisplayList |
+	[PSCustomObject]$DisplayList |
 		Format-List -Property '*' |
 		Out-String -Width 120
 )
