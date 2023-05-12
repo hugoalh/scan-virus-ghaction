@@ -63,22 +63,22 @@ jobs:
 
 `<String = "yaml">` Markup language when the input is type of table.
 
-- **`"CSV"` (Comma Separated Values (Standard)):**
+- **`"Csv"` (Comma Separated Values (Standard)):**
   ```csv
   bar,foo
   5,10
   10,20
   ```
-- **`"CSVM"` (Comma Separated Values (Non Standard Multiple Line)):**
+- **`"CsvM"` (Comma Separated Values (Non Standard Multiple Line)):**
   ```
   bar=5,foo=10
   bar=10,foo=20
   ```
-- **`"CSVS"` (Comma Separated Values (Non Standard Single Line)):**
+- **`"CsvS"` (Comma Separated Values (Non Standard Single Line)):**
   ```
   bar=5,foo=10;bar=10,foo=20
   ```
-- **`"JSON"` (JavaScript Object Notation):**
+- **`"Json"` (JavaScript Object Notation):**
   ```json
   [{"bar":5,"foo":10},{"bar":10,"foo":20}]
   ```
@@ -94,13 +94,13 @@ jobs:
     }
   ]
   ```
-- **`"TSV"` (Tab Separated Values):**
+- **`"Tsv"` (Tab Separated Values):**
   ```tsv
   bar	foo
   5	10
   10	20
   ```
-- **`"YAML"`/`"YML"` (YAML) *\[Default\]*:**
+- **`"Yaml"`/`"Yml"` (YAML) *\[Default\]*:**
   ```yml
   - bar: 5
     foo: 10
