@@ -20,22 +20,19 @@ jobs:
           [String[]]$RepositoriesInput = '${{github.event.inputs.repositories}}'
           If ($RepositoriesInput.Length -eq 0) {
             [String[]]$Repositories = @()
-            Try {
-              For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
-                [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "https://api.github.com/events?page=$($Page)&per_page=100" -Headers @{
-                  'Content-Type' = 'application/vnd.github+json'
-                  'X-GitHub-Api-Version' = '2022-11-28'
-                } -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
-                  Select-Object -ExpandProperty 'Content' |
-                  ConvertFrom-Json -Depth 100
-                ForEach ($Repository In $Response.repo.name) {
-                  If ($Repository -inotin $Repositories) {
-                    $Repositories += $Repository
-                  }
+            For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
+              [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "https://api.github.com/events?page=$($Page)&per_page=100" -Headers @{
+                'Content-Type' = 'application/vnd.github+json'
+                'X-GitHub-Api-Version' = '2022-11-28'
+              } -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+                Select-Object -ExpandProperty 'Content' |
+                ConvertFrom-Json -Depth 100
+              ForEach ($Repository In $Response.repo.name) {
+                If ($Repository -inotin $Repositories) {
+                  $Repositories += $Repository
                 }
               }
             }
-            Catch {}
           }
           Else {
             [String[]]$Repositories = $RepositoriesInput -isplit ',|;' |
