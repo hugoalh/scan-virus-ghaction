@@ -17,7 +17,6 @@ Import-Module -Name (
 	MaximumRetryCount = 5
 	Method = 'Get'
 	RetryIntervalSec = 10
-	UseBasicParsing = $True
 }
 [ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Container' })][String]$ClamAVDatabaseRoot = $Env:GHACTION_SCANVIRUS_CLAMAV_DATA
 [ValidateScript({ Test-Path -LiteralPath $_ -PathType 'Container' })][String]$ClamAVUnofficialAssetsRoot = $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV

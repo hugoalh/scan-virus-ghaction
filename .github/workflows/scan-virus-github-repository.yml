@@ -5,7 +5,7 @@ on:
       repositories:
         type: "string"
         description: "{String[]} GitHub repositories."
-        required: true
+        required: false
 jobs:
   resolve-repositories:
     name: "(Resolve Repositories)"
@@ -17,12 +17,35 @@ jobs:
         id: "resolve-repositories"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-          [String[]]$Repositories = '${{github.event.inputs.repositories}}' -isplit ',|;' |
-            ForEach-Object -Process { $_.Trim() } |
-            Where-Object -FilterScript { $_.Length -gt 0 } |
-            Sort-Object -Unique
+          [String[]]$RepositoriesInput = '${{github.event.inputs.repositories}}'
+          If ($RepositoriesInput.Length -eq 0) {
+            [String[]]$Repositories = @()
+            Try {
+              For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
+                [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "https://api.github.com/events?page=$($Page)&per_page=100" -Headers @{
+                  'Content-Type' = 'application/vnd.github+json'
+                  'X-GitHub-Api-Version' = '2022-11-28'
+                } -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+                  Select-Object -ExpandProperty 'Content' |
+                  ConvertFrom-Json -Depth 100
+                ForEach ($Repository In $Response.repo.name) {
+                  If ($Repository -inotin $Repositories) {
+                    $Repositories += $Repository
+                  }
+                }
+              }
+            }
+            Catch {}
+          }
+          Else {
+            [String[]]$Repositories = $RepositoriesInput -isplit ',|;' |
+              ForEach-Object -Process { $_.Trim() } |
+              Where-Object -FilterScript { $_.Length -gt 0 }
+          }
           Set-GitHubActionsOutput -Name 'repositories' -Value (
             $Repositories |
+              Sort-Object -Unique |
+              Select-Object -First 250 |
               ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
@@ -36,6 +59,7 @@ jobs:
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-repositories.outputs.group)}}"
+      max-parallel: 10
       fail-fast: false
     steps:
       - name: "Checkout Repository"

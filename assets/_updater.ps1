@@ -22,7 +22,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryName) {
 	Write-Host -Object "Read ``$AssetDirectoryName`` assets index."
 	[String]$AssetIndexFilePath = Join-Path -Path $AssetDirectoryPath -ChildPath 'index.tsv'
 	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @ImportCsvParameters_Tsv
-	For ($AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow++) {
+	For ([UInt64]$AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow += 1) {
 		[PSCustomObject]$AssetIndexItem = $AssetIndex[$AssetIndexRow]
 		If ($AssetIndexItem.Group.Length -gt 0) {
 			Continue
@@ -84,7 +84,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryName) {
 	Write-Host -Object "Read ``$AssetDirectoryName`` asset index."
 	[String]$AssetIndexFilePath = Join-Path -Path $AssetDirectoryPath -ChildPath 'index.tsv'
 	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @ImportCsvParameters_Tsv
-	For ($AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow++) {
+	For ([UInt64]$AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow += 1) {
 		[PSCustomObject]$AssetIndexItem = $AssetIndex[$AssetIndexRow]
 		If ($AssetIndexItem.Type -ieq 'Group') {
 			Continue
