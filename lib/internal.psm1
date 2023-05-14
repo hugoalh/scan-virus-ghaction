@@ -4,35 +4,34 @@ Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'
 ) -Scope 'Local'
-Function Convert-FromCsvSToCsvM {
-	[CmdletBinding()]
-	[OutputType([String[]])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject,
-		[Parameter(Position = 1)][Char]$Delimiter = ';'
-	)
-	If ($InputObject -inotmatch $Delimiter) {
-		Write-Output -InputObject $InputObject
-		Return
-	}
-	[String[]]$Result = @()
-	ForEach ($Item In [PSCustomObject[]](ConvertFrom-Csv -InputObject $InputObject -Delimiter $Delimiter -Header @(0..($Matches.Count)))) {
-		$Result += $Item.PSObject.Properties.Value
-	}
-	Write-Output -InputObject $Result
-}
 Function ConvertFrom-CsvM {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String[]]$InputObject
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
 	)
-	$InputObject |
-		ForEach-Object -Process { [PSCustomObject](
-			[String[]](Convert-FromCsvSToCsvM -InputObject $_ -Delimiter ',') |
+	$InputObject -isplit '\r?\n' |
+		ForEach-Object -Process {
+			$Null = $_ -imatch ','
+			[PSCustomObject](
+				(ConvertFrom-Csv -InputObject $_ -Header @(0..($Matches.Count + 1))).PSObject.Properties.Value |
 				Join-String -Separator "`n" |
 				ConvertFrom-StringData
-		) } |
+			) |
+				Write-Output
+		} |
+		Write-Output
+}
+Function ConvertFrom-CsvS {
+	[CmdletBinding()]
+	[OutputType([PSCustomObject[]])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
+	)
+	$Null = $InputObject -imatch ';'
+	[String]$Raw = (ConvertFrom-Csv -InputObject $InputObject -Delimiter ';' -Header @(0..($Matches.Count + 1))).PSObject.Properties.Value |
+		Join-String -Separator "`n"
+	ConvertFrom-CsvM -InputObject $Raw |
 		Write-Output
 }
 Function Get-InputBoolean {
@@ -75,36 +74,32 @@ Function Get-InputTable {
 	}
 	Try {
 		Switch ($Markup.GetHashCode()) {
-			([ScanVirusInputTableMarkup]::CSV).GetHashCode() {
+			([ScanVirusInputTableMarkup]::Csv).GetHashCode() {
 				ConvertFrom-Csv -InputObject $Raw -Delimiter ',' |
 					Write-Output
 				Break
 			}
-			([ScanVirusInputTableMarkup]::CSVM).GetHashCode() {
-				[String[]]($Raw -isplit '\r?\n') |
-					Where-Object -FilterScript { $_ -imatch '^.+$' } |
-					ConvertFrom-CsvM |
+			([ScanVirusInputTableMarkup]::CsvM).GetHashCode() {
+				ConvertFrom-CsvM -InputObject $Raw |
 					Write-Output
 				Break
 			}
-			([ScanVirusInputTableMarkup]::CSVS).GetHashCode() {
-				$Raw |
-					Convert-FromCsvSToCsvM |
-					ConvertFrom-CsvM |
+			([ScanVirusInputTableMarkup]::CsvS).GetHashCode() {
+				ConvertFrom-CsvS -InputObject $Raw |
 					Write-Output
 				Break
 			}
-			([ScanVirusInputTableMarkup]::JSON).GetHashCode() {
+			([ScanVirusInputTableMarkup]::Json).GetHashCode() {
 				(ConvertFrom-Json -InputObject $Raw -Depth 100) -as [PSCustomObject[]] |
 					Write-Output
 				Break
 			}
-			([ScanVirusInputTableMarkup]::TSV).GetHashCode() {
+			([ScanVirusInputTableMarkup]::Tsv).GetHashCode() {
 				ConvertFrom-Csv -InputObject $Raw -Delimiter "`t" |
 					Write-Output
 				Break
 			}
-			([ScanVirusInputTableMarkup]::YAML).GetHashCode() {
+			([ScanVirusInputTableMarkup]::Yaml).GetHashCode() {
 				(ConvertFrom-Yaml -InputObject $Raw) -as [PSCustomObject[]] |
 					Write-Output
 				Break
