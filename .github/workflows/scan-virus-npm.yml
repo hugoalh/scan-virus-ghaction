@@ -55,7 +55,7 @@ jobs:
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-packages.outputs.group)}}"
-      max-parallel: 10
+      max-parallel: 15
       fail-fast: false
     steps:
       - name: "Scan Virus"
