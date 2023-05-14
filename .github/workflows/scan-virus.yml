@@ -51,5 +51,7 @@ jobs:
           Symbol: ".+"
         - Path: "\\.yara?$"
           Symbol: ".+"
+        - Path: "^\\.git\\/"
+          Symbol: ".+"
         - Path: "^node_modules\\/"
           Symbol: ".+"

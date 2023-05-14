@@ -74,5 +74,5 @@ jobs:
           git_integrate: "True"
           git_limit: "30"
           ignores: |-
-            - Path: "^\.git\\/"
+            - Path: "^\\.git\\/"
               Symbol: ".+"
