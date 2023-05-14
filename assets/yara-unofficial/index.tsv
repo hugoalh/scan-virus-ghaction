@@ -1,6 +1,6 @@
 Type	Group	Name	Path	Remote	Timestamp
-Group		bartblaze	bartblaze/rules	https://github.com/bartblaze/Yara-rules.git	2023-05-07T01:38:16Z
-Group		neo23x0	neo23x0/yara	https://github.com/Neo23x0/signature-base.git	2023-05-07T01:38:16Z
+Group		bartblaze	bartblaze/rules	https://github.com/bartblaze/Yara-rules.git	2023-05-14T01:37:15Z
+Group		neo23x0	neo23x0/yara	https://github.com/Neo23x0/signature-base.git	2023-05-14T01:37:15Z
 Rule	bartblaze	bartblaze/apt_confucius_b	bartblaze/rules/APT/Confucius_B.yar		
 Rule	bartblaze	bartblaze/apt_cotx_rat	bartblaze/rules/APT/Cotx_RAT.yar		
 Rule	bartblaze	bartblaze/apt_royalroad_rtf	bartblaze/rules/APT/RoyalRoad_RTF.yar		
@@ -152,6 +152,7 @@ Rule	neo23x0	neo23x0/apt_dustman	neo23x0/yara/apt_dustman.yar
 Rule	neo23x0	neo23x0/apt_emissary	neo23x0/yara/apt_emissary.yar		
 Rule	neo23x0	neo23x0/apt_eqgrp	neo23x0/yara/apt_eqgrp.yar		
 Rule	neo23x0	neo23x0/apt_eqgrp_apr17	neo23x0/yara/apt_eqgrp_apr17.yar		
+Rule	neo23x0	neo23x0/apt_eqgrp_sparc_sbz_apr23	neo23x0/yara/apt_eqgrp_sparc_sbz_apr23.yar		
 Rule	neo23x0	neo23x0/apt_eternalblue_non_wannacry	neo23x0/yara/apt_eternalblue_non_wannacry.yar		
 Rule	neo23x0	neo23x0/apt_exile_rat	neo23x0/yara/apt_exile_rat.yar		
 Rule	neo23x0	neo23x0/apt_f5_bigip_expl_payloads	neo23x0/yara/apt_f5_bigip_expl_payloads.yar		
@@ -220,6 +221,7 @@ Rule	neo23x0	neo23x0/apt_lotusblossom_elise	neo23x0/yara/apt_lotusblossom_elise.
 Rule	neo23x0	neo23x0/apt_magichound	neo23x0/yara/apt_magichound.yar		
 Rule	neo23x0	neo23x0/apt_mal_gopuram_apr23	neo23x0/yara/apt_mal_gopuram_apr23.yar		
 Rule	neo23x0	neo23x0/apt_mal_ilo_board_elf	neo23x0/yara/apt_mal_ilo_board_elf.yar		
+Rule	neo23x0	neo23x0/apt_mal_ru_snake_may23	neo23x0/yara/apt_mal_ru_snake_may23.yar		
 Rule	neo23x0	neo23x0/apt_microcin	neo23x0/yara/apt_microcin.yar		
 Rule	neo23x0	neo23x0/apt_middle_east_talosreport	neo23x0/yara/apt_middle_east_talosreport.yar		
 Rule	neo23x0	neo23x0/apt_miniasp	neo23x0/yara/apt_miniasp.yar		
@@ -703,6 +705,7 @@ Rule	neo23x0	neo23x0/pup_lightftp	neo23x0/yara/pup_lightftp.yar
 Rule	neo23x0	neo23x0/spy_equation_fiveeyes	neo23x0/yara/spy_equation_fiveeyes.yar		
 Rule	neo23x0	neo23x0/spy_querty_fiveeyes	neo23x0/yara/spy_querty_fiveeyes.yar		
 Rule	neo23x0	neo23x0/spy_regin_fiveeyes	neo23x0/yara/spy_regin_fiveeyes.yar		
+Rule	neo23x0	neo23x0/susp_vulndriver_hp_hardware_diagnostics_etdsupp_may23	neo23x0/yara/susp_vulndriver_hp_hardware_diagnostics_etdsupp_may23.yar		
 Rule	neo23x0	neo23x0/thor_hacktools	neo23x0/yara/thor-hacktools.yar		
 Rule	neo23x0	neo23x0/thor_inverse_matches	neo23x0/yara/thor_inverse_matches.yar		
 Rule	neo23x0	neo23x0/thor_webshells	neo23x0/yara/thor-webshells.yar		
