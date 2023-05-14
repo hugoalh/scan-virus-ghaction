@@ -72,3 +72,7 @@ jobs:
         uses: "hugoalh/scan-virus-ghaction@main"
         with:
           git_integrate: "True"
+          git_limit: "30"
+          ignores: |-
+            - Path: "^\.git\\/"
+              Symbol: ".+"

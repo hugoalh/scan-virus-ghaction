@@ -42,7 +42,7 @@ jobs:
       git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"
       git_limit: "${{github.event.inputs.git_limit || '0'}}"
       git_reverse: "${{github.event.inputs.git_reverse || 'False'}}"
-      ignores: |
+      ignores: |-
         - Path: "\\.[chln]db$"
           Symbol: ".+"
         - Path: "\\.hsb$"
@@ -52,3 +52,4 @@ jobs:
         - Path: "\\.yara?$"
           Symbol: ".+"
         - Path: "^node_modules\\/"
+          Symbol: ".+"
