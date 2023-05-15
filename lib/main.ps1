@@ -407,23 +407,23 @@ If ($Targets.Count -eq 0) {
 		Write-Host -Object 'Import Git commits meta.'
 		Try {
 			[PSCustomObject]$GitCommitsMetaPayload = Start-GetGitCommits -SortFromOldest:($GitReverse)
-			If ($GitCommitsMetaPayload.PSBase.Count -le 1) {
-				Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsMetaPayload.PSBase.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
+			If ($GitCommitsMetaPayload.Total -le 1) {
+				Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsMetaPayload.Total) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 			}
 			[PSCustomObject[]]$GitCommits = @()
 			[UInt64]$GitCommitsPassCount = 0
-			For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsMetaPayload.PSBase.Count; $GitCommitsIndex += 1) {
-				If ($GitCommitsMetaPayload.PSBase.Job.State -ieq 'Failed') {
-					Throw $GitCommitsMetaPayload.PSBase.Job.ChildJobs[0].JobStateInfo.Reason.Message
+			For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsMetaPayload.Total; $GitCommitsIndex += 1) {
+				If ($GitCommitsMetaPayload.Job.State -ieq 'Failed') {
+					Throw $GitCommitsMetaPayload.Job.ChildJobs[0].JobStateInfo.Reason.Message
 				}
-				$GitCommits += Receive-Job -Job $GitCommitsMetaPayload.PSBase.Job
+				$GitCommits += Receive-Job -Job $GitCommitsMetaPayload.Job
 				$GitCommit = $GitCommits[$GitCommitsIndex]
 				If ($Null -ieq $GitCommit) {
 					$GitCommitsIndex -= 1
 					Start-Sleep -Seconds 1
 					Continue
 				}
-				[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommitsMetaPayload.PSBase.Count)]"
+				[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommitsMetaPayload.Total)]"
 				If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
 					Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
 					Continue

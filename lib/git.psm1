@@ -54,7 +54,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 "@
 	}
 	[String[]]$GitCommitsIds = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog$($SortFromOldest.IsPresent ? ' --reverse' : '')"
-	[UInt64]$GitCommitsCount = $GitCommitsIds.Count
+	[UInt64]$GitCommitsTotal = $GitCommitsIds.Count
 	$GetGitCommitsJob = Start-Job -ScriptBlock {
 		Import-Module -Name (
 			@(
@@ -113,7 +113,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		}
 	}
 	[PSCustomObject]@{
-		Count = $GitCommitsCount
+		Total = $GitCommitsTotal
 		Job = $GetGitCommitsJob
 	} |
 		Write-Output
