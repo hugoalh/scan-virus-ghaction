@@ -2,8 +2,8 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'datetime',
-		'token'
+		'datetime'<#,
+		'token'#>
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
@@ -33,6 +33,91 @@ Import-Module -Name (
 	Where-Object -FilterScript { $_.AsSort } |
 	Select-Object -First 1
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
+Function Start-GetGitCommits {
+	[CmdletBinding()]
+	[OutputType([Hashtable])]
+	Param (
+		[Switch]$SortFromOldest
+	)
+	Try {
+		$Null = git config --global --add 'safe.directory' '/github/workspace'
+		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
+			Join-String -Separator "`n"
+		If ($IsGitRepositoryResult -ine 'True') {
+			Throw 'Workspace is not a Git repository!'
+		}
+	}
+	Catch {
+		Throw @"
+Unable to integrate with Git: $_
+If this is incorrect, probably Git database is broken and/or invalid.
+"@
+	}
+	[String[]]$GitCommitsIds = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog$($SortFromOldest.IsPresent ? ' --reverse' : '')"
+	[UInt64]$GitCommitsCount = $GitCommitsIds.Count
+	$GetGitCommitsJob = Start-Job -ScriptBlock {
+		Import-Module -Name (
+			@(
+				'token'
+			) |
+				ForEach-Object -Process { Join-Path -Path $Using:PSScriptRoot -ChildPath "$_.psm1" }
+		) -Scope 'Local'
+		ForEach ($GitCommitId In $Using:GitCommitsIds) {
+			Do {
+				Try {
+					[String]$DelimiterToken = "=====$(New-RandomToken)====="
+					[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
+						$Using:GitCommitsProperties |
+							Select-Object -ExpandProperty 'Placeholder' |
+							Join-String -Separator "%n$DelimiterToken%n"
+					)`" --no-color --no-patch `"$GitCommitId`""
+					If ($LASTEXITCODE -ne 0) {
+						Throw (
+							$GitCommitMetaRaw0 |
+								Join-String -Separator "`n"
+						)
+					}
+				}
+				Catch {
+					Throw "Unexpected Git database issue: $_"
+				}
+				[UInt64]$DelimiterTokenCount = $GitCommitMetaRaw0 |
+					Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
+					Measure-Object |
+					Select-Object -ExpandProperty 'Count'
+			}
+			While ($DelimiterTokenCount -ine $Using:DelimiterTokenCountPerCommit)
+			[String[]]$GitCommitMetaRaw1 = (
+				$GitCommitMetaRaw0 |
+					Join-String -Separator "`n"
+			) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
+			If (($Using:GitCommitsProperties).Count -ne $GitCommitMetaRaw1.Count) {
+				Throw 'Unexpected Git database issue: Columns are not match!'
+			}
+			[Hashtable]$GitCommitMeta = @{}
+			For ([UInt64]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line += 1) {
+				[Hashtable]$GitCommitsPropertiesCurrent = ($Using:GitCommitsProperties)[$Line]
+				[String]$Value = $GitCommitMetaRaw1[$Line]
+				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
+					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -isplit ' '
+				}
+				ElseIf ($GitCommitsPropertiesCurrent.AsType) {
+					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -as $GitCommitsPropertiesCurrent.AsType
+				}
+				Else {
+					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
+				}
+			}
+			[PSCustomObject]$GitCommitMeta |
+				Write-Output
+		}
+	}
+	Write-Output -InputObject @{
+		Count = $GitCommitsCount
+		Job = $GetGitCommitsJob
+	}
+}
+<# Legacy.
 Function Get-GitCommits {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
@@ -110,6 +195,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		Sort-Object -Property $GitCommitsPropertySorter.Name -Descending:(!$SortFromOldest.IsPresent) |
 		Write-Output
 }
+#>
 Function Test-GitCommitIsIgnore {
 	[CmdletBinding()]
 	[OutputType([Boolean])]
@@ -182,6 +268,6 @@ Function Test-GitCommitIsIgnore {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Get-GitCommits',
+	'Start-GetGitCommits',
 	'Test-GitCommitIsIgnore'
 )
