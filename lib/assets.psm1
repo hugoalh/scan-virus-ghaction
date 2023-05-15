@@ -2,7 +2,6 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'display',
 		'internal',
 		'token'
 	) |

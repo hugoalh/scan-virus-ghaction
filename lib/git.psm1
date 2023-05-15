@@ -3,7 +3,6 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'datetime',
-		'internal',
 		'token'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
