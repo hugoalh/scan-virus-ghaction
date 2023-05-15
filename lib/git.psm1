@@ -35,7 +35,7 @@ Import-Module -Name (
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 Function Start-GetGitCommits {
 	[CmdletBinding()]
-	[OutputType([Hashtable])]
+	[OutputType([PSCustomObject])]
 	Param (
 		[Switch]$SortFromOldest
 	)
@@ -112,10 +112,11 @@ If this is incorrect, probably Git database is broken and/or invalid.
 				Write-Output
 		}
 	}
-	Write-Output -InputObject @{
+	[PSCustomObject]@{
 		Count = $GitCommitsCount
 		Job = $GetGitCommitsJob
-	}
+	} |
+		Write-Output
 }
 <# Legacy.
 Function Get-GitCommits {

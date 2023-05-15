@@ -406,7 +406,7 @@ If ($Targets.Count -eq 0) {
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
 		Try {
-			[Hashtable]$GitCommitsMetaPayload = Start-GetGitCommits -SortFromOldest:($GitReverse)
+			[PSCustomObject]$GitCommitsMetaPayload = Start-GetGitCommits -SortFromOldest:($GitReverse)
 			If ($GitCommitsMetaPayload.PSBase.Count -le 1) {
 				Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsMetaPayload.PSBase.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 			}
