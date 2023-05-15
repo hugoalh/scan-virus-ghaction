@@ -412,15 +412,14 @@ If ($Targets.Count -eq 0) {
 			}
 			[PSCustomObject[]]$GitCommits = @()
 			[UInt64]$GitCommitsPassCount = 0
-			For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsMetaPayload.Total; $GitCommitsIndex += 1) {
+			For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsMetaPayload.Total;) {
 				If ($GitCommitsMetaPayload.Job.State -ieq 'Failed') {
 					Throw $GitCommitsMetaPayload.Job.ChildJobs[0].JobStateInfo.Reason.Message
 				}
 				$GitCommits += Receive-Job -Job $GitCommitsMetaPayload.Job
 				$GitCommit = $GitCommits[$GitCommitsIndex]
 				If ($Null -ieq $GitCommit) {
-					$GitCommitsIndex -= 1
-					Start-Sleep -Seconds 1
+					Start-Sleep -Seconds 2
 					Continue
 				}
 				[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommitsMetaPayload.Total)]"
@@ -433,6 +432,7 @@ If ($Targets.Count -eq 0) {
 					Continue
 				}
 				$GitCommitsPassCount += 1
+				$GitCommitsIndex += 1
 				Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 				$GitCommit |
 					Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
