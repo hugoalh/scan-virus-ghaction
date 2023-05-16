@@ -8,6 +8,11 @@ Enum ScanVirusInputTableMarkup {
 	Yaml = 6
 	Yml = 6
 }
+Enum ScanVirusLogElementsChoices {
+	None = 0
+	OnlyCurrent = 1
+	All = 2
+}
 Enum ScanVirusStepSummaryChoices {
 	None = 0
 	Clone = 1

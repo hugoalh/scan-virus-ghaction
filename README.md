@@ -251,23 +251,31 @@ ignores: |-
 > - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 > - YARA rules are have their owned rules name pattern.
 
+#### `log_elements`
+
+**(>= v0.12.0)** `<String = "All">` Whether to list elements in the log.
+
+- **`"None"`:** Disable.
+- **`"OnlyCurrent"`:** Enable, only for session "Current".
+- **`"All"`:** Enable.
+
 #### `summary_found`
 
-**(>= v0.11.0)** `<String = "None">` Whether to list all of the elements which found virus in the GitHub Actions step summary.
+**(>= v0.11.0)** `<String = "None">` Whether to list elements which found virus in the step summary.
 
-- **`"None"`:** Disable, and record into the log.
-- **`"Clone"`:** Enable, and still record into the log.
-- **`"Redirect"`:** Enable, and will not record into the log.
+- **`"None"`:** Disable, and record in the log.
+- **`"Clone"`:** Enable, and still record in the log.
+- **`"Redirect"`:** Enable, and will not record in the log.
 
 > **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
 
 #### `summary_statistics`
 
-**(>= v0.11.0)** `<String = "None">` Whether to list statistics in the GitHub Actions step summary.
+**(>= v0.11.0)** `<String = "None">` Whether to list statistics in the step summary.
 
-- **`"None"`:** Disable, and record into the log.
-- **`"Clone"`:** Enable, and still record into the log.
-- **`"Redirect"`:** Enable, and will not record into the log.
+- **`"None"`:** Disable, and record in the log.
+- **`"Clone"`:** Enable, and still record in the log.
+- **`"Redirect"`:** Enable, and will not record in the log.
 
 > **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
 

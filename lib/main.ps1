@@ -77,11 +77,21 @@ Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
 		Out-String -Width 120
 ) -NewLine
 Try {
+	[String]$LogElementsInput = Get-GitHubActionsInput -Name 'log_elements' -Mandatory -EmptyStringAsNull -Trim
+	[ScanVirusLogElementsChoices]$LogElements = [ScanVirusLogElementsChoices]::($LogElementsInput)
+}
+Catch {
+	Write-GitHubActionsFail -Message "``$LogElementsInput`` is not a valid value of log elements usage: $_" -Finally {
+		Exit-GitHubActionsLogGroup
+	}
+}
+Write-NameValue -Name 'Log_Elements' -Value $LogElements.ToString()
+Try {
 	[String]$SummaryFoundInput = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusStepSummaryChoices]$SummaryFound = [ScanVirusStepSummaryChoices]::($SummaryFoundInput)
 }
 Catch {
-	Write-GitHubActionsFail -Message "``$SummaryFoundInput`` is not a valid found summary usage: $_" -Finally {
+	Write-GitHubActionsFail -Message "``$SummaryFoundInput`` is not a valid value of found summary usage: $_" -Finally {
 		Exit-GitHubActionsLogGroup
 	}
 }
@@ -91,7 +101,7 @@ Try {
 	[ScanVirusStepSummaryChoices]$SummaryStatistics = [ScanVirusStepSummaryChoices]::($SummaryStatisticsInput)
 }
 Catch {
-	Write-GitHubActionsFail -Message "``$SummaryStatisticsInput`` is not a valid statistics summary usage: $_" -Finally {
+	Write-GitHubActionsFail -Message "``$SummaryStatisticsInput`` is not a valid value of statistics summary usage: $_" -Finally {
 		Exit-GitHubActionsLogGroup
 	}
 }
@@ -234,29 +244,34 @@ If this is incorrect, probably something went wrong.
 	Catch {
 		$Script:Statistics.IsOverflow = $True
 	}
-	Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-	@(
-		[PSCustomObject]@{ Type = 'Discover'; Count = $ElementsCountDiscover; Size = $ElementsSizeDiscover }
-		[PSCustomObject]@{ Type = 'Scan'; Count = $ElementsCountScan; Size = $ElementsSizeScan }
-		[PSCustomObject]@{ Type = 'ClamAV'; Count = $ElementsCountClamAV; Size = $ElementsSizeClamAV }
-		[PSCustomObject]@{ Type = 'Yara'; Count = $ElementsCountYara; Size = $ElementsSizeYara }
-	) |
-		Format-Table -Property @(
-			'Type',
-			@{ Expression = 'Count'; Alignment = 'Right' },
-			@{ Expression = 'Size'; Alignment = 'Right' }
-		) -AutoSize -Wrap |
-		Out-String -Width 120 |
-		Write-Host
-	$Elements |
-		Format-Table -Property @(
-			'Flag',
-			@{ Expression = 'Size'; Alignment = 'Right' },
-			'Path'
-		) -AutoSize -Wrap |
-		Out-String -Width 120 |
-		Write-Host
-	Exit-GitHubActionsLogGroup
+	If (
+		$LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::All).GetHashCode() -or
+		($LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::OnlyCurrent).GetHashCode() -and $SessionId -ieq 'current')
+	) {
+		Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
+		@(
+			[PSCustomObject]@{ Type = 'Discover'; Count = $ElementsCountDiscover; Size = $ElementsSizeDiscover }
+			[PSCustomObject]@{ Type = 'Scan'; Count = $ElementsCountScan; Size = $ElementsSizeScan }
+			[PSCustomObject]@{ Type = 'ClamAV'; Count = $ElementsCountClamAV; Size = $ElementsSizeClamAV }
+			[PSCustomObject]@{ Type = 'Yara'; Count = $ElementsCountYara; Size = $ElementsSizeYara }
+		) |
+			Format-Table -Property @(
+				'Type',
+				@{ Expression = 'Count'; Alignment = 'Right' },
+				@{ Expression = 'Size'; Alignment = 'Right' }
+			) -AutoSize -Wrap |
+			Out-String -Width 120 |
+			Write-Host
+		$Elements |
+			Format-Table -Property @(
+				'Flag',
+				@{ Expression = 'Size'; Alignment = 'Right' },
+				'Path'
+			) -AutoSize -Wrap |
+			Out-String -Width 120 |
+			Write-Host
+		Exit-GitHubActionsLogGroup
+	}
 	[PSCustomObject[]]$ResultFound = @()
 	If ($ClamAVEnable -and $ElementsCountClamAV -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
@@ -404,19 +419,19 @@ $(
 If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate -and (Test-IsGitRepository)) {
-		[String[]]$GitCommitsIndexes = Get-GitCommitsIndexes -SortFromOldest:($GitReverse)
-		If ($GitCommitsIndexes.Count -le 1) {
-			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsIndexes.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
+		[String[]]$GitCommitsHash = Get-GitCommitsIndexes -SortFromOldest:($GitReverse)
+		If ($GitCommitsHash.Count -le 1) {
+			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
 		[UInt64]$GitCommitsPassCount = 0
-		For ([UInt64]$GitCommitsIndexesIndex = 0; $GitCommitsIndexesIndex -lt $GitCommitsIndexes.Count; $GitCommitsIndexesIndex += 1) {
-			[String]$GitCommitIndex = $GitCommitsIndexes[$GitCommitsIndexesIndex]
-			[String]$GitSessionTitle = "$($GitCommitIndex) [#$($GitCommitsIndexesIndex + 1)/$($GitCommitsIndexes.Count)]"
+		For ([UInt64]$GitCommitsHashIndex = 0; $GitCommitsHashIndex -lt $GitCommitsHash.Count; $GitCommitsHashIndex += 1) {
+			[String]$GitCommitHash = $GitCommitsHash[$GitCommitsHashIndex]
+			[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
 			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
 				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
 				Continue
 			}
-			$GitCommit = Get-GitCommitMeta -Index $GitCommitIndex
+			$GitCommit = Get-GitCommitMeta -Index $GitCommitHash
 			If ($Null -ieq $GitCommit) {
 				Continue
 			}
@@ -431,19 +446,19 @@ If ($Targets.Count -eq 0) {
 				Out-String -Width 120 |
 				Write-Host
 			Try {
-				git checkout $GitCommitIndex --force --quiet
+				git checkout $GitCommitHash --force --quiet
 				If ($LASTEXITCODE -ne 0) {
 					Throw "Exit code ``$LASTEXITCODE``"
 				}
 			}
 			Catch {
-				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitIndex)``: $_"
-				$Statistics.IssuesOperations += "Git/$($GitCommitIndex)"
+				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitHash)``: $_"
+				$Statistics.IssuesOperations += "Git/$GitCommitHash"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
 			Exit-GitHubActionsLogGroup
-			Invoke-Tools -SessionId $GitCommitIndex -SessionTitle "Git Commit $GitSessionTitle"
+			Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
 		}
 	}
 }
