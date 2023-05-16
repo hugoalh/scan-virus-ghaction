@@ -405,26 +405,21 @@ If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate) {
 		Write-Host -Object 'Import Git commits meta.'
-		Try {
-			[PSCustomObject]$GitCommitsMetaPayload = Start-GetGitCommits -SortFromOldest:($GitReverse)
-			If ($GitCommitsMetaPayload.Total -le 1) {
-				Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsMetaPayload.Total) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
+		If (Test-IsGitRepository) {
+			[String[]]$GitCommitsIndexes = Get-GitCommitsIndexes -SortFromOldest:($GitReverse)
+			If ($GitCommitsIndexes.Count -le 1) {
+				Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsIndexes.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 			}
-			[PSCustomObject[]]$GitCommits = @()
 			[UInt64]$GitCommitsPassCount = 0
-			For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommitsMetaPayload.Total;) {
-				If ($GitCommitsMetaPayload.Job.State -ieq 'Failed') {
-					Throw $GitCommitsMetaPayload.Job.ChildJobs[0].JobStateInfo.Reason.Message
-				}
-				$GitCommits += Receive-Job -Job $GitCommitsMetaPayload.Job
-				$GitCommit = $GitCommits[$GitCommitsIndex]
-				If ($Null -ieq $GitCommit) {
-					Start-Sleep -Seconds 2
-					Continue
-				}
-				[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommitsMetaPayload.Total)]"
+			For ([UInt64]$GitCommitsIndexesIndex = 0; $GitCommitsIndexesIndex -lt $GitCommitsIndexes.Count; $GitCommitsIndexesIndex += 1) {
+				[String]$GitCommitIndex = $GitCommitsIndexes[$GitCommitsIndexesIndex]
+				[String]$GitSessionTitle = "$($GitCommitIndex) [#$($GitCommitsIndexesIndex + 1)/$($GitCommitsIndexes.Count)]"
 				If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
 					Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
+					Continue
+				}
+				$GitCommit = Get-GitCommitMeta -Index $GitCommitIndex
+				If ($Null -ieq $GitCommit) {
 					Continue
 				}
 				If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores) {
@@ -432,70 +427,27 @@ If ($Targets.Count -eq 0) {
 					Continue
 				}
 				$GitCommitsPassCount += 1
-				$GitCommitsIndex += 1
 				Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
 				$GitCommit |
 					Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
 					Out-String -Width 120 |
 					Write-Host
 				Try {
-					git checkout $GitCommit.CommitHash --force --quiet
+					git checkout $GitCommitIndex --force --quiet
 					If ($LASTEXITCODE -ne 0) {
 						Throw "Exit code ``$LASTEXITCODE``"
 					}
 				}
 				Catch {
-					Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)``: $_"
-					$Statistics.IssuesOperations += "Git/$($GitCommit.CommitHash)"
+					Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitIndex)``: $_"
+					$Statistics.IssuesOperations += "Git/$($GitCommitIndex)"
 					Exit-GitHubActionsLogGroup
 					Continue
 				}
 				Exit-GitHubActionsLogGroup
-				Invoke-Tools -SessionId $GitCommit.CommitHash -SessionTitle "Git Commit $GitSessionTitle"
+				Invoke-Tools -SessionId $GitCommitIndex -SessionTitle "Git Commit $GitSessionTitle"
 			}
 		}
-		Catch {
-			Write-GitHubActionsError -Message $_
-		}
-		<# Legacy.
-		[AllowEmptyCollection()][PSCustomObject[]]$GitCommits = Get-GitCommits -SortFromOldest:($GitReverse)
-		If ($GitCommits.Count -le 1) {
-			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommits.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
-		}
-		[UInt64]$GitCommitsPassCount = 0
-		For ([UInt64]$GitCommitsIndex = 0; $GitCommitsIndex -lt $GitCommits.Count; $GitCommitsIndex += 1) {
-			[PSCustomObject]$GitCommit = $GitCommits[$GitCommitsIndex]
-			[String]$GitSessionTitle = "$($GitCommit.CommitHash) [#$($GitCommitsIndex + 1)/$($GitCommits.Count)]"
-			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
-				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
-				Continue
-			}
-			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores) {
-				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
-				Continue
-			}
-			$GitCommitsPassCount += 1
-			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
-			$GitCommit |
-				Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
-				Out-String -Width 120 |
-				Write-Host
-			Try {
-				git checkout $GitCommit.CommitHash --force --quiet
-				If ($LASTEXITCODE -ne 0) {
-					Throw "Exit code ``$LASTEXITCODE``"
-				}
-			}
-			Catch {
-				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommit.CommitHash)``: $_"
-				$Statistics.IssuesOperations += "Git/$($GitCommit.CommitHash)"
-				Exit-GitHubActionsLogGroup
-				Continue
-			}
-			Exit-GitHubActionsLogGroup
-			Invoke-Tools -SessionId $GitCommit.CommitHash -SessionTitle "Git Commit $GitSessionTitle"
-		}
-		#>
 	}
 }
 Else {

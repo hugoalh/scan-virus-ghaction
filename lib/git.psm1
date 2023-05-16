@@ -2,13 +2,13 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'datetime'<#,
-		'token'#>
+		'datetime',
+		'token'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [Hashtable[]]$GitCommitsProperties = @(
-	@{ Name = 'AuthorDate'; Placeholder = '%aI'; AsSort = $True; AsType = [DateTime] },
+	@{ Name = 'AuthorDate'; Placeholder = '%aI'; AsType = [DateTime] },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
 	@{ Name = 'Body'; Placeholder = '%b'; IsMultipleLine = $True },
@@ -29,174 +29,106 @@ Import-Module -Name (
 [Hashtable]$GitCommitsPropertyIndexer = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -First 1
-[Hashtable]$GitCommitsPropertySorter = $GitCommitsProperties |
-	Where-Object -FilterScript { $_.AsSort } |
-	Select-Object -First 1
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
-Function Start-GetGitCommits {
+$Null = git config --global --add 'safe.directory' '/github/workspace'
+Function Get-GitCommitsIndexes {
+	[CmdletBinding()]
+	[OutputType([String[]])]
+	Param (
+		[Switch]$SortFromOldest
+	)
+	Try {
+		[String[]]$Result = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog$($SortFromOldest.IsPresent ? ' --reverse' : '')"
+		If ($LASTEXITCODE -ne 0) {
+			Throw (
+				$Result |
+					Join-String -Separator "`n"
+			)
+		}
+		Write-Output -InputObject $Result
+	}
+	Catch {
+		Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
+		Write-Output -InputObject @()
+	}
+}
+Function Get-GitCommitMeta {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	Param (
-		[Switch]$SortFromOldest
+		[Parameter(Mandatory = $True, Position = 0)][String]$Index
 	)
-	Try {
-		$Null = git config --global --add 'safe.directory' '/github/workspace'
-		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
+	Do {
+		Try {
+			[String]$DelimiterToken = "=====$(New-RandomToken)====="
+			[String[]]$Result = Invoke-Expression -Command "git --no-pager show --format=`"$(
+				$GitCommitsProperties |
+					Select-Object -ExpandProperty 'Placeholder' |
+					Join-String -Separator "%n$DelimiterToken%n"
+			)`" --no-color --no-patch `"$Index`""
+			If ($LASTEXITCODE -ne 0) {
+				Throw (
+					$Result |
+						Join-String -Separator "`n"
+				)
+			}
+		}
+		Catch {
+			Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
+			Return
+		}
+	}
+	While ((
+		$Result |
+			Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	) -ine $DelimiterTokenCountPerCommit)
+	[String[]]$ResultResolve = (
+		$Result |
 			Join-String -Separator "`n"
-		If ($IsGitRepositoryResult -ine 'True') {
-			Throw 'Workspace is not a Git repository!'
+	) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
+	If ($GitCommitsProperties.Count -ne $ResultResolve.Count) {
+		Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
+		Return
+	}
+	[Hashtable]$GitCommitMeta = @{}
+	For ([UInt64]$Line = 0; $Line -lt $ResultResolve.Count; $Line += 1) {
+		[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
+		[String]$Value = $ResultResolve[$Line]
+		If ($GitCommitsPropertiesCurrent.IsArraySpace) {
+			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -isplit ' '
+		}
+		ElseIf ($GitCommitsPropertiesCurrent.AsType) {
+			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -as $GitCommitsPropertiesCurrent.AsType
+		}
+		Else {
+			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
 		}
 	}
-	Catch {
-		Throw @"
-Unable to integrate with Git: $_
-If this is incorrect, probably Git database is broken and/or invalid.
-"@
-	}
-	[String[]]$GitCommitsIds = Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog$($SortFromOldest.IsPresent ? ' --reverse' : '')"
-	[UInt64]$GitCommitsTotal = $GitCommitsIds.Count
-	$GetGitCommitsJob = Start-Job -ScriptBlock {
-		Import-Module -Name (
-			@(
-				'token'
-			) |
-				ForEach-Object -Process { Join-Path -Path $Using:PSScriptRoot -ChildPath "$_.psm1" }
-		) -Scope 'Local'
-		ForEach ($GitCommitId In $Using:GitCommitsIds) {
-			Do {
-				Try {
-					[String]$DelimiterToken = "=====$(New-RandomToken)====="
-					[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
-						$Using:GitCommitsProperties |
-							Select-Object -ExpandProperty 'Placeholder' |
-							Join-String -Separator "%n$DelimiterToken%n"
-					)`" --no-color --no-patch `"$GitCommitId`""
-					If ($LASTEXITCODE -ne 0) {
-						Throw (
-							$GitCommitMetaRaw0 |
-								Join-String -Separator "`n"
-						)
-					}
-				}
-				Catch {
-					Throw "Unexpected Git database issue: $_"
-				}
-				[UInt64]$DelimiterTokenCount = $GitCommitMetaRaw0 |
-					Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
-					Measure-Object |
-					Select-Object -ExpandProperty 'Count'
-			}
-			While ($DelimiterTokenCount -ine $Using:DelimiterTokenCountPerCommit)
-			[String[]]$GitCommitMetaRaw1 = (
-				$GitCommitMetaRaw0 |
-					Join-String -Separator "`n"
-			) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
-			If (($Using:GitCommitsProperties).Count -ne $GitCommitMetaRaw1.Count) {
-				Throw 'Unexpected Git database issue: Columns are not match!'
-			}
-			[Hashtable]$GitCommitMeta = @{}
-			For ([UInt64]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line += 1) {
-				[Hashtable]$GitCommitsPropertiesCurrent = ($Using:GitCommitsProperties)[$Line]
-				[String]$Value = $GitCommitMetaRaw1[$Line]
-				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
-					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -isplit ' '
-				}
-				ElseIf ($GitCommitsPropertiesCurrent.AsType) {
-					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -as $GitCommitsPropertiesCurrent.AsType
-				}
-				Else {
-					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
-				}
-			}
-			[PSCustomObject]$GitCommitMeta |
-				Write-Output
-		}
-	}
-	[PSCustomObject]@{
-		Total = $GitCommitsTotal
-		Job = $GetGitCommitsJob
-	} |
+	[PSCustomObject]$GitCommitMeta |
 		Write-Output
 }
-<# Legacy.
-Function Get-GitCommits {
+Function Test-IsGitRepository {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject[]])]
-	Param (
-		[Switch]$SortFromOldest
-	)
+	[OutputType([Boolean])]
+	Param ()
 	Try {
-		$Null = git config --global --add 'safe.directory' '/github/workspace'
-		[String]$IsGitRepositoryResult = git rev-parse --is-inside-work-tree |
+		[String]$Result = git rev-parse --is-inside-work-tree |
 			Join-String -Separator "`n"
-		If ($IsGitRepositoryResult -ine 'True') {
+		If ($Result -ine 'True') {
 			Throw 'Workspace is not a Git repository!'
 		}
+		Write-Output -InputObject $True
 	}
 	Catch {
 		Write-GitHubActionsError -Message @"
 Unable to integrate with Git: $_
 If this is incorrect, probably Git database is broken and/or invalid.
 "@
-		Return
+		Write-Output -InputObject $False
 	}
-	Invoke-Expression -Command "git --no-pager log --format=`"$($GitCommitsPropertyIndexer.Placeholder)`" --no-color --all --reflog" |
-		ForEach-Object -Process {
-			[String]$GitCommitId = $_# This reassign aims to prevent `$_` got overwrite.
-			Do {
-				Try {
-					[String]$DelimiterToken = "=====$(New-RandomToken)====="
-					[String[]]$GitCommitMetaRaw0 = Invoke-Expression -Command "git --no-pager show --format=`"$(
-						$GitCommitsProperties |
-							Select-Object -ExpandProperty 'Placeholder' |
-							Join-String -Separator "%n$DelimiterToken%n"
-					)`" --no-color --no-patch `"$GitCommitId`""
-					If ($LASTEXITCODE -ne 0) {
-						Throw (
-							$GitCommitMetaRaw0 |
-								Join-String -Separator "`n"
-						)
-					}
-				}
-				Catch {
-					Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
-					Return
-				}
-				[UInt64]$DelimiterTokenCount = $GitCommitMetaRaw0 |
-					Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
-					Measure-Object |
-					Select-Object -ExpandProperty 'Count'
-			}
-			While ($DelimiterTokenCount -ine $DelimiterTokenCountPerCommit)
-			[String[]]$GitCommitMetaRaw1 = (
-				$GitCommitMetaRaw0 |
-					Join-String -Separator "`n"
-			) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
-			If ($GitCommitsProperties.Count -ne $GitCommitMetaRaw1.Count) {
-				Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
-				Return
-			}
-			[Hashtable]$GitCommitMeta = @{}
-			For ([UInt64]$Line = 0; $Line -lt $GitCommitMetaRaw1.Count; $Line += 1) {
-				[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
-				[String]$Value = $GitCommitMetaRaw1[$Line]
-				If ($GitCommitsPropertiesCurrent.IsArraySpace) {
-					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -isplit ' '
-				}
-				ElseIf ($GitCommitsPropertiesCurrent.AsType) {
-					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -as $GitCommitsPropertiesCurrent.AsType
-				}
-				Else {
-					$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
-				}
-			}
-			[PSCustomObject]$GitCommitMeta |
-				Write-Output
-		} |
-		Sort-Object -Property $GitCommitsPropertySorter.Name -Descending:(!$SortFromOldest.IsPresent) |
-		Write-Output
 }
-#>
 Function Test-GitCommitIsIgnore {
 	[CmdletBinding()]
 	[OutputType([Boolean])]
@@ -269,6 +201,8 @@ Function Test-GitCommitIsIgnore {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Start-GetGitCommits',
+	'Get-GitCommitsIndexes',
+	'Get-GitCommitMeta',
+	'Test-IsGitRepository',
 	'Test-GitCommitIsIgnore'
 )
