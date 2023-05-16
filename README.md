@@ -296,7 +296,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.10.0"
+        uses: "hugoalh/scan-virus-ghaction@v0.12.0"
         with:
           git_ignores: |-
             - AuthorName: "^dependabot$"
