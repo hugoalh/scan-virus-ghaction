@@ -59,7 +59,7 @@ jobs:
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-repositories.outputs.group)}}"
-      max-parallel: 15
+      max-parallel: 18
       fail-fast: false
     steps:
       - name: "Checkout Repository"
@@ -76,3 +76,4 @@ jobs:
           ignores: |-
             - Path: "^\\.git\\/"
               Symbol: ".+"
+          log_elements: "OnlyCurrent"
