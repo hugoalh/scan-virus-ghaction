@@ -403,50 +403,47 @@ $(
 }
 If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
-	If ($GitIntegrate) {
-		Write-Host -Object 'Import Git commits meta.'
-		If (Test-IsGitRepository) {
-			[String[]]$GitCommitsIndexes = Get-GitCommitsIndexes -SortFromOldest:($GitReverse)
-			If ($GitCommitsIndexes.Count -le 1) {
-				Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsIndexes.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
+	If ($GitIntegrate -and (Test-IsGitRepository)) {
+		[String[]]$GitCommitsIndexes = Get-GitCommitsIndexes -SortFromOldest:($GitReverse)
+		If ($GitCommitsIndexes.Count -le 1) {
+			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsIndexes.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
+		}
+		[UInt64]$GitCommitsPassCount = 0
+		For ([UInt64]$GitCommitsIndexesIndex = 0; $GitCommitsIndexesIndex -lt $GitCommitsIndexes.Count; $GitCommitsIndexesIndex += 1) {
+			[String]$GitCommitIndex = $GitCommitsIndexes[$GitCommitsIndexesIndex]
+			[String]$GitSessionTitle = "$($GitCommitIndex) [#$($GitCommitsIndexesIndex + 1)/$($GitCommitsIndexes.Count)]"
+			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
+				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
+				Continue
 			}
-			[UInt64]$GitCommitsPassCount = 0
-			For ([UInt64]$GitCommitsIndexesIndex = 0; $GitCommitsIndexesIndex -lt $GitCommitsIndexes.Count; $GitCommitsIndexesIndex += 1) {
-				[String]$GitCommitIndex = $GitCommitsIndexes[$GitCommitsIndexesIndex]
-				[String]$GitSessionTitle = "$($GitCommitIndex) [#$($GitCommitsIndexesIndex + 1)/$($GitCommitsIndexes.Count)]"
-				If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
-					Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
-					Continue
+			$GitCommit = Get-GitCommitMeta -Index $GitCommitIndex
+			If ($Null -ieq $GitCommit) {
+				Continue
+			}
+			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores) {
+				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
+				Continue
+			}
+			$GitCommitsPassCount += 1
+			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
+			$GitCommit |
+				Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
+				Out-String -Width 120 |
+				Write-Host
+			Try {
+				git checkout $GitCommitIndex --force --quiet
+				If ($LASTEXITCODE -ne 0) {
+					Throw "Exit code ``$LASTEXITCODE``"
 				}
-				$GitCommit = Get-GitCommitMeta -Index $GitCommitIndex
-				If ($Null -ieq $GitCommit) {
-					Continue
-				}
-				If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores) {
-					Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
-					Continue
-				}
-				$GitCommitsPassCount += 1
-				Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
-				$GitCommit |
-					Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
-					Out-String -Width 120 |
-					Write-Host
-				Try {
-					git checkout $GitCommitIndex --force --quiet
-					If ($LASTEXITCODE -ne 0) {
-						Throw "Exit code ``$LASTEXITCODE``"
-					}
-				}
-				Catch {
-					Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitIndex)``: $_"
-					$Statistics.IssuesOperations += "Git/$($GitCommitIndex)"
-					Exit-GitHubActionsLogGroup
-					Continue
-				}
+			}
+			Catch {
+				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitIndex)``: $_"
+				$Statistics.IssuesOperations += "Git/$($GitCommitIndex)"
 				Exit-GitHubActionsLogGroup
-				Invoke-Tools -SessionId $GitCommitIndex -SessionTitle "Git Commit $GitSessionTitle"
+				Continue
 			}
+			Exit-GitHubActionsLogGroup
+			Invoke-Tools -SessionId $GitCommitIndex -SessionTitle "Git Commit $GitSessionTitle"
 		}
 	}
 }

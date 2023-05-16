@@ -114,7 +114,7 @@ Function Test-IsGitRepository {
 	[OutputType([Boolean])]
 	Param ()
 	Try {
-		[String]$Result = git rev-parse --is-inside-work-tree |
+		[String]$Result = git rev-parse --is-inside-work-tree *>&1 |
 			Join-String -Separator "`n"
 		If ($Result -ine 'True') {
 			Throw 'Workspace is not a Git repository!'
@@ -123,7 +123,7 @@ Function Test-IsGitRepository {
 	}
 	Catch {
 		Write-GitHubActionsError -Message @"
-Unable to integrate with Git: $_
+Unable to integrate with Git: $_ $Result
 If this is incorrect, probably Git database is broken and/or invalid.
 "@
 		Write-Output -InputObject $False
