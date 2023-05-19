@@ -119,6 +119,7 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
 - [`git_ignores`](#git_ignores)
+- [`git_lfs`](#git_lfs)
 - [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
 
@@ -129,6 +130,7 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 When this input is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
+- [`git_lfs`](#git_lfs)
 - [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
 
@@ -182,12 +184,7 @@ git_ignores: |-
 
 #### `git_limit`
 
-`<UInt>` Limit on how many Git commits will scan, counting is affected by inputs:
-
-- [`git_ignores`](#git_ignores)
-- [`git_reverse`](#git_reverse)
-
-When this input is not defined or defined with `0`, means no limit.
+`<UInt>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this input is not defined or defined with `0`, means no limit.
 
 Example:
 
