@@ -50,6 +50,8 @@ Write-NameValue -Name "Git_Ignores [$($GitIgnores.Count)]" -Value (
 		Format-List -Property '*' |
 		Out-String -Width 120
 ) -NewLine
+[Boolean]$GitLfs = Get-InputBoolean -Name 'git_lfs'
+Write-NameValue -Name 'Git_LFS' -Value $GitLfs
 [UInt64]$GitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
 Write-NameValue -Name 'Git_Limit' -Value $GitLimit
 [Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
@@ -109,6 +111,14 @@ Write-NameValue -Name 'Summary_Statistics' -Value $SummaryStatistics.ToString()
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
+}
+If (!$GitLfs) {
+	Try {
+		Disable-GitLfsProcess
+	}
+	Catch {
+		Write-Warning -Message $_
+	}
 }
 If ($ClamAVUpdate -and $ClamAVEnable) {
 	Update-ClamAV

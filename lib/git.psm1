@@ -31,6 +31,13 @@ Import-Module -Name (
 	Select-Object -First 1
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 $Null = git config --global --add 'safe.directory' '/github/workspace'
+Function Disable-GitLfsProcess {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	$Null = git config --global 'filter.lfs.process' 'git-lfs filter-process --skip'
+	$Null = git config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f'
+}
 Function Get-GitCommitsIndexes {
 	[CmdletBinding()]
 	[OutputType([String[]])]
@@ -201,6 +208,7 @@ Function Test-GitCommitIsIgnore {
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
+	'Disable-GitLfsProcess',
 	'Get-GitCommitsIndexes',
 	'Get-GitCommitMeta',
 	'Test-IsGitRepository',

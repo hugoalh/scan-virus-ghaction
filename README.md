@@ -176,6 +176,10 @@ git_ignores: |-
     AuthorName: "^octocat$"
 ```
 
+#### `git_lfs`
+
+**(>= v0.13.0)** `<Boolean = False>` Whether to process Git LFS files.
+
 #### `git_limit`
 
 `<UInt>` Limit on how many Git commits will scan, counting is affected by inputs:
@@ -183,7 +187,7 @@ git_ignores: |-
 - [`git_ignores`](#git_ignores)
 - [`git_reverse`](#git_reverse)
 
-When this is not defined or defined with `0`, means no limit.
+When this input is not defined or defined with `0`, means no limit.
 
 Example:
 

@@ -20,6 +20,10 @@ inputs:
   git_ignores:
     description: "{Table} Ignores for the Git commits."
     required: false
+  git_lfs:
+    description: "{Boolean} Whether to process Git LFS files."
+    required: false
+    default: "False"
   git_limit:
     description: "{UInt} Limit on how many Git commits will scan."
     required: false
