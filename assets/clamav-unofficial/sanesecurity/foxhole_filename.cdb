@@ -3478,3 +3478,4 @@ Sanesecurity.Foxhole.Zip_fs3477:CL_TYPE_ZIP:*:(?i)^statement of accounts\.exe$:*
 Sanesecurity.Foxhole.Zip_fs3478:CL_TYPE_ZIP:*:(?i)^swift.{0,30}\.rar$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3479:CL_TYPE_ZIP:*:(?i)^wenzhou machinery list of requirements\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3480:CL_TYPE_ZIP:*:(?i)^zeba nasim fish\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3481:CL_TYPE_ZIP:*:(?i)^inv. bilgisi\.exe$:*:*:*:1:*:*
