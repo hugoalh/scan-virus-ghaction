@@ -8,9 +8,11 @@ ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}y
 ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}lib/
 # RUN printenv
 COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
+COPY assets/configs/clamd.conf assets/configs/freshclam.conf /etc/clamav/
 COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
-RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
+RUN sed --in-place "s/\r//g" /etc/clamav/** ${GHACTION_SCANVIRUS_PROGRAM_LIB}**
+# RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 
 FROM debian:11.7 as main
 ENV DEBIAN_FRONTEND=noninteractive
@@ -36,6 +38,6 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY --from=opt ${GHACTION_SCANVIRUS_PROGRAM_ROOT} ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
-COPY assets/configs/clamd.conf assets/configs/freshclam.conf /etc/clamav/
+COPY --from=opt /etc/clamav/ /etc/clamav/
 RUN freshclam --verbose
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
