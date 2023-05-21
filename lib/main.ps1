@@ -113,12 +113,7 @@ If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
 If (!$GitLfs) {
-	Try {
-		Disable-GitLfsProcess
-	}
-	Catch {
-		Write-Warning -Message $_
-	}
+	Disable-GitLfsProcess
 }
 If ($ClamAVUpdate -and $ClamAVEnable) {
 	Update-ClamAV

@@ -35,8 +35,15 @@ Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	$Null = git config --global 'filter.lfs.process' 'git-lfs filter-process --skip'
-	$Null = git config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f'
+	Enter-GitHubActionsLogGroup -Title 'Config Git LFS.'
+	Try {
+		git config --global 'filter.lfs.process' 'git-lfs filter-process --skip'
+		git config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f'
+	}
+	Catch {
+		Write-GitHubActionsWarning -Message $_
+	}
+	Exit-GitHubActionsLogGroup
 }
 Function Get-GitCommitsIndexes {
 	[CmdletBinding()]
