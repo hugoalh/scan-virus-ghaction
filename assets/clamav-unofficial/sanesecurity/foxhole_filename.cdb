@@ -3479,3 +3479,10 @@ Sanesecurity.Foxhole.Zip_fs3478:CL_TYPE_ZIP:*:(?i)^swift.{0,30}\.rar$:*:*:*:1:*:
 Sanesecurity.Foxhole.Zip_fs3479:CL_TYPE_ZIP:*:(?i)^wenzhou machinery list of requirements\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3480:CL_TYPE_ZIP:*:(?i)^zeba nasim fish\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3481:CL_TYPE_ZIP:*:(?i)^inv. bilgisi\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Iso_fs3482:CL_TYPE_ISO9660:*:(?i)^image__j\.exe$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Zip_fs3483:CL_TYPE_ZIP:*:(?i)^r f q.\exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3484:CL_TYPE_RAR:*:(?i)^image.{0,3}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.7Zip_fs3485:CL_TYPE_7Z:*:(?i)^enquiry-.{0,30}\.vbs$:*:*:*:*:*:*
+Sanesecurity.Foxhole.7Zip_fs3486:CL_TYPE_7Z:*:(?i)^quotation\.vbs$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Zip_fs3487:CL_TYPE_ZIP:*:(?i)^es-scan-.{0,30}\.bat$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3488:CL_TYPE_ZIP:*:(?i)^e1s-scan-.{0,30}\.exe$:*:*:*:1:*:*
