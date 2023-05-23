@@ -20,24 +20,21 @@ RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install powershell
 RUN apt-get --assume-yes dist-upgrade
 # RUN apt-get --assume-yes autoremove
-SHELL ["pwsh", "-NonInteractive", "-Command"]
-
-# FROM stage-env AS stage-checkout
-FROM stage-setup AS stage-checkout
-COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
-COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
-COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
-COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
-RUN Get-ChildItem -LiteralPath @($Env:GHACTION_SCANVIRUS_CLAMAV_CONFIG, $Env:GHACTION_SCANVIRUS_PROGRAM_ROOT) -Recurse -File -Verbose | ForEach-Object -Process { [String]$Content = Get-Content -LiteralPath $_.FullName -Raw -Encoding 'UTF8NoBOM' -Verbose; $Content = $Content -ireplace '\r', ''; Set-Content -LiteralPath $_.FullName -Value $Content -Encoding 'UTF8NoBOM' -Verbose } -Verbose
-
-FROM stage-setup AS stage-final
-RUN Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose
-RUN Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose
-RUN Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose
-RUN Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose
+RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 # RUN clamconf --generate-config=clamd.conf
 # RUN clamconf --generate-config=freshclam.conf
-COPY --from=stage-checkout ${GHACTION_SCANVIRUS_CLAMAV_CONFIG} ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
-COPY --from=stage-checkout ${GHACTION_SCANVIRUS_PROGRAM_ROOT} ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
+COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
 RUN freshclam --verbose
+
+FROM stage-env AS stage-checkout
+COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
+COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
+COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
+# RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
+
+FROM stage-setup AS stage-final
+COPY --from=stage-checkout ${GHACTION_SCANVIRUS_PROGRAM_ROOT} ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
