@@ -28,7 +28,7 @@ COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
 COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
 COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
-RUN Get-ChildItem -LiteralPath @(\$Env:GHACTION_SCANVIRUS_CLAMAV_CONFIG, \$Env:GHACTION_SCANVIRUS_PROGRAM_ROOT) -Recurse -File | ForEach-Object -Process { [String]\$Content = Get-Content -LiteralPath \$_.FullName -Raw -Encoding 'UTF8NoBOM'; \$Content = \$Content -ireplace '\r', ''; Set-Content -LiteralPath \$_.FullName -Value \$Content -Encoding 'UTF8NoBOM' }
+RUN Get-ChildItem -LiteralPath @($Env:GHACTION_SCANVIRUS_CLAMAV_CONFIG, $Env:GHACTION_SCANVIRUS_PROGRAM_ROOT) -Recurse -File | ForEach-Object -Process { [String]$Content = Get-Content -LiteralPath $_.FullName -Raw -Encoding 'UTF8NoBOM'; $Content = $Content -ireplace '\r', ''; Set-Content -LiteralPath $_.FullName -Value $Content -Encoding 'UTF8NoBOM' }
 
 FROM stage-setup AS stage-final
 RUN Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose
