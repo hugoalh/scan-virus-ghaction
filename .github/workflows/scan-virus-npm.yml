@@ -1,7 +1,4 @@
 name: "Scan Virus - NPM"
-concurrency:
-  group: "scan-virus-npm"
-  cancel-in-progress: false
 on:
   workflow_dispatch:
     inputs:
@@ -58,7 +55,7 @@ jobs:
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-packages.outputs.group)}}"
-      max-parallel: 18
+      max-parallel: 4
       fail-fast: false
     steps:
       - name: "Scan Virus"

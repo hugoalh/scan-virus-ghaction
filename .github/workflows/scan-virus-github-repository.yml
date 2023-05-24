@@ -1,8 +1,7 @@
 name: "Scan Virus - GitHub Repository"
-concurrency:
-  group: "scan-virus-github-repository"
-  cancel-in-progress: false
 on:
+  schedule:
+    - cron: "0 */8 * * *"
   workflow_dispatch:
     inputs:
       repositories:
@@ -59,7 +58,7 @@ jobs:
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-repositories.outputs.group)}}"
-      max-parallel: 18
+      max-parallel: 4
       fail-fast: false
     steps:
       - name: "Checkout Repository"

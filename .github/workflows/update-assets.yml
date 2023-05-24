@@ -1,11 +1,11 @@
 name: "Update Assets"
+concurrency:
+  group: "scan-virus-ghaction-assets-updater"
+  cancel-in-progress: false
 on:
   schedule:
     - cron: "0 0 * * SUN"
   workflow_dispatch:
-concurrency:
-  group: "scan-virus-ghaction-assets-updater"
-  cancel-in-progress: false
 defaults:
   run:
     shell: "sh"
