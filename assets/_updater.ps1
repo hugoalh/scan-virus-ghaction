@@ -127,9 +127,9 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 				}
 				'\.yara?$' {
 					[String[]]$Symbols = Get-Content -LiteralPath $FilePath -Encoding 'UTF8NoBOM' |
-						Where-Object -FilterScript { $_ -imatch '^rule .+(?: \{)?$' } |
+						Where-Object -FilterScript { $_ -imatch '^rule .+?(?: *: *.+?)?(?: \{)?$' } |
 						ForEach-Object -Process {
-							$_ -isplit ' ' |
+							$_ -isplit ' +|:+' |
 								Select-Object -Index 1
 						}
 					Break
@@ -141,10 +141,9 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 			}
 			ForEach ($Symbol In $Symbols) {
 				$SymbolIndex += [PSCustomObject]@{
-					Type = $AssetIndexItem.Type
-					Name = $AssetIndexItem.Name
-					Path = $AssetIndexItem.Path
 					Symbol = $Symbol
+					Directory = $AssetDirectoryName
+					Name = $AssetIndexItem.Name
 				}
 			}
 		}
@@ -168,6 +167,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 	}
 }
 $SymbolIndex |
+	Sort-Object -Property @('Symbol', 'Directory', 'Name') |
 	Export-Csv -LiteralPath $SymbolIndexFilePath @CsvParameters_Tsv -UseQuotes 'AsNeeded' -Confirm:$False
 If ($IndexIssuesFileNotExist.Count -gt 0) {
 	Write-GitHubActionsWarning -Message @"
