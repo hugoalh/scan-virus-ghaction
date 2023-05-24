@@ -30,7 +30,7 @@ jobs:
         run: |
           pwsh -NonInteractive ./assets/_updater.ps1
       - name: "Push Git Commit"
-        if: "${{steps.updater.outputs.should_push == 'true'}}"
+        if: "${{github.event_name == 'workflow_dispatch' || steps.updater.outputs.should_push == 'true'}}"
         run: |
           git --no-pager add --all
           git --no-pager commit --message="Update assets on ${{steps.updater.outputs.timestamp}}"
