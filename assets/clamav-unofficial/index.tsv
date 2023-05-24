@@ -4,16 +4,11 @@ Signature		bofhland/cracked_url	bofhland/cracked_url.ndb	https://mirror.rollerne
 Signature		bofhland/malware_attach	bofhland/malware_attach.hdb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_attach.hdb		2023-05-23T09:49:05Z
 Signature		bofhland/malware_url	bofhland/malware_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_URL.ndb		2023-05-23T09:49:05Z
 Signature		bofhland/phishing_url	bofhland/phishing_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_phishing_URL.ndb		2023-05-23T09:49:05Z
-Signature		oitc/winnow_attachments	oitc/winnow_attachments.hdb	https://mirror.rollernet.us/sanesecurity/winnow.attachments.hdb		2023-05-23T09:49:05Z
-Signature		oitc/winnow_bad_cw	oitc/winnow_bad_cw.hdb	https://mirror.rollernet.us/sanesecurity/winnow_bad_cw.hdb		2023-05-23T09:49:05Z
 Signature		oitc/winnow_complex_patterns	oitc/winnow_complex_patterns.ldb	https://mirror.rollernet.us/sanesecurity/winnow.complex.patterns.ldb		2023-05-23T09:49:05Z
-Signature		oitc/winnow_extended_malware	oitc/winnow_extended_malware.hdb	https://mirror.rollernet.us/sanesecurity/winnow_extended_malware.hdb		2023-05-23T09:49:05Z
 Signature		oitc/winnow_extended_malware_links	oitc/winnow_extended_malware_links.ndb	https://mirror.rollernet.us/sanesecurity/winnow_extended_malware_links.ndb		2023-05-23T09:49:05Z
-Signature		oitc/winnow_malware	oitc/winnow_malware.hdb	https://mirror.rollernet.us/sanesecurity/winnow_malware.hdb		2023-05-23T09:49:05Z
 Signature		oitc/winnow_malware_links	oitc/winnow_malware_links.ndb	https://mirror.rollernet.us/sanesecurity/winnow_malware_links.ndb		2023-05-23T09:49:05Z
 Signature		oitc/winnow_phish_complete_url	oitc/winnow_phish_complete_url.ndb	https://mirror.rollernet.us/sanesecurity/winnow_phish_complete_url.ndb		2023-05-23T09:49:05Z
 Signature		oitc/winnow_spam_complete	oitc/winnow_spam_complete.ndb	https://mirror.rollernet.us/sanesecurity/winnow_spam_complete.ndb		2023-05-23T09:49:05Z
-Signature		porcupine/phishtank	porcupine/phishtank.ndb	https://mirror.rollernet.us/sanesecurity/phishtank.ndb		2023-05-23T09:49:05Z
 Signature		porcupine/porcupine_hsb	porcupine/porcupine.hsb	https://mirror.rollernet.us/sanesecurity/porcupine.hsb		2023-05-23T09:49:05Z
 Signature		porcupine/porcupine_ndb	porcupine/porcupine.ndb	https://mirror.rollernet.us/sanesecurity/porcupine.ndb		2023-05-23T09:49:05Z
 Signature		sanesecurity/badmacro	sanesecurity/badmacro.ndb	https://mirror.rollernet.us/sanesecurity/badmacro.ndb	sanesecurity/sigwhitelist	2023-05-23T09:49:05Z
