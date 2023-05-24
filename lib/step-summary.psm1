@@ -6,7 +6,7 @@ Function Escape-MarkdownCharacter {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Input', 'Object')][String]$InputObject
 	)
-	$InputObject -ireplace '\r?\n', '<br />' -ireplace '\\', '\\' -ireplace '\|', '\|' -ireplace '\*', '\*' -ireplace '_', '\_' -ireplace '\[', '\[' -ireplace '\]', '\]' -ireplace '^>', '\>' -ireplace '^-', '\-' |
+	$InputObject -ireplace '\\', '\\'  -ireplace '\r?\n', '<br />'-ireplace '\|', '\|' -ireplace '\*', '\*' -ireplace '_', '\_' -ireplace '\[', '\[' -ireplace '\]', '\]' -ireplace '^>', '\>' -ireplace '^-', '\-' |
 		Write-Output
 }
 Function Ensure-StepSummaryFileExist {
@@ -60,24 +60,24 @@ Function Add-StepSummaryStatistics {
 
 # Statistics
 
-## Total Elements
+## Elements
 
-| **Type** | **Value** | **%** |
-|:-:|--:|--:|
+| **Type** | **Sum** | **Minimum** | **Average** | **Maximum** | **StandardDeviation** | **%** |
+|:-:|--:|--:|--:|--:|--:|--:|
 $(
 	$TotalElements |
-		ForEach-Object -Process { "| $($_.Type) | $($_.Value) | $($_.Percentage ?? '') |" } |
+		ForEach-Object -Process { "| $($_.Type) | $($_.Sum ?? '') | $($_.Minimum ?? '') | $($_.Average ?? '') | $($_.Maximum ?? '') | $($_.StandardDeviation ?? '') | $($_.Percentage ?? '') |" } |
 		Join-String -Separator "`n"
 )
 
-## Total Sizes
+## Sizes
 
-| **Type** | **B** | **KB** | **MB** | **GB** | **%** |
-|:-:|--:|--:|--:|--:|--:|
+| **Type** | **Sum** | **Minimum** | **Average** | **Maximum** | **StandardDeviation** | **%** |
+|:-:|--:|--:|--:|--:|--:|--:|
 $(
 	$TotalSizes |
-		ForEach-Object -Process { "| $($_.Type) | $($_.B) | $($_.KB) | $($_.MB) | $($_.GB) | $($_.Percentage ?? '') |" } |
-		Join-String -Separator "`n"
+		ForEach-Object -Process { "| $($_.Type) | $($_.Sum ?? '') | $($_.Minimum ?? '') | $($_.Average ?? '') | $($_.Maximum ?? '') | $($_.StandardDeviation ?? '') | $($_.Percentage ?? '') |" } |
+	Join-String -Separator "`n"
 )
 "@)
 	If ($IssuesOperations.Count -gt 0) {
