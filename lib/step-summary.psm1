@@ -22,6 +22,56 @@ Function Ensure-StepSummaryFileExist {
 		Set-GitHubActionsStepSummary -Value $Content
 	}
 }
+Function Add-StepSummaryConclusion {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject[]]$StatisticsTable,
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][String[]]$IssuesOperations,
+		[Parameter(Mandatory = $True, Position = 2)][AllowEmptyCollection()][String[]]$IssuesSessions
+	)
+	Ensure-StepSummaryFileExist
+	[String[]]$Result = @(@"
+
+# Statistics
+
+| **Type** | **Element** | **Element %** | **Size B** | **Size KB** | **Size MB** | **Size GB** | **Size %** |
+|:-:|--:|--:|--:|--:|--:|--:|--:|
+$(
+	$StatisticsTable |
+		ForEach-Object -Process { "| $($_.Type) | $($_.Element) | $($_.ElementPercentage ?? '') | $($_.SizeB) | $($_.SizeKb) | $($_.SizeMb) | $($_.SizeGb) | $($_.SizePercentage ?? '') |" } |
+		Join-String -Separator "`n"
+)
+"@)
+	If ($IssuesOperations.Count -gt 0) {
+		$Result += @"
+
+# Issues Operations
+
+$(
+	$IssuesOperations |
+		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
+		Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+	}
+	If ($IssuesSessions.Count -gt 0) {
+		$Result += @"
+
+# Issues Sessions
+
+$(
+	$IssuesSessions |
+		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
+		Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+	}
+	Add-GitHubActionsStepSummary -Value (
+		$Result |
+			Join-String -Separator "`n"
+	)
+}
 Function Add-StepSummaryFound {
 	[CmdletBinding()]
 	[OutputType([Void])]
@@ -46,70 +96,7 @@ $(
 )
 "@
 }
-Function Add-StepSummaryStatistics {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject[]]$TotalElements,
-		[Parameter(Mandatory = $True, Position = 1)][PSCustomObject[]]$TotalSizes,
-		[Parameter(Mandatory = $True, Position = 2)][AllowEmptyCollection()][String[]]$IssuesOperations,
-		[Parameter(Mandatory = $True, Position = 3)][AllowEmptyCollection()][String[]]$IssuesSessions
-	)
-	Ensure-StepSummaryFileExist
-	[String[]]$Result = @(@"
-
-# Statistics
-
-## Total Elements
-
-| **Type** | **Value** | **%** |
-|:-:|--:|--:|
-$(
-	$TotalElements |
-		ForEach-Object -Process { "| $($_.Type) | $($_.Value) | $($_.Percentage ?? '') |" } |
-		Join-String -Separator "`n"
-)
-
-## Total Sizes
-
-| **Type** | **B** | **KB** | **MB** | **GB** | **%** |
-|:-:|--:|--:|--:|--:|--:|
-$(
-	$TotalSizes |
-		ForEach-Object -Process { "| $($_.Type) | $($_.B) | $($_.KB) | $($_.MB) | $($_.GB) | $($_.Percentage ?? '') |" } |
-		Join-String -Separator "`n"
-)
-"@)
-	If ($IssuesOperations.Count -gt 0) {
-		$Result += @"
-
-## Issues Operations
-
-$(
-	$IssuesOperations |
-		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
-		Join-String -Separator "`n" -FormatString '- {0}'
-)
-"@
-	}
-	If ($IssuesSessions.Count -gt 0) {
-		$Result += @"
-
-## Issues Sessions
-
-$(
-	$IssuesSessions |
-		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
-		Join-String -Separator "`n" -FormatString '- {0}'
-)
-"@
-	}
-	Add-GitHubActionsStepSummary -Value (
-		$Result |
-			Join-String -Separator "`n"
-	)
-}
 Export-ModuleMember -Function @(
-	'Add-StepSummaryFound',
-	'Add-StepSummaryStatistics'
+	'Add-StepSummaryConclusion',
+	'Add-StepSummaryFound'
 )

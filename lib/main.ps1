@@ -20,7 +20,7 @@ Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
 	Get-WareMeta
 }
-[ScanVirusStatistics]$Statistics = [ScanVirusStatistics]::New()
+[ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
@@ -122,7 +122,7 @@ If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial assets.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
-		$Statistics.IssuesOperations += "ClamAV/UnofficialAssets/$ApplyIssue"
+		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAssets/$ApplyIssue"
 	}
 	Exit-GitHubActionsLogGroup
 }
@@ -196,77 +196,66 @@ Function Invoke-Tools {
 Unable to scan session `"$SessionTitle`": Workspace is empty!
 If this is incorrect, probably something went wrong.
 "@
-		$Script:Statistics.IssuesOperations += "Workspace/$SessionId"
+		$Script:StatisticsTotal.IssuesOperations += "Workspace/$SessionId"
 		Write-Host -Object "End of session `"$SessionTitle`"."
 		Return
 	}
-	[UInt64]$ElementsCountDiscover = $Elements.Count
-	[UInt64]$ElementsCountScan = $Elements |
+	[ScanVirusStatistics]$StatisticsSession = [ScanVirusStatistics]::new()
+	$StatisticsSession.ElementDiscover = $Elements.Count
+	$StatisticsSession.ElementScan = $Elements |
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	[UInt64]$ElementsCountClamAV = $ClamAVEnable ? (
+	$StatisticsSession.ElementClamAV = $ClamAVEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	) : 0
-	[UInt64]$ElementsCountYara = $YaraEnable ? (
+	$StatisticsSession.ElementYara = $YaraEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	) : 0
-	[UInt64]$ElementsSizeDiscover = $Elements |
+	$StatisticsSession.SizeDiscover = $Elements |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	[UInt64]$ElementsSizeScan = $Elements |
+	$StatisticsSession.SizeScan = $Elements |
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	[UInt64]$ElementsSizeClamAV = $ClamAVEnable ? (
+	$StatisticsSession.SizeClamAV = $ClamAVEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
 	) : 0
-	[UInt64]$ElementsSizeYara = $YaraEnable ? (
+	$StatisticsSession.SizeYara = $YaraEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
 	) : 0
 	Try {
-		$Script:Statistics.TotalElementsDiscover += $ElementsCountDiscover
-		$Script:Statistics.TotalElementsScan += $ElementsCountScan
-		$Script:Statistics.TotalElementsClamAV += $ElementsCountClamAV
-		$Script:Statistics.TotalElementsYara += $ElementsCountYara
-		$Script:Statistics.TotalSizesDiscover += $ElementsSizeDiscover
-		$Script:Statistics.TotalSizesScan += $ElementsSizeScan
-		$Script:Statistics.TotalSizesClamAV += $ElementsSizeClamAV
-		$Script:Statistics.TotalSizesYara += $ElementsSizeYara
+		$Script:StatisticsTotal.ElementDiscover += $StatisticsSession.ElementDiscover
+		$Script:StatisticsTotal.ElementScan += $StatisticsSession.ElementScan
+		$Script:StatisticsTotal.ElementClamAV += $StatisticsSession.ElementClamAV
+		$Script:StatisticsTotal.ElementYara += $StatisticsSession.ElementYara
+		$Script:StatisticsTotal.SizeDiscover += $StatisticsSession.SizeDiscover
+		$Script:StatisticsTotal.SizeScan += $StatisticsSession.SizeScan
+		$Script:StatisticsTotal.SizeClamAV += $StatisticsSession.SizeClamAV
+		$Script:StatisticsTotal.SizeYara += $StatisticsSession.SizeYara
 	}
 	Catch {
-		$Script:Statistics.IsOverflow = $True
+		$Script:StatisticsTotal.IsOverflow = $True
 	}
 	If (
 		$LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::All).GetHashCode() -or
 		($LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::OnlyCurrent).GetHashCode() -and $SessionId -ieq 'current')
 	) {
 		Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-		@(
-			[PSCustomObject]@{ Type = 'Discover'; Count = $ElementsCountDiscover; Size = $ElementsSizeDiscover }
-			[PSCustomObject]@{ Type = 'Scan'; Count = $ElementsCountScan; Size = $ElementsSizeScan }
-			[PSCustomObject]@{ Type = 'ClamAV'; Count = $ElementsCountClamAV; Size = $ElementsSizeClamAV }
-			[PSCustomObject]@{ Type = 'Yara'; Count = $ElementsCountYara; Size = $ElementsSizeYara }
-		) |
-			Format-Table -Property @(
-				'Type',
-				@{ Expression = 'Count'; Alignment = 'Right' },
-				@{ Expression = 'Size'; Alignment = 'Right' }
-			) -AutoSize -Wrap |
-			Out-String -Width 120 |
-			Write-Host
+		Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
 		$Elements |
 			Format-Table -Property @(
 				'Flag',
@@ -299,13 +288,13 @@ $(
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-				$Script:Statistics.IssuesOperations += "$SessionId/ClamAV"
+				$Script:StatisticsTotal.IssuesOperations += "$SessionId/ClamAV"
 			}
 			$ResultFound += $Result.Found
 		}
 		Catch {
 			Write-GitHubActionsError -Message $_
-			$Script:Statistics.IssuesOperations += "$SessionId/ClamAV"
+			$Script:StatisticsTotal.IssuesOperations += "$SessionId/ClamAV"
 		}
 		Exit-GitHubActionsLogGroup
 	}
@@ -346,7 +335,7 @@ $YaraResultIssue |
 	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-			$Script:Statistics.IssuesOperations += "$SessionId/YARA"
+			$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
 		}
 		Exit-GitHubActionsLogGroup
 	}
@@ -355,8 +344,7 @@ $YaraResultIssue |
 		[PSCustomObject[]]$ResultFoundIgnore = @()
 		ForEach ($Row In (
 			$ResultFound |
-				Group-Object -Property @('Element', 'Symbol') -NoElement |
-				Sort-Object -Property 'Name'
+				Group-Object -Property @('Element', 'Symbol') -NoElement
 		)) {
 			[String]$Element, [String]$Symbol = $Row.Name -isplit ', '
 			[PSCustomObject]$ResultFoundElementObject = [PSCustomObject]@{
@@ -379,6 +367,12 @@ $YaraResultIssue |
 				$ResultFoundNotIgnore += $ResultFoundElementObject
 			}
 		}
+		$ResultFoundNotIgnore = $ResultFoundNotIgnore |
+			Sort-Object -Property @('Path', 'Symbol') |
+			Sort-Object -Property @('Hit') -Descending
+		$ResultFoundIgnore = $ResultFoundIgnore |
+			Sort-Object -Property @('Path', 'Symbol') |
+			Sort-Object -Property @('Hit') -Descending
 		If ($ResultFoundNotIgnore.Count -gt 0) {
 			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
 				Write-GitHubActionsError -Message @"
@@ -397,7 +391,7 @@ $(
 			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
 				Add-StepSummaryFound -Session $SessionId -Indicator '🔴' -Issue $ResultFoundNotIgnore
 			}
-			$Script:Statistics.IssuesSessions += $SessionId
+			$Script:StatisticsTotal.IssuesSessions += $SessionId
 		}
 		If ($ResultFoundIgnore.Count -gt 0) {
 			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
@@ -458,7 +452,7 @@ If ($Targets.Count -eq 0) {
 			}
 			Catch {
 				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitHash)``: $_"
-				$Statistics.IssuesOperations += "Git/$GitCommitHash"
+				$StatisticsTotal.IssuesOperations += "Git/$GitCommitHash"
 				Exit-GitHubActionsLogGroup
 				Continue
 			}
@@ -492,9 +486,9 @@ If ($ClamAVEnable) {
 	Stop-ClamAVDaemon
 }
 If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
-	$Statistics.ConclusionDisplay()
+	$StatisticsTotal.ConclusionDisplay()
 }
 If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
-	$Statistics.ConclusionSummary()
+	$StatisticsTotal.ConclusionSummary()
 }
-Exit $Statistics.GetExitCode()
+Exit $StatisticsTotal.GetExitCode()
