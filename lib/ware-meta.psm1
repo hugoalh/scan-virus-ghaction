@@ -55,9 +55,9 @@ Function Get-WareMeta {
 		@{ Bin = 'freshclam'; Name = 'FreshClam (ClamAV Updater)' },
 		@{ Bin = 'git'; Name = 'Git' },
 		@{ Bin = 'git-lfs'; Name = 'Git LFS' },
-		# @{ Bin = 'node'; Name = 'NodeJS' },<# Not in use yet. #>
+		@{ Bin = 'node'; Name = 'NodeJS' },
 		@{ Bin = 'yara'; Name = 'YARA' }
-		# @{ Bin = 'yarac'; Name = 'YARA Compiler' }<# Not in use yet. #>
+		@{ Bin = 'yarac'; Name = 'YARA Compiler' }
 	) |
 		ForEach-Object -Process {
 			Enter-GitHubActionsLogGroup -Title "$($_.Name) (``$($_.Bin)``): "
