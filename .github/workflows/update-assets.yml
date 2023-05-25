@@ -1,7 +1,4 @@
 name: "Update Assets"
-concurrency:
-  group: "scan-virus-ghaction-assets-updater"
-  cancel-in-progress: false
 on:
   schedule:
     - cron: "0 0 * * SUN"
@@ -9,6 +6,9 @@ on:
 defaults:
   run:
     shell: "sh"
+concurrency:
+  group: "scan-virus-ghaction-assets-updater"
+  cancel-in-progress: false
 jobs:
   update-assets:
     name: "Update Assets"
