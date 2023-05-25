@@ -7,6 +7,7 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Class ScanVirusStatistics {
+	[String[]]$StatisticsTypes = @('Scan', 'ClamAV', 'Yara')
 	[String[]]$IssuesOperations = @()
 	[String[]]$IssuesSessions = @()
 	[UInt64]$TotalElementsDiscover = 0
@@ -27,11 +28,11 @@ Class ScanVirusStatistics {
 				Percentage = $Null
 			}
 		)
-		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
+		ForEach ($Type In $This.StatisticsTypes) {
 			$TotalElementsTable += [PSCustomObject]@{
 				Type = $Type
 				Value = $This.("TotalElements$($Type)")
-				Percentage = $IsNoElements ? 0 : [Math]::Round(($This.("TotalElements$($Type)") / $This.TotalElementsDiscover * 100), 4, [System.MidpointRounding]::ToZero)
+				Percentage = $IsNoElements ? 0 : [Math]::Round(($This.("TotalElements$($Type)") / $This.TotalElementsDiscover * 100), 3, [System.MidpointRounding]::ToZero)
 			}
 		}
 		Return $TotalElementsTable
@@ -42,20 +43,20 @@ Class ScanVirusStatistics {
 			[PSCustomObject]@{
 				Type = 'Discover'
 				B = $This.TotalSizesDiscover
-				KB = [Math]::Round(($This.TotalSizesDiscover / 1KB), 4, [System.MidpointRounding]::ToZero)
-				MB = [Math]::Round(($This.TotalSizesDiscover / 1MB), 4, [System.MidpointRounding]::ToZero)
-				GB = [Math]::Round(($This.TotalSizesDiscover / 1GB), 4, [System.MidpointRounding]::ToZero)
+				KB = [Math]::Round(($This.TotalSizesDiscover / 1KB), 3, [System.MidpointRounding]::ToZero)
+				MB = [Math]::Round(($This.TotalSizesDiscover / 1MB), 3, [System.MidpointRounding]::ToZero)
+				GB = [Math]::Round(($This.TotalSizesDiscover / 1GB), 3, [System.MidpointRounding]::ToZero)
 				Percentage = $Null
 			}
 		)
-		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
+		ForEach ($Type In $This.StatisticsTypes) {
 			$TotalSizesTable += [PSCustomObject]@{
 				Type = $Type
 				B = $This.("TotalSizes$($Type)")
-				KB = [Math]::Round(($This.("TotalSizes$($Type)") / 1KB), 4, [System.MidpointRounding]::ToZero)
-				MB = [Math]::Round(($This.("TotalSizes$($Type)") / 1MB), 4, [System.MidpointRounding]::ToZero)
-				GB = [Math]::Round(($This.("TotalSizes$($Type)") / 1GB), 4, [System.MidpointRounding]::ToZero)
-				Percentage = $IsNoSizes ? 0 : [Math]::Round(($This.("TotalSizes$($Type)") / $This.TotalSizesDiscover * 100), 4, [System.MidpointRounding]::ToZero)
+				KB = [Math]::Round(($This.("TotalSizes$($Type)") / 1KB), 3, [System.MidpointRounding]::ToZero)
+				MB = [Math]::Round(($This.("TotalSizes$($Type)") / 1MB), 3, [System.MidpointRounding]::ToZero)
+				GB = [Math]::Round(($This.("TotalSizes$($Type)") / 1GB), 3, [System.MidpointRounding]::ToZero)
+				Percentage = $IsNoSizes ? 0 : [Math]::Round(($This.("TotalSizes$($Type)") / $This.TotalSizesDiscover * 100), 3, [System.MidpointRounding]::ToZero)
 			}
 		}
 		Return $TotalSizesTable
@@ -103,6 +104,7 @@ $(
 	}
 	[Void]ConclusionSummary() {
 		If ($This.IsOverflow) {
+			Write-GitHubActionsNotice -Message 'Statistics is not display: Overflow'
 			Return
 		}
 		Add-StepSummaryStatistics -TotalElements $This.GetTotalElementsTable() -TotalSizes $This.GetTotalSizesTable() -IssuesOperations $This.IssuesOperations -IssuesSessions $This.IssuesSessions
