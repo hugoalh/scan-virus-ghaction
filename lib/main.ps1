@@ -237,14 +237,14 @@ If this is incorrect, probably something went wrong.
 			Select-Object -ExpandProperty 'Sum'
 	) : 0
 	Try {
-		$Script:Statistics.ElementsDiscover += $ElementsCountDiscover
-		$Script:Statistics.ElementsScan += $ElementsCountScan
-		$Script:Statistics.ElementsClamAV += $ElementsCountClamAV
-		$Script:Statistics.ElementsYara += $ElementsCountYara
-		$Script:Statistics.SizesDiscover += $ElementsSizeDiscover
-		$Script:Statistics.SizesScan += $ElementsSizeScan
-		$Script:Statistics.SizesClamAV += $ElementsSizeClamAV
-		$Script:Statistics.SizesYara += $ElementsSizeYara
+		$Script:Statistics.TotalElementsDiscover += $ElementsCountDiscover
+		$Script:Statistics.TotalElementsScan += $ElementsCountScan
+		$Script:Statistics.TotalElementsClamAV += $ElementsCountClamAV
+		$Script:Statistics.TotalElementsYara += $ElementsCountYara
+		$Script:Statistics.TotalSizesDiscover += $ElementsSizeDiscover
+		$Script:Statistics.TotalSizesScan += $ElementsSizeScan
+		$Script:Statistics.TotalSizesClamAV += $ElementsSizeClamAV
+		$Script:Statistics.TotalSizesYara += $ElementsSizeYara
 	}
 	Catch {
 		$Script:Statistics.IsOverflow = $True
