@@ -267,7 +267,7 @@ If this is incorrect, probably something went wrong.
 		Exit-GitHubActionsLogGroup
 	}
 	[PSCustomObject[]]$ResultFound = @()
-	If ($ClamAVEnable -and $ElementsCountClamAV -gt 0) {
+	If ($ClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
 		Try {
 			[Hashtable]$Result = Invoke-ClamAVScan -Target (
@@ -298,7 +298,7 @@ $(
 		}
 		Exit-GitHubActionsLogGroup
 	}
-	If ($YaraEnable -and $ElementsCountYara -gt 0) {
+	If ($YaraEnable -and $StatisticsSession.ElementYara -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
 		[String[]]$YaraResultIssue = @()
 		ForEach ($YaraUnofficialAsset In (
