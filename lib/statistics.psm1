@@ -47,7 +47,7 @@ Class ScanVirusStatistics {
 		}
 		Return $StatisticsTable
 	}
-	[String]GetStatisticsTableString([UInt32]$Width = 80) {
+	[String]GetStatisticsTableString([UInt32]$Width) {
 		Return (
 			$This.GetStatisticsTable() |
 			Format-Table -Property @(
@@ -62,6 +62,9 @@ Class ScanVirusStatistics {
 			) -AutoSize -Wrap |
 			Out-String -Width $Width
 		)
+	}
+	[String]GetStatisticsTableString() {
+		Return $This.GetStatisticsTableString(80)
 	}
 	[Void]ConclusionDisplay() {
 		If ($This.IsOverflow) {
