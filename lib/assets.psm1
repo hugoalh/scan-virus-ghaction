@@ -94,32 +94,39 @@ Function Register-ClamAVUnofficialAssets {
 			$AssetsApplyIssues += $IndexApply.Name
 		}
 	}
-	ForEach ($IndexApply In (
+	ForEach ($ApplyIgnoreRaw In (
 		$IndexTable |
-			Where-Object -FilterScript { $_.Select -and $_.ApplyIgnores.Length -gt 0 }
+			Where-Object -FilterScript { $_.Select -and $_.ApplyIgnores.Length -gt 0 } |
+			Select-Object -ExpandProperty 'ApplyIgnores' |
+			ForEach-Object -Begin {
+				[String[]]$Result = @()
+			} -Process {
+				$Result += $_ -isplit ',|;' |
+					ForEach-Object -Process { $_.Trim() } |
+					Where-Object -FilterScript { $_.Length -gt 0 }
+			} -End {
+				$Result |
+					Sort-Object -Unique |
+					Write-Output
+			}
 	)) {
-		[String[]]$ApplyIgnoresRaw = $IndexApply.ApplyIgnores -isplit ',' |
-			ForEach-Object -Process { $_.Trim() } |
-			Where-Object -FilterScript { $_.Length -gt 0 }
-		ForEach ($ApplyIgnoreRaw In $ApplyIgnoresRaw) {
-			[PSCustomObject]$IndexApplyIgnore = $IndexTable |
-				Where-Object -FilterScript { $_.Name -ieq $ApplyIgnoreRaw }
-				Select-Object -First 1
-			[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $IndexApplyIgnore.DatabaseFileName
-			If (
-				$DestinationFilePath -iin $AssetsApplyPaths -or
-				$IndexApplyIgnore.Name -iin $AssetsApplyIssues
-			) {
-				Continue
-			}
-			Try {
-				Copy-Item -LiteralPath $IndexApplyIgnore.FilePath -Destination $DestinationFilePath -Confirm:$False
-				$AssetsApplyPaths += $DestinationFilePath
-			}
-			Catch {
-				Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial asset ``$($IndexApplyIgnore.Name)``: $_"
-				$AssetsApplyIssues += $IndexApplyIgnore.Name
-			}
+		[PSCustomObject]$IndexApplyIgnore = $IndexTable |
+			Where-Object -FilterScript { $_.Name -ieq $ApplyIgnoreRaw }
+			Select-Object -Index 0
+		[String]$DestinationFilePath = Join-Path -Path $ClamAVDatabaseRoot -ChildPath $IndexApplyIgnore.DatabaseFileName
+		If (
+			$DestinationFilePath -iin $AssetsApplyPaths -or
+			$IndexApplyIgnore.Name -iin $AssetsApplyIssues
+		) {
+			Continue
+		}
+		Try {
+			Copy-Item -LiteralPath $IndexApplyIgnore.FilePath -Destination $DestinationFilePath -Confirm:$False
+			$AssetsApplyPaths += $DestinationFilePath
+		}
+		Catch {
+			Write-GitHubActionsError -Message "Unable to apply ClamAV unofficial asset ``$($IndexApplyIgnore.Name)``: $_"
+			$AssetsApplyIssues += $IndexApplyIgnore.Name
 		}
 	}
 	Write-Output -InputObject @{

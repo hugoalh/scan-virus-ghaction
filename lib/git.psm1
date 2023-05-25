@@ -28,7 +28,7 @@ Import-Module -Name (
 )
 [Hashtable]$GitCommitsPropertyIndexer = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsIndex } |
-	Select-Object -First 1
+	Select-Object -Index 0
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 $Null = git config --global --add 'safe.directory' '/github/workspace'
 Function Disable-GitLfsProcess {

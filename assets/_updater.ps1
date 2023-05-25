@@ -11,16 +11,15 @@ $CurrentWorkingDirectory = Get-Location
 [String[]]$GitIgnores = Get-Content -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '_updater_gitignore.txt') -Encoding 'UTF8NoBOM' |
 	Where-Object -FilterScript { $_.Length -gt 0 }
 [Boolean]$ShouldPush = $False
-[String]$SymbolIndexFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'symbol.tsv'
 [DateTime]$TimeInvoke = Get-Date -AsUTC
-[DateTime]$TimeBuffer = $TimeInvoke.AddHours(-1)
+[DateTime]$TimeBuffer = $TimeInvoke.AddHours(-2)
 [String]$TimeCommit = Get-Date -Date $TimeInvoke -UFormat '%Y-%m-%dT%H:%M:%SZ' -AsUTC
 Write-Host -Object "Timestamp: $TimeCommit"
 Exit-GitHubActionsLogGroup
 Write-Host -Object 'Update assets.'
 ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
-	[String]$AssetDirectoryPath = Join-Path -Path $PSScriptRoot -ChildPath $AssetDirectoryName
 	Write-Host -Object "Read ``$AssetDirectoryName`` assets index."
+	[String]$AssetDirectoryPath = Join-Path -Path $PSScriptRoot -ChildPath $AssetDirectoryName
 	[String]$AssetIndexFilePath = Join-Path -Path $AssetDirectoryPath -ChildPath 'index.tsv'
 	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @CsvParameters_Tsv
 	For ([UInt64]$AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow += 1) {
@@ -37,7 +36,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 		Write-Host -Object 'Need to update.'
 		If ($AssetIndexItem.Remote -imatch '^https:\/\/github\.com\/[\da-z_.-]+\/[\da-z_.-]+\.git$') {
 			[String]$GitWorkingDirectoryName = $AssetIndexItem.Path -isplit '[\\\/]' |
-				Select-Object -First 1
+				Select-Object -Index 0
 			[String]$GitWorkingDirectoryPath = Join-Path -Path $AssetDirectoryPath -ChildPath $GitWorkingDirectoryName
 			If (Test-Path -LiteralPath $GitWorkingDirectoryPath) {
 				Write-Host -Object "Remove old assets."
@@ -77,10 +76,9 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 	$AssetIndex |
 		Export-Csv -LiteralPath $AssetIndexFilePath @CsvParameters_Tsv -UseQuotes 'AsNeeded' -Confirm:$False
 }
-Write-Host -Object 'Verify assets index; Generate symbol list.'
+Write-Host -Object 'Verify assets index.'
 [String[]]$IndexIssuesFileNotExist = @()
 [String[]]$IndexIssuesFileNotRecord = @()
-[PSCustomObject[]]$SymbolIndex = @()
 ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 	[String]$AssetDirectoryPath = Join-Path -Path $PSScriptRoot -ChildPath $AssetDirectoryName
 	Write-Host -Object "Read ``$AssetDirectoryName`` asset index."
@@ -91,65 +89,10 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 		If ($AssetIndexItem.Type -ieq 'Group') {
 			Continue
 		}
-		[String]$FilePath = Join-Path -Path $AssetDirectoryPath -ChildPath $AssetIndexItem.Path
-		If (Test-Path -LiteralPath $FilePath -PathType 'Leaf') {
-			Switch -RegEx ($AssetIndexItem.Path) {
-				'\.(?:cdb|nd[bu])$' {
-					[String[]]$Symbols = Get-Content -LiteralPath $FilePath -Encoding 'UTF8NoBOM' |
-						Where-Object -FilterScript { $_.Length -gt 0 } |
-						ForEach-Object -Process {
-							$_ -isplit ':' |
-								Select-Object -Index 0
-						}
-					Break
-				}
-				'\.(?:h[ds][bu]|imp|m[ds][bu])$' {
-					[String[]]$Symbols = Get-Content -LiteralPath $FilePath -Encoding 'UTF8NoBOM' |
-						Where-Object -FilterScript { $_.Length -gt 0 } |
-						ForEach-Object -Process {
-							$_ -isplit ':' |
-								Select-Object -Index 2
-						}
-					Break
-				}
-				'\.(?:idb|ld[bu])$' {
-					[String[]]$Symbols = Get-Content -LiteralPath $FilePath -Encoding 'UTF8NoBOM' |
-						Where-Object -FilterScript { $_.Length -gt 0 } |
-						ForEach-Object -Process {
-							$_ -isplit ';' |
-								Select-Object -Index 0
-						}
-					Break
-				}
-				'\.ign2?$' {
-					[String[]]$Symbols = @()
-					Break
-				}
-				'\.yara?$' {
-					[String[]]$Symbols = Get-Content -LiteralPath $FilePath -Encoding 'UTF8NoBOM' |
-						Where-Object -FilterScript { $_ -imatch '^rule .+?(?: *: *.+?)?(?: \{)?$' } |
-						ForEach-Object -Process {
-							$_ -isplit ' +|:+' |
-								Select-Object -Index 1
-						}
-					Break
-				}
-				Default {
-					[String[]]$Symbols = @()
-					Break
-				}
-			}
-			ForEach ($Symbol In $Symbols) {
-				$SymbolIndex += [PSCustomObject]@{
-					Symbol = $Symbol
-					Directory = $AssetDirectoryName
-					Name = $AssetIndexItem.Name
-				}
-			}
+		If (Test-Path -LiteralPath (Join-Path -Path $AssetDirectoryPath -ChildPath $AssetIndexItem.Path) -PathType 'Leaf') {
+			Continue
 		}
-		Else {
-			$IndexIssuesFileNotExist += "$AssetDirectoryName/$($AssetIndexItem.Name)"
-		}
+		$IndexIssuesFileNotExist += "$AssetDirectoryName/$($AssetIndexItem.Name)"
 	}
 	If ($AssetDirectoryName -ieq 'yara-unofficial') {
 		ForEach ($ElementFullName In (
@@ -166,9 +109,6 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 		}
 	}
 }
-$SymbolIndex |
-	Sort-Object -Property @('Symbol', 'Directory', 'Name') |
-	Export-Csv -LiteralPath $SymbolIndexFilePath @CsvParameters_Tsv -UseQuotes 'AsNeeded' -Confirm:$False
 If ($IndexIssuesFileNotExist.Count -gt 0) {
 	Write-GitHubActionsWarning -Message @"
 File Not Exist [$($IndexIssuesFileNotExist.Count)]:
