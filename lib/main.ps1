@@ -40,7 +40,7 @@ Write-NameValue -Name 'Input_TableMarkup' -Value $InputTableMarkup.ToString()
 Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '{Local}' : (
 	$Targets |
 		Select-Object -ExpandProperty 'OriginalString' |
-		Join-String -Separator ', ' -FormatString '`{0}`'
+		Join-String -Separator ', '
 ))
 [Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
 Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate

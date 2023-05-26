@@ -3,11 +3,11 @@ $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Enter-GitHubActionsLogGroup -Title 'Initialize.'
 $CurrentWorkingDirectory = Get-Location
-[String[]]$AssetsDirectoryNames = @('clamav-unofficial', 'yara-unofficial')
-[Hashtable]$CsvParameters_Tsv = @{
+[Hashtable]$TsvParameters = @{
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
 }
+[String[]]$AssetsDirectoryNames = @('clamav-unofficial', 'yara-unofficial')
 [String[]]$GitIgnores = Get-Content -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '_updater_gitignore.txt') -Encoding 'UTF8NoBOM' |
 	Where-Object -FilterScript { $_.Length -gt 0 }
 [Boolean]$ShouldPush = $False
@@ -21,7 +21,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 	Write-Host -Object "Read ``$AssetDirectoryName`` assets index."
 	[String]$AssetDirectoryPath = Join-Path -Path $PSScriptRoot -ChildPath $AssetDirectoryName
 	[String]$AssetIndexFilePath = Join-Path -Path $AssetDirectoryPath -ChildPath 'index.tsv'
-	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @CsvParameters_Tsv
+	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @TsvParameters
 	For ([UInt64]$AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow += 1) {
 		[PSCustomObject]$AssetIndexItem = $AssetIndex[$AssetIndexRow]
 		If ($AssetIndexItem.Group.Length -gt 0) {
@@ -74,7 +74,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 	}
 	Write-Host -Object "Update ``$AssetDirectoryName`` asset index."
 	$AssetIndex |
-		Export-Csv -LiteralPath $AssetIndexFilePath @CsvParameters_Tsv -UseQuotes 'AsNeeded' -Confirm:$False
+		Export-Csv -LiteralPath $AssetIndexFilePath @TsvParameters -UseQuotes 'AsNeeded' -Confirm:$False
 }
 Write-Host -Object 'Verify assets index.'
 [String[]]$IndexIssuesFileNotExist = @()
@@ -83,7 +83,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 	[String]$AssetDirectoryPath = Join-Path -Path $PSScriptRoot -ChildPath $AssetDirectoryName
 	Write-Host -Object "Read ``$AssetDirectoryName`` asset index."
 	[String]$AssetIndexFilePath = Join-Path -Path $AssetDirectoryPath -ChildPath 'index.tsv'
-	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @CsvParameters_Tsv
+	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @TsvParameters
 	For ([UInt64]$AssetIndexRow = 0; $AssetIndexRow -lt $AssetIndex.Count; $AssetIndexRow += 1) {
 		[PSCustomObject]$AssetIndexItem = $AssetIndex[$AssetIndexRow]
 		If ($AssetIndexItem.Type -ieq 'Group') {

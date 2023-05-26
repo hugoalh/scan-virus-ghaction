@@ -32,7 +32,7 @@ Function Get-WareMeta {
 	[PSCustomObject]@{
 		Path = Get-Command -Name 'pwsh' -CommandType 'Application' |
 			Select-Object -ExpandProperty 'Path' |
-			Join-String -Separator ', ' -FormatString '`{0}`'
+			Join-String -Separator ', '
 		System = "$($PSVersionTable.Platform); $($PSVersionTable.OS)"
 		Edition = $PSVersionTable.PSEdition
 		Version = $PSVersionTable.PSVersion.ToString()
@@ -64,7 +64,7 @@ Function Get-WareMeta {
 			[PSCustomObject]@{
 				Path = Get-Command -Name $_.Bin -CommandType 'Application' |
 					Select-Object -ExpandProperty 'Path' |
-					Join-String -Separator ', ' -FormatString '`{0}`'
+					Join-String -Separator ', '
 				VersionStdOut = Invoke-Expression -Command "$($_.Bin) --version" |
 					Join-String -Separator "`n"
 			} |

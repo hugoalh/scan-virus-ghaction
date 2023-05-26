@@ -2,6 +2,7 @@ name: "Update Assets"
 on:
   schedule:
     - cron: "0 0 * * SUN"
+    - cron: "0 12 * * WED"
   workflow_dispatch:
 defaults:
   run:

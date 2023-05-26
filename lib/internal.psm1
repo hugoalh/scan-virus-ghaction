@@ -15,8 +15,8 @@ Function ConvertFrom-CsvM {
 			$Null = $_ -imatch ','
 			[PSCustomObject](
 				(ConvertFrom-Csv -InputObject $_ -Header @(0..($Matches.Count + 1))).PSObject.Properties.Value |
-				Join-String -Separator "`n" |
-				ConvertFrom-StringData
+					Join-String -Separator "`n" |
+					ConvertFrom-StringData
 			) |
 				Write-Output
 		} |

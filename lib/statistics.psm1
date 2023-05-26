@@ -75,11 +75,11 @@ Class ScanVirusStatistics {
 			Statistics = $This.GetStatisticsTableString()
 		}
 		If ($This.IssuesOperations.Count -gt 0) {
-			$DisplayList.("Issues Operations [$($This.IssuesOperations.Count)]") = $This.IssuesOperations |
+			$DisplayList.("IssuesOperations [$($This.IssuesOperations.Count)]") = $This.IssuesOperations |
 				Join-String -Separator ', '
 		}
 		If ($This.IssuesSessions.Count -gt 0) {
-			$DisplayList.("Issues Sessions [$($This.IssuesSessions.Count)]") = $This.IssuesSessions |
+			$DisplayList.("IssuesSessions [$($This.IssuesSessions.Count)]") = $This.IssuesSessions |
 				Join-String -Separator ', '
 		}
 		Write-GitHubActionsNotice -Message (
