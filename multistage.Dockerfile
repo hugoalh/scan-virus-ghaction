@@ -1,4 +1,4 @@
-FROM debian:11.7
+FROM debian:11.7 AS stage-env
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
 ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
@@ -8,6 +8,8 @@ ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSETS
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}yara-unofficial/
 ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}lib/
 # RUN printenv
+
+FROM stage-env AS stage-setup
 RUN echo "deb http://deb.debian.org/debian/ sid main contrib" >> /etc/apt/sources.list
 RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install apt-utils curl hwinfo
@@ -25,9 +27,14 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope
 # RUN clamconf --generate-config=clamd.conf
 # RUN clamconf --generate-config=freshclam.conf
 COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
+RUN freshclam --verbose
+
+FROM stage-env AS stage-checkout
 COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
 COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 # RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
-RUN freshclam --verbose
+
+FROM stage-setup AS stage-final
+COPY --from=stage-checkout ${GHACTION_SCANVIRUS_PROGRAM_ROOT} ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
