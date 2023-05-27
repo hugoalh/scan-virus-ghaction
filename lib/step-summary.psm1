@@ -22,7 +22,30 @@ Function Ensure-StepSummaryFileExist {
 		Set-GitHubActionsStepSummary -Value $Content
 	}
 }
-Function Add-StepSummaryConclusion {
+Function Add-StepSummaryFound {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Session,
+		[Parameter(Mandatory = $True, Position = 1)][Alias('Issues')][PSCustomObject[]]$Issue
+	)
+	Ensure-StepSummaryFileExist -Content @'
+# Found
+'@
+	Add-GitHubActionsStepSummary -Value @"
+
+## $(Escape-MarkdownCharacter -InputObject $Session)
+
+|  | **Path** | **Symbol** | **Hit** |
+|:-:|:--|:--|--:|
+$(
+	$Issue |
+		ForEach-Object -Process { "| $($_.Indicator) | $(Escape-MarkdownCharacter -InputObject $_.Path) | $(Escape-MarkdownCharacter -InputObject $_.Symbol) | $($_.Hit) |" } |
+		Join-String -Separator "`n"
+)
+"@
+}
+Function Add-StepSummaryStatistics {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
@@ -46,7 +69,7 @@ $(
 	If ($IssuesOperations.Count -gt 0) {
 		$Result += @"
 
-# Issues Operations
+## Issues Operations
 
 $(
 	$IssuesOperations |
@@ -58,7 +81,7 @@ $(
 	If ($IssuesSessions.Count -gt 0) {
 		$Result += @"
 
-# Issues Sessions
+## Issues Sessions
 
 $(
 	$IssuesSessions |
@@ -72,31 +95,7 @@ $(
 			Join-String -Separator "`n"
 	)
 }
-Function Add-StepSummaryFound {
-	[CmdletBinding()]
-	[OutputType([Void])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$Session,
-		[Parameter(Mandatory = $True, Position = 1)][String]$Indicator,
-		[Parameter(Mandatory = $True, Position = 2)][Alias('Issues')][PSCustomObject[]]$Issue
-	)
-	Ensure-StepSummaryFileExist -Content @'
-# Found
-'@
-	Add-GitHubActionsStepSummary -Value @"
-
-## $(Escape-MarkdownCharacter -InputObject $Session)
-
-|  | **Path** | **Symbol** | **Hit** |
-|:-:|:--|:--|--:|
-$(
-	$Issue |
-		ForEach-Object -Process { "| $Indicator | $(Escape-MarkdownCharacter -InputObject $_.Path) | $(Escape-MarkdownCharacter -InputObject $_.Symbol) | $($_.Hit) |" } |
-		Join-String -Separator "`n"
-)
-"@
-}
 Export-ModuleMember -Function @(
-	'Add-StepSummaryConclusion',
-	'Add-StepSummaryFound'
+	'Add-StepSummaryFound',
+	'Add-StepSummaryStatistics'
 )

@@ -374,6 +374,7 @@ $YaraResultIssue |
 			Sort-Object -Property @('Path', 'Symbol') |
 			Sort-Object -Property @('Hit') -Descending
 		If ($ResultFoundNotIgnore.Count -gt 0) {
+			$Script:StatisticsTotal.IssuesSessions += $SessionId
 			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
 				Write-GitHubActionsError -Message @"
 Found in session `"$SessionTitle`":
@@ -388,10 +389,6 @@ $(
 )
 "@
 			}
-			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
-				Add-StepSummaryFound -Session $SessionId -Indicator '🔴' -Issue $ResultFoundNotIgnore
-			}
-			$Script:StatisticsTotal.IssuesSessions += $SessionId
 		}
 		If ($ResultFoundIgnore.Count -gt 0) {
 			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
@@ -408,9 +405,27 @@ $(
 )
 "@
 			}
-			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
-				Add-StepSummaryFound -Session $SessionId -Indicator '🟡' -Issue $ResultFoundIgnore
-			}
+		}
+		If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode() -and (
+			$ResultFoundNotIgnore.Count -gt 0 -or
+			$ResultFoundIgnore.Count -gt 0
+		)) {
+			[PSCustomObject[]]$ResultFoundDisplay = @()
+			$ResultFoundDisplay += $ResultFoundNotIgnore |
+				ForEach-Object -Process { [PSCustomObject]@{
+					Indicator = '🔴'
+					Path = $_.Path
+					Symbol = $_.Symbol
+					Hit = $_.Hit
+				} }
+			$ResultFoundDisplay += $ResultFoundIgnore |
+				ForEach-Object -Process { [PSCustomObject]@{
+					Indicator = '🟡'
+					Path = $_.Path
+					Symbol = $_.Symbol
+					Hit = $_.Hit
+				} }
+			Add-StepSummaryFound -Session $SessionId -Issue $ResultFoundDisplay
 		}
 	}
 	Write-Host -Object "End of session `"$SessionTitle`"."
@@ -486,9 +501,9 @@ If ($ClamAVEnable) {
 	Stop-ClamAVDaemon
 }
 If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
-	$StatisticsTotal.ConclusionDisplay()
+	$StatisticsTotal.StatisticsDisplay()
 }
 If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
-	$StatisticsTotal.ConclusionSummary()
+	$StatisticsTotal.StatisticsSummary()
 }
 Exit $StatisticsTotal.GetExitCode()

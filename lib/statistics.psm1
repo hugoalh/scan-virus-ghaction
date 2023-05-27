@@ -66,7 +66,7 @@ Class ScanVirusStatistics {
 	[String]GetStatisticsTableString() {
 		Return $This.GetStatisticsTableString(80)
 	}
-	[Void]ConclusionDisplay() {
+	[Void]StatisticsDisplay() {
 		If ($This.IsOverflow) {
 			Write-GitHubActionsNotice -Message 'Statistics is not display: Overflow'
 			Return
@@ -88,12 +88,12 @@ Class ScanVirusStatistics {
 				Out-String -Width 120
 		)
 	}
-	[Void]ConclusionSummary() {
+	[Void]StatisticsSummary() {
 		If ($This.IsOverflow) {
 			Write-GitHubActionsNotice -Message 'Statistics is not display: Overflow'
 			Return
 		}
-		Add-StepSummaryConclusion -StatisticsTable $This.GetStatisticsTable() -IssuesOperations $This.IssuesOperations -IssuesSessions $This.IssuesSessions
+		Add-StepSummaryStatistics -StatisticsTable $This.GetStatisticsTable() -IssuesOperations $This.IssuesOperations -IssuesSessions $This.IssuesSessions
 	}
 	[Byte]GetExitCode() {
 		Return (($This.IssuesSessions.Count -gt 0) ? 1 : 0)
