@@ -11,8 +11,8 @@ on:
         description: "{Uri[]} Targets."
         required: true
 jobs:
-  scan-virus-remote:
-    name: "Scan Virus - Remote"
+  main:
+    name: "Main"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Scan Virus"

@@ -32,8 +32,8 @@ on:
           - "False"
           - "True"
 jobs:
-  test-build:
-    name: "Test - Build"
+  main:
+    name: "Main"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"

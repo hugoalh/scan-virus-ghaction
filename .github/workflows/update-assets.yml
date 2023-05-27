@@ -11,8 +11,8 @@ concurrency:
   group: "scan-virus-ghaction-assets-updater"
   cancel-in-progress: false
 jobs:
-  update-assets:
-    name: "Update Assets"
+  main:
+    name: "Main"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"

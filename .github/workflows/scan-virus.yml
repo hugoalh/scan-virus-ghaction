@@ -35,8 +35,8 @@ on:
           - "False"
           - "True"
 jobs:
-  scan-virus:
-    name: "Scan Virus (Reusable Workflow)"
+  main:
+    name: "Main"
     uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
     with:
       git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"

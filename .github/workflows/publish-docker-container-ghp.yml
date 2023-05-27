@@ -18,8 +18,8 @@ on:
           - "false"
           - "true"
 jobs:
-  publish-docker-container-ghp:
-    name: "Publish Docker Container - GitHub Packages (Reusable Workflow)"
+  main:
+    name: "Main"
     uses: "hugoalh/hugoalh/.github/workflows/publish-docker-container-ghp.yml@main"
     with:
       title: "Scan Virus (GitHub Action) Image"

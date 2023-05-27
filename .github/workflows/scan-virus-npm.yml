@@ -47,7 +47,7 @@ jobs:
         shell: "pwsh"
     outputs:
       group: "${{steps.resolve-packages.outputs.group}}"
-  scan-virus-npm:
+  main:
     name: "${{fromJson(matrix.group).name}}"
     runs-on: "ubuntu-latest"
     needs:

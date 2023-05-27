@@ -4,8 +4,8 @@ on:
     types:
       - "published"
 jobs:
-  announce-new-release-discord:
-    name: "Announce New Release - Discord (Reusable Workflow)"
+  main:
+    name: "Main"
     uses: "hugoalh/hugoalh/.github/workflows/announce-new-release-discord.yml@main"
     with:
       name: "Scan Virus (GitHub Action)"
