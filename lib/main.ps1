@@ -411,20 +411,24 @@ $(
 			$ResultFoundIgnore.Count -gt 0
 		)) {
 			[PSCustomObject[]]$ResultFoundDisplay = @()
-			$ResultFoundDisplay += $ResultFoundNotIgnore |
-				ForEach-Object -Process { [PSCustomObject]@{
-					Indicator = '🔴'
-					Path = $_.Path
-					Symbol = $_.Symbol
-					Hit = $_.Hit
-				} }
-			$ResultFoundDisplay += $ResultFoundIgnore |
-				ForEach-Object -Process { [PSCustomObject]@{
-					Indicator = '🟡'
-					Path = $_.Path
-					Symbol = $_.Symbol
-					Hit = $_.Hit
-				} }
+			If ($ResultFoundNotIgnore.Count -gt 0) {
+				$ResultFoundDisplay += $ResultFoundNotIgnore |
+					ForEach-Object -Process { [PSCustomObject]@{
+						Indicator = '🔴'
+						Path = $_.Path
+						Symbol = $_.Symbol
+						Hit = $_.Hit
+					} }
+			}
+			If ($ResultFoundIgnore.Count -gt 0) {
+				$ResultFoundDisplay += $ResultFoundIgnore |
+					ForEach-Object -Process { [PSCustomObject]@{
+						Indicator = '🟡'
+						Path = $_.Path
+						Symbol = $_.Symbol
+						Hit = $_.Hit
+					} }
+			}
 			Add-StepSummaryFound -Session $SessionId -Issue $ResultFoundDisplay
 		}
 	}
