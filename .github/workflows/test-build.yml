@@ -36,6 +36,9 @@ jobs:
     name: "Main"
     runs-on: "ubuntu-latest"
     steps:
+      - name: "List Docker Image"
+        run: |
+          docker image ls --all --digests --no-trunc
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.5.2"
         with:
