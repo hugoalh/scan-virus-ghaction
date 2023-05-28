@@ -55,7 +55,7 @@ Function Get-WareMeta {
 		@{ Bin = 'freshclam'; Name = 'FreshClam (ClamAV Updater)' },
 		@{ Bin = 'git'; Name = 'Git' },
 		@{ Bin = 'git-lfs'; Name = 'Git LFS' },
-		@{ Bin = 'node'; Name = 'NodeJS' },
+		# @{ Bin = 'node'; Name = 'NodeJS' },
 		@{ Bin = 'yara'; Name = 'YARA' }
 		@{ Bin = 'yarac'; Name = 'YARA Compiler' }
 	) |
