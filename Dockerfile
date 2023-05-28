@@ -21,10 +21,10 @@ RUN apt-get --assume-yes install powershell
 RUN apt-get --assume-yes dist-upgrade
 # RUN apt-get --assume-yes autoremove
 # RUN apt-get --assume-yes clean
-RUN pwsh -NonInteractive -Command "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"
-RUN pwsh -NonInteractive -Command "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"
-RUN pwsh -NonInteractive -Command "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"
-RUN pwsh -NonInteractive -Command "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"
+RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.5.0' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 # RUN clamconf --generate-config=clamd.conf
 # RUN clamconf --generate-config=freshclam.conf
 COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
