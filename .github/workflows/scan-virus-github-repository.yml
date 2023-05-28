@@ -1,7 +1,7 @@
 name: "Scan Virus - GitHub Repository"
 on:
   schedule:
-    - cron: "0 */8 * * *"
+    - cron: "0 */12 * * *"
   workflow_dispatch:
     inputs:
       repositories:
@@ -43,8 +43,8 @@ jobs:
           }
           Set-GitHubActionsOutput -Name 'repositories' -Value (
             $Repositories |
+              Get-Random -Count 250 |
               Sort-Object -Unique |
-              Select-Object -First 250 |
               ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
