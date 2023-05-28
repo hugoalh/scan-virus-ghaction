@@ -68,7 +68,7 @@ jobs:
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
           fetch-depth: 0
       - name: "Scan Virus"
-        uses: "hugoalh/scan-virus-ghaction@v0.13.1"
+        uses: "hugoalh/scan-virus-ghaction@v0.13.2"
         with:
           git_integrate: "True"
           git_limit: "30"
