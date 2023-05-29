@@ -6,7 +6,6 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'assets',
-		'display',
 		'git',
 		'internal',
 		'step-summary'
