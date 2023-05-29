@@ -6,8 +6,8 @@ FROM debian:11.7
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV GHACTION_SCANVIRUS_APT_CLAMAVOFFICIAL=true
-ENV GHACTION_SCANVIRUS_APT_CLAMAVUNOFFICIAL=true
-ENV GHACTION_SCANVIRUS_APT_YARAUNOFFICIAL=true
+ENV GHACTION_SCANVIRUS_APT_CLAMAVUNOFFICIAL=false
+ENV GHACTION_SCANVIRUS_APT_YARAUNOFFICIAL=false
 
 ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
 ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
@@ -28,7 +28,7 @@ RUN apt-get --assume-yes install apt-utils curl hwinfo
 # <Full Format>
 # RUN apt-get --assume-yes install apt-utils ca-certificates curl gss-ntlmssp hwinfo less libc6 libgcc1 libgssapi-krb5-2 libicu67 libssl1.1 libstdc++6 locales openssh-client zlib1g
 
-RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs yara
+RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs
 # <Full format>
 # RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs nodejs yara
 
@@ -52,13 +52,13 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope
 # RUN clamconf --generate-config=freshclam.conf
 
 # <ClamAV Unofficial Only>
-COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
+# COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
 
 # <ClamAV Official Only>
 COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
 
 # <YARA Unofficial Only>
-COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
+# COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 
