@@ -1,4 +1,4 @@
-name: "Scan Virus"
+name: "Scan Virus (ClamAV Official)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
@@ -32,24 +32,10 @@ inputs:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
-  clamav_enable:
-    description: "{Boolean} Whether to use ClamAV."
-    required: false
-    default: "True"
-  clamav_unofficialassets:
-    description: "{RegEx[]} ClamAV unofficial assets to use."
-    required: false
   clamav_update:
     description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
     required: false
     default: "True"
-  yara_enable:
-    description: "{Boolean} Whether to use YARA."
-    required: false
-    default: "False"
-  yara_unofficialassets:
-    description: "{RegEx[]} YARA unofficial assets to use."
-    required: false
   ignores:
     description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
     required: false
@@ -67,7 +53,7 @@ inputs:
     default: "None"
 runs:
   using: "docker"
-  image: "../../Dockerfile"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-clamav-official"
 branding:
   icon: "shield"
   color: "red"

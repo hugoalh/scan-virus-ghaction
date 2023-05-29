@@ -1,0 +1,62 @@
+name: "Scan Virus (ClamAV Unofficial)"
+author: "hugoalh"
+description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
+inputs:
+  input_listdelimiter:
+    description: "{RegEx} Delimiter when the input is type of list."
+    required: false
+    default: ",|;|\\r?\\n"
+  input_tablemarkup:
+    description: "{String} Markup language when the input is type of table."
+    required: false
+    default: "Yaml"
+  targets:
+    description: "{Uri[]} Targets."
+    required: false
+  git_integrate:
+    description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
+    required: false
+    default: "False"
+  git_ignores:
+    description: "{Table} Ignores for the Git commits."
+    required: false
+  git_lfs:
+    description: "{Boolean} Whether to process Git LFS files."
+    required: false
+    default: "False"
+  git_limit:
+    description: "{UInt} Limit on how many Git commits will scan."
+    required: false
+    default: "0"
+  git_reverse:
+    description: "{Boolean} Whether to reverse the scan order of the Git commits."
+    required: false
+    default: "False"
+  clamav_unofficialassets:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
+    required: false
+  clamav_update:
+    description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
+    required: false
+    default: "True"
+  ignores:
+    description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
+    required: false
+  log_elements:
+    description: "{String} Whether to list elements in the log."
+    required: false
+    default: "All"
+  summary_found:
+    description: "{String} Whether to list elements which found virus in the step summary."
+    required: false
+    default: "None"
+  summary_statistics:
+    description: "{String} Whether to list statistics in the step summary."
+    required: false
+    default: "None"
+runs:
+  using: "docker"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-clamav-unofficial"
+branding:
+  icon: "shield"
+  color: "red"
