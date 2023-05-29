@@ -23,17 +23,9 @@ on:
         options:
           - "False"
           - "True"
-      yara_enable:
-        type: "choice"
-        description: "{Boolean} Whether to use YARA."
-        required: false
-        default: "False"
-        options:
-          - "False"
-          - "True"
 jobs:
-  main:
-    name: "Main"
+  all:
+    name: "All"
     runs-on: "ubuntu-latest"
     steps:
       - name: "List Docker Image"
@@ -44,14 +36,64 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction/_build@main"
+        uses: "hugoalh/scan-virus-ghaction/_build/all@main"
         with:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
           clamav_unofficialassets: |-
             ^.+$
-          yara_enable: "${{github.event.inputs.yara_enable}}"
+          yara_enable: "True"
+          yara_unofficialassets: |-
+            ^.+$
+          log_elements: "OnlyCurrent"
+          summary_found: "Clone"
+          summary_statistics: "Clone"
+  clamav:
+    name: "ClamAV"
+    needs:
+      - "all"
+    if: "${{always()}}"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "List Docker Image"
+        run: |
+          docker image ls --all --digests --no-trunc
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.5.2"
+        with:
+          fetch-depth: 0
+      - name: "Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction/_build/clamav@main"
+        with:
+          git_integrate: "${{github.event.inputs.git_integrate}}"
+          git_limit: "${{github.event.inputs.git_limit}}"
+          git_reverse: "${{github.event.inputs.git_reverse}}"
+          clamav_unofficialassets: |-
+            ^.+$
+          log_elements: "OnlyCurrent"
+          summary_found: "Clone"
+          summary_statistics: "Clone"
+  yara:
+    name: "YARA"
+    needs:
+      - "all"
+    if: "${{always()}}"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "List Docker Image"
+        run: |
+          docker image ls --all --digests --no-trunc
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.5.2"
+        with:
+          fetch-depth: 0
+      - name: "Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction/_build/yara@main"
+        with:
+          git_integrate: "${{github.event.inputs.git_integrate}}"
+          git_limit: "${{github.event.inputs.git_limit}}"
+          git_reverse: "${{github.event.inputs.git_reverse}}"
           yara_unofficialassets: |-
             ^.+$
           log_elements: "OnlyCurrent"

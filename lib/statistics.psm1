@@ -2,7 +2,8 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'step-summary'
+		'step-summary',
+		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
@@ -19,6 +20,13 @@ Class ScanVirusStatistics {
 	[UInt64]$SizeYara = 0
 	[Boolean]$IsOverflow = $False
 	[PSCustomObject[]]GetStatisticsTable() {
+		[String[]]$Types = @('Scan')
+		If ($Script:AllBundle -or $Script:ClamAVBundle) {
+			$Types += 'ClamAV'
+		}
+		If ($Script:AllBundle -or $Script:YaraBundle) {
+			$Types += 'Yara'
+		}
 		[Boolean]$IsNoElement = $This.ElementDiscover -eq 0
 		[Boolean]$IsNoSize = $This.SizeDiscover -eq 0
 		[PSCustomObject[]]$StatisticsTable = @(
@@ -33,7 +41,7 @@ Class ScanVirusStatistics {
 				SizePercentage = $Null
 			}
 		)
-		ForEach ($Type In @('Scan', 'ClamAV', 'Yara')) {
+		ForEach ($Type In $Types) {
 			$StatisticsTable += [PSCustomObject]@{
 				Type = $Type
 				Element = $This.("Element$($Type)")
@@ -47,7 +55,7 @@ Class ScanVirusStatistics {
 		}
 		Return $StatisticsTable
 	}
-	[String]GetStatisticsTableString([UInt32]$Width) {
+	[String]GetStatisticsTableString([UInt16]$Width) {
 		Return (
 			$This.GetStatisticsTable() |
 			Format-Table -Property @(

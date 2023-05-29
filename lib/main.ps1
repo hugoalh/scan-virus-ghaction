@@ -18,13 +18,13 @@ Import-Module -Name (
 Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
-	Get-WareMeta
+	Show-EnvironmentVariables
+	Show-SoftwareMeta
 }
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
-Write-NameValue -Name 'Input_ListDelimiter' -Value $InputListDelimiter.ToString()
 Try {
 	[String]$InputTableMarkupInput = Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusInputTableMarkup]$InputTableMarkup = [ScanVirusInputTableMarkup]::($InputTableMarkupInput)
@@ -34,50 +34,19 @@ Catch {
 		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Input_TableMarkup' -Value $InputTableMarkup.ToString()
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
-Write-NameValue -Name "Targets [$($Targets.Count)]" -Value (($Targets.Count -eq 0) ? '{Local}' : (
-	$Targets |
-		Select-Object -ExpandProperty 'OriginalString' |
-		Join-String -Separator ', '
-))
-[Boolean]$GitIntegrate = Get-InputBoolean -Name 'git_integrate'
-Write-NameValue -Name 'Git_Integrate' -Value $GitIntegrate
+[Boolean]$GitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull -Trim))
 [AllowEmptyCollection()][PSCustomObject[]]$GitIgnores = (Get-InputTable -Name 'git_ignores' -Markup $InputTableMarkup) ?? @()
-Write-NameValue -Name "Git_Ignores [$($GitIgnores.Count)]" -Value (
-	$GitIgnores |
-		Format-List -Property '*' |
-		Out-String -Width 120
-) -NewLine
-[Boolean]$GitLfs = Get-InputBoolean -Name 'git_lfs'
-Write-NameValue -Name 'Git_LFS' -Value $GitLfs
-[UInt64]$GitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -EmptyStringAsNull))
-Write-NameValue -Name 'Git_Limit' -Value $GitLimit
-[Boolean]$GitReverse = Get-InputBoolean -Name 'git_reverse'
-Write-NameValue -Name 'Git_Reverse' -Value $GitReverse
-[Boolean]$ClamAVEnable = Get-InputBoolean -Name 'clamav_enable'
-Write-NameValue -Name 'ClamAV_Enable' -Value $ClamAVEnable
-[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter
-Write-NameValue -Name "ClamAV_UnofficialAssets_RegEx" -Value (
-	$ClamAVUnofficialAssetsInput |
-		Join-String -Separator '|'
-)
-[Boolean]$ClamAVUpdate = Get-InputBoolean -Name 'clamav_update'
-Write-NameValue -Name 'ClamAV_Update' -Value $ClamAVUpdate
-[Boolean]$YaraEnable = Get-InputBoolean -Name 'yara_enable'
-Write-NameValue -Name 'YARA_Enable' -Value $YaraEnable
-[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter
-Write-NameValue -Name "YARA_UnofficialAssets_RegEx" -Value (
-	$YaraUnofficialAssetsInput |
-		Join-String -Separator '|'
-)
+[Boolean]$GitLfs = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_lfs' -Mandatory -EmptyStringAsNull -Trim))
+[UInt64]$GitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory -EmptyStringAsNull -Trim))
+[Boolean]$GitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory -EmptyStringAsNull -Trim))
+[Boolean]$ClamAVEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull -Trim)) : $ClamAVForce
+[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = $AllBundle ? (Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter ?? @()) : @()
+[Boolean]$ClamAVUpdate = $ClamAVBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull -Trim)) : $False
+[Boolean]$YaraEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull -Trim)) : $YaraForce
+[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = $AllBundle ? (Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter ?? @()) : @()
 [AllowEmptyCollection()][PSCustomObject[]]$Ignores = (Get-InputTable -Name 'ignores' -Markup $InputTableMarkup) ?? @()
-Write-NameValue -Name "Ignores [$($Ignores.Count)]" -Value (
-	$Ignores |
-		Format-List -Property '*' |
-		Out-String -Width 120
-) -NewLine
 Try {
 	[String]$LogElementsInput = Get-GitHubActionsInput -Name 'log_elements' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusLogElementsChoices]$LogElements = [ScanVirusLogElementsChoices]::($LogElementsInput)
@@ -87,7 +56,6 @@ Catch {
 		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Log_Elements' -Value $LogElements.ToString()
 Try {
 	[String]$SummaryFoundInput = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusStepSummaryChoices]$SummaryFound = [ScanVirusStepSummaryChoices]::($SummaryFoundInput)
@@ -97,7 +65,6 @@ Catch {
 		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Summary_Found' -Value $SummaryFound.ToString()
 Try {
 	[String]$SummaryStatisticsInput = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusStepSummaryChoices]$SummaryStatistics = [ScanVirusStepSummaryChoices]::($SummaryStatisticsInput)
@@ -107,7 +74,39 @@ Catch {
 		Exit-GitHubActionsLogGroup
 	}
 }
-Write-NameValue -Name 'Summary_Statistics' -Value $SummaryStatistics.ToString()
+[PSCustomObject]@{
+	Bundle = $Env:GHACTION_SCANVIRUS_BUNDLE
+	Input_ListDelimiter = $InputListDelimiter.ToString()
+	Input_TableMarkup = $InputTableMarkup.ToString()
+	"Targets [$($Targets.Count)]" = ($Targets.Count -eq 0) ? '{Local}' : (
+		$Targets |
+			Select-Object -ExpandProperty 'OriginalString' |
+			Join-String -Separator ', '
+	)
+	Git_Integrate = $GitIntegrate
+	"Git_Ignores [$($GitIgnores.Count)]" = $GitIgnores |
+		Format-List -Property '*' |
+		Out-String -Width 80
+	Git_LFS = $GitLfs
+	Git_Limit = $GitLimit
+	Git_Reverse = $GitReverse
+	ClamAV_Enable = $ClamAVEnable
+	ClamAV_UnofficialAssets_RegEx = $ClamAVUnofficialAssetsInput |
+		Join-String -Separator '|'
+	ClamAV_Update = $ClamAVUpdate
+	YARA_Enable = $YaraEnable
+	YARA_UnofficialAssets_RegEx = $YaraUnofficialAssetsInput |
+		Join-String -Separator '|'
+	"Ignores [$($Ignores.Count)]" = $Ignores |
+		Format-List -Property '*' |
+		Out-String -Width 80
+	Log_Elements = $LogElements.ToString()
+	Summary_Found = $SummaryFound.ToString()
+	Summary_Statistics = $SummaryStatistics.ToString()
+} |
+	Format-List |
+	Out-String -Width 120 |
+	Write-Host
 Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
@@ -115,7 +114,7 @@ If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 If (!$GitLfs) {
 	Disable-GitLfsProcess
 }
-If ($ClamAVUpdate -and $ClamAVEnable) {
+If ($ClamAVEnable -and $ClamAVUpdate) {
 	Update-ClamAV
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {

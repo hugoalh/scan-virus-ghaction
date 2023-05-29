@@ -1,26 +1,26 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Function Get-WareMeta {
+If ($Env:GHACTION_SCANVIRUS_BUNDLE -inotin @('all', 'clamav', 'yara')) {
+	Write-GitHubActionsFail -Message 'Invalid environment variable `GHACTION_SCANVIRUS_BUNDLE`! Please submit a bug report.'
+}
+[Boolean]$AllBundle = $Env:GHACTION_SCANVIRUS_BUNDLE -ieq 'all'
+[Boolean]$ClamAVForce = $Env:GHACTION_SCANVIRUS_BUNDLE -ieq 'clamav'
+[Boolean]$YaraForce = $Env:GHACTION_SCANVIRUS_BUNDLE -ieq 'yara'
+[Boolean]$ClamAVBundle = $AllBundle -or $ClamAVForce
+[Boolean]$YaraBundle = $AllBundle -or $YaraForce
+Function Show-EnvironmentVariables {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Hardware: '
-	hwinfo --all
-	Exit-GitHubActionsLogGroup
 	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
 	Get-ChildItem -LiteralPath 'Env:\' |
 		ForEach-Object -Begin {
 			$Result = [Ordered]@{}
 		} -Process {
-			If (
+			$Result.($_.Name) = (
 				$_.Name -iin @('ACTIONS_RUNTIME_TOKEN') -or
 				$_.Name -imatch '_TOKEN$'
-			) {
-				$Result.($_.Name) = '***'
-			}
-			Else {
-				$Result.($_.Name) = $_.Value
-			}
+			) ? '***' : $_.Value
 		} -End {
 			[PSCustomObject]$Result |
 				Format-List |
@@ -28,6 +28,11 @@ Function Get-WareMeta {
 				Write-Host
 		}
 	Exit-GitHubActionsLogGroup
+}
+Function Show-SoftwareMeta {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
 	Enter-GitHubActionsLogGroup -Title 'PowerShell (`pwsh`): '
 	[PSCustomObject]@{
 		Path = Get-Command -Name 'pwsh' -CommandType 'Application' |
@@ -48,17 +53,28 @@ Function Get-WareMeta {
 		Out-String -Width 120 |
 		Write-Host
 	Exit-GitHubActionsLogGroup
-	@(
-		@{ Bin = 'clamd'; Name = 'ClamAV Daemon' },
-		@{ Bin = 'clamdscan'; Name = 'ClamAV Scan Daemon' },
-		@{ Bin = 'clamscan'; Name = 'ClamAV Scan' },
-		@{ Bin = 'freshclam'; Name = 'FreshClam (ClamAV Updater)' },
+	[Hashtable[]]$BinList = @(
 		@{ Bin = 'git'; Name = 'Git' },
-		@{ Bin = 'git-lfs'; Name = 'Git LFS' },
-		# @{ Bin = 'node'; Name = 'NodeJS' },
-		@{ Bin = 'yara'; Name = 'YARA' }
-		@{ Bin = 'yarac'; Name = 'YARA Compiler' }
-	) |
+		@{ Bin = 'git-lfs'; Name = 'Git LFS' }
+		# @{ Bin = 'node'; Name = 'NodeJS' }
+	)
+	If ($ClamAVBundle) {
+		$BinList += @(
+			@{ Bin = 'clamd'; Name = 'ClamAV Daemon' },
+			@{ Bin = 'clamdscan'; Name = 'ClamAV Scan Daemon' },
+			@{ Bin = 'clamscan'; Name = 'ClamAV Scan' },
+			@{ Bin = 'freshclam'; Name = 'FreshClam (ClamAV Updater)' }
+		)
+	}
+	If ($YaraBundle) {
+		$BinList += @(
+			@{ Bin = 'yara'; Name = 'YARA' }
+			# @{ Bin = 'yarac'; Name = 'YARA Compiler' }
+		)
+	}
+	$BinList |
+		ForEach-Object -Process { [PSCustomObject]$_ } |
+		Sort-Object -Property 'Bin' |
 		ForEach-Object -Process {
 			Enter-GitHubActionsLogGroup -Title "$($_.Name) (``$($_.Bin)``): "
 			[PSCustomObject]@{
@@ -75,5 +91,12 @@ Function Get-WareMeta {
 		}
 }
 Export-ModuleMember -Function @(
-	'Get-WareMeta'
+	'Show-EnvironmentVariables',
+	'Show-SoftwareMeta'
+) -Variable @(
+	'AllBundle',
+	'ClamAVBundle',
+	'ClamAVForce',
+	'YaraBundle',
+	'YaraForce'
 )

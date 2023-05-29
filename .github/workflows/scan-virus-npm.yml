@@ -49,9 +49,9 @@ jobs:
       group: "${{steps.resolve-packages.outputs.group}}"
   main:
     name: "${{fromJson(matrix.group).name}}"
-    runs-on: "ubuntu-latest"
     needs:
       - "resolve-packages"
+    runs-on: "ubuntu-latest"
     strategy:
       matrix:
         group: "${{fromJson(needs.resolve-packages.outputs.group)}}"
