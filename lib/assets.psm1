@@ -62,7 +62,9 @@ Function Register-ClamAVUnofficialAssets {
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	} |
-		Write-FormatListStringify
+		Format-List |
+		Out-String -Width 120 |
+		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
@@ -150,7 +152,9 @@ Function Register-YaraUnofficialAssets {
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	} |
-		Write-FormatListStringify
+		Format-List |
+		Out-String -Width 120 |
+		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
 			'Type',
