@@ -5,9 +5,8 @@ FROM debian:11.7
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ENV GHACTION_SCANVIRUS_APT_CLAMAVOFFICIAL=true
-ENV GHACTION_SCANVIRUS_APT_CLAMAVUNOFFICIAL=false
-ENV GHACTION_SCANVIRUS_APT_YARAUNOFFICIAL=false
+ENV GHACTION_SCANVIRUS_APT_CLAMAV=true
+ENV GHACTION_SCANVIRUS_APT_YARA=false
 
 ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
 ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
@@ -51,13 +50,11 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope
 # RUN clamconf --generate-config=clamd.conf
 # RUN clamconf --generate-config=freshclam.conf
 
-# <ClamAV Unofficial Only>
-# COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
-
-# <ClamAV Official Only>
+# <ClamAV Only>
+COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
 COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
 
-# <YARA Unofficial Only>
+# <YARA Only>
 # COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}

@@ -1,4 +1,4 @@
-name: "Scan Virus (ClamAV Official)"
+name: "Scan Virus (ClamAV)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
@@ -32,6 +32,9 @@ inputs:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
+  clamav_unofficialassets:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
+    required: false
   clamav_update:
     description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
     required: false
@@ -53,7 +56,7 @@ inputs:
     default: "None"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-clamav-official"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-clamav"
 branding:
   icon: "shield"
   color: "red"

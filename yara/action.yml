@@ -1,4 +1,4 @@
-name: "Scan Virus (YARA Unofficial)"
+name: "Scan Virus (YARA)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
@@ -52,7 +52,7 @@ inputs:
     default: "None"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-yara-unofficial"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-yara"
 branding:
   icon: "shield"
   color: "red"
