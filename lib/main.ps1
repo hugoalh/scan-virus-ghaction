@@ -41,10 +41,10 @@ Catch {
 [UInt64]$GitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory -EmptyStringAsNull -Trim))
 [Boolean]$GitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory -EmptyStringAsNull -Trim))
 [Boolean]$ClamAVEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull -Trim)) : $ClamAVForce
-[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = $AllBundle ? (Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter ?? @()) : @()
+[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = $AllBundle ? ((Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter) ?? @()) : @()
 [Boolean]$ClamAVUpdate = $ClamAVBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull -Trim)) : $False
 [Boolean]$YaraEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull -Trim)) : $YaraForce
-[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = $AllBundle ? (Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter ?? @()) : @()
+[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = $AllBundle ? ((Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter) ?? @()) : @()
 [AllowEmptyCollection()][PSCustomObject[]]$Ignores = (Get-InputTable -Name 'ignores' -Markup $InputTableMarkup) ?? @()
 Try {
 	[String]$LogElementsInput = Get-GitHubActionsInput -Name 'log_elements' -Mandatory -EmptyStringAsNull -Trim
