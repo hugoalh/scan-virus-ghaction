@@ -47,13 +47,19 @@ jobs:
           yara_unofficialassets: |-
             .+
           log_elements: "OnlyCurrent"
-          summary_found: "Clone"
+          summary_found: "None"
           summary_statistics: "Clone"
+  delay:
+    name: "(Delay)"
+    runs-on: "ubuntu-latest"
+    steps:
+      - run: |
+          Start-Sleep -Seconds 120
+        shell: "pwsh"
   clamav:
     name: "ClamAV"
     needs:
-      - "all"
-    if: "${{always()}}"
+      - "delay"
     runs-on: "ubuntu-latest"
     steps:
       - name: "List Docker Image"
@@ -77,8 +83,7 @@ jobs:
   yara:
     name: "YARA"
     needs:
-      - "all"
-    if: "${{always()}}"
+      - "delay"
     runs-on: "ubuntu-latest"
     steps:
       - name: "List Docker Image"
@@ -97,5 +102,5 @@ jobs:
           yara_unofficialassets: |-
             .+
           log_elements: "OnlyCurrent"
-          summary_found: "Clone"
+          summary_found: "None"
           summary_statistics: "Clone"
