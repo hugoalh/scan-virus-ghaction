@@ -50,17 +50,6 @@ jobs:
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.title=Scan Virus (GitHub Action) Image
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
-      - name: "Build & Push Docker Image - All"
-        uses: "docker/build-push-action@v4.0.0"
-        with:
-          context: "./"
-          file: "Dockerfile"
-          labels: "${{steps.docker-meta-all.outputs.labels}}"
-          platforms: |-
-            linux/amd64
-          pull: "true"
-          push: "true"
-          tags: "${{steps.docker-meta-all.outputs.tags}}"
       - name: "Generate Docker Metadata - ClamAV"
         id: "docker-meta-clamav"
         uses: "docker/metadata-action@v4.4.0"
@@ -80,17 +69,6 @@ jobs:
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.title=Scan Virus (GitHub Action) Image (ClamAV)
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
-      - name: "Build & Push Docker Image - ClamAV"
-        uses: "docker/build-push-action@v4.0.0"
-        with:
-          context: "./"
-          file: "clamav.Dockerfile"
-          labels: "${{steps.docker-meta-clamav.outputs.labels}}"
-          platforms: |-
-            linux/amd64
-          pull: "true"
-          push: "true"
-          tags: "${{steps.docker-meta-clamav.outputs.tags}}"
       - name: "Generate Docker Metadata - YARA"
         id: "docker-meta-yara"
         uses: "docker/metadata-action@v4.4.0"
@@ -110,6 +88,28 @@ jobs:
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.title=Scan Virus (GitHub Action) Image (YARA)
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
+      - name: "Build & Push Docker Image - All"
+        uses: "docker/build-push-action@v4.0.0"
+        with:
+          context: "./"
+          file: "Dockerfile"
+          labels: "${{steps.docker-meta-all.outputs.labels}}"
+          platforms: |-
+            linux/amd64
+          pull: "true"
+          push: "true"
+          tags: "${{steps.docker-meta-all.outputs.tags}}"
+      - name: "Build & Push Docker Image - ClamAV"
+        uses: "docker/build-push-action@v4.0.0"
+        with:
+          context: "./"
+          file: "clamav.Dockerfile"
+          labels: "${{steps.docker-meta-clamav.outputs.labels}}"
+          platforms: |-
+            linux/amd64
+          pull: "true"
+          push: "true"
+          tags: "${{steps.docker-meta-clamav.outputs.tags}}"
       - name: "Build & Push Docker Image - YARA"
         uses: "docker/build-push-action@v4.0.0"
         with:
