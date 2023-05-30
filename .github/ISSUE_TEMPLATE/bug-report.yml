@@ -18,6 +18,9 @@ body:
       description: "What versions are affected? Versions must be listed as supported in the Security Policy (file: `SECURITY.md`)."
       multiple: true
       options:
+        - "v0.14.0"
+        - "v0.14.0+clamav"
+        - "v0.14.0+yara"
         - "v0.13.2"
         - "v0.13.1"
         - "v0.13.0"
