@@ -445,7 +445,7 @@ If ($Targets.Count -eq 0) {
 			[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
 			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
 				Write-Host -Object "Reach the Git commits count limit, these Git commits are ignore: $(
-					@($GitCommitsHashIndex..($GitCommitsHash.Count)) |
+					@($GitCommitsHashIndex..($GitCommitsHash.Count - 1)) |
 						ForEach-Object -Process { "$($GitCommitsHash[$_]) [#$($_ + 1)/$($GitCommitsHash.Count)]" } |
 						Join-String -Separator ', '
 				)"
