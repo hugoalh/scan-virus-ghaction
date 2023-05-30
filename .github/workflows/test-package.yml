@@ -23,17 +23,9 @@ on:
         options:
           - "False"
           - "True"
-      yara_enable:
-        type: "choice"
-        description: "{Boolean} Whether to use YARA."
-        required: false
-        default: "False"
-        options:
-          - "False"
-          - "True"
 jobs:
-  main:
-    name: "Main"
+  all:
+    name: "All"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
@@ -48,9 +40,45 @@ jobs:
           git_reverse: "${{github.event.inputs.git_reverse}}"
           clamav_unofficialassets: |-
             .+
-          yara_enable: "${{github.event.inputs.yara_enable}}"
+          yara_enable: "True"
           yara_unofficialassets: |-
             .+
           log_elements: "OnlyCurrent"
+          summary_found: "None"
+          summary_statistics: "Clone"
+  clamav:
+    name: "ClamAV"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.5.2"
+        with:
+          fetch-depth: 0
+      - name: "Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction/clamav@main"
+        with:
+          git_integrate: "${{github.event.inputs.git_integrate}}"
+          git_limit: "${{github.event.inputs.git_limit}}"
+          git_reverse: "${{github.event.inputs.git_reverse}}"
+          clamav_unofficialassets: |-
+            .+
+          log_elements: "OnlyCurrent"
           summary_found: "Clone"
+          summary_statistics: "Clone"
+  yara:
+    name: "YARA"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout Repository"
+        uses: "actions/checkout@v3.5.2"
+        with:
+          fetch-depth: 0
+      - name: "Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction/yara@main"
+        with:
+          git_integrate: "${{github.event.inputs.git_integrate}}"
+          git_limit: "${{github.event.inputs.git_limit}}"
+          git_reverse: "${{github.event.inputs.git_reverse}}"
+          log_elements: "OnlyCurrent"
+          summary_found: "None"
           summary_statistics: "Clone"

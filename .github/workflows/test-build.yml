@@ -99,8 +99,6 @@ jobs:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
-          yara_unofficialassets: |-
-            .+
           log_elements: "OnlyCurrent"
           summary_found: "None"
           summary_statistics: "Clone"
