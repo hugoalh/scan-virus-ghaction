@@ -74,7 +74,7 @@ Catch {
 	}
 }
 [PSCustomObject]@{
-	Bundle = $Env:GHACTION_SCANVIRUS_BUNDLE
+	Bundle = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL
 	Input_ListDelimiter = $InputListDelimiter.ToString()
 	Input_TableMarkup = $InputTableMarkup.ToString()
 	"Targets [$($Targets.Count)]" = ($Targets.Count -eq 0) ? '{Local}' : (
@@ -444,8 +444,12 @@ If ($Targets.Count -eq 0) {
 			[String]$GitCommitHash = $GitCommitsHash[$GitCommitsHashIndex]
 			[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
 			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
-				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Reach the Git commits count limit"
-				Continue
+				Write-Host -Object "Reach the Git commits count limit, these Git commits are ignore: $(
+					@($GitCommitsHashIndex..($GitCommitsHash.Count)) |
+						ForEach-Object -Process { "$($GitCommitsHash[$_]) [#$($_ + 1)/$($GitCommitsHash.Count)]" } |
+						Join-String -Separator ', '
+				)"
+				Break
 			}
 			$GitCommit = Get-GitCommitMeta -Index $GitCommitHash
 			If ($Null -ieq $GitCommit) {

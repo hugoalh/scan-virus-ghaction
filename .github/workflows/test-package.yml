@@ -47,10 +47,10 @@ jobs:
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
           clamav_unofficialassets: |-
-            ^.+$
+            .+
           yara_enable: "${{github.event.inputs.yara_enable}}"
           yara_unofficialassets: |-
-            ^.+$
+            .+
           log_elements: "OnlyCurrent"
           summary_found: "Clone"
           summary_statistics: "Clone"
