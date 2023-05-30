@@ -51,14 +51,14 @@ jobs:
       - uses: "hugoalh/scan-virus-ghaction@<Version>"
 ```
 
-> **ℹ️ Notice:** Begin from v0.14.0, this action also provide editions of each tool:
+> **ℹ Notice:** Begin from v0.14.0, this action also provide editions of each tool:
 >
 > - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Version>"`
 > - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Version>"`
 
 ### 📥 Input
 
-> **ℹ️ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official assets.
+> **ℹ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official assets.
 
 #### `input_listdelimiter`
 
