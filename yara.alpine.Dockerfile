@@ -15,19 +15,19 @@ RUN tar "--directory=$PS_INSTALL_FOLDER" --extract "--file=$PWSH_TARFILEPATH" --
 
 FROM stage-env
 
-ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=clamav
+ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=yara
 
 ENV GHACTION_SCANVIRUS_PROGRAM_ROOT=/opt/hugoalh/scan-virus-ghaction/
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS=${GHACTION_SCANVIRUS_PROGRAM_ROOT}assets/
 ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}lib/
 
 # <ClamAV Only>
-ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
-ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
-ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}clamav-unofficial/
+# ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
+# ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
+# ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}clamav-unofficial/
 
 # <YARA Only>
-# ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}yara-unofficial/
+ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}yara-unofficial/
 
 # <Debug>
 # RUN printenv
@@ -36,7 +36,7 @@ COPY assets/configs/alpine-repositories /etc/apk/repositories
 RUN apk update
 RUN apk --no-cache upgrade
 
-RUN apk --no-cache add ca-certificates clamav clamav-clamdscan clamav-daemon clamav-scanner curl freshclam git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base nodejs tzdata userspace-rcu zlib
+RUN apk --no-cache add ca-certificates curl git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base nodejs tzdata userspace-rcu yara@edgetesting zlib
 # <Full Format>
 # RUN apk --no-cache add ca-certificates clamav clamav-clamdscan clamav-daemon clamav-scanner curl freshclam git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base nodejs tzdata userspace-rcu yara@edgetesting zlib
 
@@ -53,11 +53,11 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope
 # RUN clamconf --generate-config=freshclam.conf
 
 # <ClamAV Only>
-COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
-COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
+# COPY assets/clamav-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV}
+# COPY assets/configs/clamd.conf assets/configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}
 
 # <YARA Only>
-# COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
+COPY assets/yara-unofficial/ ${GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA}
 
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 
@@ -65,6 +65,6 @@ COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}
 # RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
 
 # <ClamAV Only>
-RUN freshclam --verbose
+# RUN freshclam --verbose
 
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
