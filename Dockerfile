@@ -1,44 +1,29 @@
 # syntax=docker/dockerfile:1
 # <Note> Do not reduce layers due to GitHub Packages have worse performance on big size layer!
 
-FROM debian:11.7
-
-ENV DEBIAN_FRONTEND=noninteractive
+FROM alpine:3.18
 
 ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=all
-
-ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
-ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
 
 ENV GHACTION_SCANVIRUS_PROGRAM_ROOT=/opt/hugoalh/scan-virus-ghaction/
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS=${GHACTION_SCANVIRUS_PROGRAM_ROOT}assets/
 ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}lib/
+
+# <ClamAV Only>
+ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav/
+ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav/
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}clamav-unofficial/
+
+# <YARA Only>
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}yara-unofficial/
 
 # <Debug>
 # RUN printenv
 
-RUN echo "deb http://deb.debian.org/debian/ sid main contrib" >> /etc/apt/sources.list
-RUN apt-get --assume-yes update
-
-RUN apt-get --assume-yes install apt-utils curl
-# <Full Format>
-# RUN apt-get --assume-yes install apt-utils ca-certificates curl gss-ntlmssp less libc6 libgcc1 libgssapi-krb5-2 libicu67 libssl1.1 libstdc++6 locales openssh-client zlib1g
-
-RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs yara
-# <Full format>
-# RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs nodejs yara
-
-RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
-RUN echo "deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" >> /etc/apt/sources.list.d/microsoft.list
-RUN apt-get --assume-yes update
-RUN apt-get --assume-yes install powershell
-RUN apt-get --assume-yes dist-upgrade
-
-# <Should Not Use Without Reduced Layers>
-# RUN apt-get --assume-yes autoremove
-# RUN apt-get --assume-yes clean
+COPY assets/configs/alpine-repositories /etc/apk/repositories
+RUN apk update
+RUN apk --no-cache upgrade
+RUN apk --no-cache add clamav clamav-clamdscan clamav-daemon clamav-scanner freshclam git git-lfs nodejs powershell yara@edgetesting
 
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
