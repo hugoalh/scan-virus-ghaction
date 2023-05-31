@@ -1,7 +1,16 @@
 # syntax=docker/dockerfile:1
 # <Note> Do not reduce layers due to GitHub Packages have worse performance on big size layer!
 
+FROM alpine:3.18 AS stage-extract-powershell
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
+ADD https://github.com/PowerShell/PowerShell/releases/download/v7.3.4/powershell-7.3.4-linux-alpine-x64.tar.gz /tmp/powershell-linux-alpine-x64.tar.gz
+RUN mkdir --parents --verbose $PS_INSTALL_FOLDER
+RUN tar --directory=$PS_INSTALL_FOLDER --extract --file=/tmp/powershell-linux-alpine-x64.tar.gz --gzip --verbose
+
+
+
 FROM alpine:3.18
+ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 
 ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=all
 
@@ -23,7 +32,10 @@ ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}y
 COPY assets/configs/alpine-repositories /etc/apk/repositories
 RUN apk update
 RUN apk --no-cache upgrade
-RUN apk --no-cache add clamav clamav-clamdscan clamav-daemon clamav-scanner freshclam git git-lfs nodejs powershell yara@edgetesting
+RUN apk --no-cache add ca-certificates clamav clamav-clamdscan clamav-daemon clamav-scanner curl freshclam git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base nodejs tzdata userspace-rcu yara@edgetesting zlib
+COPY --from=stage-extract-powershell ${PS_INSTALL_FOLDER} ${PS_INSTALL_FOLDER}
+RUN chmod +x $PS_INSTALL_FOLDER/pwsh
+RUN ln -s $PS_INSTALL_FOLDER/pwsh /usr/bin/pwsh
 
 # <Debug>
 # RUN ["pwsh", "-NonInteractive", "-Command", "Get-Command | Format-Table -AutoSize -Wrap"]

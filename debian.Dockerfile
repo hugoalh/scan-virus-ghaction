@@ -1,16 +1,8 @@
 # syntax=docker/dockerfile:1
 # <Note> Do not reduce layers due to GitHub Packages have worse performance on big size layer!
 
-FROM alpine:3.18 AS stage-extract-powershell
-ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
-ADD https://github.com/PowerShell/PowerShell/releases/download/v7.3.4/powershell-7.3.4-linux-alpine-x64.tar.gz /tmp/powershell-linux-alpine-x64.tar.gz
-RUN mkdir --parents --verbose $PS_INSTALL_FOLDER
-RUN tar --directory=$PS_INSTALL_FOLDER --extract --file=/tmp/powershell-linux-alpine-x64.tar.gz --gzip --verbose
-
-
-
-FROM alpine:3.18
-ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
+FROM debian:11.7
+ENV DEBIAN_FRONTEND=noninteractive
 
 ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=all
 
@@ -29,16 +21,26 @@ ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSETS}y
 # <Debug>
 # RUN printenv
 
-COPY assets/configs/alpine-repositories /etc/apk/repositories
-RUN apk update
-RUN apk --no-cache upgrade
-RUN apk --no-cache add ca-certificates clamav clamav-clamdscan clamav-daemon clamav-scanner curl freshclam git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base nodejs tzdata userspace-rcu yara@edgetesting zlib
-COPY --from=stage-extract-powershell ${PS_INSTALL_FOLDER} ${PS_INSTALL_FOLDER}
-RUN chmod +x $PS_INSTALL_FOLDER/pwsh
-RUN ln -s $PS_INSTALL_FOLDER/pwsh /usr/bin/pwsh
+RUN echo "deb http://deb.debian.org/debian/ sid main contrib" >> /etc/apt/sources.list
+RUN apt-get --assume-yes update
 
-# <Debug>
-# RUN ["pwsh", "-NonInteractive", "-Command", "Get-Command | Format-Table -AutoSize -Wrap"]
+RUN apt-get --assume-yes install apt-utils curl
+# <Full Format>
+# RUN apt-get --assume-yes install apt-utils ca-certificates curl gss-ntlmssp less libc6 libgcc1 libgssapi-krb5-2 libicu67 libssl1.1 libstdc++6 locales openssh-client zlib1g
+
+RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs yara
+# <Full format>
+# RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs nodejs yara
+
+RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
+RUN echo "deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" >> /etc/apt/sources.list.d/microsoft.list
+RUN apt-get --assume-yes update
+RUN apt-get --assume-yes install powershell
+RUN apt-get --assume-yes dist-upgrade
+
+# <Should Not Use Without Reduced Layers>
+# RUN apt-get --assume-yes autoremove
+# RUN apt-get --assume-yes clean
 
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
