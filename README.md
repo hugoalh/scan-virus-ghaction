@@ -231,7 +231,11 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_unofficialassets`
 
-`<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
+`<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+
+Before v0.14.0, all of the unofficial assets are not in use unless specified.
+
+Begin from v0.14.0, all of the unofficial assets are in use if not specified.
 
 #### `ignores`
 
