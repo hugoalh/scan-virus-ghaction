@@ -32,25 +32,25 @@ Class ScanVirusStatistics {
 		[PSCustomObject[]]$StatisticsTable = @(
 			[PSCustomObject]@{
 				Type = 'Discover'
-				Element = $This.ElementDiscover
+				Element = $This.ElementDiscover.ToString()
 				ElementPercentage = $Null
-				SizeB = $This.SizeDiscover
-				SizeKb = [Math]::Round(($This.SizeDiscover / 1KB), 3, [System.MidpointRounding]::ToZero)
-				SizeMb = [Math]::Round(($This.SizeDiscover / 1MB), 3, [System.MidpointRounding]::ToZero)
-				SizeGb = [Math]::Round(($This.SizeDiscover / 1GB), 3, [System.MidpointRounding]::ToZero)
+				SizeB = $This.SizeDiscover.ToString()
+				SizeKb = ($This.SizeDiscover / 1KB).ToString('0.000')
+				SizeMb = ($This.SizeDiscover / 1MB).ToString('0.000')
+				SizeGb = ($This.SizeDiscover / 1GB).ToString('0.000')
 				SizePercentage = $Null
 			}
 		)
 		ForEach ($Type In $Types) {
 			$StatisticsTable += [PSCustomObject]@{
 				Type = $Type
-				Element = $This.("Element$($Type)")
-				ElementPercentage = $IsNoElement ? 0 : [Math]::Round(($This.("Element$($Type)") / $This.ElementDiscover * 100), 3, [System.MidpointRounding]::ToZero)
-				SizeB = $This.("Size$($Type)")
-				SizeKb = [Math]::Round(($This.("Size$($Type)") / 1KB), 3, [System.MidpointRounding]::ToZero)
-				SizeMb = [Math]::Round(($This.("Size$($Type)") / 1MB), 3, [System.MidpointRounding]::ToZero)
-				SizeGb = [Math]::Round(($This.("Size$($Type)") / 1GB), 3, [System.MidpointRounding]::ToZero)
-				SizePercentage = $IsNoSize ? 0 : [Math]::Round(($This.("Size$($Type)") / $This.SizeDiscover * 100), 3, [System.MidpointRounding]::ToZero)
+				Element = $This.("Element$($Type)").ToString()
+				ElementPercentage = ($IsNoElement ? 0 : ($This.("Element$($Type)") / $This.ElementDiscover * 100)).ToString('0.000')
+				SizeB = $This.("Size$($Type)").ToString()
+				SizeKb = ($This.("Size$($Type)") / 1KB).ToString('0.000')
+				SizeMb = ($This.("Size$($Type)") / 1MB).ToString('0.000')
+				SizeGb = ($This.("Size$($Type)") / 1GB).ToString('0.000')
+				SizePercentage = ($IsNoSize ? 0 : ($This.("Size$($Type)") / $This.SizeDiscover * 100)).ToString('0.000')
 			}
 		}
 		Return $StatisticsTable
