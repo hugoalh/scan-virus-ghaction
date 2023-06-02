@@ -43,8 +43,8 @@ jobs:
           }
           Set-GitHubActionsOutput -Name 'repositories' -Value (
             $Repositories |
+              Select-Object -Unique |
               Get-Random -Count 250 |
-              Sort-Object -Unique |
               ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
