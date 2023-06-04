@@ -43,6 +43,7 @@ jobs:
           }
           Set-GitHubActionsOutput -Name 'repositories' -Value (
             $Repositories |
+              Where-Object -FilterScript { $_ -inotmatch '^hugoalh(?:-studio)?\/' } |
               Select-Object -Unique |
               Get-Random -Count 250 |
               ConvertTo-Json -Depth 100 -Compress
