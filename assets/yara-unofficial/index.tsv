@@ -722,6 +722,8 @@ Rule	neo23x0	neo23x0/vul_drivecrypt	neo23x0/yara/vul_drivecrypt.yar
 Rule	neo23x0	neo23x0/vul_jquery_fileupload_cve_2018_9206	neo23x0/yara/vul_jquery_fileupload_cve_2018_9206.yar		
 Rule	neo23x0	neo23x0/vul_php_zlib_backdoor	neo23x0/yara/vul_php_zlib_backdoor.yar		
 Rule	neo23x0	neo23x0/vuln_gigabyte_driver	neo23x0/yara/vuln_gigabyte_driver.yar		
+Rule	neo23x0	neo23x0/vuln_lol_drivers	neo23x0/yara/vuln_lol_drivers.yar		
+Rule	neo23x0	neo23x0/vuln_moveit_0day_jun23	neo23x0/yara/vuln_moveit_0day_jun23.yar		
 Rule	neo23x0	neo23x0/vuln_proxynotshell_cve_2022_41040	neo23x0/yara/vuln_proxynotshell_cve_2022_41040.yar		
 Rule	neo23x0	neo23x0/webshell_regeorg	neo23x0/yara/webshell_regeorg.yar		
 Rule	neo23x0	neo23x0/webshell_xsl_transform	neo23x0/yara/webshell_xsl_transform.yar		
