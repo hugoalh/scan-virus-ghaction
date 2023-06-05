@@ -109,7 +109,7 @@ jobs:
           labels: "${{steps.docker-meta-clamav.outputs.labels}}"
           platforms: |-
             linux/amd64
-          pull: "false"
+          pull: "true"
           push: "true"
           tags: "${{steps.docker-meta-clamav.outputs.tags}}"
       - name: "Build & Push Docker Image - YARA"
@@ -120,7 +120,7 @@ jobs:
           labels: "${{steps.docker-meta-yara.outputs.labels}}"
           platforms: |-
             linux/amd64
-          pull: "false"
+          pull: "true"
           push: "true"
           tags: "${{steps.docker-meta-yara.outputs.tags}}"
       - name: "List Docker Image"
