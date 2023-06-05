@@ -30,15 +30,15 @@ Import-Module -Name (
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -Index 0
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
-$Null = git config --global --add 'safe.directory' '/github/workspace'
+$Null = git --no-pager config --global --add 'safe.directory' '/github/workspace'
 Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Config Git LFS.'
 	Try {
-		git config --global 'filter.lfs.process' 'git-lfs filter-process --skip'
-		git config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f'
+		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip'
+		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f'
 	}
 	Catch {
 		Write-GitHubActionsWarning -Message $_
@@ -128,7 +128,7 @@ Function Test-IsGitRepository {
 	[OutputType([Boolean])]
 	Param ()
 	Try {
-		[String]$Result = git rev-parse --is-inside-work-tree *>&1 |
+		[String]$Result = git --no-pager rev-parse --is-inside-work-tree *>&1 |
 			Join-String -Separator "`n"
 		If ($Result -ine 'True') {
 			Throw 'Workspace is not a Git repository!'

@@ -24,8 +24,8 @@ jobs:
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
       - name: "Config Git"
         run: |
-          git --no-pager config "user.name" "github-actions"
-          git --no-pager config "user.email" "github-actions@github.com"
+          git --no-pager config --global "user.name" "github-actions"
+          git --no-pager config --global "user.email" "github-actions@users.noreply.github.com"
       - name: "Invoke Updater"
         id: "updater"
         run: |
