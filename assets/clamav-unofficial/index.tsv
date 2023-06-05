@@ -1,28 +1,28 @@
 Type	Group	Name	Path	Remote	ApplyIgnores	Timestamp
-Ignore		sanesecurity/sigwhitelist	sanesecurity/sigwhitelist.ign2	https://mirror.rollernet.us/sanesecurity/sigwhitelist.ign2		2023-06-04T02:05:05Z
-Signature		bofhland/cracked_url	bofhland/cracked_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_cracked_URL.ndb		2023-06-04T02:05:05Z
-Signature		bofhland/malware_attach	bofhland/malware_attach.hdb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_attach.hdb		2023-06-04T02:05:05Z
-Signature		bofhland/malware_url	bofhland/malware_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_URL.ndb		2023-06-04T02:05:05Z
-Signature		bofhland/phishing_url	bofhland/phishing_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_phishing_URL.ndb		2023-06-04T02:05:05Z
-Signature		oitc/winnow_complex_patterns	oitc/winnow_complex_patterns.ldb	https://mirror.rollernet.us/sanesecurity/winnow.complex.patterns.ldb		2023-06-04T02:05:05Z
-Signature		oitc/winnow_extended_malware_links	oitc/winnow_extended_malware_links.ndb	https://mirror.rollernet.us/sanesecurity/winnow_extended_malware_links.ndb		2023-06-04T02:05:05Z
-Signature		oitc/winnow_malware_links	oitc/winnow_malware_links.ndb	https://mirror.rollernet.us/sanesecurity/winnow_malware_links.ndb		2023-06-04T02:05:05Z
-Signature		oitc/winnow_phish_complete_url	oitc/winnow_phish_complete_url.ndb	https://mirror.rollernet.us/sanesecurity/winnow_phish_complete_url.ndb		2023-06-04T02:05:05Z
-Signature		oitc/winnow_spam_complete	oitc/winnow_spam_complete.ndb	https://mirror.rollernet.us/sanesecurity/winnow_spam_complete.ndb		2023-06-04T02:05:05Z
-Signature		porcupine/porcupine_hsb	porcupine/porcupine.hsb	https://mirror.rollernet.us/sanesecurity/porcupine.hsb		2023-06-04T02:05:05Z
-Signature		porcupine/porcupine_ndb	porcupine/porcupine.ndb	https://mirror.rollernet.us/sanesecurity/porcupine.ndb		2023-06-04T02:05:05Z
-Signature		sanesecurity/badmacro	sanesecurity/badmacro.ndb	https://mirror.rollernet.us/sanesecurity/badmacro.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/blurl	sanesecurity/blurl.ndb	https://mirror.rollernet.us/sanesecurity/blurl.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/foxhole_filename	sanesecurity/foxhole_filename.cdb	https://mirror.rollernet.us/sanesecurity/foxhole_filename.cdb		2023-06-04T02:05:05Z
-Signature		sanesecurity/foxhole_generic	sanesecurity/foxhole_generic.cdb	https://mirror.rollernet.us/sanesecurity/foxhole_generic.cdb		2023-06-04T02:05:05Z
-Signature		sanesecurity/foxhole_js_cdb	sanesecurity/foxhole_js.cdb	https://mirror.rollernet.us/sanesecurity/foxhole_js.cdb		2023-06-04T02:05:05Z
-Signature		sanesecurity/foxhole_js_ndb	sanesecurity/foxhole_js.ndb	https://mirror.rollernet.us/sanesecurity/foxhole_js.ndb		2023-06-04T02:05:05Z
-Signature		sanesecurity/hackingteam	sanesecurity/hackingteam.hsb	https://mirror.rollernet.us/sanesecurity/hackingteam.hsb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/junk	sanesecurity/junk.ndb	https://mirror.rollernet.us/sanesecurity/junk.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/jurlbl	sanesecurity/jurlbl.ndb	https://mirror.rollernet.us/sanesecurity/jurlbl.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/jurlbla	sanesecurity/jurlbla.ndb	https://mirror.rollernet.us/sanesecurity/jurlbla.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/lott	sanesecurity/lott.ndb	https://mirror.rollernet.us/sanesecurity/lott.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/malwarehash	sanesecurity/malwarehash.hsb	https://mirror.rollernet.us/sanesecurity/malwarehash.hsb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/phish	sanesecurity/phish.ndb	https://mirror.rollernet.us/sanesecurity/phish.ndb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/rogue	sanesecurity/rogue.hdb	https://mirror.rollernet.us/sanesecurity/rogue.hdb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
-Signature		sanesecurity/shelter	sanesecurity/shelter.ldb	https://mirror.rollernet.us/sanesecurity/shelter.ldb	sanesecurity/sigwhitelist	2023-06-04T02:05:05Z
+Ignore		sanesecurity/sigwhitelist	sanesecurity/sigwhitelist.ign2	https://mirror.rollernet.us/sanesecurity/sigwhitelist.ign2		2023-06-05T03:02:17Z
+Signature		bofhland/cracked_url	bofhland/cracked_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_cracked_URL.ndb		2023-06-05T03:02:17Z
+Signature		bofhland/malware_attach	bofhland/malware_attach.hdb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_attach.hdb		2023-06-05T03:02:17Z
+Signature		bofhland/malware_url	bofhland/malware_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_malware_URL.ndb		2023-06-05T03:02:17Z
+Signature		bofhland/phishing_url	bofhland/phishing_url.ndb	https://mirror.rollernet.us/sanesecurity/bofhland_phishing_URL.ndb		2023-06-05T03:02:17Z
+Signature		oitc/winnow_complex_patterns	oitc/winnow_complex_patterns.ldb	https://mirror.rollernet.us/sanesecurity/winnow.complex.patterns.ldb		2023-06-05T03:02:17Z
+Signature		oitc/winnow_extended_malware_links	oitc/winnow_extended_malware_links.ndb	https://mirror.rollernet.us/sanesecurity/winnow_extended_malware_links.ndb		2023-06-05T03:02:17Z
+Signature		oitc/winnow_malware_links	oitc/winnow_malware_links.ndb	https://mirror.rollernet.us/sanesecurity/winnow_malware_links.ndb		2023-06-05T03:02:17Z
+Signature		oitc/winnow_phish_complete_url	oitc/winnow_phish_complete_url.ndb	https://mirror.rollernet.us/sanesecurity/winnow_phish_complete_url.ndb		2023-06-05T03:02:17Z
+Signature		oitc/winnow_spam_complete	oitc/winnow_spam_complete.ndb	https://mirror.rollernet.us/sanesecurity/winnow_spam_complete.ndb		2023-06-05T03:02:17Z
+Signature		porcupine/porcupine_hsb	porcupine/porcupine.hsb	https://mirror.rollernet.us/sanesecurity/porcupine.hsb		2023-06-05T03:02:17Z
+Signature		porcupine/porcupine_ndb	porcupine/porcupine.ndb	https://mirror.rollernet.us/sanesecurity/porcupine.ndb		2023-06-05T03:02:17Z
+Signature		sanesecurity/badmacro	sanesecurity/badmacro.ndb	https://mirror.rollernet.us/sanesecurity/badmacro.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/blurl	sanesecurity/blurl.ndb	https://mirror.rollernet.us/sanesecurity/blurl.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/foxhole_filename	sanesecurity/foxhole_filename.cdb	https://mirror.rollernet.us/sanesecurity/foxhole_filename.cdb		2023-06-05T03:02:17Z
+Signature		sanesecurity/foxhole_generic	sanesecurity/foxhole_generic.cdb	https://mirror.rollernet.us/sanesecurity/foxhole_generic.cdb		2023-06-05T03:02:17Z
+Signature		sanesecurity/foxhole_js_cdb	sanesecurity/foxhole_js.cdb	https://mirror.rollernet.us/sanesecurity/foxhole_js.cdb		2023-06-05T03:02:17Z
+Signature		sanesecurity/foxhole_js_ndb	sanesecurity/foxhole_js.ndb	https://mirror.rollernet.us/sanesecurity/foxhole_js.ndb		2023-06-05T03:02:17Z
+Signature		sanesecurity/hackingteam	sanesecurity/hackingteam.hsb	https://mirror.rollernet.us/sanesecurity/hackingteam.hsb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/junk	sanesecurity/junk.ndb	https://mirror.rollernet.us/sanesecurity/junk.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/jurlbl	sanesecurity/jurlbl.ndb	https://mirror.rollernet.us/sanesecurity/jurlbl.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/jurlbla	sanesecurity/jurlbla.ndb	https://mirror.rollernet.us/sanesecurity/jurlbla.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/lott	sanesecurity/lott.ndb	https://mirror.rollernet.us/sanesecurity/lott.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/malwarehash	sanesecurity/malwarehash.hsb	https://mirror.rollernet.us/sanesecurity/malwarehash.hsb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/phish	sanesecurity/phish.ndb	https://mirror.rollernet.us/sanesecurity/phish.ndb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/rogue	sanesecurity/rogue.hdb	https://mirror.rollernet.us/sanesecurity/rogue.hdb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
+Signature		sanesecurity/shelter	sanesecurity/shelter.ldb	https://mirror.rollernet.us/sanesecurity/shelter.ldb	sanesecurity/sigwhitelist	2023-06-05T03:02:17Z
