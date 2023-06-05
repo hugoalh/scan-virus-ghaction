@@ -54,7 +54,7 @@ inputs:
     default: "None"
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.0-yara"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.14.1-yara"
 branding:
   icon: "shield"
   color: "red"
