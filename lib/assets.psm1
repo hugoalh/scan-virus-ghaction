@@ -13,9 +13,9 @@ Import-Module -Name (
 }
 [Hashtable]$InvokeWebRequestParameters_Get = @{
 	MaximumRedirection = 1
-	MaximumRetryCount = 5
+	MaximumRetryCount = 2
 	Method = 'Get'
-	RetryIntervalSec = 10
+	RetryIntervalSec = 5
 }
 [String]$IndexFileName = 'index.tsv'
 Function Import-NetworkTarget {

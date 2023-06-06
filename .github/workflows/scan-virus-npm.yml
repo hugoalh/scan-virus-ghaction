@@ -23,7 +23,7 @@ jobs:
             Sort-Object -Unique
           [Hashtable[]]$Group = @()
           ForEach ($Package In $Packages) {
-            [PSCustomObject]$PackageMeta = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{ 'Content-Type' = 'application/json' } -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+            [PSCustomObject]$PackageMeta = Invoke-WebRequest -Uri "https://registry.npmjs.org/$Package" -Headers @{ 'Content-Type' = 'application/json' } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' |
               Select-Object -ExpandProperty 'Content' |
               ConvertFrom-Json -Depth 100
             If ($PackageMeta.error -ieq 'Not found') {

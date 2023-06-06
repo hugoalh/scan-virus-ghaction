@@ -62,7 +62,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 				$Null = New-Item -Path $OutFilePathParent -ItemType 'Directory' -Confirm:$False
 			}
 			Try {
-				Invoke-WebRequest -Uri $AssetIndexItem.Remote -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -OutFile $OutFilePath
+				Invoke-WebRequest -Uri $AssetIndexItem.Remote -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' -OutFile $OutFilePath
 			}
 			Catch {
 				Write-GitHubActionsWarning -Message $_

@@ -26,7 +26,7 @@ jobs:
               [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "https://api.github.com/events?page=$($Page)&per_page=100" -Headers @{
                 'Content-Type' = 'application/vnd.github+json'
                 'X-GitHub-Api-Version' = '2022-11-28'
-              } -MaximumRedirection 1 -MaximumRetryCount 5 -RetryIntervalSec 10 -Method 'Get' -SkipHeaderValidation |
+              } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' |
                 Select-Object -ExpandProperty 'Content' |
                 ConvertFrom-Json -Depth 100
               ForEach ($Repository In $Response.repo.name) {
