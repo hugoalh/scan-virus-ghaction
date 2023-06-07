@@ -289,8 +289,8 @@ Sanesecurity.Foxhole.Zip_fs192:CL_TYPE_ZIP:*:(?i)tracking.{0,30}\.jse$:*:*:*:*:*
 Sanesecurity.Foxhole.Zip_fs193:CL_TYPE_ZIP:*:(?i)details.{5,30}\.js$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs194:CL_TYPE_ZIP:*:(?i)document.{5,30}\.js$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs195:CL_TYPE_ZIP:*:(?i)ref.{5,30}\.js$:*:*:*:1:*:*
-Sanesecurity.Foxhole.Zip_fs196:CL_TYPE_ZIP:*:(?i)cash.{5,30}\.js$:*:*:*:*:*:*
-Sanesecurity.Foxhole.Zip_fs197:CL_TYPE_ZIP:*:(?i)confirm.{5,30}\.js$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Zip_fs196:CL_TYPE_ZIP:*:(?i)cash.{5,30}\.js$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs197:CL_TYPE_ZIP:*:(?i)confirm.{5,30}\.js$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs198:CL_TYPE_ZIP:*:(?i)money.{5,30}\.js$:*:*:*:*:*:*
 Sanesecurity.Foxhole.Zip_fs199:CL_TYPE_ZIP:*:(?i)warning.{5,30}\.js$:*:*:*:*:*:*
 Sanesecurity.Foxhole.Cab_fs200:CL_TYPE_MSCAB:*:(?i)cash.{5,30}\*js$:*:*:*:*:*:*
@@ -3486,3 +3486,6 @@ Sanesecurity.Foxhole.7Zip_fs3485:CL_TYPE_7Z:*:(?i)^enquiry-.{0,30}\.vbs$:*:*:*:*
 Sanesecurity.Foxhole.7Zip_fs3486:CL_TYPE_7Z:*:(?i)^quotation\.vbs$:*:*:*:*:*:*
 Sanesecurity.Foxhole.Zip_fs3487:CL_TYPE_ZIP:*:(?i)^es-scan-.{0,30}\.bat$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3488:CL_TYPE_ZIP:*:(?i)^e1s-scan-.{0,30}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3489:CL_TYPE_RAR:*:(?i)^swit bank paper.{0,3}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3490:CL_TYPE_RAR:*:(?i)^payment copy#.{0,30}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.7Zip_fs3491:CL_TYPE_7Z:*:(?i)^img_.{0,30}\pdf\.exe$:*:*:*:*:*:*
