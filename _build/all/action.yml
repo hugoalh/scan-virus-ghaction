@@ -69,7 +69,7 @@ inputs:
     default: "None"
 runs:
   using: "docker"
-  image: "../../Dockerfile"
+  image: "../../all.Dockerfile"
 branding:
   icon: "shield"
   color: "red"
