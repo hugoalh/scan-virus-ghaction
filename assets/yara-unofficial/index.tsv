@@ -544,6 +544,7 @@ Rule	neo23x0	neo23x0/gen_excel_xll_addin_suspicious	neo23x0/yara/gen_excel_xll_a
 Rule	neo23x0	neo23x0/gen_excel_xor_obfuscation_velvetsweatshop	neo23x0/yara/gen_excel_xor_obfuscation_velvetsweatshop.yar		
 Rule	neo23x0	neo23x0/gen_Excel4Macro_Sharpshooter	neo23x0/yara/gen_Excel4Macro_Sharpshooter.yar		
 Rule	neo23x0	neo23x0/gen_exploit_cve_2017_10271_weblogic	neo23x0/yara/gen_exploit_cve_2017_10271_weblogic.yar		
+Rule	neo23x0	neo23x0/gen_fake_amsi_dll	neo23x0/yara/gen_fake_amsi_dll.yar		
 Rule	neo23x0	neo23x0/gen_faked_versions	neo23x0/yara/gen_faked_versions.yar		
 Rule	neo23x0	neo23x0/gen_file_anomalies	neo23x0/yara/gen_file_anomalies.yar		
 Rule	neo23x0	neo23x0/gen_fireeye_redteam_tools	neo23x0/yara/gen_fireeye_redteam_tools.yar		
