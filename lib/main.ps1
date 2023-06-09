@@ -20,6 +20,7 @@ If (Get-GitHubActionsIsDebug) {
 	Show-EnvironmentVariables
 	Show-SoftwareMeta
 }
+Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
@@ -512,4 +513,6 @@ If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirec
 If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
 	$StatisticsTotal.StatisticsSummary()
 }
+Set-GitHubActionsOutput -Name 'finish' -Value $True.ToString().ToLower()
+Set-GitHubActionsOutput -Name 'found' -Value ($StatisticsTotal.IssuesSessions.Count -gt 0).ToString().ToLower()
 Exit $StatisticsTotal.GetExitCode()

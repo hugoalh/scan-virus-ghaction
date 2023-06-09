@@ -174,14 +174,14 @@ When this input is `False`, will ignore inputs:
 - **`Subject`:** `<RegEx>`
 - **`TreeHash`:** `<RegEx>`
 
-Example:
-
-```yml
-git_ignores: |-
-  - AuthorName: "^dependabot$"
-  - AuthorDate: "-lt 2022-01-01T00:00:00Z"
-    AuthorName: "^octocat$"
-```
+> **✍️ Example:**
+>
+> ```yml
+> git_ignores: |-
+>   - AuthorName: "^dependabot$"
+>   - AuthorDate: "-lt 2022-01-01T00:00:00Z"
+>     AuthorName: "^octocat$"
+> ```
 
 #### `git_lfs`
 
@@ -191,11 +191,11 @@ git_ignores: |-
 
 `<UInt>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this input is not defined or defined with `0`, means no limit.
 
-Example:
-
-```yml
-git_limit: 100
-```
+> **✍️ Example:**
+>
+> ```yml
+> git_limit: 100
+> ```
 
 > **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
 
@@ -233,9 +233,10 @@ When this input is `False`, will ignore inputs:
 
 `<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
-Before v0.14.0, all of the unofficial assets are not in use unless specified.
-
-Begin from v0.14.0, all of the unofficial assets are in use if not specified.
+> **⚠ Important:**
+>
+> - Before v0.14.0, all of the unofficial assets are not in use unless specified.
+> - Begin from v0.14.0, all of the unofficial assets are in use if not specified.
 
 #### `ignores`
 
@@ -248,12 +249,12 @@ Begin from v0.14.0, all of the unofficial assets are in use if not specified.
   - Signature (ClamAV) (`{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`)
 - **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`.
 
-Example:
-
-```yml
-ignores: |-
-  - Path: "^node_modules\\/"
-```
+> **✍️ Example:**
+>
+> ```yml
+> ignores: |-
+>   - Path: "^node_modules\\/"
+> ```
 
 > **⚠ Important:**
 >
@@ -291,7 +292,13 @@ ignores: |-
 
 ### 📤 Output
 
-*N/A*
+#### `finish`
+
+**(>= v0.15.0)** `<Boolean>` Whether this action correctly finished without non catch issues.
+
+#### `found`
+
+**(>= v0.15.0)** `<Boolean>` Whether there has element which found virus.
 
 ### Example
 

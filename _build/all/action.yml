@@ -67,6 +67,11 @@ inputs:
     description: "{String} Whether to list statistics in the step summary."
     required: false
     default: "None"
+outputs:
+  finish:
+    description: "{Boolean} Whether this action correctly finished without non catch issues."
+  found:
+    description: "{Boolean} Whether there has element which found virus"
 runs:
   using: "docker"
   image: "../../all.Dockerfile"
