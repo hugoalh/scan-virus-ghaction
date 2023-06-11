@@ -485,6 +485,7 @@ Rule	neo23x0	neo23x0/expl_cve_2021_40444	neo23x0/yara/expl_cve_2021_40444.yar
 Rule	neo23x0	neo23x0/expl_cve_2022_41040_proxynoshell	neo23x0/yara/expl_cve_2022_41040_proxynoshell.yar		
 Rule	neo23x0	neo23x0/expl_cve_2022_46169_cacti	neo23x0/yara/expl_cve_2022_46169_cacti.yar		
 Rule	neo23x0	neo23x0/expl_keepass_cve_2023_24055	neo23x0/yara/expl_keepass_cve_2023_24055.yar		
+Rule	neo23x0	neo23x0/expl_libssh_cve_2023_2283_jun23	neo23x0/yara/expl_libssh_cve_2023_2283_jun23.yar		
 Rule	neo23x0	neo23x0/expl_log4j_cve_2021_44228	neo23x0/yara/expl_log4j_cve_2021_44228.yar		
 Rule	neo23x0	neo23x0/expl_macos_switcharoo_dec22	neo23x0/yara/expl_macos_switcharoo_dec22.yar		
 Rule	neo23x0	neo23x0/expl_manageengine_jan23	neo23x0/yara/expl_manageengine_jan23.yar		
@@ -692,6 +693,7 @@ Rule	neo23x0	neo23x0/mal_codecov_hack	neo23x0/yara/mal_codecov_hack.yar
 Rule	neo23x0	neo23x0/mal_crime_unknown	neo23x0/yara/mal_crime_unknown.yar		
 Rule	neo23x0	neo23x0/mal_cryp_rat	neo23x0/yara/mal_cryp_rat.yar		
 Rule	neo23x0	neo23x0/mal_efile_apr23	neo23x0/yara/mal_efile_apr23.yar		
+Rule	neo23x0	neo23x0/mal_lnx_barracuda_cve_2023_2868	neo23x0/yara/mal_lnx_barracuda_cve_2023_2868.yar		
 Rule	neo23x0	neo23x0/mal_lnx_implant_may22	neo23x0/yara/mal_lnx_implant_may22.yar		
 Rule	neo23x0	neo23x0/mal_lockbit_lnx_macos_apr23	neo23x0/yara/mal_lockbit_lnx_macos_apr23.yar		
 Rule	neo23x0	neo23x0/mal_netsha	neo23x0/yara/mal_netsha.yar		
