@@ -3489,3 +3489,10 @@ Sanesecurity.Foxhole.Zip_fs3488:CL_TYPE_ZIP:*:(?i)^e1s-scan-.{0,30}\.exe$:*:*:*:
 Sanesecurity.Foxhole.Rar_fs3489:CL_TYPE_RAR:*:(?i)^swit bank paper.{0,3}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs3490:CL_TYPE_RAR:*:(?i)^payment copy#.{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.7Zip_fs3491:CL_TYPE_7Z:*:(?i)^img_.{0,30}\pdf\.exe$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Zip_fs3492:CL_TYPE_ZIP:*:(?i)^-bl\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3493:CL_TYPE_ZIP:*:(?i)^-bl\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3494:CL_TYPE_ZIP:*:(?i)^-inv\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3495:CL_TYPE_ZIP:*:(?i)^inquire equipment\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3496:CL_TYPE_ZIP:*:(?i)^delivery arragement\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3497:CL_TYPE_ZIP:*:(?i)^pre-alert.{0,30}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Zip_fs3498:CL_TYPE_ZIP:*:(?i)^fatura_2023_comprovante_.{0,30}\.msi$:*:*:*:1:*:*
