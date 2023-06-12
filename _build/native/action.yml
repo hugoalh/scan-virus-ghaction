@@ -85,8 +85,8 @@ runs:
         If (!$IsLinux) {
           Write-GitHubActionsFail -Message 'This action is only work on Ubuntu operating system!'
         }
-        apt-get --assume-yes update
-        apt-get --assume-yes install clamav clamav-base clamav-daemon clamav-freshclam clamdscan yara
+        sudo apt-get --assume-yes update
+        sudo apt-get --assume-yes install clamav clamav-base clamav-daemon clamav-freshclam clamdscan yara
         Install-Module -Name 'psyml' -Scope 'CurrentUser' -AcceptLicense -Confirm:$False -Verbose
         freshclam --verbose
       shell: "pwsh"
