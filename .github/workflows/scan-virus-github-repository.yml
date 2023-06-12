@@ -62,7 +62,7 @@ jobs:
       fail-fast: false
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.5.2"
+        uses: "actions/checkout@v3.5.3"
         with:
           repository: "${{matrix.group}}"
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
