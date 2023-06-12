@@ -91,7 +91,7 @@ jobs:
             org.opencontainers.image.title=Scan Virus (GitHub Action) Image (YARA)
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Build & Push Docker Image - All"
-        uses: "docker/build-push-action@v4.0.0"
+        uses: "docker/build-push-action@v4.1.0"
         with:
           context: "./"
           file: "all.Dockerfile"
@@ -102,7 +102,7 @@ jobs:
           push: "true"
           tags: "${{steps.docker-meta-all.outputs.tags}}"
       - name: "Build & Push Docker Image - ClamAV"
-        uses: "docker/build-push-action@v4.0.0"
+        uses: "docker/build-push-action@v4.1.0"
         with:
           context: "./"
           file: "clamav.Dockerfile"
@@ -113,7 +113,7 @@ jobs:
           push: "true"
           tags: "${{steps.docker-meta-clamav.outputs.tags}}"
       - name: "Build & Push Docker Image - YARA"
-        uses: "docker/build-push-action@v4.0.0"
+        uses: "docker/build-push-action@v4.1.0"
         with:
           context: "./"
           file: "yara.Dockerfile"
