@@ -101,10 +101,9 @@ runs:
         sudo apt-get --assume-yes update
         sudo apt-get --assume-yes install clamav clamav-base clamav-daemon clamav-freshclam clamdscan yara
         Install-Module -Name 'psyml' -Scope 'CurrentUser' -AcceptLicense -Confirm:$False -Verbose
-        [String]$ActionAssetsConfigsRoot = Join-Path -Path '${{github.action_path}}' -ChildPath 'assets' -AdditionalChildPath @('configs')
         Copy-Item -LiteralPath @(
-          (Join-Path -Path $ActionAssetsConfigsRoot -ChildPath 'clamd.conf'),
-          (Join-Path -Path $ActionAssetsConfigsRoot -ChildPath 'freshclam.conf')
+          (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS -ChildPath 'configs' -AdditionalChildPath @('clamd.conf')),
+          (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS -ChildPath 'configs' -AdditionalChildPath @('freshclam.conf'))
         ) -Destination $Env:GHACTION_SCANVIRUS_CLAMAV_CONFIG -Confirm:$False
         freshclam --verbose
       shell: "pwsh"
