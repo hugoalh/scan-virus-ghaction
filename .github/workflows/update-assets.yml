@@ -16,7 +16,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.5.2"
+        uses: "actions/checkout@v3.5.3"
         with:
           ref: "update-assets"
           fetch-depth: 0
