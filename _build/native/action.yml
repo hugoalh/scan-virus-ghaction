@@ -1,0 +1,109 @@
+name: "Scan Virus (Native)(Build)"
+author: "hugoalh"
+description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
+inputs:
+  input_listdelimiter:
+    description: "{RegEx} Delimiter when the input is type of list."
+    required: false
+    default: ",|;|\\r?\\n"
+  input_tablemarkup:
+    description: "{String} Markup language when the input is type of table."
+    required: false
+    default: "Yaml"
+  targets:
+    description: "{Uri[]} Targets."
+    required: false
+  git_integrate:
+    description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
+    required: false
+    default: "False"
+  git_ignores:
+    description: "{Table} Ignores for the Git commits."
+    required: false
+  git_lfs:
+    description: "{Boolean} Whether to process Git LFS files."
+    required: false
+    default: "False"
+  git_limit:
+    description: "{UInt} Limit on how many Git commits will scan."
+    required: false
+    default: "0"
+  git_reverse:
+    description: "{Boolean} Whether to reverse the scan order of the Git commits."
+    required: false
+    default: "False"
+  clamav_enable:
+    description: "{Boolean} Whether to use ClamAV."
+    required: false
+    default: "True"
+  clamav_unofficialassets:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
+    required: false
+  clamav_update:
+    description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
+    required: false
+    default: "True"
+  yara_enable:
+    description: "{Boolean} Whether to use YARA."
+    required: false
+    default: "False"
+  yara_unofficialassets:
+    description: "{RegEx[]} YARA unofficial assets to use."
+    required: false
+    default: |-
+      .+
+  ignores:
+    description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
+    required: false
+  log_elements:
+    description: "{String} Whether to list elements in the log."
+    required: false
+    default: "All"
+  summary_found:
+    description: "{String} Whether to list elements which found virus in the step summary."
+    required: false
+    default: "None"
+  summary_statistics:
+    description: "{String} Whether to list statistics in the step summary."
+    required: false
+    default: "None"
+outputs:
+  finish:
+    description: "{Boolean} Whether this action correctly finished without non catch issues."
+    value: "${{steps.execute.outputs.finish}}"
+  found:
+    description: "{Boolean} Whether there has element which found virus"
+    value: "${{steps.execute.outputs.found}}"
+runs:
+  using: "composite"
+  steps:
+    - name: "Setup PowerShell Toolkit"
+      uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
+    - name: "Setup Environment"
+      run: |
+        Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+        If (!$IsLinux) {
+          Write-GitHubActionsFail -Message 'This action is only work on Ubuntu operating system!'
+        }
+        apt-get --assume-yes update
+        apt-get --assume-yes install clamav clamav-base clamav-daemon clamav-freshclam clamdscan yara
+        Install-Module -Name 'psyml' -Scope 'CurrentUser' -AcceptLicense -Confirm:$False -Verbose
+        freshclam --verbose
+      shell: "pwsh"
+    - name: "Execute"
+      id: "execute"
+      env:
+        GHACTION_SCANVIRUS_BUNDLE_TOOL: "all"
+        GHACTION_SCANVIRUS_PROGRAM_ROOT: "${{github.action_path}}"
+        GHACTION_SCANVIRUS_PROGRAM_ASSETS: "${{github.action_path}}/assets"
+        GHACTION_SCANVIRUS_PROGRAM_LIB: "${{github.action_path}}/lib"
+        GHACTION_SCANVIRUS_CLAMAV_CONFIG: "/etc/clamav/"
+        GHACTION_SCANVIRUS_CLAMAV_DATA: "/var/lib/clamav/"
+        GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV: "${{github.action_path}}/assets/clamav-unofficial"
+        GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA: "${{github.action_path}}/assets/yara-unofficial"
+      run: |
+        pwsh -NonInteractive "$($Env:GHACTION_SCANVIRUS_PROGRAM_LIB)/main.ps1"
+      shell: "pwsh"
+branding:
+  icon: "shield"
+  color: "red"

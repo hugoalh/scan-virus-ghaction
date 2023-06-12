@@ -23,9 +23,22 @@ on:
         options:
           - "False"
           - "True"
+      tool_all:
+        type: "boolean"
+        description: "{Switch} All."
+        default: true
+      tool_clamav:
+        type: "boolean"
+        description: "{Switch} ClamAV."
+        default: true
+      tool_yara:
+        type: "boolean"
+        description: "{Switch} YARA."
+        default: true
 jobs:
   all:
     name: "All"
+    if: "${{inputs.tool_all == true}}"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
@@ -46,6 +59,7 @@ jobs:
           summary_statistics: "Clone"
   clamav:
     name: "ClamAV"
+    if: "${{inputs.tool_clamav == true}}"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
@@ -65,6 +79,7 @@ jobs:
           summary_statistics: "Clone"
   yara:
     name: "YARA"
+    if: "${{inputs.tool_yara == true}}"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
