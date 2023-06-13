@@ -16,7 +16,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Scan Virus"
-        uses: "hugoalh/scan-virus-ghaction/clamav@v0.15.0"
+        uses: "hugoalh/scan-virus-ghaction/clamav@v0.15.1"
         with:
           input_listdelimiter: "${{github.event.inputs.input_listdelimiter}}"
           targets: "${{github.event.inputs.targets}}"
