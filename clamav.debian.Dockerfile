@@ -24,13 +24,13 @@ ENV GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSETS
 RUN echo "deb http://deb.debian.org/debian/ sid main contrib" >> /etc/apt/sources.list
 RUN apt-get --assume-yes update
 
-RUN apt-get --assume-yes install apt-utils curl
+RUN apt-get --assume-yes install apt-utils clamav clamav-base clamav-daemon clamav-freshclam clamdscan curl
 # <Full Format>
-# RUN apt-get --assume-yes install apt-utils ca-certificates curl gss-ntlmssp less libc6 libgcc1 libgssapi-krb5-2 libicu67 libssl1.1 libstdc++6 locales openssh-client zlib1g
+# RUN apt-get --assume-yes install apt-utils ca-certificates clamav clamav-base clamav-daemon clamav-freshclam clamdscan curl gss-ntlmssp less libc6 libgcc1 libgssapi-krb5-2 libicu67 libssl1.1 libstdc++6 locales nodejs openssh-client zlib1g
 
-RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs
+RUN apt-get --assume-yes install --target-release=sid git git-lfs
 # <Full format>
-# RUN apt-get --assume-yes install --target-release=sid clamav clamav-base clamav-daemon clamav-freshclam clamdscan git git-lfs nodejs yara
+# RUN apt-get --assume-yes install --target-release=sid git git-lfs yara
 
 RUN curl https://packages.microsoft.com/keys/microsoft.asc --output /etc/apt/trusted.gpg.d/microsoft.asc
 RUN echo "deb https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" >> /etc/apt/sources.list.d/microsoft.list

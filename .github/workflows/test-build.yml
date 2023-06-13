@@ -35,10 +35,6 @@ on:
         type: "boolean"
         description: "{Switch} YARA."
         default: true
-      tool_native:
-        type: "boolean"
-        description: "{Switch} Native."
-        default: false
 jobs:
   all:
     name: "All"
@@ -105,27 +101,6 @@ jobs:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
-          log_elements: "OnlyCurrent"
-          summary_found: "None"
-          summary_statistics: "Clone"
-  native:
-    name: "Native"
-    if: "${{inputs.tool_native == true}}"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Checkout Repository"
-        uses: "actions/checkout@v3.5.3"
-        with:
-          fetch-depth: 0
-      - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction/_build/native@main"
-        with:
-          git_integrate: "${{github.event.inputs.git_integrate}}"
-          git_limit: "${{github.event.inputs.git_limit}}"
-          git_reverse: "${{github.event.inputs.git_reverse}}"
-          clamav_unofficialassets: |-
-            .+
-          yara_enable: "True"
           log_elements: "OnlyCurrent"
           summary_found: "None"
           summary_statistics: "Clone"
