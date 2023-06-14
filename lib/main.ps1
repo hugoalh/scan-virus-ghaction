@@ -5,11 +5,10 @@ $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'assets',
 		'git',
 		'internal',
+		'splat-parameter',
 		'step-summary'
-		'tool',
 		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
@@ -17,12 +16,11 @@ Import-Module -Name (
 Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
-	Show-EnvironmentVariables
+	Show-EnvironmentVariable
 	Show-SoftwareMeta
 }
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
-[RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Enter-GitHubActionsLogGroup -Title 'Import inputs.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
 Try {
@@ -111,24 +109,33 @@ Exit-GitHubActionsLogGroup
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
+If ($Targets.Count -gt 0) {
+	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'network-target.psm1') -Scope 'Local'
+}
 If (!$GitLfs) {
 	Disable-GitLfsProcess
+}
+If ($ClamAVEnable) {
+	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'clamav.psm1') -Scope 'Local'
+}
+If ($YaraEnable) {
+	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'yara.psm1') -Scope 'Local'
 }
 If ($ClamAVEnable -and $ClamAVUpdate) {
 	Update-ClamAV
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial assets.'
-	[Hashtable]$Result = Register-ClamAVUnofficialAssets -Selection $ClamAVUnofficialAssetsInput
+	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial asset.'
+	[Hashtable]$Result = Register-ClamAVUnofficialAsset -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
-		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAssets/$ApplyIssue"
+		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAsset/$ApplyIssue"
 	}
 	Exit-GitHubActionsLogGroup
 }
-[PSCustomObject[]]$YaraUnofficialAssetsIndexTable = @()
+[PSCustomObject[]]$YaraUnofficialAssetIndexTable = @()
 If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register YARA unofficial assets.'
-	$YaraUnofficialAssetsIndexTable = Register-YaraUnofficialAssets -Selection $YaraUnofficialAssetsInput
+	Enter-GitHubActionsLogGroup -Title 'Register YARA unofficial asset.'
+	$YaraUnofficialAssetIndexTable = Register-YaraUnofficialAsset -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -274,10 +281,12 @@ If this is incorrect, probably something went wrong.
 					Where-Object -FilterScript { !$_.SkipClamAV } |
 					Select-Object -ExpandProperty 'FullName'
 			)
-			Write-GitHubActionsDebug -Message (
-				$Result.Output |
-					Join-String -Separator "`n"
-			)
+			If ($Result.Output.Count -gt 0) {
+				Write-GitHubActionsDebug -Message (
+					$Result.Output |
+						Join-String -Separator "`n"
+				)
+			}
 			If ($Result.ErrorMessage.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via ClamAV:
@@ -299,41 +308,33 @@ $(
 	}
 	If ($YaraEnable -and $StatisticsSession.ElementYara -gt 0) {
 		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
-		[String[]]$YaraResultIssue = @()
-		ForEach ($YaraUnofficialAsset In (
-			$YaraUnofficialAssetsIndexTable |
-				Where-Object -FilterScript { $_.Select }
-		)) {
-			Try {
-				[Hashtable]$Result = Invoke-Yara -Target (
-					$Elements |
-						Where-Object -FilterScript { !$_.SkipYara } |
-						Select-Object -ExpandProperty 'FullName'
-				) -Asset $YaraUnofficialAsset
-				If ($Result.Output.Count -gt 0) {
-					Write-GitHubActionsDebug -Message (
-						$Result.Output |
-							Join-String -Separator "`n"
-					)
-				}
-				If ($Result.ErrorMessage.Count -gt 0) {
-					$YaraResultIssue += $Result.ErrorMessage
-				}
-				$ResultFound += $Result.Found
+		Try {
+			[Hashtable]$Result = Invoke-Yara -Target (
+				$Elements |
+					Where-Object -FilterScript { !$_.SkipYara } |
+					Select-Object -ExpandProperty 'FullName'
+			) -Asset $YaraUnofficialAssetIndexTable
+			If ($Result.Output.Count -gt 0) {
+				Write-GitHubActionsDebug -Message (
+					$Result.Output |
+						Join-String -Separator "`n"
+				)
 			}
-			Catch {
-				$YaraResultIssue += $_
-			}	
-		}
-		If ($YaraResultIssue.Count -gt 0) {
-			Write-GitHubActionsError -Message @"
+			If ($Result.ErrorMessage.Count -gt 0) {
+				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via YARA:
 
 $(
-$YaraResultIssue |
-	Join-String -Separator "`n" -FormatString '- {0}'
+	$Result.ErrorMessage |
+		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
+				$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
+			}
+			$ResultFound += $Result.Found
+		}
+		Catch {
+			Write-GitHubActionsError -Message $_
 			$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
 		}
 		Exit-GitHubActionsLogGroup
@@ -436,7 +437,7 @@ $(
 If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate -and (Test-IsGitRepository)) {
-		[String[]]$GitCommitsHash = Get-GitCommitsIndexes -SortFromOldest:($GitReverse)
+		[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($GitReverse)
 		If ($GitCommitsHash.Count -le 1) {
 			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}

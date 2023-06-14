@@ -1,6 +1,7 @@
 #Requires -PSEdition Core -Version 7.2
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Test-GitHubActionsEnvironment -Mandatory
 Enter-GitHubActionsLogGroup -Title 'Initialize.'
 $CurrentWorkingDirectory = Get-Location
 [Hashtable]$TsvParameters = @{
@@ -18,7 +19,7 @@ Write-Host -Object "Timestamp: $TimeCommit"
 Exit-GitHubActionsLogGroup
 Write-Host -Object 'Update assets.'
 ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
-	Write-Host -Object "Read ``$AssetDirectoryName`` assets index."
+	Write-Host -Object "Read ``$AssetDirectoryName`` asset index."
 	[String]$AssetDirectoryPath = Join-Path -Path $PSScriptRoot -ChildPath $AssetDirectoryName
 	[String]$AssetIndexFilePath = Join-Path -Path $AssetDirectoryPath -ChildPath 'index.tsv'
 	[PSCustomObject[]]$AssetIndex = Import-Csv -LiteralPath $AssetIndexFilePath @TsvParameters
@@ -39,7 +40,7 @@ ForEach ($AssetDirectoryName In $AssetsDirectoryNames) {
 				Select-Object -Index 0
 			[String]$GitWorkingDirectoryPath = Join-Path -Path $AssetDirectoryPath -ChildPath $GitWorkingDirectoryName
 			If (Test-Path -LiteralPath $GitWorkingDirectoryPath) {
-				Write-Host -Object "Remove old assets."
+				Write-Host -Object "Remove old elements."
 				Remove-Item -LiteralPath $GitWorkingDirectoryPath -Recurse -Force -Confirm:$False
 			}
 			Write-Host -Object "Update via Git repository ``$($AssetIndexItem.Remote)``."

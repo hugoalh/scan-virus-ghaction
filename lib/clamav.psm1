@@ -3,57 +3,85 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
 		'internal',
-		'token'
+		'splat-parameter'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-[Hashtable]$TsvParameters = @{
-	Delimiter = "`t"
-	Encoding = 'UTF8NoBOM'
-}
-[Hashtable]$InvokeWebRequestParameters_Get = @{
-	MaximumRedirection = 1
-	MaximumRetryCount = 2
-	Method = 'Get'
-	RetryIntervalSec = 5
-}
-[String]$IndexFileName = 'index.tsv'
-Function Import-NetworkTarget {
+Function Invoke-ClamAVScan {
 	[CmdletBinding()]
-	[OutputType([String])]
+	[OutputType([Hashtable])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Uri]$Target
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target
 	)
-	Enter-GitHubActionsLogGroup -Title "Fetch file ``$Target``."
-	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath "$(New-RandomToken).tmp"
+	[Hashtable]$Result = @{
+		ErrorMessage = @()
+		ExitCode = 0
+		Found = @()
+		Output = @()
+	}
+	$TargetListFile = New-TemporaryFile
+	Set-Content -LiteralPath $TargetListFile -Value (
+		$Target |
+			Join-String -Separator "`n"
+	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	Try {
-		Invoke-WebRequest -Uri $Target -OutFile $NetworkTargetFilePath @InvokeWebRequestParameters_Get
+		$Result.Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($TargetListFile.FullName)`" --multiscan"
 	}
 	Catch {
-		Write-GitHubActionsError -Message "Unable to fetch file ``$Target``: $_"
-		Return
+		Throw $_
 	}
 	Finally {
-		Exit-GitHubActionsLogGroup
+		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
-	Write-Output -InputObject $NetworkTargetFilePath
+	$Result.ExitCode = $LASTEXITCODE
+	ForEach ($OutputLine In (
+		$Result.Output |
+			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
+	)) {
+		If ($OutputLine -imatch '^[-=]+\s*SCAN SUMMARY\s*[-=]+$') {
+			Break
+		}
+		If (
+			($OutputLine -imatch ': OK$') -or
+			($OutputLine -imatch '^\s*$')
+		) {
+			Continue
+		}
+		If ($OutputLine -imatch ': .+ FOUND$') {
+			[String]$Element, [String]$Symbol = ($OutputLine -ireplace ' FOUND$', '') -isplit '(?<=^.+?): '
+			$Result.Found += [PSCustomObject]@{
+				Element = $Element
+				Symbol = $Symbol
+			}
+			Continue
+		}
+		If ($OutputLine.Length -gt 0) {
+			$Result.ErrorMessage += $OutputLine
+			Continue
+		}
+	}
+	Write-Output -InputObject $Result
 }
-Function Register-ClamAVUnofficialAssets {
+Function Register-ClamAVUnofficialAsset {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Selections')][RegEx[]]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV -ChildPath $IndexFileName) @TsvParameters |
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV -ChildPath $UnofficialAssetIndexFileName) @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Process { [PSCustomObject]@{
-			Type = $_.Type
-			Name = $_.Name
-			FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_CLAMAV -ChildPath $_.Path
-			DatabaseFileName = $_.Path -ireplace '\/', '_'
-			ApplyIgnores = $_.ApplyIgnores
-			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
-		} } |
+		ForEach-Object -Process {
+			$SelectResolve = Test-StringMatchRegEx -Item $_.Name -Matcher $Selection
+			[PSCustomObject]@{
+				Type = $_.Type
+				Name = $_.Name
+				FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV -ChildPath $_.Path
+				DatabaseFileName = $_.Path -ireplace '\/', '_'
+				ApplyIgnores = $_.ApplyIgnores
+				Select = $SelectResolve -ine $False
+				SelectBy = $SelectResolve -ine $False ? $SelectResolve.ToString() : ''
+			} 
+		} |
 		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject]@{
 		All = $IndexTable.Count
@@ -69,7 +97,8 @@ Function Register-ClamAVUnofficialAssets {
 		Format-Table -Property @(
 			'Type',
 			'Name',
-			@{ Expression = 'Select'; Alignment = 'Right' }
+			@{ Expression = 'Select'; Alignment = 'Right' },
+			'SelectBy'
 		) -AutoSize -Wrap |
 		Out-String -Width 120 |
 		Write-Host
@@ -130,40 +159,29 @@ Function Register-ClamAVUnofficialAssets {
 		IndexTable = $IndexTable
 	}
 }
-Function Register-YaraUnofficialAssets {
+Function Start-ClamAVDaemon {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject[]])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Selections')][RegEx[]]$Selection
-	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA -ChildPath $IndexFileName) @TsvParameters |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Process { [PSCustomObject]@{
-			Type = $_.Type
-			Name = $_.Name
-			FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSETS_YARA -ChildPath $_.Path
-			Select = Test-StringMatchRegExs -Item $_.Name -Matchers $Selection
-		} } |
-		Sort-Object -Property @('Type', 'Name')
-	[PSCustomObject]@{
-		All = $IndexTable.Count
-		Select = $IndexTable |
-			Where-Object -FilterScript { $_.Select } |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-	} |
-		Format-List |
-		Out-String -Width 120 |
-		Write-Host
-	$IndexTable |
-		Format-Table -Property @(
-			'Type',
-			'Name',
-			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -AutoSize -Wrap |
-		Out-String -Width 120 |
-		Write-Host
-	Write-Output -InputObject $IndexTable
+	[OutputType([Void])]
+	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Start ClamAV daemon.'
+	Try {
+		clamd
+	}
+	Catch {
+		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_" -Finally {
+			Exit-GitHubActionsLogGroup
+		}
+	}
+	Exit-GitHubActionsLogGroup
+}
+Function Stop-ClamAVDaemon {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	Enter-GitHubActionsLogGroup -Title 'Stop ClamAV daemon.'
+	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
+		Stop-Process
+	Exit-GitHubActionsLogGroup
 }
 Function Update-ClamAV {
 	[CmdletBinding()]
@@ -185,8 +203,9 @@ This is fine, but the local assets maybe outdated.
 	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
-	'Import-NetworkTarget',
-	'Register-ClamAVUnofficialAssets',
-	'Register-YaraUnofficialAssets',
+	'Invoke-ClamAVScan',
+	'Register-ClamAVUnofficialAsset',
+	'Start-ClamAVDaemon',
+	'Stop-ClamAVDaemon',
 	'Update-ClamAV'
 )

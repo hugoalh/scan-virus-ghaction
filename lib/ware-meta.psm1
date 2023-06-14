@@ -8,11 +8,11 @@ If ($Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -inotin @('all', 'clamav', 'yara')) {
 [Boolean]$YaraForce = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'yara'
 [Boolean]$ClamAVBundle = $AllBundle -or $ClamAVForce
 [Boolean]$YaraBundle = $AllBundle -or $YaraForce
-Function Show-EnvironmentVariables {
+Function Show-EnvironmentVariable {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Environment Variables: '
+	Enter-GitHubActionsLogGroup -Title 'Environment Variable: '
 	Get-ChildItem -LiteralPath 'Env:\' |
 		ForEach-Object -Begin {
 			$Result = [Ordered]@{}
@@ -91,7 +91,7 @@ Function Show-SoftwareMeta {
 		}
 }
 Export-ModuleMember -Function @(
-	'Show-EnvironmentVariables',
+	'Show-EnvironmentVariable',
 	'Show-SoftwareMeta'
 ) -Variable @(
 	'AllBundle',

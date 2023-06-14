@@ -45,7 +45,7 @@ Function Disable-GitLfsProcess {
 	}
 	Exit-GitHubActionsLogGroup
 }
-Function Get-GitCommitsIndexes {
+Function Get-GitCommitIndex {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
@@ -216,7 +216,7 @@ Function Test-GitCommitIsIgnore {
 }
 Export-ModuleMember -Function @(
 	'Disable-GitLfsProcess',
-	'Get-GitCommitsIndexes',
+	'Get-GitCommitIndex',
 	'Get-GitCommitMeta',
 	'Test-IsGitRepository',
 	'Test-GitCommitIsIgnore'

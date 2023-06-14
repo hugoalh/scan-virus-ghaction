@@ -34,15 +34,6 @@ Function ConvertFrom-CsvS {
 	ConvertFrom-CsvM -InputObject $Raw |
 		Write-Output
 }
-Function Get-InputBoolean {
-	[CmdletBinding()]
-	[OutputType([Boolean])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$Name
-	)
-	[Boolean]::Parse((Get-GitHubActionsInput -Name $Name -Mandatory -EmptyStringAsNull -Trim)) |
-		Write-Output
-}
 Function Get-InputList {
 	[CmdletBinding()]
 	[OutputType([String[]])]
@@ -112,38 +103,38 @@ Function Get-InputTable {
 }
 Function Test-ElementIsIgnore {
 	[CmdletBinding()]
-	[OutputType([Boolean])]
+	[OutputType([PSCustomObject], $False)]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$Element,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Combinations')][String[][]]$Combination,
 		[Parameter(Mandatory = $True, Position = 2)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
 	)
-	ForEach ($CombinationGroup In $Combination) {
-		ForEach ($IgnoreItem In $Ignore) {
-			[String[]]$IgnoreItemKeys = $IgnoreItem.PSObject.Properties.Name
+	ForEach ($_C In $Combination) {
+		ForEach ($_I In $Ignore) {
+			[String[]]$IgnoreItemKeys = $_I.PSObject.Properties.Name
 			If (
-				$IgnoreItemKeys.Count -ne $CombinationGroup.Count -or
+				$IgnoreItemKeys.Count -ne $_C.Count -or
 				$False -iin (
-					$CombinationGroup |
+					$_C |
 						ForEach-Object -Process { $_ -iin $IgnoreItemKeys }
 				)
 			) {
 				Continue
 			}
 			[UInt64]$IgnoreMatchCount = 0
-			ForEach ($Property In $CombinationGroup) {
-				If ($Null -ieq $IgnoreItem.($Property)) {
+			ForEach ($Property In $_C) {
+				If ($Null -ieq $_I.($Property)) {
 					Continue
 				}
 				Try {
-					If ($Element.($Property) -imatch $IgnoreItem.($Property)) {
+					If ($Element.($Property) -imatch $_I.($Property)) {
 						$IgnoreMatchCount += 1
 					}
 				}
 				Catch {}
 			}
-			If ($IgnoreMatchCount -ge $CombinationGroup.Count) {
-				Write-Output -InputObject $True
+			If ($IgnoreMatchCount -ge $_C.Count) {
+				Write-Output -InputObject $_I
 				Return
 			}
 		}
@@ -159,26 +150,25 @@ Function Test-StringIsUri {
 	$Null -ine $InputObject.AbsoluteUri -and $InputObject.Scheme -imatch '^https?$' |
 		Write-Output
 }
-Function Test-StringMatchRegExs {
+Function Test-StringMatchRegEx {
 	[CmdletBinding()]
-	[OutputType([Boolean])]
+	[OutputType([RegEx], $False)]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Item,
-		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][RegEx[]]$Matchers
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Matchers')][RegEx[]]$Matcher
 	)
-	ForEach ($Matcher In $Matchers) {
-		If ($Item -imatch $Matcher) {
-			Write-Output -InputObject $True
+	ForEach ($_M In $Matcher) {
+		If ($Item -imatch $_M) {
+			Write-Output -InputObject $_M
 			Return
 		}
 	}
 	Write-Output -InputObject $False
 }
 Export-ModuleMember -Function @(
-	'Get-InputBoolean',
 	'Get-InputList',
 	'Get-InputTable',
 	'Test-ElementIsIgnore',
 	'Test-StringIsUri',
-	'Test-StringMatchRegExs'
+	'Test-StringMatchRegEx'
 )
