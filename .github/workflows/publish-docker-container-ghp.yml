@@ -35,7 +35,7 @@ jobs:
           password: "${{github.token}}"
       - name: "Generate Docker Metadata - All"
         id: "docker-meta-all"
-        uses: "docker/metadata-action@v4.5.0"
+        uses: "docker/metadata-action@v4.6.0"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |-
@@ -52,7 +52,7 @@ jobs:
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Generate Docker Metadata - ClamAV"
         id: "docker-meta-clamav"
-        uses: "docker/metadata-action@v4.5.0"
+        uses: "docker/metadata-action@v4.6.0"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |-
@@ -72,7 +72,7 @@ jobs:
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Generate Docker Metadata - YARA"
         id: "docker-meta-yara"
-        uses: "docker/metadata-action@v4.5.0"
+        uses: "docker/metadata-action@v4.6.0"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |-
