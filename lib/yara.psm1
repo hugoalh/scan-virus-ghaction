@@ -39,7 +39,7 @@ Function Invoke-Yara {
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	[Hashtable[]]$ResultCollection = $Asset |
 		Where-Object -FilterScript { $_.Select } |
-		ForEach-Object -Parallel -ThrottleLimit $Thread {
+		ForEach-Object -Parallel {
 			[Hashtable]$ResultCurrent = @{
 				ErrorMessage = @()
 				ExitCode = 0
@@ -53,7 +53,7 @@ Function Invoke-Yara {
 			}
 			$ResultCurrent.ExitCode = $LASTEXITCODE
 			Write-Output -InputObject $ResultCurrent
-		}
+		} -ThrottleLimit $Thread
 	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	ForEach ($Result In $ResultCollection) {
 		$ResultAll.Output += $Result.Output
