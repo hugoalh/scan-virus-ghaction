@@ -66,4 +66,4 @@ COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}/
 # <ClamAV Only>
 # RUN freshclam --verbose
 
-CMD ["pwsh", "-NonInteractive", "${GHACTION_SCANVIRUS_PROGRAM_LIB}/main.ps1"]
+CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
