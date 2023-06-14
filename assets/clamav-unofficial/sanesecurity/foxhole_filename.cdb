@@ -3496,3 +3496,6 @@ Sanesecurity.Foxhole.Zip_fs3495:CL_TYPE_ZIP:*:(?i)^inquire equipment\.exe$:*:*:*
 Sanesecurity.Foxhole.Zip_fs3496:CL_TYPE_ZIP:*:(?i)^delivery arragement\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3497:CL_TYPE_ZIP:*:(?i)^pre-alert.{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Zip_fs3498:CL_TYPE_ZIP:*:(?i)^fatura_2023_comprovante_.{0,30}\.msi$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3499:CL_TYPE_RAR:*:(?i)^rfq .{0,30}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3500:CL_TYPE_RAR:*:(?i)^purchase order list pdf\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Iso_fs3501:CL_TYPE_ISO9660:*:(?i)^analiza_\.exe$$:*:*:*:*:*:*
