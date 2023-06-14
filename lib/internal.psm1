@@ -103,7 +103,7 @@ Function Get-InputTable {
 }
 Function Test-ElementIsIgnore {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject], $False)]
+	[OutputType(([PSCustomObject], $False))]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$Element,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Combinations')][String[][]]$Combination,
@@ -152,7 +152,7 @@ Function Test-StringIsUri {
 }
 Function Test-StringMatchRegEx {
 	[CmdletBinding()]
-	[OutputType([RegEx], $False)]
+	[OutputType(([RegEx], $False))]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Item,
 		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Matchers')][RegEx[]]$Matcher
