@@ -26,7 +26,13 @@ Function Invoke-Yara {
 			$Thread = 1
 		}
 	}
-	[Hashtable]$ResultAll = @{
+	[PSCustomObject]@{
+		Thread = $Thread
+	} |
+		Format-List |
+		Out-String -Width 120 |
+		Write-Host
+	[Hashtable]$Result = @{
 		ErrorMessage = @()
 		ExitCode = 0
 		Found = @()
@@ -37,42 +43,40 @@ Function Invoke-Yara {
 		$Target |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
-	[Hashtable[]]$ResultCollection = $Asset |
-		Where-Object -FilterScript { $_.Select } |
-		ForEach-Object -Parallel {
-			[Hashtable]$ResultCurrent = @{
-				ErrorMessage = @()
-				ExitCode = 0
-				Output = @()
-			}
-			Try {
-				$ResultCurrent.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_.FilePath)`" `"$(($Using:TargetListFile).FullName)`""
-			}
-			Catch {
-				$ResultCurrent.ErrorMessage += $_
-			}
-			$ResultCurrent.ExitCode = $LASTEXITCODE
-			Write-Output -InputObject $ResultCurrent
-		} -ThrottleLimit $Thread
-	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
-	ForEach ($Result In $ResultCollection) {
-		$ResultAll.Output += $Result.Output
-		ForEach ($OutputLine In $Result.Output) {
-			If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
-				[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
-				$ResultAll.Found += [PSCustomObject]@{
-					Element = $Element
-					Symbol = $Symbol
-				}
-				Continue
-			}
-			If ($OutputLine.Length -gt 0) {
-				$ResultAll.ErrorMessage += $OutputLine
-				Continue
-			}
+	ForEach ($_A In (
+		$Asset |
+			Where-Object -FilterScript { $_.Select }
+	)) {
+		Try {
+			$Result.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_A.FilePath)`" `"$($TargetListFile.FullName)`""
+		}
+		Catch {
+			$Result.ErrorMessage += $_
+			$Result.ExitCode = $LASTEXITCODE
 		}
 	}
-	Write-Output -InputObject $ResultAll
+	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
+	If ($Result.Output.Count -gt 0) {
+		Write-GitHubActionsDebug -Message (
+			$Result.Output |
+				Join-String -Separator "`n"
+		)
+	}
+	ForEach ($OutputLine In $Result.Output) {
+		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
+			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
+			$Result.Found += [PSCustomObject]@{
+				Element = $Element
+				Symbol = $Symbol
+			}
+			Continue
+		}
+		If ($OutputLine.Length -gt 0) {
+			$Result.ErrorMessage += $OutputLine
+			Continue
+		}
+	}
+	Write-Output -InputObject $Result
 }
 Function Register-YaraUnofficialAsset {
 	[CmdletBinding()]

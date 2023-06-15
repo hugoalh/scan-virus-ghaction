@@ -281,12 +281,6 @@ If this is incorrect, probably something went wrong.
 					Where-Object -FilterScript { !$_.SkipClamAV } |
 					Select-Object -ExpandProperty 'FullName'
 			)
-			If ($Result.Output.Count -gt 0) {
-				Write-GitHubActionsDebug -Message (
-					$Result.Output |
-						Join-String -Separator "`n"
-				)
-			}
 			If ($Result.ErrorMessage.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via ClamAV:
@@ -314,12 +308,6 @@ $(
 					Where-Object -FilterScript { !$_.SkipYara } |
 					Select-Object -ExpandProperty 'FullName'
 			) -Asset $YaraUnofficialAssetIndexTable
-			If ($Result.Output.Count -gt 0) {
-				Write-GitHubActionsDebug -Message (
-					$Result.Output |
-						Join-String -Separator "`n"
-				)
-			}
 			If ($Result.ErrorMessage.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via YARA:

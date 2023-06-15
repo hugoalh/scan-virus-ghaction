@@ -28,12 +28,18 @@ Function Invoke-ClamAVScan {
 		$Result.Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($TargetListFile.FullName)`" --multiscan"
 	}
 	Catch {
-		Throw $_
+		$Result.ErrorMessage += $_
 	}
 	Finally {
 		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
 	$Result.ExitCode = $LASTEXITCODE
+	If ($Result.Output.Count -gt 0) {
+		Write-GitHubActionsDebug -Message (
+			$Result.Output |
+				Join-String -Separator "`n"
+		)
+	}
 	ForEach ($OutputLine In (
 		$Result.Output |
 			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
