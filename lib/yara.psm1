@@ -36,7 +36,7 @@ Function Invoke-Yara {
 					Output = @()
 				}
 				Try {
-					$ResultCurrent.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_A.FilePath)`" `"$($TargetListFile.FullName)`""
+					$ResultCurrent.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_.FilePath)`" `"$(($Using:TargetListFile).FullName)`""
 				}
 				Catch {
 					$ResultCurrent.ErrorMessage += $_
