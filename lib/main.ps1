@@ -43,18 +43,6 @@ Catch {
 [AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = $ClamAVBundle ? ((Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter) ?? @()) : @()
 [Boolean]$ClamAVUpdate = $ClamAVBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull -Trim)) : $False
 [Boolean]$YaraEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull -Trim)) : $YaraForce
-[Byte]$YaraThread = 10
-If ($YaraThread -eq 0) {
-	Try {
-		$YaraThread = [Byte]::Parse((
-			nproc |
-				Join-String -Separator "`n"
-		))
-	}
-	Catch {
-		$YaraThread = 1
-	}
-}
 [AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = $YaraBundle ? ((Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter) ?? @()) : @()
 [AllowEmptyCollection()][PSCustomObject[]]$Ignores = (Get-InputTable -Name 'ignores' -Markup $InputTableMarkup) ?? @()
 Try {
@@ -105,7 +93,6 @@ Catch {
 		Join-String -Separator '|'
 	ClamAV_Update = $ClamAVUpdate
 	YARA_Enable = $YaraEnable
-	YARA_Thread = $YaraThread
 	YARA_UnofficialAssets_RegEx = $YaraUnofficialAssetsInput |
 		Join-String -Separator '|'
 	"Ignores [$($Ignores.Count)]" = $Ignores |
@@ -320,7 +307,7 @@ $(
 				$Elements |
 					Where-Object -FilterScript { !$_.SkipYara } |
 					Select-Object -ExpandProperty 'FullName'
-			) -Asset $YaraUnofficialAssetIndexTable -Thread $YaraThread
+			) -Asset $YaraUnofficialAssetIndexTable
 			If ($Result.ErrorMessage.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via YARA:

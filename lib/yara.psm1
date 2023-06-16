@@ -12,8 +12,7 @@ Function Invoke-Yara {
 	[OutputType([Hashtable])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target,
-		[Parameter(Mandatory = $True, Position = 1)][Alias('Assets')][PSCustomObject[]]$Asset,
-		[Parameter(Mandatory = $True, Position = 2)][ValidateRange(1, [Byte]::MaxValue)][Alias('Threads')][Byte]$Thread
+		[Parameter(Mandatory = $True, Position = 1)][Alias('Assets')][PSCustomObject[]]$Asset
 	)
 	[Hashtable]$Result = @{
 		ErrorMessage = @()
@@ -28,29 +27,6 @@ Function Invoke-Yara {
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	ForEach ($_A In (
 		$Asset |
-			Where-Object -FilterScript { $_.Select } |
-			ForEach-Object -Parallel {
-				[Hashtable]$ResultCurrent = @{
-					ErrorMessage = @()
-					ExitCode = 0
-					Output = @()
-				}
-				Try {
-					$ResultCurrent.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_.FilePath)`" `"$(($Using:TargetListFile).FullName)`""
-				}
-				Catch {
-					$ResultCurrent.ErrorMessage += $_
-					$ResultCurrent.ExitCode = $LASTEXITCODE
-				}
-				Write-Output -InputObject $ResultCurrent
-			} -ThrottleLimit $Thread
-	)) {
-		$Result.ErrorMessage += $_A.ErrorMessage
-		$Result.Output += $_A.Output
-	}
-	<#
-	ForEach ($_A In (
-		$Asset |
 			Where-Object -FilterScript { $_.Select }
 	)) {
 		Try {
@@ -61,7 +37,6 @@ Function Invoke-Yara {
 			$Result.ExitCode = $LASTEXITCODE
 		}
 	}
-	#>
 	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	If ($Result.Output.Count -gt 0) {
 		Write-GitHubActionsDebug -Message (
