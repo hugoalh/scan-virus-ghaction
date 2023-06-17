@@ -100,7 +100,7 @@ Function Register-ClamAVUnofficialAsset {
 			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -AutoSize:$False -Wrap |
+		) -AutoSize -Wrap |
 		Out-String -Width 120 |
 		Write-Host
 	[String[]]$AssetsApplyPaths = @()
