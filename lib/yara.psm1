@@ -25,6 +25,29 @@ Function Invoke-Yara {
 		$Target |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
+	$Jobs = @()
+	ForEach ($_A In (
+		$Asset |
+			Where-Object -FilterScript { $_.Select }
+	)) {
+		$Jobs += Start-Job -ScriptBlock { Invoke-Expression -Command "yara --no-warnings --scan-list `"$(($Using:_A).FilePath)`" `"$(($Using:TargetListFile).FullName)`"" }
+		While ((
+			$Jobs |
+				Get-Job |
+				Where-Object -FilterScript { $_.State -iin @('NotStarted', 'Running', 'Suspending', 'Stopping') } |
+				Measure-Object |
+				Select-Object -ExpandProperty 'Count'
+		) -gt 4) {
+			Start-Sleep -Seconds 2
+		}
+	}
+	ForEach ($_J In (
+		$Jobs |
+			Receive-Job -Wait
+	)) {
+		$Result.Output += $_J
+	}
+	<#
 	ForEach ($_A In (
 		$Asset |
 			Where-Object -FilterScript { $_.Select }
@@ -37,6 +60,9 @@ Function Invoke-Yara {
 			$Result.ExitCode = $LASTEXITCODE
 		}
 	}
+	#>
+	$Null = $Jobs |
+		Remove-Job
 	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	If ($Result.Output.Count -gt 0) {
 		Write-GitHubActionsDebug -Message (
