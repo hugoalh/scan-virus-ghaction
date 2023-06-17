@@ -90,7 +90,7 @@ Function Register-YaraUnofficialAsset {
 			'Type',
 			'Name',
 			@{ Expression = 'Select'; Alignment = 'Right' }
-		) -Wrap |
+		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
 		Write-Host
 	Write-Output -InputObject $IndexTable
