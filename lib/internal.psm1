@@ -103,7 +103,7 @@ Function Get-InputTable {
 }
 Function Test-ElementIsIgnore {
 	[CmdletBinding()]
-	[OutputType(([PSCustomObject], $False))]
+	[OutputType([Boolean])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$Element,
 		[Parameter(Mandatory = $True, Position = 1)][Alias('Combinations')][String[][]]$Combination,
@@ -134,7 +134,7 @@ Function Test-ElementIsIgnore {
 				Catch {}
 			}
 			If ($IgnoreMatchCount -ge $_C.Count) {
-				Write-Output -InputObject $_I
+				Write-Output -InputObject $True
 				Return
 			}
 		}
@@ -152,14 +152,14 @@ Function Test-StringIsUri {
 }
 Function Test-StringMatchRegEx {
 	[CmdletBinding()]
-	[OutputType(([RegEx], $False))]
+	[OutputType([Boolean])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Item,
 		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Matchers')][RegEx[]]$Matcher
 	)
 	ForEach ($_M In $Matcher) {
 		If ($Item -imatch $_M) {
-			Write-Output -InputObject $_M
+			Write-Output -InputObject $True
 			Return
 		}
 	}

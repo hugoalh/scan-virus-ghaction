@@ -76,18 +76,14 @@ Function Register-ClamAVUnofficialAsset {
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV -ChildPath $UnofficialAssetIndexFileName) @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Process {
-			$SelectResolve = Test-StringMatchRegEx -Item $_.Name -Matcher $Selection
-			[PSCustomObject]@{
-				Type = $_.Type
-				Name = $_.Name
-				FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV -ChildPath $_.Path
-				DatabaseFileName = $_.Path -ireplace '\/', '_'
-				ApplyIgnores = $_.ApplyIgnores
-				Select = $SelectResolve -ine $False
-				SelectBy = $SelectResolve -ine $False ? $SelectResolve.ToString() : ''
-			} 
-		} |
+		ForEach-Object -Process { [PSCustomObject]@{
+			Type = $_.Type
+			Name = $_.Name
+			FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV -ChildPath $_.Path
+			DatabaseFileName = $_.Path -ireplace '\/', '_'
+			ApplyIgnores = $_.ApplyIgnores
+			Select = Test-StringMatchRegEx -Item $_.Name -Matcher $Selection
+		} } |
 		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject]@{
 		All = $IndexTable.Count
@@ -103,9 +99,8 @@ Function Register-ClamAVUnofficialAsset {
 		Format-Table -Property @(
 			'Type',
 			'Name',
-			@{ Expression = 'Select'; Alignment = 'Right' },
-			'SelectBy'
-		) -AutoSize -Wrap |
+			@{ Expression = 'Select'; Alignment = 'Right' }
+		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
 		Write-Host
 	[String[]]$AssetsApplyPaths = @()

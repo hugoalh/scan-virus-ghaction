@@ -25,29 +25,6 @@ Function Invoke-Yara {
 		$Target |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
-	$Jobs = @()
-	ForEach ($_A In (
-		$Asset |
-			Where-Object -FilterScript { $_.Select }
-	)) {
-		$Jobs += Start-Job -ScriptBlock { Invoke-Expression -Command "yara --no-warnings --scan-list `"$(($Using:_A).FilePath)`" `"$(($Using:TargetListFile).FullName)`"" }
-		While ((
-			$Jobs |
-				Get-Job |
-				Where-Object -FilterScript { $_.State -iin @('NotStarted', 'Running', 'Suspending', 'Stopping') } |
-				Measure-Object |
-				Select-Object -ExpandProperty 'Count'
-		) -gt 4) {
-			Start-Sleep -Seconds 2
-		}
-	}
-	ForEach ($_J In (
-		$Jobs |
-			Receive-Job -Wait
-	)) {
-		$Result.Output += $_J
-	}
-	<#
 	ForEach ($_A In (
 		$Asset |
 			Where-Object -FilterScript { $_.Select }
@@ -60,9 +37,6 @@ Function Invoke-Yara {
 			$Result.ExitCode = $LASTEXITCODE
 		}
 	}
-	#>
-	$Null = $Jobs |
-		Remove-Job
 	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	If ($Result.Output.Count -gt 0) {
 		Write-GitHubActionsDebug -Message (
@@ -94,16 +68,12 @@ Function Register-YaraUnofficialAsset {
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_YARA -ChildPath $UnofficialAssetIndexFileName) @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Process {
-			$SelectResolve = Test-StringMatchRegEx -Item $_.Name -Matcher $Selection
-			[PSCustomObject]@{
-				Type = $_.Type
-				Name = $_.Name
-				FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_YARA -ChildPath $_.Path
-				Select = $SelectResolve -ine $False
-				SelectBy = $SelectResolve -ine $False ? $SelectResolve.ToString() : ''
-			}
-		} |
+		ForEach-Object -Process { [PSCustomObject]@{
+			Type = $_.Type
+			Name = $_.Name
+			FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_YARA -ChildPath $_.Path
+			Select = Test-StringMatchRegEx -Item $_.Name -Matcher $Selection
+		} } |
 		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject]@{
 		All = $IndexTable.Count
@@ -119,9 +89,8 @@ Function Register-YaraUnofficialAsset {
 		Format-Table -Property @(
 			'Type',
 			'Name',
-			@{ Expression = 'Select'; Alignment = 'Right' },
-			'SelectBy'
-		) -AutoSize -Wrap |
+			@{ Expression = 'Select'; Alignment = 'Right' }
+		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
 		Write-Host
 	Write-Output -InputObject $IndexTable
