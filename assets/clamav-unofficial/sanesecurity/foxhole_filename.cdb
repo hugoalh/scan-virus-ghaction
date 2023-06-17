@@ -3498,4 +3498,10 @@ Sanesecurity.Foxhole.Zip_fs3497:CL_TYPE_ZIP:*:(?i)^pre-alert.{0,30}\.exe$:*:*:*:
 Sanesecurity.Foxhole.Zip_fs3498:CL_TYPE_ZIP:*:(?i)^fatura_2023_comprovante_.{0,30}\.msi$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs3499:CL_TYPE_RAR:*:(?i)^rfq .{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs3500:CL_TYPE_RAR:*:(?i)^purchase order list pdf\.exe$:*:*:*:1:*:*
-Sanesecurity.Foxhole.Iso_fs3501:CL_TYPE_ISO9660:*:(?i)^analiza_\.exe$$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Iso_fs3501:CL_TYPE_ISO9660:*:(?i)^analiza_\.exe$:*:*:*:*:*:*
+Sanesecurity.Foxhole.Zip_fs3502:CL_TYPE_ZIP:*:(?i)^dbs\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3503:CL_TYPE_RAR:*:(?i)^soa\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3504:CL_TYPE_RAR:*:(?i)^soa\.exe$:*:*:*:2:*:*
+Sanesecurity.Foxhole.Zip_fs3505:CL_TYPE_ZIP:*:(?i)^bank of america ach payment form.{0,30}\.html$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs3506:CL_TYPE_RAR:*:(?i)^fedex.{0,30}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Iso_fs3507:CL_TYPE_ISO9660:*:(?i)^request_.exe$:*:*:*:*:*:*
