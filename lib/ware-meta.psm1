@@ -46,7 +46,7 @@ Function Show-SoftwareMeta {
 		UI = $Host.UI.RawUI |
 			Out-String -Width 80
 		Module = Get-InstalledModule |
-			Format-Table -Property @('Name', 'Version', 'Description') -AutoSize:$False -Wrap |
+			Format-Table -Property @('Name', 'Version', 'Description') -Wrap |
 			Out-String -Width 80
 	} |
 		Format-List |

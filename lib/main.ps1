@@ -267,7 +267,7 @@ If this is incorrect, probably something went wrong.
 				'Flag',
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Path'
-			) -AutoSize:$False -Wrap |
+			) -Wrap |
 			Out-String -Width 120 |
 			Write-Host
 		Exit-GitHubActionsLogGroup
@@ -372,7 +372,7 @@ $(
 			@{ Expression = 'Hit'; Alignment = 'Right' },
 			'Symbol',
 			'Path'
-		) -AutoSize:$False -Wrap |
+		) -Wrap |
 		Out-String -Width 120
 )
 "@
@@ -388,7 +388,7 @@ $(
 			@{ Expression = 'Hit'; Alignment = 'Right' },
 			'Symbol',
 			'Path'
-		) -AutoSize:$False -Wrap |
+		) -Wrap |
 		Out-String -Width 120
 )
 "@
