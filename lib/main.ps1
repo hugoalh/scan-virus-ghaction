@@ -257,7 +257,6 @@ If this is incorrect, probably something went wrong.
 			) -AutoSize -Wrap |
 			Out-String -Width 120 |
 			Write-Host
-		Exit-GitHubActionsLogGroup
 	}
 	[PSCustomObject[]]$ResultFound = @()
 	If ($ClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
@@ -427,6 +426,7 @@ $(
 If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate -and (Test-IsGitRepository)) {
+		Write-Host -Object 'Import Git metadata.'
 		[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($GitReverse)
 		If ($GitCommitsHash.Count -le 1) {
 			Write-GitHubActionsNotice -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."

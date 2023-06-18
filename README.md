@@ -128,6 +128,8 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 - [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
 
+> **⚠ Important:** Begin from v0.16.0, workspace will automatically clean for remote targets.
+
 #### `git_integrate`
 
 `<Boolean = False>` Whether to integrate with Git to perform scan by the commits; Require workspace is a Git repository.
@@ -269,6 +271,8 @@ When this input is `False`, will ignore inputs:
 - **`"None"`:** Disable.
 - **`"OnlyCurrent"`:** Enable, only for session "Current".
 - **`"All"`:** Enable.
+
+> **⚠ Important:** Begin from v0.16.0, elements are list in the log only when enabled debug mode.
 
 #### `summary_found`
 
