@@ -22,13 +22,14 @@ Class ScanVirusStatistics {
 	[UInt64]$SizeYara = 0
 	[Boolean]$IsOverflow = $False
 	[PSCustomObject[]]GetStatisticsTable() {
-		[String[]]$Types = @('Scan', 'Found')
-		If ($Script:AllBundle -or $Script:ClamAVBundle) {
+		[String[]]$Types = @('Scan')
+		If ($Script:ClamAVBundle) {
 			$Types += 'ClamAV'
 		}
-		If ($Script:AllBundle -or $Script:YaraBundle) {
+		If ($Script:YaraBundle) {
 			$Types += 'Yara'
 		}
+		$Types += 'Found'
 		[Boolean]$IsNoElement = $This.ElementDiscover -eq 0
 		[Boolean]$IsNoSize = $This.SizeDiscover -eq 0
 		[PSCustomObject[]]$StatisticsTable = @(
