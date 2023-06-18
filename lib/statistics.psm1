@@ -12,15 +12,17 @@ Class ScanVirusStatistics {
 	[String[]]$IssuesSessions = @()
 	[UInt64]$ElementDiscover = 0
 	[UInt64]$ElementScan = 0
+	[UInt64]$ElementFound = 0
 	[UInt64]$ElementClamAV = 0
 	[UInt64]$ElementYara = 0
 	[UInt64]$SizeDiscover = 0
 	[UInt64]$SizeScan = 0
+	[UInt64]$SizeFound = 0
 	[UInt64]$SizeClamAV = 0
 	[UInt64]$SizeYara = 0
 	[Boolean]$IsOverflow = $False
 	[PSCustomObject[]]GetStatisticsTable() {
-		[String[]]$Types = @('Scan')
+		[String[]]$Types = @('Scan', 'Found')
 		If ($Script:AllBundle -or $Script:ClamAVBundle) {
 			$Types += 'ClamAV'
 		}

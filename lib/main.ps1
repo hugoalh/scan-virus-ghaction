@@ -5,17 +5,16 @@ $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'git',
 		'internal',
 		'splat-parameter',
 		'step-summary'
-		'ware-meta'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
+	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'ware-meta.psm1') -Scope 'Local'
 	Show-EnvironmentVariable
 	Show-SoftwareMeta
 }
@@ -112,14 +111,17 @@ If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 If ($Targets.Count -gt 0) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'network-target.psm1') -Scope 'Local'
 }
-If (!$GitLfs) {
-	Disable-GitLfsProcess
+If ($GitIntegrate) {
+	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope 'Local'
 }
 If ($ClamAVEnable) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'clamav.psm1') -Scope 'Local'
 }
 If ($YaraEnable) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'yara.psm1') -Scope 'Local'
+}
+If (!$GitLfs) {
+	Disable-GitLfsProcess
 }
 If ($ClamAVEnable -and $ClamAVUpdate) {
 	Update-ClamAV
@@ -132,10 +134,9 @@ If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
 	}
 	Exit-GitHubActionsLogGroup
 }
-[PSCustomObject[]]$YaraUnofficialAssetIndexTable = @()
 If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
 	Enter-GitHubActionsLogGroup -Title 'Register YARA unofficial asset.'
-	$YaraUnofficialAssetIndexTable = Register-YaraUnofficialAsset -Selection $YaraUnofficialAssetsInput
+	Register-YaraUnofficialAsset -Selection $YaraUnofficialAssetsInput
 	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
@@ -181,19 +182,7 @@ Function Invoke-Tools {
 				@('Path', 'Tool'),
 				@('Path', 'Session', 'Tool')
 			) -Ignore $Ignores)
-			[String[]]$ElementFlags = @()
-			If ($ElementObject.IsDirectory) {
-				$ElementFlags += 'D'
-			}
-			If (!$ElementObject.SkipClamAV -and $ClamAVEnable) {
-				$ElementFlags += 'C'
-			}
-			If (!$ElementObject.SkipYara -and $YaraEnable) {
-				$ElementFlags += 'Y'
-			}
-			$ElementObject.Flag = $ElementFlags |
-				Sort-Object |
-				Join-String -Separator ''
+			$ElementObject.Flag = "$($ElementObject.IsDirectory ? 'D' : '-')$((!$ElementObject.SkipClamAV -and $ClamAVEnable) ? 'C' : '-')$((!$ElementObject.SkipYara -and $YaraEnable) ? 'Y' : '-')"
 			[PSCustomObject]$ElementObject |
 				Write-Output
 		}
@@ -307,7 +296,7 @@ $(
 				$Elements |
 					Where-Object -FilterScript { !$_.SkipYara } |
 					Select-Object -ExpandProperty 'FullName'
-			) -Asset $YaraUnofficialAssetIndexTable
+			)
 			If ($Result.ErrorMessage.Count -gt 0) {
 				Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionTitle`" via YARA:
@@ -328,6 +317,19 @@ $(
 		Exit-GitHubActionsLogGroup
 	}
 	If ($ResultFound.Count -gt 0) {
+		$StatisticsSession.ElementFound = $ResultFound.Count
+		$StatisticsSession.SizeFound = $Elements |
+			Where-Object -FilterScript { $_.Path -iin $ResultFound.Element } |
+			Select-Object -ExpandProperty 'Size' |
+			Measure-Object -Sum |
+			Select-Object -ExpandProperty 'Sum'
+		Try {
+			$Script:StatisticsTotal.ElementFound += $StatisticsSession.ElementFound
+			$Script:StatisticsTotal.SizeFound += $StatisticsSession.SizeFound
+		}
+		Catch {
+			$Script:StatisticsTotal.IsOverflow = $True
+		}
 		[PSCustomObject[]]$ResultFoundNotIgnore = @()
 		[PSCustomObject[]]$ResultFoundIgnore = @()
 		ForEach ($Row In (
@@ -420,6 +422,7 @@ $(
 			Add-StepSummaryFound -Session $SessionId -Issue $ResultFoundDisplay
 		}
 	}
+	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
 	Write-Host -Object "End of session `"$SessionTitle`"."
 }
 If ($Targets.Count -eq 0) {

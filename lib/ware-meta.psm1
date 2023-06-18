@@ -1,13 +1,11 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-If ($Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -inotin @('all', 'clamav', 'yara')) {
-	Write-GitHubActionsFail -Message 'Invalid environment variable `GHACTION_SCANVIRUS_BUNDLE_TOOL`! Please submit a bug report.'
-}
-[Boolean]$AllBundle = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'all'
-[Boolean]$ClamAVForce = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'clamav'
-[Boolean]$YaraForce = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'yara'
-[Boolean]$ClamAVBundle = $AllBundle -or $ClamAVForce
-[Boolean]$YaraBundle = $AllBundle -or $YaraForce
+Import-Module -Name (
+	@(
+		'splat-parameter'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
+) -Scope 'Local'
 Function Show-EnvironmentVariable {
 	[CmdletBinding()]
 	[OutputType([Void])]
@@ -93,10 +91,4 @@ Function Show-SoftwareMeta {
 Export-ModuleMember -Function @(
 	'Show-EnvironmentVariable',
 	'Show-SoftwareMeta'
-) -Variable @(
-	'AllBundle',
-	'ClamAVBundle',
-	'ClamAVForce',
-	'YaraBundle',
-	'YaraForce'
 )

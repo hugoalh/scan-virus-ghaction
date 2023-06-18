@@ -7,12 +7,13 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+[PSCustomObject[]]$UnofficialAssetIndexTable = @()
 Function Invoke-Yara {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target,
-		[Parameter(Mandatory = $True, Position = 1)][Alias('Assets')][PSCustomObject[]]$Asset
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target<#,
+		[Parameter(Mandatory = $True, Position = 1)][Alias('Assets')][PSCustomObject[]]$Asset#>
 	)
 	[Hashtable]$Result = @{
 		ErrorMessage = @()
@@ -26,7 +27,7 @@ Function Invoke-Yara {
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	ForEach ($_A In (
-		$Asset |
+		$UnofficialAssetIndexTable |
 			Where-Object -FilterScript { $_.Select }
 	)) {
 		Try {
@@ -93,7 +94,7 @@ Function Register-YaraUnofficialAsset {
 		) -AutoSize -Wrap |
 		Out-String -Width 120 |
 		Write-Host
-	Write-Output -InputObject $IndexTable
+	$Script:UnofficialAssetIndexTable += $IndexTable
 }
 Export-ModuleMember -Function @(
 	'Invoke-Yara',
