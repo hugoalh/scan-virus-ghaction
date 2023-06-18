@@ -2,8 +2,8 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'step-summary',
-		'ware-meta'
+		'splat-parameter',
+		'step-summary'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
