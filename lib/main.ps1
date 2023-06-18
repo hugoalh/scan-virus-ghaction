@@ -149,7 +149,7 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
-	Write-Host -Object "Begin of session `"$SessionTitle`"."
+	Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`"."
 	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
 		Sort-Object -Property @('FullName') |
 		ForEach-Object -Process {
@@ -192,7 +192,7 @@ Unable to scan session `"$SessionTitle`": Workspace is empty!
 If this is incorrect, probably something went wrong.
 "@
 		$Script:StatisticsTotal.IssuesOperations += "Workspace/$SessionId"
-		Write-Host -Object "End of session `"$SessionTitle`"."
+		Exit-GitHubActionsLogGroup
 		Return
 	}
 	[ScanVirusStatistics]$StatisticsSession = [ScanVirusStatistics]::new()
@@ -245,12 +245,10 @@ If this is incorrect, probably something went wrong.
 	Catch {
 		$Script:StatisticsTotal.IsOverflow = $True
 	}
-	If (
+	If ((Get-GitHubActionsIsDebug) -and (
 		$LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::All).GetHashCode() -or
 		($LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::OnlyCurrent).GetHashCode() -and $SessionId -ieq 'current')
-	) {
-		Enter-GitHubActionsLogGroup -Title "Elements of session `"$SessionTitle`": "
-		Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
+	)) {
 		$Elements |
 			Format-Table -Property @(
 				'Flag',
@@ -263,7 +261,7 @@ If this is incorrect, probably something went wrong.
 	}
 	[PSCustomObject[]]$ResultFound = @()
 	If ($ClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
-		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via ClamAV."
+		Write-Host -Object 'Scan elements via ClamAV.'
 		Try {
 			[Hashtable]$Result = Invoke-ClamAVScan -Target (
 				$Elements |
@@ -287,10 +285,9 @@ $(
 			Write-GitHubActionsError -Message $_
 			$Script:StatisticsTotal.IssuesOperations += "$SessionId/ClamAV"
 		}
-		Exit-GitHubActionsLogGroup
 	}
 	If ($YaraEnable -and $StatisticsSession.ElementYara -gt 0) {
-		Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`" via YARA."
+		Write-Host -Object 'Scan elements via YARA.'
 		Try {
 			[Hashtable]$Result = Invoke-Yara -Target (
 				$Elements |
@@ -314,7 +311,6 @@ $(
 			Write-GitHubActionsError -Message $_
 			$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
 		}
-		Exit-GitHubActionsLogGroup
 	}
 	If ($ResultFound.Count -gt 0) {
 		$StatisticsSession.ElementFound = $ResultFound.Element |
@@ -426,14 +422,14 @@ $(
 		}
 	}
 	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
-	Write-Host -Object "End of session `"$SessionTitle`"."
+	Exit-GitHubActionsLogGroup
 }
 If ($Targets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
 	If ($GitIntegrate -and (Test-IsGitRepository)) {
 		[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($GitReverse)
 		If ($GitCommitsHash.Count -le 1) {
-			Write-GitHubActionsWarning -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
+			Write-GitHubActionsNotice -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
 		[UInt64]$GitCommitsPassCount = 0
 		For ([UInt64]$GitCommitsHashIndex = 0; $GitCommitsHashIndex -lt $GitCommitsHash.Count; $GitCommitsHashIndex += 1) {
@@ -479,12 +475,16 @@ If ($Targets.Count -eq 0) {
 	}
 }
 Else {
-	If ((
-		Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-	) -gt 0) {
-		Write-GitHubActionsFail -Message 'Workspace is not clean for network targets!'
+	$WorkspaceElements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
+	If ($WorkspaceElements.Count -gt 0) {
+		Write-Host -Object 'Clean workspace.'
+		Try {
+			$WorkspaceElements |
+				Remove-Item -Recurse -Force -Confirm:$False
+		}
+		Catch {
+			Write-GitHubActionsWarning -Message $_
+		}
 	}
 	For ([UInt64]$TargetsIndex = 0; $TargetsIndex -lt $Targets.Count; $TargetsIndex += 1) {
 		[String]$Target = $Targets[$TargetsIndex]
