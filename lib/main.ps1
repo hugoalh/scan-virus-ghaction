@@ -317,7 +317,10 @@ $(
 		Exit-GitHubActionsLogGroup
 	}
 	If ($ResultFound.Count -gt 0) {
-		$StatisticsSession.ElementFound = $ResultFound.Count
+		$StatisticsSession.ElementFound = $ResultFound.Element |
+			Select-Object -Unique |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
 		$StatisticsSession.SizeFound = $Elements |
 			Where-Object -FilterScript { $_.Path -iin $ResultFound.Element } |
 			Select-Object -ExpandProperty 'Size' |
