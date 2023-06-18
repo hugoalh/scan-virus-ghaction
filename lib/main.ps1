@@ -464,7 +464,7 @@ If ($Targets.Count -eq 0) {
 			Try {
 				git --no-pager checkout $GitCommitHash --force --quiet
 				If ($LASTEXITCODE -ne 0) {
-					Throw "Exit code ``$LASTEXITCODE``"
+					Throw "Exit code is ``$LASTEXITCODE``"
 				}
 			}
 			Catch {

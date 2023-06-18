@@ -190,9 +190,14 @@ Function Update-ClamAV {
 	Param ()
 	Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
 	Try {
-		freshclam --verbose
+		If (Get-GitHubActionsIsDebug) {
+			freshclam --verbose
+		}
+		Else {
+			freshclam
+		}
 		If ($LASTEXITCODE -ne 0) {
-			Throw "Exit code is $LASTEXITCODE."
+			Throw "Exit code is ``$LASTEXITCODE``"
 		}
 	}
 	Catch {
