@@ -58,3 +58,4 @@ Sanesecurity.Shelter.Malware.QLnk4;Engine:81-255,Target:3;(0&1);3c2f686561643e3c
 Sanesecurity.Shelter.Malware.QLnk5;Engine:81-255,Target:3;(0&1);3c2f686561643e3c626f64793e3c703e72657669657720646f63756d656e743a2068747470733a2f2f;0/\/[a-z]{2,4}\/\??[0-9]{7}<br>/
 Sanesecurity.Shelter.Malware.QLnk6;Engine:81-255,Target:3;(0&1);3c2f686561643e3c626f64793e3c703e7265766965772066696c653a2068747470733a2f2f;0/\/[a-z]{2,4}\/\??[0-9]{7}<br>/
 Sanesecurity.Shelter.Malware.QLnk7;Engine:81-255,Target:3;(0&1);3c2f686561643e3c626f64793e3c703e766965772066696c653a2068747470733a2f2f;0/\/[a-z]{2,4}\/\??[0-9]{7}<br>/
+Sanesecurity.Shelter.Malware.QLnk8;Engine:81-255,Target:3;(0&1);3c2f686561643e3c626f64793e3c703e7669657720646f63756d656e743a2068747470733a2f2f;0/\/[a-z]{2,4}\/\??[0-9]{7}<br>/
