@@ -263,7 +263,7 @@ If this is incorrect, probably something went wrong.
 	)) {
 		$Elements |
 			Format-Table -Property @(
-				'Flag',
+				@{ Name = ''; Expression = 'Flag' },
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Path'
 			) -AutoSize -Wrap |
@@ -323,113 +323,79 @@ $(
 			$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
 		}
 	}
-	If ($ResultFound.Count -gt 0) {
-		$StatisticsSession.ElementFound = $ResultFound.Element |
-			Select-Object -Unique |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
-		$StatisticsSession.SizeFound = $Elements |
-			Where-Object -FilterScript { $_.Path -iin $ResultFound.Element } |
-			Select-Object -ExpandProperty 'Size' |
-			Measure-Object -Sum |
-			Select-Object -ExpandProperty 'Sum'
-		Try {
-			$Script:StatisticsTotal.ElementFound += $StatisticsSession.ElementFound
-			$Script:StatisticsTotal.SizeFound += $StatisticsSession.SizeFound
-		}
-		Catch {
-			$Script:StatisticsTotal.IsOverflow = $True
-		}
-		[PSCustomObject[]]$ResultFoundNotIgnore = @()
-		[PSCustomObject[]]$ResultFoundIgnore = @()
-		ForEach ($Row In (
-			$ResultFound |
-				Group-Object -Property @('Element', 'Symbol') -NoElement
-		)) {
-			[String]$Element, [String]$Symbol = $Row.Name -isplit ', '
-			[PSCustomObject]$ResultFoundElementObject = [PSCustomObject]@{
+	$StatisticsSession.ElementFound = $ResultFound.Element |
+		Select-Object -Unique |
+		Measure-Object |
+		Select-Object -ExpandProperty 'Count'
+	$StatisticsSession.SizeFound = $Elements |
+		Where-Object -FilterScript { $_.Path -iin $ResultFound.Element } |
+		Select-Object -ExpandProperty 'Size' |
+		Measure-Object -Sum |
+		Select-Object -ExpandProperty 'Sum'
+	Try {
+		$Script:StatisticsTotal.ElementFound += $StatisticsSession.ElementFound
+		$Script:StatisticsTotal.SizeFound += $StatisticsSession.SizeFound
+	}
+	Catch {
+		$Script:StatisticsTotal.IsOverflow = $True
+	}
+	[PSCustomObject[]]$ResultFoundResolve = $ResultFound |
+		Group-Object -Property @('Element', 'Symbol') -NoElement |
+		ForEach-Object -Process {
+			[String]$Element, [String]$Symbol = $_.Name -isplit ', '
+			[PSCustomObject]@{
 				Path = $Element
 				Symbol = $Symbol
-				Hit = $Row.Count
-			}
-			If (Test-ElementIsIgnore -Element ([PSCustomObject]@{
-				Path = $Element
-				Session = $SessionId
-				Symbol = $Symbol
-			}) -Combination @(
-				@('Symbol'),
-				@('Path', 'Symbol'),
-				@('Path', 'Session', 'Symbol')
-			) -Ignore $Ignores) {
-				$ResultFoundIgnore += $ResultFoundElementObject
-			}
-			Else {
-				$ResultFoundNotIgnore += $ResultFoundElementObject
-			}
+				Hit = $_.Count
+				IsIgnore = Test-ElementIsIgnore -Element ([PSCustomObject]@{
+					Path = $Element
+					Session = $SessionId
+					Symbol = $Symbol
+				}) -Combination @(
+					@('Symbol'),
+					@('Path', 'Symbol'),
+					@('Path', 'Session', 'Symbol')
+				) -Ignore $Ignores
+			} |
+				Write-Output
+		} |
+		Sort-Object -Property @('Path', 'Symbol') |
+		Sort-Object -Property @('Hit') -Descending |
+		Sort-Object -Property @('IsIgnore')
+	If ($ResultFoundResolve.Count -gt 0) {
+		If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
+			$ResultFoundResolve |
+				Format-Table -Property @(
+					@{ Name = ''; Expression = { $_.IsIgnore ? '🟡' : '🔴' } },
+					@{ Expression = 'Hit'; Alignment = 'Right' },
+					@{ Expression = 'Symbol'; Width = 40 },
+					@{ Expression = 'Path'; Width = 40 }
+				) -AutoSize -Wrap |
+				Out-String -Width 120 |
+				Write-Host
 		}
-		$ResultFoundNotIgnore = $ResultFoundNotIgnore |
-			Sort-Object -Property @('Path', 'Symbol') |
-			Sort-Object -Property @('Hit') -Descending
-		$ResultFoundIgnore = $ResultFoundIgnore |
-			Sort-Object -Property @('Path', 'Symbol') |
-			Sort-Object -Property @('Hit') -Descending
-		If ($ResultFoundNotIgnore.Count -gt 0) {
+		If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
+			Add-StepSummaryFound -Session $SessionId -Issue (
+				$ResultFoundResolve |
+					ForEach-Object -Process { [PSCustomObject]@{
+						Indicator = $_.IsIgnore ? '🟡' : '🔴'
+						Path = $_.Path
+						Symbol = $_.Symbol
+						Hit = $_.Hit
+					} }
+			)
+		}
+		If ((
+			$ResultFoundResolve |
+				Where-Object -FilterScript { !$_.IsIgnore } |
+				Measure-Object |
+				Select-Object -ExpandProperty 'Count'
+		) -gt 0) {
 			$Script:StatisticsTotal.IssuesSessions += $SessionId
-			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
-				Write-GitHubActionsError -Message @"
-Found in session `"$SessionTitle`":
-$(
-	$ResultFoundNotIgnore |
-		Format-Table -Property @(
-			@{ Expression = 'Hit'; Alignment = 'Right' },
-			@{ Expression = 'Symbol'; Width = 40 },
-			@{ Expression = 'Path'; Width = 40 }
-		) -AutoSize -Wrap |
-		Out-String -Width 120
-)
-"@
-			}
+			Write-GitHubActionsError -Message "Found in session `"$SessionTitle`"!"
 		}
-		If ($ResultFoundIgnore.Count -gt 0) {
-			If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
-				Write-GitHubActionsWarning -Message @"
-Found in session `"$SessionTitle`" but ignored:
-$(
-	$ResultFoundIgnore |
-		Format-Table -Property @(
-			@{ Expression = 'Hit'; Alignment = 'Right' },
-			@{ Expression = 'Symbol'; Width = 40 },
-			@{ Expression = 'Path'; Width = 40 }
-		) -AutoSize -Wrap |
-		Out-String -Width 120
-)
-"@
-			}
-		}
-		If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode() -and (
-			$ResultFoundNotIgnore.Count -gt 0 -or
-			$ResultFoundIgnore.Count -gt 0
-		)) {
-			[PSCustomObject[]]$ResultFoundDisplay = @()
-			If ($ResultFoundNotIgnore.Count -gt 0) {
-				$ResultFoundDisplay += $ResultFoundNotIgnore |
-					ForEach-Object -Process { [PSCustomObject]@{
-						Indicator = '🔴'
-						Path = $_.Path
-						Symbol = $_.Symbol
-						Hit = $_.Hit
-					} }
-			}
-			If ($ResultFoundIgnore.Count -gt 0) {
-				$ResultFoundDisplay += $ResultFoundIgnore |
-					ForEach-Object -Process { [PSCustomObject]@{
-						Indicator = '🟡'
-						Path = $_.Path
-						Symbol = $_.Symbol
-						Hit = $_.Hit
-					} }
-			}
-			Add-StepSummaryFound -Session $SessionId -Issue $ResultFoundDisplay
+		Else {
+			Write-GitHubActionsWarning -Message "Found in session `"$SessionTitle`" but ignored!"
 		}
 	}
 	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)

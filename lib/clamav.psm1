@@ -97,7 +97,7 @@ Function Register-ClamAVUnofficialAsset {
 		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
-			@{ Name = 'Select'; Expression = { $_.Select ? '+' : '' } },
+			@{ Name = ''; Expression = { $_.Select ? '+' : '' } },
 			'Type',
 			'Name'
 		) -AutoSize -Wrap |
