@@ -368,8 +368,8 @@ $(
 				Format-Table -Property @(
 					@{ Name = ''; Expression = { $_.IsIgnore ? '🟡' : '🔴' } },
 					@{ Expression = 'Hit'; Alignment = 'Right' },
-					@{ Expression = 'Symbol'; Width = 40 },
-					@{ Expression = 'Path'; Width = 40 }
+					@{ Expression = 'Path'; Width = 40 },
+					@{ Expression = 'Symbol'; Width = 40 }
 				) -AutoSize:$False -Wrap |
 				Out-String -Width 120 |
 				Write-Host
