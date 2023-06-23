@@ -120,7 +120,7 @@ If ($ClamAVEnable) {
 If ($YaraEnable) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'yara.psm1') -Scope 'Local'
 }
-If (!$GitLfs) {
+If ($GitIntegrate -and !$GitLfs) {
 	Disable-GitLfsProcess
 }
 If ($ClamAVEnable -and $ClamAVUpdate) {
