@@ -58,7 +58,7 @@ jobs:
       fail-fast: false
     steps:
       - name: "Scan Virus"
-        uses: "hugoalh/scan-virus-ghaction/clamav@v0.15.1"
+        uses: "hugoalh/scan-virus-ghaction/clamav@v0.16.0"
         with:
           input_listdelimiter: "\\r?\\n"
           targets: "${{fromJson(matrix.group).uris}}"
