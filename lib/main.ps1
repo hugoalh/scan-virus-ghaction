@@ -182,7 +182,19 @@ Function Invoke-Tools {
 				@('Path', 'Tool'),
 				@('Path', 'Session', 'Tool')
 			) -Ignore $Ignores)
-			$ElementObject.Flag = "$($ElementObject.IsDirectory ? 'D' : '-')$((!$ElementObject.SkipClamAV -and $ClamAVEnable) ? 'C' : '-')$((!$ElementObject.SkipYara -and $YaraEnable) ? 'Y' : '-')"
+			[String[]]$ElementFlags = @()
+			If ($ElementObject.IsDirectory) {
+				$ElementFlags += 'D'
+			}
+			If (!$ElementObject.SkipClamAV -and $ClamAVEnable) {
+				$ElementFlags += 'C'
+			}
+			If (!$ElementObject.SkipYara -and $YaraEnable) {
+				$ElementFlags += 'Y'
+			}
+			$ElementObject.Flag = $ElementFlags |
+				Sort-Object |
+				Join-String -Separator ''
 			[PSCustomObject]$ElementObject |
 				Write-Output
 		}
@@ -370,8 +382,8 @@ $(
 	$ResultFoundNotIgnore |
 		Format-Table -Property @(
 			@{ Expression = 'Hit'; Alignment = 'Right' },
-			'Symbol',
-			'Path'
+			@{ Expression = 'Symbol'; Width = 40 },
+			@{ Expression = 'Path'; Width = 40 }
 		) -AutoSize -Wrap |
 		Out-String -Width 120
 )
@@ -386,8 +398,8 @@ $(
 	$ResultFoundIgnore |
 		Format-Table -Property @(
 			@{ Expression = 'Hit'; Alignment = 'Right' },
-			'Symbol',
-			'Path'
+			@{ Expression = 'Symbol'; Width = 40 },
+			@{ Expression = 'Path'; Width = 40 }
 		) -AutoSize -Wrap |
 		Out-String -Width 120
 )

@@ -88,9 +88,9 @@ Function Register-YaraUnofficialAsset {
 		Write-Host
 	$IndexTable |
 		Format-Table -Property @(
+			@{ Name = 'Select'; Expression = { $_.Select ? '+' : '' } },
 			'Type',
-			'Name',
-			@{ Expression = 'Select'; Alignment = 'Right' }
+			'Name'
 		) -AutoSize -Wrap |
 		Out-String -Width 120 |
 		Write-Host
