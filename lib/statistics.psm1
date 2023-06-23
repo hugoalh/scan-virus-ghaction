@@ -70,7 +70,7 @@ Class ScanVirusStatistics {
 				@{ Expression = 'SizeMb'; Name = 'Size MB'; Alignment = 'Right' },
 				@{ Expression = 'SizeGb'; Name = 'Size GB'; Alignment = 'Right' },
 				@{ Expression = 'SizePercentage'; Name = 'Size %'; Alignment = 'Right' }
-			) -AutoSize -Wrap |
+			) -AutoSize:$False -Wrap |
 			Out-String -Width $Width
 		)
 	}

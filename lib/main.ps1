@@ -266,7 +266,7 @@ If this is incorrect, probably something went wrong.
 				@{ Name = ''; Expression = 'Flag' },
 				@{ Expression = 'Size'; Alignment = 'Right' },
 				'Path'
-			) -AutoSize -Wrap |
+			) -AutoSize:$False -Wrap |
 			Out-String -Width 120 |
 			Write-Host
 	}
@@ -370,7 +370,7 @@ $(
 					@{ Expression = 'Hit'; Alignment = 'Right' },
 					@{ Expression = 'Symbol'; Width = 40 },
 					@{ Expression = 'Path'; Width = 40 }
-				) -AutoSize -Wrap |
+				) -AutoSize:$False -Wrap |
 				Out-String -Width 120 |
 				Write-Host
 		}
