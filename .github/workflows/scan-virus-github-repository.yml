@@ -14,7 +14,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Setup PowerShell Toolkit"
-        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
       - name: "Resolve Repositories"
         id: "resolve-repositories"
         run: |

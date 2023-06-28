@@ -21,7 +21,7 @@ jobs:
           ref: "update-assets"
           fetch-depth: 0
       - name: "Setup PowerShell Toolkit"
-        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.2.3"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
       - name: "Config Git"
         run: |
           git --no-pager config --global "user.name" "github-actions"
