@@ -2607,7 +2607,7 @@ Sanesecurity.Foxhole.Rar_fs2622:CL_TYPE_RAR:*:(?i)^rfq\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs2623:CL_TYPE_RAR:*:(?i)^list and quotation\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs2624:CL_TYPE_RAR:*:(?i)^new po\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs2625:CL_TYPE_RAR:*:(?i)^request for quotation\.exe$:*:*:*:1:*:*
-Sanesecurity.Foxhole.Rar_fs2626:CL_TYPE_RAR:*:(?i)^dhl receipt_.{0,30}\.exe$:*:*:*:1:*:*
+Sanesecurity.Foxhole.Rar_fs2626:CL_TYPE_RAR:*:(?i)^dhl receipt.{0,30}\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs2627:CL_TYPE_RAR:*:(?i)^additional order\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs2628:CL_TYPE_RAR:*:(?i)^adnoc documents\.exe$:*:*:*:1:*:*
 Sanesecurity.Foxhole.Rar_fs2629:CL_TYPE_RAR:*:(?i)^al naser specification\.exe$:*:*:*:1:*:*
