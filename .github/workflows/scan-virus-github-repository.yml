@@ -61,6 +61,19 @@ jobs:
         group: "${{fromJson(needs.resolve-repositories.outputs.group)}}"
       fail-fast: false
     steps:
+      - name: "Optimize Disk Space"
+        uses: "hugoalh/disk-space-optimizer-ghaction@v0.3.0"
+        with:
+          general_include: ".+"
+          general_exclude: |-
+            ^AzCopy$
+            ^Azure
+            ^Go$
+            ^RunnerBoost$
+          aptcache: "True"
+          dockerimage_include: ".+"
+          homebrewcache: "True"
+          npmcache: "True"
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.5.3"
         with:
