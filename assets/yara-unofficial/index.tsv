@@ -155,6 +155,7 @@ Rule	neo23x0	neo23x0/apt_emissary	neo23x0/yara/apt_emissary.yar
 Rule	neo23x0	neo23x0/apt_eqgrp	neo23x0/yara/apt_eqgrp.yar		
 Rule	neo23x0	neo23x0/apt_eqgrp_apr17	neo23x0/yara/apt_eqgrp_apr17.yar		
 Rule	neo23x0	neo23x0/apt_eqgrp_sparc_sbz_apr23	neo23x0/yara/apt_eqgrp_sparc_sbz_apr23.yar		
+Rule	neo23x0	neo23x0/apt_eqgrp_triangulation_jun23	neo23x0/yara/apt_eqgrp_triangulation_jun23.yar		
 Rule	neo23x0	neo23x0/apt_eternalblue_non_wannacry	neo23x0/yara/apt_eternalblue_non_wannacry.yar		
 Rule	neo23x0	neo23x0/apt_exile_rat	neo23x0/yara/apt_exile_rat.yar		
 Rule	neo23x0	neo23x0/apt_f5_bigip_expl_payloads	neo23x0/yara/apt_f5_bigip_expl_payloads.yar		
@@ -694,6 +695,7 @@ Rule	neo23x0	neo23x0/mal_codecov_hack	neo23x0/yara/mal_codecov_hack.yar
 Rule	neo23x0	neo23x0/mal_crime_unknown	neo23x0/yara/mal_crime_unknown.yar		
 Rule	neo23x0	neo23x0/mal_cryp_rat	neo23x0/yara/mal_cryp_rat.yar		
 Rule	neo23x0	neo23x0/mal_drivers	neo23x0/yara/yara-rules_mal_drivers.yar		
+Rule	neo23x0	neo23x0/mal_ducktail_compromised_certs_jun23	neo23x0/yara/mal_ducktail_compromised_certs_jun23.yar		
 Rule	neo23x0	neo23x0/mal_efile_apr23	neo23x0/yara/mal_efile_apr23.yar		
 Rule	neo23x0	neo23x0/mal_lnx_barracuda_cve_2023_2868	neo23x0/yara/mal_lnx_barracuda_cve_2023_2868.yar		
 Rule	neo23x0	neo23x0/mal_lnx_implant_may22	neo23x0/yara/mal_lnx_implant_may22.yar		
