@@ -20,7 +20,7 @@ If (Get-GitHubActionsIsDebug) {
 }
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
-Enter-GitHubActionsLogGroup -Title 'Import inputs.'
+Enter-GitHubActionsLogGroup -Title 'Import input.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
 Try {
 	[String]$InputTableMarkupInput = Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim

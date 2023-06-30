@@ -58,7 +58,7 @@ jobs:
 
 ### 📥 Input
 
-> **ℹ Notice:** All of the inputs are optional; Use this action without any inputs will default to scan current workspace with the ClamAV official assets.
+> **ℹ Notice:** All of the inputs are optional; Use this action without any input will default to scan current workspace with the ClamAV official assets.
 
 #### `input_listdelimiter`
 
