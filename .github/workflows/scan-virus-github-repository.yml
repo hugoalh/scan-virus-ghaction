@@ -15,13 +15,39 @@ jobs:
     steps:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
+      - name: "Get Database Key"
+        id: "database-key"
+        run: |
+          Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+          Write-GitHubActionsOutput -Name 'key' -Value "rdb-$((
+            Get-Date -AsUTC |
+              ConvertTo-Json
+          ) -ireplace '\.\d+Z$', 'Z')"
+      - name: "Restore Database"
+        id: "database-restore"
+        uses: "actions/cache/restore@v3.3.1"
+        with:
+          key: "${{steps.database-key.outputs.key}}"
+          path: |
+            ${{github.workspace}}
+          restore-keys: |
+            rdb-
       - name: "Resolve Repositories"
         id: "resolve-repositories"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+          [Hashtable]$Rdb = @{}
+          [Int16]$MatrixMaximum = 250
+          [DateTime]$TimeStampCurrent = Get-Date -AsUTC
+          [DateTime]$TimeStampBuffer = $TimeStampCurrent.AddDays(-7)
+          [String]$RdbFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath 'rdb.json'
+          If (Test-Path -LiteralPath $RdbFilePath) {
+            $Rdb = Get-Content -LiteralPath $RdbFilePath -Raw -Encoding 'UTF8NoBOM' |
+              ConvertFrom-Json -Depth 100 -AsHashtable -ErrorAction 'Continue'
+          }
           [String]$RepositoriesInput = '${{github.event.inputs.repositories}}'
+          [String[]]$RepositoriesRaw = @()
           If ($RepositoriesInput.Length -eq 0) {
-            [String[]]$Repositories = @()
             For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
               [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "https://api.github.com/events?page=$($Page)&per_page=100" -Headers @{
                 'Content-Type' = 'application/vnd.github+json'
@@ -29,26 +55,45 @@ jobs:
               } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' |
                 Select-Object -ExpandProperty 'Content' |
                 ConvertFrom-Json -Depth 100
-              ForEach ($Repository In $Response.repo.name) {
-                If ($Repository -inotin $Repositories) {
-                  $Repositories += $Repository
-                }
-              }
+              $RepositoriesRaw += $Response.repo.name
             }
           }
           Else {
-            [String[]]$Repositories = $RepositoriesInput -isplit ',|;' |
+            $RepositoriesRaw += $RepositoriesInput -isplit ',|;' |
               ForEach-Object -Process { $_.Trim() } |
               Where-Object -FilterScript { $_.Length -gt 0 }
           }
+          [String[]]$Repositories = $RepositoriesRaw |
+            Where-Object -FilterScript { $_ -inotmatch '^hugoalh(?:-studio)?\/' } |
+            Select-Object -Unique |
+            Where-Object -FilterScript {
+              !$Rdb.ContainsKey($_) -or
+              ($Rdb.ContainsKey($_) -and $Rdb.($_) -lt $TimeStampBuffer )
+            } |
+            Get-Random -Count $MatrixMaximum
+          If ($Repositories.Count -lt $MatrixMaximum) {
+            $Repositories += $Rdb.GetEnumerator() |
+              Where-Object -FilterScript { $_.Name -inotin $Repositories -and $_.Value -lt $TimeStampBuffer } |
+              Get-Random -Count ($MatrixMaximum - $Repositories.Count) -ErrorAction 'SilentlyContinue'
+          }
+          ForEach ($Repository In $Repositories) {
+            $Rdb.($Repository) = $TimeStampCurrent
+          }
+          $Rdb |
+            ConvertTo-Json -Depth 100 -Compress |
+            Set-Content -LiteralPath $RdbFilePath -Encoding 'UTF8NoBOM' -ErrorAction 'Continue'
           Set-GitHubActionsOutput -Name 'repositories' -Value (
             $Repositories |
-              Where-Object -FilterScript { $_ -inotmatch '^hugoalh(?:-studio)?\/' } |
-              Select-Object -Unique |
-              Get-Random -Count 250 |
               ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
+      - name: "Save Database"
+        uses: "actions/cache/save@v3.3.1"
+        with:
+          key: "${{steps.database-key.outputs.key}}"
+          path: |
+            ${{github.workspace}}
+        continue-on-error: true
     outputs:
       group: "${{steps.resolve-repositories.outputs.repositories}}"
   main:
