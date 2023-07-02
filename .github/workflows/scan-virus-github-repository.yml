@@ -62,20 +62,21 @@ jobs:
       fail-fast: false
     steps:
       - name: "Optimize Disk Space"
-        uses: "hugoalh/disk-space-optimizer-ghaction@v0.3.0"
+        uses: "hugoalh/disk-space-optimizer-ghaction@v0.4.0"
         with:
+          operate_async: "True"
           general_include: ".+"
           general_exclude: |-
             ^AzCopy$
             ^Azure
             ^Go$
             ^RunnerBoost$
-          aptcache: "True"
           dockerimage_include: ".+"
           dockerimage_exclude: |-
             ^ghcr\.io/hugoalh/scan-virus-ghaction
-          homebrewcache: "True"
-          npmcache: "True"
+          cache_apt: "True"
+          cache_homebrew: "True"
+          cache_npm: "True"
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.5.3"
         with:
