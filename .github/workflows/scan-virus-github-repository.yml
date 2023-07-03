@@ -19,7 +19,7 @@ jobs:
         id: "database-key"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-          Write-GitHubActionsOutput -Name 'key' -Value "rdb-$((
+          Set-GitHubActionsOutput -Name 'key' -Value "rdb-$((
             Get-Date -AsUTC |
               ConvertTo-Json
           ) -ireplace '\.\d+Z$', 'Z')"
