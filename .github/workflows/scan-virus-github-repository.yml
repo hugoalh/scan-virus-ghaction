@@ -15,24 +15,12 @@ jobs:
     steps:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
-      - name: "Get Database Key"
-        id: "database-key"
-        run: |
-          Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-          Set-GitHubActionsOutput -Name 'key' -Value "rdb-$((
-            Get-Date -AsUTC |
-              ConvertTo-Json
-          ) -ireplace '\.\d+Z$', 'Z')"
-        shell: "pwsh"
-      - name: "Restore Database"
-        id: "database-restore"
-        uses: "actions/cache/restore@v3.3.1"
+      - name: "Restore RDB"
+        uses: "actions/download-artifact@v3.0.2"
         with:
-          key: "${{steps.database-key.outputs.key}}"
-          path: |
-            ${{github.workspace}}
-          restore-keys: |
-            rdb-
+          name: "rdb"
+          path: "${{github.workspace}}"
+        continue-on-error: true
       - name: "Resolve Repositories"
         id: "resolve-repositories"
         run: |
@@ -88,12 +76,11 @@ jobs:
               ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
-      - name: "Save Database"
-        uses: "actions/cache/save@v3.3.1"
+      - name: "Save RDB"
+        uses: "actions/upload-artifact@v3.1.2"
         with:
-          key: "${{steps.database-key.outputs.key}}"
-          path: |
-            ${{github.workspace}}
+          name: "rdb"
+          path: "${{github.workspace}}"
         continue-on-error: true
     outputs:
       group: "${{steps.resolve-repositories.outputs.repositories}}"
