@@ -8,6 +8,9 @@ on:
         type: "string"
         description: "{String[]} GitHub repositories."
         required: false
+concurrency:
+  group: "scan-virus-github-repository"
+  cancel-in-progress: false
 jobs:
   resolve-repositories:
     name: "(Resolve Repositories)"
