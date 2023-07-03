@@ -23,6 +23,7 @@ jobs:
             Get-Date -AsUTC |
               ConvertTo-Json
           ) -ireplace '\.\d+Z$', 'Z')"
+        shell: "pwsh"
       - name: "Restore Database"
         id: "database-restore"
         uses: "actions/cache/restore@v3.3.1"
