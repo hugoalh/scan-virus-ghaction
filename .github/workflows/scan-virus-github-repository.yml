@@ -18,19 +18,29 @@ jobs:
     steps:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
+      - name: "Get Timestamp"
+        id: "datetime"
+        run: |
+          Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+          Set-GitHubActionsOutput -Name 'timestamp' -Value ((
+            Get-Date -AsUTC |
+              ConvertTo-Json
+          ) -ireplace '"', '' -ireplace '\.\d+Z$', 'Z')
+        shell: "pwsh"
       - name: "Restore RDB"
-        uses: "actions/download-artifact@v3.0.2"
+        uses: "actions/cache/restore@v3.3.1"
         with:
-          name: "rdb"
+          key: "rdb-${{steps.datetime.outputs.timestamp}}"
           path: "${{github.workspace}}"
-        continue-on-error: true
+          restore-keys: |
+            rdb-
       - name: "Resolve Repositories"
         id: "resolve-repositories"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
           [Hashtable]$Rdb = @{}
           [Int16]$MatrixMaximum = 250
-          [DateTime]$TimeStampCurrent = Get-Date -AsUTC
+          [DateTime]$TimeStampCurrent = Get-Date -Date '${{steps.datetime.outputs.timestamp}}' -AsUTC
           [DateTime]$TimeStampBuffer = $TimeStampCurrent.AddDays(-7)
           [String]$RdbFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath 'rdb.json'
           If (Test-Path -LiteralPath $RdbFilePath) {
@@ -66,7 +76,7 @@ jobs:
           If ($Repositories.Count -lt $MatrixMaximum) {
             $Repositories += $Rdb.GetEnumerator() |
               Where-Object -FilterScript { $_.Name -inotin $Repositories -and $_.Value -lt $TimeStampBuffer } |
-              Get-Random -Count ($MatrixMaximum - $Repositories.Count) -ErrorAction 'SilentlyContinue'
+              Get-Random -Count ($MatrixMaximum - $Repositories.Count)
           }
           ForEach ($Repository In $Repositories) {
             $Rdb.($Repository) = $TimeStampCurrent
@@ -80,9 +90,9 @@ jobs:
           )
         shell: "pwsh"
       - name: "Save RDB"
-        uses: "actions/upload-artifact@v3.1.2"
+        uses: "actions/cache/save@v3.3.1"
         with:
-          name: "rdb"
+          key: "rdb-${{steps.datetime.outputs.timestamp}}"
           path: "${{github.workspace}}"
         continue-on-error: true
     outputs:
