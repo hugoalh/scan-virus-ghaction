@@ -165,38 +165,31 @@ Function Start-ClamAVDaemon {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Start ClamAV daemon.'
+	Write-Host -Object 'Start ClamAV daemon.'
 	Try {
-		clamd
+		clamd |
+			Write-GitHubActionsDebug -SkipEmptyLine
 	}
 	Catch {
-		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_" -Finally {
-			Exit-GitHubActionsLogGroup
-		}
+		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"
 	}
-	Exit-GitHubActionsLogGroup
 }
 Function Stop-ClamAVDaemon {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Stop ClamAV daemon.'
+	Write-Host -Object 'Stop ClamAV daemon.'
 	Get-Process -Name 'clamd' -ErrorAction 'Continue' |
-		Stop-Process
-	Exit-GitHubActionsLogGroup
+		Stop-Process -ErrorAction 'Continue'
 }
 Function Update-ClamAV {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Update ClamAV via FreshClam.'
+	Write-Host -Object 'Update ClamAV via FreshClam.'
 	Try {
-		If (Get-GitHubActionsIsDebug) {
-			freshclam --verbose
-		}
-		Else {
-			freshclam
-		}
+		freshclam --verbose |
+			Write-GitHubActionsDebug
 		If ($LASTEXITCODE -ne 0) {
 			Throw "Exit code is ``$LASTEXITCODE``"
 		}
@@ -207,7 +200,6 @@ Unexpected issues when update ClamAV via FreshClam: $_
 This is fine, but the local assets maybe outdated.
 "@
 	}
-	Exit-GitHubActionsLogGroup
 }
 Export-ModuleMember -Function @(
 	'Invoke-ClamAVScan',

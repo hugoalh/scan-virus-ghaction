@@ -20,16 +20,14 @@ If (Get-GitHubActionsIsDebug) {
 }
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
-Enter-GitHubActionsLogGroup -Title 'Import input.'
+Write-Host -Object 'Import input.'
 [RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
 Try {
 	[String]$InputTableMarkupInput = Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusInputTableMarkup]$InputTableMarkup = [ScanVirusInputTableMarkup]::($InputTableMarkupInput)
 }
 Catch {
-	Write-GitHubActionsFail -Message "``$InputTableMarkupInput`` is not a valid table markup language: $_" -Finally {
-		Exit-GitHubActionsLogGroup
-	}
+	Write-GitHubActionsFail -Message "``$InputTableMarkupInput`` is not a valid table markup language: $_"
 }
 [AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
@@ -49,30 +47,23 @@ Try {
 	[ScanVirusLogElementsChoices]$LogElements = [ScanVirusLogElementsChoices]::($LogElementsInput)
 }
 Catch {
-	Write-GitHubActionsFail -Message "``$LogElementsInput`` is not a valid value of log elements usage: $_" -Finally {
-		Exit-GitHubActionsLogGroup
-	}
+	Write-GitHubActionsFail -Message "``$LogElementsInput`` is not a valid value of log elements usage: $_"
 }
 Try {
 	[String]$SummaryFoundInput = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusStepSummaryChoices]$SummaryFound = [ScanVirusStepSummaryChoices]::($SummaryFoundInput)
 }
 Catch {
-	Write-GitHubActionsFail -Message "``$SummaryFoundInput`` is not a valid value of found summary usage: $_" -Finally {
-		Exit-GitHubActionsLogGroup
-	}
+	Write-GitHubActionsFail -Message "``$SummaryFoundInput`` is not a valid value of found summary usage: $_"
 }
 Try {
 	[String]$SummaryStatisticsInput = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
 	[ScanVirusStepSummaryChoices]$SummaryStatistics = [ScanVirusStepSummaryChoices]::($SummaryStatisticsInput)
 }
 Catch {
-	Write-GitHubActionsFail -Message "``$SummaryStatisticsInput`` is not a valid value of statistics summary usage: $_" -Finally {
-		Exit-GitHubActionsLogGroup
-	}
+	Write-GitHubActionsFail -Message "``$SummaryStatisticsInput`` is not a valid value of statistics summary usage: $_"
 }
 [PSCustomObject]@{
-	Bundle = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL
 	Input_ListDelimiter = $InputListDelimiter.ToString()
 	Input_TableMarkup = $InputTableMarkup.ToString()
 	"Targets [$($Targets.Count)]" = ($Targets.Count -eq 0) ? '{Local}' : (
@@ -103,8 +94,7 @@ Catch {
 } |
 	Format-List |
 	Out-String -Width 120 |
-	Write-Host
-Exit-GitHubActionsLogGroup
+	Write-GitHubActionsDebug
 If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
@@ -127,17 +117,15 @@ If ($ClamAVEnable -and $ClamAVUpdate) {
 	Update-ClamAV
 }
 If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register ClamAV unofficial asset.'
+	Write-Host -Object 'Register ClamAV unofficial asset.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAsset -Selection $ClamAVUnofficialAssetsInput
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAsset/$ApplyIssue"
 	}
-	Exit-GitHubActionsLogGroup
 }
 If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
-	Enter-GitHubActionsLogGroup -Title 'Register YARA unofficial asset.'
+	Write-Host -Object 'Register YARA unofficial asset.'
 	Register-YaraUnofficialAsset -Selection $YaraUnofficialAssetsInput
-	Exit-GitHubActionsLogGroup
 }
 If ($ClamAVEnable) {
 	Start-ClamAVDaemon
@@ -436,15 +424,16 @@ If ($Targets.Count -eq 0) {
 				Out-String -Width 120 |
 				Write-Host
 			Try {
-				git --no-pager checkout $GitCommitHash --force --quiet
+				git --no-pager checkout $GitCommitHash --force |
+					Write-GitHubActionsDebug -SkipEmptyLine
 				If ($LASTEXITCODE -ne 0) {
 					Throw "Exit code is ``$LASTEXITCODE``"
 				}
 			}
 			Catch {
+				Exit-GitHubActionsLogGroup
 				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitHash)``: $_"
 				$StatisticsTotal.IssuesOperations += "Git/$GitCommitHash"
-				Exit-GitHubActionsLogGroup
 				Continue
 			}
 			Exit-GitHubActionsLogGroup

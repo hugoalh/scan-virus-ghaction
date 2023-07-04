@@ -13,7 +13,7 @@ Function Import-NetworkTarget {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Uri]$Target
 	)
-	Enter-GitHubActionsLogGroup -Title "Fetch file ``$Target``."
+	Write-Host -Object "Fetch file ``$Target``."
 	[String]$NetworkTargetFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath "$(New-RandomToken).tmp"
 	Try {
 		Invoke-WebRequest -Uri $Target -OutFile $NetworkTargetFilePath @InvokeWebRequestParameters_Get
@@ -21,9 +21,6 @@ Function Import-NetworkTarget {
 	Catch {
 		Write-GitHubActionsError -Message "Unable to fetch file ``$Target``: $_"
 		Return
-	}
-	Finally {
-		Exit-GitHubActionsLogGroup
 	}
 	Write-Output -InputObject $NetworkTargetFilePath
 }

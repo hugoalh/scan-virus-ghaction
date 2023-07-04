@@ -35,15 +35,16 @@ Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Enter-GitHubActionsLogGroup -Title 'Config Git LFS.'
+	Write-Host -Object 'Config Git LFS.'
 	Try {
-		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip'
-		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f'
+		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip' |
+			Write-GitHubActionsDebug -SkipEmptyLine
+		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f' |
+			Write-GitHubActionsDebug -SkipEmptyLine
 	}
 	Catch {
-		Write-GitHubActionsWarning -Message $_
+		Write-GitHubActionsWarning -Message "Unable to config Git LFS: $_"
 	}
-	Exit-GitHubActionsLogGroup
 }
 Function Get-GitCommitIndex {
 	[CmdletBinding()]
