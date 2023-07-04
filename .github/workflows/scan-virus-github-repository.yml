@@ -19,18 +19,20 @@ jobs:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
       - name: "Get Timestamp"
-        id: "datetime"
+        id: "timestamp"
         run: |
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-          Set-GitHubActionsOutput -Name 'timestamp' -Value ((
+          [String]$Timestamp = (
             Get-Date -AsUTC |
               ConvertTo-Json
-          ) -ireplace '"', '' -ireplace '\.\d+Z$', 'Z')
+          ) -ireplace '"', '' -ireplace '\.\d+Z$', 'Z'
+          Set-GitHubActionsOutput -Name 'iso' -Value $Timestamp
+          Set-GitHubActionsOutput -Name 'id' -Value ($Timestamp -ireplace '\D', '')
         shell: "pwsh"
       - name: "Restore RDB"
         uses: "actions/cache/restore@v3.3.1"
         with:
-          key: "rdb-${{steps.datetime.outputs.timestamp}}"
+          key: "rdb-${{steps.timestamp.outputs.id}}"
           path: "${{github.workspace}}"
           restore-keys: |
             rdb-
@@ -40,7 +42,7 @@ jobs:
           Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
           [Hashtable]$Rdb = @{}
           [Int16]$MatrixMaximum = 250
-          [DateTime]$TimeStampCurrent = Get-Date -Date '${{steps.datetime.outputs.timestamp}}' -AsUTC
+          [DateTime]$TimeStampCurrent = Get-Date -Date '${{steps.timestamp.outputs.iso}}' -AsUTC
           [DateTime]$TimeStampBuffer = $TimeStampCurrent.AddDays(-7)
           [String]$RdbFilePath = Join-Path -Path $Env:GITHUB_WORKSPACE -ChildPath 'rdb.json'
           If (Test-Path -LiteralPath $RdbFilePath) {
@@ -92,7 +94,7 @@ jobs:
       - name: "Save RDB"
         uses: "actions/cache/save@v3.3.1"
         with:
-          key: "rdb-${{steps.datetime.outputs.timestamp}}"
+          key: "rdb-${{steps.timestamp.outputs.id}}"
           path: "${{github.workspace}}"
         continue-on-error: true
     outputs:
