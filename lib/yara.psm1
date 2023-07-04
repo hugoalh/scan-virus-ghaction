@@ -12,40 +12,40 @@ Function Invoke-Yara {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target<#,
-		[Parameter(Mandatory = $True, Position = 1)][Alias('Assets')][PSCustomObject[]]$Asset#>
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target
 	)
 	[Hashtable]$Result = @{
 		ErrorMessage = @()
-		ExitCode = 0
 		Found = @()
-		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
 	Set-Content -LiteralPath $TargetListFile -Value (
 		$Target |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
+	[String[]]$Output = @()
 	ForEach ($_A In (
 		$UnofficialAssetIndexTable |
 			Where-Object -FilterScript { $_.Select }
 	)) {
 		Try {
-			$Result.Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_A.FilePath)`" `"$($TargetListFile.FullName)`""
+			$Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_A.FilePath)`" `"$($TargetListFile.FullName)`"" |
+				Write-GitHubActionsDebug -PassThru
 		}
 		Catch {
 			$Result.ErrorMessage += $_
-			$Result.ExitCode = $LASTEXITCODE
 		}
 	}
 	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
-	If ($Result.Output.Count -gt 0) {
+	<#
+	If ($Output.Count -gt 0) {
 		Write-GitHubActionsDebug -Message (
-			$Result.Output |
+			$Output |
 				Join-String -Separator "`n"
 		)
 	}
-	ForEach ($OutputLine In $Result.Output) {
+	#>
+	ForEach ($OutputLine In $Output) {
 		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
 			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
 			$Result.Found += [PSCustomObject]@{

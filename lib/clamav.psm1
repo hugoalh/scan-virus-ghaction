@@ -15,17 +15,17 @@ Function Invoke-ClamAVScan {
 	)
 	[Hashtable]$Result = @{
 		ErrorMessage = @()
-		ExitCode = 0
 		Found = @()
-		Output = @()
 	}
 	$TargetListFile = New-TemporaryFile
 	Set-Content -LiteralPath $TargetListFile -Value (
 		$Target |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
+	[String[]]$Output = @()
 	Try {
-		$Result.Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($TargetListFile.FullName)`" --multiscan"
+		$Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($TargetListFile.FullName)`" --multiscan" |
+			Write-GitHubActionsDebug -PassThru
 	}
 	Catch {
 		$Result.ErrorMessage += $_
@@ -33,15 +33,16 @@ Function Invoke-ClamAVScan {
 	Finally {
 		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
 	}
-	$Result.ExitCode = $LASTEXITCODE
-	If ($Result.Output.Count -gt 0) {
+	<#
+	If ($Output.Count -gt 0) {
 		Write-GitHubActionsDebug -Message (
-			$Result.Output |
+			$Output |
 				Join-String -Separator "`n"
 		)
 	}
+	#>
 	ForEach ($OutputLine In (
-		$Result.Output |
+		$Output |
 			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
 	)) {
 		If ($OutputLine -imatch '^[-=]+\s*SCAN SUMMARY\s*[-=]+$') {
