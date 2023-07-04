@@ -85,7 +85,7 @@ Function Register-YaraUnofficialAsset {
 	} |
 		Format-List |
 		Out-String -Width 120 |
-		Write-Host
+		Write-GitHubActionsDebug
 	$IndexTable |
 		Format-Table -Property @(
 			@{ Name = ''; Expression = { $_.Select ? '+' : '' } },
@@ -93,7 +93,7 @@ Function Register-YaraUnofficialAsset {
 			'Name'
 		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
-		Write-Host
+		Write-GitHubActionsDebug
 	$Script:UnofficialAssetIndexTable += $IndexTable
 }
 Export-ModuleMember -Function @(

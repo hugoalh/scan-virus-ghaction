@@ -95,7 +95,7 @@ Function Register-ClamAVUnofficialAsset {
 	} |
 		Format-List |
 		Out-String -Width 120 |
-		Write-Host
+		Write-GitHubActionsDebug
 	$IndexTable |
 		Format-Table -Property @(
 			@{ Name = ''; Expression = { $_.Select ? '+' : '' } },
@@ -103,7 +103,7 @@ Function Register-ClamAVUnofficialAsset {
 			'Name'
 		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
-		Write-Host
+		Write-GitHubActionsDebug
 	[String[]]$AssetsApplyPaths = @()
 	[String[]]$AssetsApplyIssues = @()
 	ForEach ($IndexApply In (
