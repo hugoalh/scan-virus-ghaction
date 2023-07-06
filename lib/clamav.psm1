@@ -168,7 +168,7 @@ Function Start-ClamAVDaemon {
 	Write-Host -Object 'Start ClamAV daemon.'
 	Try {
 		clamd |
-			Write-GitHubActionsDebug -SkipEmptyLine
+			Write-GitHubActionsDebug
 	}
 	Catch {
 		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"

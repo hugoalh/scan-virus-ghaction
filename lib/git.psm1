@@ -38,9 +38,9 @@ Function Disable-GitLfsProcess {
 	Write-Host -Object 'Config Git LFS.'
 	Try {
 		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip' |
-			Write-GitHubActionsDebug -SkipEmptyLine
+			Write-GitHubActionsDebug
 		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f' |
-			Write-GitHubActionsDebug -SkipEmptyLine
+			Write-GitHubActionsDebug
 	}
 	Catch {
 		Write-GitHubActionsWarning -Message "Unable to config Git LFS: $_"

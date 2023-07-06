@@ -425,7 +425,7 @@ If ($Targets.Count -eq 0) {
 				Write-Host
 			Try {
 				git --no-pager checkout $GitCommitHash --force --quiet |
-					Write-GitHubActionsDebug -SkipEmptyLine
+					Write-GitHubActionsDebug
 				If ($LASTEXITCODE -ne 0) {
 					Throw "Exit code is ``$LASTEXITCODE``"
 				}
