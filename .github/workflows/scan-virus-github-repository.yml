@@ -54,7 +54,7 @@ jobs:
           If ($RepositoriesInput.Length -eq 0) {
             For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
               Try {
-                [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "https://api.github.com/events?page=$($Page)&per_page=100" -Headers @{
+                [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "$($Env:GITHUB_API_URL)/events?page=$($Page)&per_page=100" -Headers @{
                   'Content-Type' = 'application/vnd.github+json'
                   'X-GitHub-Api-Version' = '2022-11-28'
                 } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' |
@@ -89,6 +89,7 @@ jobs:
           $Rdb |
             ConvertTo-Json -Depth 100 -Compress |
             Set-Content -LiteralPath $RdbFilePath -Encoding 'UTF8NoBOM' -ErrorAction 'Continue'
+          <#
           [String[]]$Group = $Repositories |
             ForEach-Object -Process {
               [Boolean]$NeedMoreSpace = $True
@@ -114,8 +115,9 @@ jobs:
                 ConvertTo-Json -Depth 100 -Compress |
                 Write-Output
             }
+          #>
           Set-GitHubActionsOutput -Name 'group' -Value (
-            $Group |
+            $Repositories |
               ConvertTo-Json -Depth 100 -Compress
           )
         shell: "pwsh"
@@ -128,7 +130,7 @@ jobs:
     outputs:
       group: "${{steps.resolve-repositories.outputs.group}}"
   main:
-    name: "${{fromJson(matrix.group).repository}}"
+    name: "${{matrix.group}}"
     needs:
       - "resolve-repositories"
     runs-on: "ubuntu-latest"
@@ -138,7 +140,6 @@ jobs:
       fail-fast: false
     steps:
       - name: "Optimize Disk Space"
-        if: "${{fromJson(matrix.group).need_more_space}}"
         uses: "hugoalh/disk-space-optimizer-ghaction@v0.4.1"
         with:
           operate_async: "True"
@@ -147,7 +148,6 @@ jobs:
             ^AzCopy$
             ^Azure
             ^Go$
-            ^RunnerBoost$
           dockerimage_include: ".+"
           dockerimage_exclude: |-
             ^ghcr\.io/hugoalh/scan-virus-ghaction
@@ -157,7 +157,7 @@ jobs:
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.5.3"
         with:
-          repository: "${{fromJson(matrix.group).repository}}"
+          repository: "${{matrix.group}}"
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
           fetch-depth: 0
       - name: "Scan Virus"
