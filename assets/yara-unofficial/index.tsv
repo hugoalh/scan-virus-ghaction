@@ -214,6 +214,7 @@ Rule	neo23x0	neo23x0/apt_lazarus_applejeus	neo23x0/yara/apt_lazarus_applejeus.ya
 Rule	neo23x0	neo23x0/apt_lazarus_aug20	neo23x0/yara/apt_lazarus_aug20.yar		
 Rule	neo23x0	neo23x0/apt_lazarus_dec17	neo23x0/yara/apt_lazarus_dec17.yar		
 Rule	neo23x0	neo23x0/apt_lazarus_dec20	neo23x0/yara/apt_lazarus_dec20.yar		
+Rule	neo23x0	neo23x0/apt_lazarus_gopuram	neo23x0/yara/apt_lazarus_gopuram.yar		
 Rule	neo23x0	neo23x0/apt_lazarus_jan21	neo23x0/yara/apt_lazarus_jan21.yar		
 Rule	neo23x0	neo23x0/apt_lazarus_jun18	neo23x0/yara/apt_lazarus_jun18.yar		
 Rule	neo23x0	neo23x0/apt_lazarus_vhd_ransomware	neo23x0/yara/apt_lazarus_vhd_ransomware.yar		
