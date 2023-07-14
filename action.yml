@@ -25,13 +25,17 @@ inputs:
     required: false
     default: "False"
   git_limit:
-    description: "{UInt} Limit on how many Git commits will scan."
+    description: "{UInt64} Limit on how many Git commits will scan."
     required: false
     default: "0"
   git_reverse:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
+  unofficialassets_version:
+    description: "{String} Unofficial assets version to use."
+    required: false
+    default: "Latest"
   clamav_enable:
     description: "{Boolean} Whether to use ClamAV."
     required: false

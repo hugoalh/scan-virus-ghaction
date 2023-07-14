@@ -17,7 +17,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Setup PowerShell Toolkit"
-        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.0"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.3.1"
       - name: "Get Timestamp"
         id: "timestamp"
         run: |
@@ -81,7 +81,8 @@ jobs:
           If ($Repositories.Count -lt $MatrixMaximum) {
             $Repositories += $Rdb.GetEnumerator() |
               Where-Object -FilterScript { $_.Name -inotin $Repositories -and $_.Value -lt $TimeStampBuffer } |
-              Get-Random -Count ($MatrixMaximum - $Repositories.Count)
+              Get-Random -Count ($MatrixMaximum - $Repositories.Count) |
+              Select-Object -ExpandProperty 'Name'
           }
           ForEach ($Repository In $Repositories) {
             $Rdb.($Repository) = $TimeStampCurrent
@@ -89,33 +90,6 @@ jobs:
           $Rdb |
             ConvertTo-Json -Depth 100 -Compress |
             Set-Content -LiteralPath $RdbFilePath -Encoding 'UTF8NoBOM' -ErrorAction 'Continue'
-          <#
-          [String[]]$Group = $Repositories |
-            ForEach-Object -Process {
-              [Boolean]$NeedMoreSpace = $True
-              Try {
-                $Response = Invoke-WebRequest -Uri "https://api.github.com/repos/$_" -Headers @{
-                  'Content-Type' = 'application/vnd.github+json'
-                  'X-GitHub-Api-Version' = '2022-11-28'
-                } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' -SkipHttpErrorCheck
-                If ($Response.StatusCode -eq 200) {
-                  $NeedMoreSpace = (
-                    $Response |
-                      Select-Object -ExpandProperty 'Content' |
-                      ConvertFrom-Json -Depth 100 |
-                      Select-Object -ExpandProperty 'size'
-                  ) -ge (8GB / 1KB)
-                }
-              }
-              Catch {}
-              @{
-                repository = $_
-                need_more_space = $NeedMoreSpace
-              } |
-                ConvertTo-Json -Depth 100 -Compress |
-                Write-Output
-            }
-          #>
           Set-GitHubActionsOutput -Name 'group' -Value (
             $Repositories |
               ConvertTo-Json -Depth 100 -Compress
@@ -139,7 +113,30 @@ jobs:
         group: "${{fromJson(needs.resolve-repositories.outputs.group)}}"
       fail-fast: false
     steps:
+      - name: "Determine Whether Optimize Disk Space"
+        id: "if-ods"
+        run: |
+          [Boolean]$NeedMoreSpace = $True
+          Try {
+            $Response = Invoke-WebRequest -Uri "$($Env:GITHUB_API_URL)/repos/${{matrix.group}}" -Headers @{
+              'Content-Type' = 'application/vnd.github+json'
+              'X-GitHub-Api-Version' = '2022-11-28'
+            } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' -SkipHttpErrorCheck
+            If ($Response.StatusCode -eq 200) {
+              $NeedMoreSpace = (
+                $Response |
+                  Select-Object -ExpandProperty 'Content' |
+                  ConvertFrom-Json -Depth 100 |
+                  Select-Object -ExpandProperty 'size'
+              ) -ge (8GB / 1KB)
+            }
+          }
+          Catch {}
+          Add-Content -LiteralPath $Env:GITHUB_OUTPUT -Value "result=$($NeedMoreSpace.ToString())" -Confirm:$False -Encoding 'UTF8NoBOM'
+        shell: "pwsh"
+        continue-on-error: true
       - name: "Optimize Disk Space"
+        if: "${{(steps.if-ods.outputs.result || 'True') == 'True'}}"
         uses: "hugoalh/disk-space-optimizer-ghaction@v0.4.1"
         with:
           operate_async: "True"
