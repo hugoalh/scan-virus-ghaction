@@ -5,7 +5,7 @@
 > | **Legend** | **Description** |
 > |:-:|:--|
 > | L | **LTS:** Long term supported. |
-> | ✔ | **Active / Current:** Currently supported. |
+> | ✔️ | **Active / Current:** Currently supported. |
 > | 👎{🐛} | **Partially (Issue):** Partially supported due to confirmed contains bugs and/or issues. |
 > | 👎{🧓} | **Partially (Old):** Partially supported due to deprecated by newer versions. |
 > | ❌{🐛} | **No (Issue):** Not supported due to confirmed contains bugs and/or issues. |
@@ -13,8 +13,8 @@
 
 | **Versions** | **Status** | **Target - GitHub Actions Runner** | **Target - Docker** |
 |:-:|:-:|:-:|:-:|
-| v0.16.X | ✔ | >= v2.303.0 | Latest Release |
-| v0.15.X | ✔ | >= v2.303.0 | Latest Release |
+| v0.16.X | ✔️ | >= v2.303.0 | Latest Release |
+| v0.15.X | ✔️ | >= v2.303.0 | Latest Release |
 | v0.14.X | 👎{🧓} | >= v2.303.0 | Latest Release |
 | v0.13.X | 👎{🧓} | >= v2.303.0 | Latest Release |
 | v0.12.X | 👎{🧓} | >= v2.303.0 | Latest Release |

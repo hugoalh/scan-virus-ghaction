@@ -23,20 +23,20 @@ A GitHub Action to scan virus (including malicious file and malware) in the GitH
 - Ability to ignore specify paths (i.e.: directories and/or files), rules, sessions (e.g.: Git commits), and/or signatures.
 - Ability to scan other things, not limited to only Git repository.
 
-### 🛡 Tools
+### 🛡️ Tools
 
 - **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
   - [Unofficial Assets List][clamav-unofficial-assets-list]
 - **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
   - [Unofficial Assets List][yara-unofficial-assets-list]
 
-### ⚠ Disclaimer
+### ⚠️ Disclaimer
 
 This does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
 
 ## 📚 Documentation
 
-> **⚠ Important:** This documentation is v0.10.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
+> **⚠️ Important:** This documentation is v0.10.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
 ### Getting Started
 
@@ -51,14 +51,14 @@ jobs:
       - uses: "hugoalh/scan-virus-ghaction@<Version>"
 ```
 
-> **ℹ Notice:** Begin from v0.14.0, this action also provide editions of each tool:
+> **ℹ️ Notice:** Begin from v0.14.0, this action also provide editions of each tool:
 >
 > - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Version>"`
 > - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Version>"`
 
 ### 📥 Input
 
-> **ℹ Notice:** All of the inputs are optional; Use this action without any input will default to scan current workspace with the ClamAV official assets.
+> **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to scan current workspace with the ClamAV official assets.
 
 #### `input_listdelimiter`
 
@@ -128,7 +128,7 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 - [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
 
-> **⚠ Important:** Begin from v0.16.0, workspace will automatically clean for remote targets.
+> **⚠️ Important:** Begin from v0.16.0, workspace will automatically clean for remote targets.
 
 #### `git_integrate`
 
@@ -199,7 +199,7 @@ When this input is `False`, will ignore inputs:
 > git_limit: 100
 > ```
 
-> **⚠ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
+> **⚠️ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
 
 #### `git_reverse`
 
@@ -225,7 +225,7 @@ When this input is `False`, will ignore inputs:
 
 `<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.
 
-> **⚠ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
+> **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
 
 #### `yara_enable`
 
@@ -235,7 +235,7 @@ When this input is `False`, will ignore inputs:
 
 `<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
-> **⚠ Important:**
+> **⚠️ Important:**
 >
 > - Before v0.14.0, all of the unofficial assets are not in use unless specified.
 > - Begin from v0.14.0, all of the unofficial assets are in use if not specified.
@@ -258,7 +258,7 @@ When this input is `False`, will ignore inputs:
 >   - Path: "^node_modules\\/"
 > ```
 
-> **⚠ Important:**
+> **⚠️ Important:**
 >
 > - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
 > - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
@@ -272,7 +272,7 @@ When this input is `False`, will ignore inputs:
 - **`"OnlyCurrent"`:** Enable, only for session "Current".
 - **`"All"`:** Enable.
 
-> **⚠ Important:** Begin from v0.16.0, elements are list in the log only when enabled debug mode.
+> **⚠️ Important:** Begin from v0.16.0, elements are list in the log only when enabled debug mode.
 
 #### `summary_found`
 
@@ -282,7 +282,7 @@ When this input is `False`, will ignore inputs:
 - **`"Clone"`:** Enable, and still record in the log.
 - **`"Redirect"`:** Enable, and will not record in the log.
 
-> **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
+> **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
 
 #### `summary_statistics`
 
@@ -292,7 +292,7 @@ When this input is `False`, will ignore inputs:
 - **`"Clone"`:** Enable, and still record in the log.
 - **`"Redirect"`:** Enable, and will not record in the log.
 
-> **⚠ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
+> **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
 
 ### 📤 Output
 
