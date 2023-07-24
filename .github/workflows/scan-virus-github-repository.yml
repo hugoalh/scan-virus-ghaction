@@ -139,20 +139,20 @@ jobs:
         continue-on-error: true
       - name: "Optimize Disk Space"
         if: "${{(steps.if-ods.outputs.result || 'True') == 'True'}}"
-        uses: "hugoalh/disk-space-optimizer-ghaction@v0.4.1"
+        uses: "hugoalh/disk-space-optimizer-ghaction@v0.5.0"
         with:
           operate_async: "True"
           general_include: ".+"
           general_exclude: |-
             ^AzCopy$
             ^Azure
-            ^Go$
-          dockerimage_include: ".+"
-          dockerimage_exclude: |-
+          docker_include: ".+"
+          docker_exclude: |-
             ^ghcr\.io/hugoalh/scan-virus-ghaction
-          cache_apt: "True"
-          cache_homebrew: "True"
-          cache_npm: "True"
+          docker_prune: "True"
+          apt_prune: "True"
+          homebrew_prune: "True"
+          npm_prune: "True"
       - name: "Checkout Repository"
         uses: "actions/checkout@v3.5.3"
         with:
