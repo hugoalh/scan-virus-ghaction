@@ -17,7 +17,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Setup PowerShell Toolkit"
-        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.4.0"
+        uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.4.1"
         with:
           version: "^1.6.0"
       - name: "Get Timestamp"
