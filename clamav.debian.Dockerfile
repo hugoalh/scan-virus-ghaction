@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # <Note> Do not reduce layers due to GitHub Packages have worse performance on big size layer!
 
-FROM debian:12.0
+FROM debian:12.1
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=clamav
