@@ -1,4 +1,4 @@
-name: "Documentation Issue (Form)"
+name: "Documentation Issue"
 description: "Report a documentation issue."
 labels:
   - "Status/Pending 🔵"

@@ -15,9 +15,9 @@
 |:-:|:-:|:-:|:-:|
 | v0.16.X | ✔️ | >= v2.303.0 | Latest Release |
 | v0.15.X | ✔️ | >= v2.303.0 | Latest Release |
-| v0.14.X | 👎{🧓} | >= v2.303.0 | Latest Release |
-| v0.13.X | 👎{🧓} | >= v2.303.0 | Latest Release |
-| v0.12.X | 👎{🧓} | >= v2.303.0 | Latest Release |
+| v0.14.X | ❌{🧓} | >= v2.303.0 | Latest Release |
+| v0.13.X | ❌{🧓} | >= v2.303.0 | Latest Release |
+| v0.12.X | ❌{🧓} | >= v2.303.0 | Latest Release |
 | v0.11.X | ❌{🐛🧓} | >= v2.303.0 | Latest Release |
 | v0.10.X | ❌{🐛🧓} | >= v2.303.0 | Latest Release |
 | v0.6.X | ❌{🧓} | *Unspecified* | Latest Release |

@@ -1,4 +1,4 @@
-name: "Bug Report (Form)"
+name: "Bug Report"
 description: "Report a bug."
 labels:
   - "Status/Pending 🔵"
@@ -30,16 +30,6 @@ body:
         - "v0.15.0"
         - "v0.15.0+clamav"
         - "v0.15.0+yara"
-        - "v0.14.1"
-        - "v0.14.1+clamav"
-        - "v0.14.1+yara"
-        - "v0.14.0"
-        - "v0.14.0+clamav"
-        - "v0.14.0+yara"
-        - "v0.13.2"
-        - "v0.13.1"
-        - "v0.13.0"
-        - "v0.12.0"
     validations:
       required: false
   - type: "textarea"
