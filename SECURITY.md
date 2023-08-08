@@ -13,15 +13,11 @@
 
 | **Versions** | **Status** | **Target - GitHub Actions Runner** | **Target - Docker** |
 |:-:|:-:|:-:|:-:|
+| v0.17.X | ✔️ | >= v2.303.0 | Latest Release |
 | v0.16.X | ✔️ | >= v2.303.0 | Latest Release |
 | v0.15.X | ✔️ | >= v2.303.0 | Latest Release |
-| v0.14.X | ❌{🧓} | >= v2.303.0 | Latest Release |
-| v0.13.X | ❌{🧓} | >= v2.303.0 | Latest Release |
-| v0.12.X | ❌{🧓} | >= v2.303.0 | Latest Release |
-| v0.11.X | ❌{🐛🧓} | >= v2.303.0 | Latest Release |
-| v0.10.X | ❌{🐛🧓} | >= v2.303.0 | Latest Release |
-| v0.6.X | ❌{🧓} | *Unspecified* | Latest Release |
-| < v0.6.2 | ❌{🐛🧓} | *Unspecified* | Latest Release |
+| < v0.15.0 | ❌{🐛🧓} | >= v2.303.0 | Latest Release |
+| < v0.10.0 | ❌{🐛🧓} | *Unspecified* | Latest Release |
 
 ## Report Vulnerability
 

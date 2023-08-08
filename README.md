@@ -17,9 +17,17 @@ A GitHub Action to scan virus (including malicious file and malware) in the GitH
 ## 🛡️ Tools
 
 - **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
-  - [Unofficial Assets List][clamav-unofficial-assets-list]
 - **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
-  - [Unofficial Assets List][yara-unofficial-assets-list]
+
+### Unofficial Assets
+
+Some of the communities have publicly published unofficial ClamAV and/or YARA assets for free. In order to adoptable, compatible, and usable with this action, these unofficial assets are stored in [hugoalh/scan-virus-ghaction-assets](https://github.com/hugoalh/scan-virus-ghaction-assets).
+
+Inputs that use these unofficial assets are:
+
+- [`unofficialassets_version`](#unofficialassets_version)
+- [`unofficialassets_clamav`](#unofficialassets_clamav) / [`clamav_unofficialassets`](#clamav_unofficialassets)
+- [`unofficialassets_yara`](#unofficialassets_yara) / [`yara_unofficialassets`](#yara_unofficialassets)
 
 ## ⚠️ Disclaimer
 
@@ -27,7 +35,7 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 ## 📓 Documentation
 
-> **⚠️ Important:** This documentation is v0.10.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
+> **⚠️ Important:** This documentation is v0.17.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
 ### Getting Started
 
@@ -42,14 +50,18 @@ jobs:
       - uses: "hugoalh/scan-virus-ghaction@<Version>"
 ```
 
-> **ℹ️ Notice:** Begin from v0.14.0, this action also provide editions of each tool:
+> **ℹ️ Notice:** This action also provide editions of each tool:
 >
 > - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Version>"`
 > - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Version>"`
 
 ### 📥 Input
 
-> **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to scan current workspace with the ClamAV official assets.
+> **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to:
+>
+> - **`"hugoalh/scan-virus-ghaction@<Version>"`:** Scan current workspace with the ClamAV official assets
+> - **`"hugoalh/scan-virus-ghaction/clamav@<Version>"`:** Scan current workspace with the ClamAV official assets
+> - **`"hugoalh/scan-virus-ghaction/yara@<Version>"`:** Scan current workspace with the YARA unofficial assets
 
 #### `input_listdelimiter`
 
@@ -60,49 +72,49 @@ jobs:
 `<String = "yaml">` Markup language when the input is type of table.
 
 - **`"Csv"` (Comma Separated Values (Standard)):**
-  ```csv
-  bar,foo
-  5,10
-  10,20
-  ```
+  - ```csv
+    bar,foo
+    5,10
+    10,20
+    ```
 - **`"CsvM"` (Comma Separated Values (Non Standard Multiple Line)):**
-  ```
-  bar=5,foo=10
-  bar=10,foo=20
-  ```
+  - ```
+    bar=5,foo=10
+    bar=10,foo=20
+    ```
 - **`"CsvS"` (Comma Separated Values (Non Standard Single Line)):**
-  ```
-  bar=5,foo=10;bar=10,foo=20
-  ```
+  - ```
+    bar=5,foo=10;bar=10,foo=20
+    ```
 - **`"Json"` (JavaScript Object Notation):**
-  ```json
-  [{"bar":5,"foo":10},{"bar":10,"foo":20}]
-  ```
-  ```json
-  [
-    {
-      "bar": 5,
-      "foo": 10
-    },
-    {
-      "bar": 10,
-      "foo": 20
-    }
-  ]
-  ```
+  - ```json
+    [{"bar":5,"foo":10},{"bar":10,"foo":20}]
+    ```
+  - ```json
+    [
+      {
+        "bar": 5,
+        "foo": 10
+      },
+      {
+        "bar": 10,
+        "foo": 20
+      }
+    ]
+    ```
 - **`"Tsv"` (Tab Separated Values):**
-  ```tsv
-  bar	foo
-  5	10
-  10	20
-  ```
+  - ```tsv
+    bar	foo
+    5	10
+    10	20
+    ```
 - **`"Yaml"`/`"Yml"` (YAML) *\[Default\]*:**
-  ```yml
-  - bar: 5
-    foo: 10
-  - bar: 10
-    foo: 20
-  ```
+  - ```yml
+    - bar: 5
+      foo: 10
+    - bar: 10
+      foo: 20
+    ```
 
 #### `targets`
 
@@ -111,7 +123,7 @@ jobs:
 - **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
 - **Remote:** Fetch files from the remote to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
 
-When this input is defined (i.e.: remote targets), will ignore inputs:
+When this is defined (i.e.: remote targets), will ignore inputs:
 
 - [`git_integrate`](#git_integrate)
 - [`git_ignores`](#git_ignores)
@@ -119,13 +131,13 @@ When this input is defined (i.e.: remote targets), will ignore inputs:
 - [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
 
-> **⚠️ Important:** Begin from v0.16.0, workspace will automatically clean for remote targets.
+> **⚠️ Important:** Workspace will automatically clean for remote targets.
 
 #### `git_integrate`
 
 `<Boolean = False>` Whether to integrate with Git to perform scan by the commits; Require workspace is a Git repository.
 
-When this input is `False`, will ignore inputs:
+When this is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
 - [`git_lfs`](#git_lfs)
@@ -178,11 +190,11 @@ When this input is `False`, will ignore inputs:
 
 #### `git_lfs`
 
-**(>= v0.13.0)** `<Boolean = False>` Whether to process Git LFS files.
+`<Boolean = False>` Whether to process Git LFS files.
 
 #### `git_limit`
 
-`<UInt>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this input is not defined or defined with `0`, means no limit.
+`<UInt64>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this is not defined or defined with `0`, means no limit.
 
 > **✍️ Example:**
 >
@@ -203,14 +215,14 @@ When this input is `False`, will ignore inputs:
 
 `<Boolean = True>` Whether to use ClamAV.
 
-When this input is `False`, will ignore inputs:
+When this is `False`, will ignore inputs:
 
 - [`clamav_unofficialassets`](#clamav_unofficialassets)
 - [`clamav_update`](#clamav_update)
 
 #### `clamav_unofficialassets`
 
-`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the [ClamAV unofficial assets list][clamav-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
+*Alias of input [`unofficialassets_clamav`](#unofficialassets_clamav).*
 
 #### `clamav_update`
 
@@ -220,20 +232,29 @@ When this input is `False`, will ignore inputs:
 
 #### `yara_enable`
 
-`<Boolean = False>` Whether to use YARA. When this input is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
+`<Boolean = False>` Whether to use YARA. When this is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
 
 #### `yara_unofficialassets`
 
-`<RegEx[]>` YARA unofficial assets to use, by regular expression and the [YARA unofficial assets list][yara-unofficial-assets-list], separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+*Alias of input [`unofficialassets_yara`](#unofficialassets_yara).*
 
-> **⚠️ Important:**
->
-> - Before v0.14.0, all of the unofficial assets are not in use unless specified.
-> - Begin from v0.14.0, all of the unofficial assets are in use if not specified.
+#### `unofficialassets_version`
+
+`<String>` Git tree-ish of the [unofficial assets store](#unofficial-assets). By default, bundled version of the unofficial assets are use.
+
+#### `unofficialassets_clamav`
+
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the ClamAV unofficial assets list, separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
+
+#### `unofficialassets_yara`
+
+`<RegEx[]>` YARA unofficial assets to use, by regular expression and the YARA unofficial assets list, separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+
+> **⚠️ Important:** All of the unofficial assets are in use if not specified.
 
 #### `ignores`
 
-[`<Table>`](#input_tablemarkup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties (i.e.: keys):
+[`<Table>`](#input_tablemarkup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties:
 
 - **`Path`:** `<RegEx>` Relative path based on GitHub Action workspace without `./` (e.g.: `path/to/file.extension`).
 - **`Session`:** `<RegEx>` Git commit hash.
@@ -257,7 +278,7 @@ When this input is `False`, will ignore inputs:
 
 #### `log_elements`
 
-**(>= v0.12.0)** `<String = "All">` Whether to list elements in the log.
+`<String = "All">` Whether to list elements in the log.
 
 - **`"None"`:** Disable.
 - **`"OnlyCurrent"`:** Enable, only for session "Current".
@@ -267,7 +288,7 @@ When this input is `False`, will ignore inputs:
 
 #### `summary_found`
 
-**(>= v0.11.0)** `<String = "None">` Whether to list elements which found virus in the step summary.
+`<String = "None">` Whether to list elements which found virus in the step summary.
 
 - **`"None"`:** Disable, and record in the log.
 - **`"Clone"`:** Enable, and still record in the log.
@@ -277,7 +298,7 @@ When this input is `False`, will ignore inputs:
 
 #### `summary_statistics`
 
-**(>= v0.11.0)** `<String = "None">` Whether to list statistics in the step summary.
+`<String = "None">` Whether to list statistics in the step summary.
 
 - **`"None"`:** Disable, and record in the log.
 - **`"Clone"`:** Enable, and still record in the log.
@@ -289,11 +310,11 @@ When this input is `False`, will ignore inputs:
 
 #### `finish`
 
-**(>= v0.15.0)** `<Boolean>` Whether this action correctly finished without non catch issues.
+`<Boolean>` Whether this action correctly finished without non catch issues.
 
 #### `found`
 
-**(>= v0.15.0)** `<Boolean>` Whether there has element which found virus.
+`<Boolean>` Whether there has element which found virus.
 
 ### Example
 
@@ -308,7 +329,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.12.0"
+        uses: "hugoalh/scan-virus-ghaction@v0.17.0"
         with:
           git_ignores: |-
             - AuthorName: "^dependabot$"
@@ -324,6 +345,3 @@ jobs:
 #### GitHub Actions
 
 - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
-
-[clamav-unofficial-assets-list]: ./assets/clamav-unofficial/index.tsv
-[yara-unofficial-assets-list]: ./assets/yara-unofficial/index.tsv

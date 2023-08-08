@@ -32,17 +32,19 @@ inputs:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
-  unofficialassets_version:
-    description: "{String} Unofficial assets version to use."
-    required: false
-    default: "Latest"
   clamav_unofficialassets:
-    description: "{RegEx[]} ClamAV unofficial assets to use."
+    description: "[ALIAS] unofficialassets_clamav"
     required: false
   clamav_update:
     description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
     required: false
     default: "True"
+  unofficialassets_version:
+    description: "Git tree-ish of the unofficial assets store."
+    required: false
+  unofficialassets_clamav:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
+    required: false
   ignores:
     description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
     required: false
