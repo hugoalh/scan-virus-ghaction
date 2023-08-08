@@ -1,7 +1,7 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 If ($Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -inotin @('all', 'clamav', 'yara')) {
-	Write-GitHubActionsFail -Message 'Invalid environment variable `GHACTION_SCANVIRUS_BUNDLE_TOOL`! Please submit a bug report.'
+	Write-GitHubActionsFail -Message 'Invalid environment variable `GHACTION_SCANVIRUS_BUNDLE_TOOL`!'
 }
 [Boolean]$AllBundle = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'all'
 [Boolean]$ClamAVForce = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'clamav'
