@@ -57,7 +57,7 @@ COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}/
 # COPY configs/clamd.conf configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}/
 # RUN freshclam --verbose
 
-RUN pwsh -NonInteractive /opt/hugoalh/scan-virus-ghaction/lib/setup-unofficialassets.ps1
+RUN pwsh -NonInteractive /opt/hugoalh/scan-virus-ghaction/lib/setup.ps1
 
 # <Debug>
 # RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}

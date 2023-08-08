@@ -54,7 +54,6 @@ Function Show-SoftwareMeta {
 	[Hashtable[]]$BinList = @(
 		@{ Bin = 'git'; Name = 'Git' },
 		@{ Bin = 'git-lfs'; Name = 'Git LFS' }
-		# @{ Bin = 'node'; Name = 'NodeJS' }
 	)
 	If ($ClamAVBundle) {
 		$BinList += @(
@@ -67,7 +66,6 @@ Function Show-SoftwareMeta {
 	If ($YaraBundle) {
 		$BinList += @(
 			@{ Bin = 'yara'; Name = 'YARA' }
-			# @{ Bin = 'yarac'; Name = 'YARA Compiler' }
 		)
 	}
 	$BinList |
