@@ -8,11 +8,9 @@ _compareTemp
 .AppleDB
 .AppleDesktop
 .AppleDouble
-.cache
-.Cache
+.[Cc]ache
 .cache-main
-.cache/
-.Cache/
+.[Cc]ache/
 .com.apple.timemachine.donotpresent
 .DocumentRevisions-V100
 .dropbox
@@ -123,15 +121,11 @@ Package Control.cache
 Package Control.cache/
 pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-temp
-Temp
-temp/
-Temp/
+[Tt]emp
+[Tt]emp/
 Temporary Items
-thumbs.db
-Thumbs.db
-thumbs.db:encryptable
-Thumbs.db:encryptable
+[Tt]humbs.db
+[Tt]humbs.db:encryptable
 web_modules
 web_modules/
 yarn-debug.log*

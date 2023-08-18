@@ -22,7 +22,7 @@ updates:
       time: "00:00"
       timezone: "Etc/UTC"
     labels:
-      - "Platform/GitHub/Actions"
+      - "Platform/GitHubActions"
       - "Status/Pending 🔵"
       - "Type/Dependency 📦"
     open-pull-requests-limit: 100
