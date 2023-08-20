@@ -20,7 +20,7 @@ jobs:
       - name: "Setup PowerShell Toolkit"
         uses: "hugoalh-studio/setup-powershell-toolkit-ghaction@v1.4.1"
         with:
-          version: "^1.6.0"
+          version: "^1.7.1"
       - name: "Get Timestamp"
         id: "timestamp"
         run: |
