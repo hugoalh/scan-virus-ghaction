@@ -10,11 +10,11 @@ If you have any questions and/or still confused, try to create a discussion.
 
 ## Codes
 
-All of the codes in this project and repository are follow the [hxhS (hugoalh & hugoalh Studio) Coding Guide](https://github.com/hugoalh/hugoalh/blob/main/coding-guide/main.md).
+All of the codes in this project and repository are follow the [hxhS (hugoalh & hugoalh Studio) Coding Guide](https://github.com/hugoalh/hugoalh/blob/main/guide/code/main.md).
 
 ## Deploys & Versions
 
-These are always the works of the maintainers and/or owners, which are follow the [hxhS (hugoalh & hugoalh Studio) Versioning Guide](https://github.com/hugoalh/hugoalh/blob/main/versioning-guide/main.md).
+These are always the works of the maintainers and/or owners, which are follow the [hxhS (hugoalh & hugoalh Studio) Versioning Guide](https://github.com/hugoalh/hugoalh/blob/main/guide/version/main.md).
 
 ## Discussions
 
