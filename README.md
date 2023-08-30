@@ -325,7 +325,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.5.2"
+        uses: "actions/checkout@v3.6.0"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
