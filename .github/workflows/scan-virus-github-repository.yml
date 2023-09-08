@@ -33,7 +33,7 @@ jobs:
           Set-GitHubActionsOutput -Name 'id' -Value ($Timestamp -ireplace '\D', '')
         shell: "pwsh"
       - name: "Restore RDB"
-        uses: "actions/cache/restore@v3.3.1"
+        uses: "actions/cache/restore@v3.3.2"
         with:
           key: "rdb-${{steps.timestamp.outputs.id}}"
           path: "${{github.workspace}}"
@@ -99,7 +99,7 @@ jobs:
           )
         shell: "pwsh"
       - name: "Save RDB"
-        uses: "actions/cache/save@v3.3.1"
+        uses: "actions/cache/save@v3.3.2"
         with:
           key: "rdb-${{steps.timestamp.outputs.id}}"
           path: "${{github.workspace}}"
