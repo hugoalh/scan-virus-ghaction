@@ -6,30 +6,40 @@ labels:
   - "Type/Documentation 📓"
 body:
   - type: "textarea"
-    id: "describe"
-    attributes:
-      label: "Describe"
-      description: "What the issue is?"
-    validations:
-      required: false
-  - type: "textarea"
     id: "page"
     attributes:
       label: "Page"
-      description: "List of the related pages."
+      description: |-
+        List of the related pages.
     validations:
-      required: false
+      required: true
+  - type: "textarea"
+    id: "describe"
+    attributes:
+      label: "Describe"
+      description: |-
+        What the issue is? Add images and/or videos to help for explain this bug if necessary.
+
+        > **ℹ️ Notice:**
+        >
+        > - Should not blur anything in the images and/or videos, except personal secrets.
+        > - For upload images and/or videos, please ensure to wait for the upload process to complete.
+        > - For external images and/or videos, please ensure whether we can view these.
+    validations:
+      required: true
   - type: "textarea"
     id: "expected-content"
     attributes:
       label: "Expected Content"
-      description: "What contents should expected?"
+      description: |-
+        What contents should expected?
     validations:
       required: false
   - type: "textarea"
     id: "additional-information"
     attributes:
       label: "Additional Information"
-      description: "If there have information that related to this issue but not suitable to the other fields, please list those at here."
+      description: |-
+        If there have information that related to this issue but not suitable at other fields, please list those at here.
     validations:
       required: false

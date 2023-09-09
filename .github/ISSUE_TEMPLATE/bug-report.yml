@@ -9,51 +9,82 @@ body:
     id: "describe"
     attributes:
       label: "Describe"
-      description: "What the bug is?"
+      description: |-
+        What the bug is? Add images and/or videos to help for explain this bug if necessary.
+
+        > **ℹ️ Notice:**
+        >
+        > - Should not blur anything in the images and/or videos, except personal secrets.
+        > - For upload images and/or videos, please ensure to wait for the upload process to complete.
+        > - For external images and/or videos, please ensure whether we can view these.
     validations:
-      required: false
-  - type: "dropdown"
-    id: "version"
-    attributes:
-      label: "Version"
-      description: "What versions are affected? Versions must be listed as supported in the Security Policy (file: `SECURITY.md`)."
-      multiple: true
-      options:
-        - "v0.17.0"
-        - "v0.17.0+clamav"
-        - "v0.17.0+yara"
-        - "v0.16.1"
-        - "v0.16.1+clamav"
-        - "v0.16.1+yara"
-        - "v0.16.0"
-        - "v0.16.0+clamav"
-        - "v0.16.0+yara"
-        - "v0.15.1"
-        - "v0.15.1+clamav"
-        - "v0.15.1+yara"
-        - "v0.15.0"
-        - "v0.15.0+clamav"
-        - "v0.15.0+yara"
-    validations:
-      required: false
+      required: true
   - type: "textarea"
     id: "reproduce"
     attributes:
       label: "To Reproduce"
-      description: "If this bug can be reproduce, please list the steps!"
+      description: |-
+        Is this bug reproducible? If reproducible, please show the required steps by list, images, and/or videos!
+
+        > **ℹ️ Notice:**
+        >
+        > - Should not blur anything in the images and/or videos, except personal secrets.
+        > - For upload images and/or videos, please ensure to wait for the upload process to complete.
+        > - For external images and/or videos, please ensure whether we can view these.
+      placeholder: |-
+        1. Go to XXXX.
+        2. Click on XXXX.
+        3. Scroll to XXXX.
+        4. Encounter this error.
     validations:
       required: false
   - type: "textarea"
-    id: "expected-behavior"
+    id: "expected-behaviour"
     attributes:
-      label: "Expected Behavior"
-      description: "What things should expected to happen?"
+      label: "Expected Behaviour"
+      description: |-
+        What things should expected to happen?
+    validations:
+      required: false
+  - type: "textarea"
+    id: "version"
+    attributes:
+      label: "Version"
+      description: |-
+        Which versions are affected by this bug?
+
+        > **ℹ️ Notice:**
+        >
+        > - Accept versions range.
+        > - For multiple versions and/or versions ranges, list with Markdown unordered list syntax.
+        > - Versions must be listed as supported in the Security Policy (file: `SECURITY.md`).
+    validations:
+      required: false
+  - type: "textarea"
+    id: "execution-environment"
+    attributes:
+      label: "Execution Environment"
+      description: |-
+        How is the execution environment?
+
+        - **Device Type:** `Computer` / `Phone` / `Server` / ...
+        - **Architecture:** `X64` / `X86` / `ARM64` / `ARM32` / `RISC` / ...
+        - **Platforms:** `Windows 11 22H2` / `Android 14` / `Alpine 3.18.0` / `NodeJS 20.6.0` / `Deno 1.36.0` / `Git 2.42.0` / `Python 3.11.0` / ...
+        - **Is In Sub System:** `False` / `True`
+        - **Variables:** `NO_COLOR=1` / ...
+
+        > **ℹ️ Notice:**
+        >
+        > - Accept multiple execution environments.
+        > - All of the properties are optional.
+        > - It is recommended to provide this information for reproducible steps.
     validations:
       required: false
   - type: "textarea"
     id: "additional-information"
     attributes:
       label: "Additional Information"
-      description: "If there have information that related to this issue but not suitable to the other fields, please list those at here."
+      description: |-
+        If there have information that related to this bug but not suitable at other fields, please list those at here.
     validations:
       required: false

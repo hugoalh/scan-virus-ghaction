@@ -9,20 +9,23 @@ body:
     id: "describe"
     attributes:
       label: "Describe"
-      description: "What feature do you want?"
+      description: |-
+        What feature do you want? Is your feature request related to a problem?
     validations:
-      required: false
+      required: true
   - type: "textarea"
-    id: "expected-behavior"
+    id: "expected-behaviour"
     attributes:
-      label: "Expected Behavior"
-      description: "What things should expected to happen?"
+      label: "Expected Behaviour"
+      description: |-
+        What things should expected to happen?
     validations:
-      required: false
+      required: true
   - type: "textarea"
     id: "additional-information"
     attributes:
       label: "Additional Information"
-      description: "If there have information that related to this issue but not suitable to the other fields, please list those at here."
+      description: |-
+        If there have information that related to this issue but not suitable at other fields, please list those at here.
     validations:
       required: false
