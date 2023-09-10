@@ -18,7 +18,7 @@ body:
     attributes:
       label: "Describe"
       description: |-
-        What the issue is? Add images and/or videos to help for explain this bug if necessary.
+        What the issue is? Add images and/or videos to help for explain this issue if needed.
 
         > **ℹ️ Notice:**
         >
