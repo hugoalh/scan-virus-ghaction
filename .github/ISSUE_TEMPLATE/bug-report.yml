@@ -10,13 +10,14 @@ body:
     attributes:
       label: "Describe"
       description: |-
-        What the bug is? Add images and/or videos to help for explain this bug if necessary.
+        What the bug is? Add images and/or videos to help for explain this bug if needed.
 
         > **ℹ️ Notice:**
         >
         > - Should not blur anything in the images and/or videos, except personal secrets.
-        > - For upload images and/or videos, please ensure to wait for the upload process to complete.
-        > - For external images and/or videos, please ensure whether we can view these.
+        > - For external images and/or videos, please ensure we are able to view those.
+      placeholder: |-
+        It cannot XXXXXXXX.
     validations:
       required: true
   - type: "textarea"
@@ -29,12 +30,11 @@ body:
         > **ℹ️ Notice:**
         >
         > - Should not blur anything in the images and/or videos, except personal secrets.
-        > - For upload images and/or videos, please ensure to wait for the upload process to complete.
-        > - For external images and/or videos, please ensure whether we can view these.
+        > - For external images and/or videos, please ensure we are able to view those.
       placeholder: |-
-        1. Go to XXXX.
-        2. Click on XXXX.
-        3. Scroll to XXXX.
+        1. Go to XXXXXXXX.
+        2. Click on XXXXXXXX.
+        3. Scroll to XXXXXXXX.
         4. Encounter this error.
     validations:
       required: false
@@ -44,6 +44,8 @@ body:
       label: "Expected Behaviour"
       description: |-
         What things should expected to happen?
+      placeholder: |-
+        It should XXXXXXXX.
     validations:
       required: false
   - type: "textarea"
@@ -56,8 +58,9 @@ body:
         > **ℹ️ Notice:**
         >
         > - Accept versions range.
-        > - For multiple versions and/or versions ranges, list with Markdown unordered list syntax.
         > - Versions must be listed as supported in the Security Policy (file: `SECURITY.md`).
+      placeholder: |-
+        1.2.3
     validations:
       required: false
   - type: "textarea"
@@ -67,17 +70,30 @@ body:
       description: |-
         How is the execution environment?
 
-        - **Device Type:** `Computer` / `Phone` / `Server` / ...
-        - **Architecture:** `X64` / `X86` / `ARM64` / `ARM32` / `RISC` / ...
-        - **Platforms:** `Windows 11 22H2` / `Android 14` / `Alpine 3.18.0` / `NodeJS 20.6.0` / `Deno 1.36.0` / `Git 2.42.0` / `Python 3.11.0` / ...
-        - **Is In Sub System:** `False` / `True`
-        - **Variables:** `NO_COLOR=1` / ...
+        - **Type:** Device type.
+          > Computer / Phone / Server / ...
+        - **Hardware:** Hardware specifications.
+        - **Platforms:** Operate system and softwares, with architecture and version.
+          > Windows 11 22H2 X64 / Android 14 ARM64 / Alpine 3.18.0 X64 / NodeJS 20.6.0 X64 / Deno 1.36.0 X64 / Git 2.42.0 X64 / Python 3.11.0 X64 / ...
+        - **IsSubSystem:** Whether the execution environment in the sub system?
+          > False / True
+        - **Variables:** Environment variables.
+          > NO_COLOR=1 / ...
 
         > **ℹ️ Notice:**
         >
         > - Accept multiple execution environments.
         > - All of the properties are optional.
         > - It is recommended to provide this information for reproducible steps.
+
+        **\[🖌️ YAML\]**
+      placeholder: |-
+        - Type: Server
+          Platforms:
+            - Ubuntu 23.04 X64
+            - NodeJS 20.6.0 X64
+          IsSubSystem: false
+      render: "yml"
     validations:
       required: false
   - type: "textarea"

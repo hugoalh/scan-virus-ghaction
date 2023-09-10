@@ -23,8 +23,7 @@ body:
         > **ℹ️ Notice:**
         >
         > - Should not blur anything in the images and/or videos, except personal secrets.
-        > - For upload images and/or videos, please ensure to wait for the upload process to complete.
-        > - For external images and/or videos, please ensure whether we can view these.
+        > - For external images and/or videos, please ensure we are able to view those.
     validations:
       required: true
   - type: "textarea"
