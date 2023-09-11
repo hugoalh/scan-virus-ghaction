@@ -33,7 +33,7 @@ jobs:
           Set-GitHubActionsOutput -Name 'id' -Value ($Timestamp -ireplace '\D', '')
         shell: "pwsh"
       - name: "Restore RDB"
-        uses: "actions/cache/restore@v3.3.1"
+        uses: "actions/cache/restore@v3.3.2"
         with:
           key: "rdb-${{steps.timestamp.outputs.id}}"
           path: "${{github.workspace}}"
@@ -99,7 +99,7 @@ jobs:
           )
         shell: "pwsh"
       - name: "Save RDB"
-        uses: "actions/cache/save@v3.3.1"
+        uses: "actions/cache/save@v3.3.2"
         with:
           key: "rdb-${{steps.timestamp.outputs.id}}"
           path: "${{github.workspace}}"
@@ -140,7 +140,7 @@ jobs:
         continue-on-error: true
       - name: "Optimize Disk Space"
         if: "${{(steps.if-ods.outputs.result || 'True') == 'True'}}"
-        uses: "hugoalh/disk-space-optimizer-ghaction@v0.5.0"
+        uses: "hugoalh/disk-space-optimizer-ghaction@v0.6.0"
         with:
           operate_async: "True"
           general_include: ".+"
@@ -155,7 +155,7 @@ jobs:
           homebrew_prune: "True"
           npm_prune: "True"
       - name: "Checkout Repository"
-        uses: "actions/checkout@v3.6.0"
+        uses: "actions/checkout@v4.0.0"
         with:
           repository: "${{matrix.group}}"
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
