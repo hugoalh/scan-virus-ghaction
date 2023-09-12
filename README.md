@@ -9,6 +9,8 @@
 
 A GitHub Action to scan virus (including malicious file and malware) in the GitHub Action workspace.
 
+> **⚠️ Important:** This documentation is v0.17.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
+
 ## 🌟 Feature
 
 - 4\~96% faster than other GitHub Actions with the same purpose, especially when need to perform scan with multiple sessions (e.g.: Git commits).
@@ -34,14 +36,13 @@ Inputs that use these unofficial assets are:
 
 This does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
 
-## 📓 Documentation
+## 🔰 Begin
 
-> **⚠️ Important:** This documentation is v0.17.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
+### GitHub Actions
 
-### Getting Started
-
-- GitHub Actions Runner >= v2.303.0
+- **Target Version:** >= v2.303.0, &:
   - Docker
+- **Require Permission:** *N/A*
 
 ```yml
 jobs:
@@ -56,19 +57,19 @@ jobs:
 > - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Version>"`
 > - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Version>"`
 
-### 📥 Input
+## 🧩 Input
 
 > **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to:
 >
-> - **`"hugoalh/scan-virus-ghaction@<Version>"`:** Scan current workspace with the ClamAV official assets
-> - **`"hugoalh/scan-virus-ghaction/clamav@<Version>"`:** Scan current workspace with the ClamAV official assets
-> - **`"hugoalh/scan-virus-ghaction/yara@<Version>"`:** Scan current workspace with the YARA unofficial assets
+> - **`@<Version>`:** Scan current workspace with the ClamAV official assets
+> - **`/clamav@<Version>`:** Scan current workspace with the ClamAV official assets
+> - **`/yara@<Version>`:** Scan current workspace with the YARA unofficial assets
 
-#### `input_listdelimiter`
+### `input_listdelimiter`
 
-`<RegEx = ",|;|\r?\n">` Delimiter when the input is type of list (i.e.: array), by regular expression.
+`<RegEx = ",|;|\r?\n">` Delimiter when the input is accept list of values, by regular expression.
 
-#### `input_tablemarkup`
+### `input_tablemarkup`
 
 `<String = "yaml">` Markup language when the input is type of table.
 
@@ -117,7 +118,7 @@ jobs:
       foo: 20
     ```
 
-#### `targets`
+### `targets`
 
 `<Uri[]>` Targets.
 
@@ -134,7 +135,7 @@ When this is defined (i.e.: remote targets), will ignore inputs:
 
 > **⚠️ Important:** Workspace will automatically clean for remote targets.
 
-#### `git_integrate`
+### `git_integrate`
 
 `<Boolean = False>` Whether to integrate with Git to perform scan by the commits; Require workspace is a Git repository.
 
@@ -145,7 +146,7 @@ When this is `False`, will ignore inputs:
 - [`git_limit`](#git_limit)
 - [`git_reverse`](#git_reverse)
 
-#### `git_ignores`
+### `git_ignores`
 
 [`<Table>`](#input_tablemarkup) Ignores for the Git commits, by table; Available properties:
 
@@ -189,11 +190,11 @@ When this is `False`, will ignore inputs:
 >     AuthorName: "^octocat$"
 > ```
 
-#### `git_lfs`
+### `git_lfs`
 
 `<Boolean = False>` Whether to process Git LFS files.
 
-#### `git_limit`
+### `git_limit`
 
 `<UInt64>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this is not defined or defined with `0`, means no limit.
 
@@ -205,14 +206,14 @@ When this is `False`, will ignore inputs:
 
 > **⚠️ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
 
-#### `git_reverse`
+### `git_reverse`
 
 `<Boolean = False>` Whether to reverse the scan order of the Git commits.
 
 - **`False`:** From the newest commit to the oldest commit.
 - **`True`:** From the oldest commit to the newest commit.
 
-#### `clamav_enable`
+### `clamav_enable`
 
 `<Boolean = True>` Whether to use ClamAV.
 
@@ -221,39 +222,39 @@ When this is `False`, will ignore inputs:
 - [`clamav_unofficialassets`](#clamav_unofficialassets)
 - [`clamav_update`](#clamav_update)
 
-#### `clamav_unofficialassets`
+### `clamav_unofficialassets`
 
 *Alias of input [`unofficialassets_clamav`](#unofficialassets_clamav).*
 
-#### `clamav_update`
+### `clamav_update`
 
 `<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.
 
 > **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
 
-#### `yara_enable`
+### `yara_enable`
 
 `<Boolean = False>` Whether to use YARA. When this is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
 
-#### `yara_unofficialassets`
+### `yara_unofficialassets`
 
 *Alias of input [`unofficialassets_yara`](#unofficialassets_yara).*
 
-#### `unofficialassets_version`
+### `unofficialassets_version`
 
 `<String>` Git tree-ish of the [unofficial assets store](#unofficial-assets). By default, bundled version of the unofficial assets are use.
 
-#### `unofficialassets_clamav`
+### `unofficialassets_clamav`
 
 `<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the ClamAV unofficial assets list, separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
 
-#### `unofficialassets_yara`
+### `unofficialassets_yara`
 
 `<RegEx[]>` YARA unofficial assets to use, by regular expression and the YARA unofficial assets list, separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
 
 > **⚠️ Important:** All of the unofficial assets are in use if not specified.
 
-#### `ignores`
+### `ignores`
 
 [`<Table>`](#input_tablemarkup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties:
 
@@ -277,7 +278,7 @@ When this is `False`, will ignore inputs:
 > - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
 > - YARA rules are have their owned rules name pattern.
 
-#### `log_elements`
+### `log_elements`
 
 `<String = "All">` Whether to list elements in the log.
 
@@ -287,7 +288,7 @@ When this is `False`, will ignore inputs:
 
 > **⚠️ Important:** Begin from v0.16.0, elements are list in the log only when enabled debug mode.
 
-#### `summary_found`
+### `summary_found`
 
 `<String = "None">` Whether to list elements which found virus in the step summary.
 
@@ -297,7 +298,7 @@ When this is `False`, will ignore inputs:
 
 > **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
 
-#### `summary_statistics`
+### `summary_statistics`
 
 `<String = "None">` Whether to list statistics in the step summary.
 
@@ -307,42 +308,41 @@ When this is `False`, will ignore inputs:
 
 > **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
 
-### 📤 Output
+## 🧩 Output
 
-#### `finish`
+### `finish`
 
 `<Boolean>` Whether this action correctly finished without non catch issues.
 
-#### `found`
+### `found`
 
 `<Boolean>` Whether there has element which found virus.
 
-### Example
+## ✍️ Example
 
-```yml
-jobs:
-  job_id:
-    name: "Scan Virus"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Checkout Repository"
-        uses: "actions/checkout@v4.0.0"
-        with:
-          fetch-depth: 0
-      - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction@v0.17.0"
-        with:
-          git_ignores: |-
-            - AuthorName: "^dependabot$"
-            - AuthorDate: "-lt 2022-01-01T00:00:00Z"
-              AuthorName: "^octocat$"
-          git_limit: 100
-          ignores: |-
-            - Path: "^node_modules\\/"
-```
+- ```yml
+  jobs:
+    job_id:
+      name: "Scan Virus"
+      runs-on: "ubuntu-latest"
+      steps:
+        - name: "Checkout Repository"
+          uses: "actions/checkout@v4.0.0"
+          with:
+            fetch-depth: 0
+        - name: "Scan Repository"
+          uses: "hugoalh/scan-virus-ghaction@v0.17.0"
+          with:
+            git_ignores: |-
+              - AuthorName: "^dependabot$"
+              - AuthorDate: "-lt 2022-01-01T00:00:00Z"
+                AuthorName: "^octocat$"
+            git_limit: 100
+            ignores: |-
+              - Path: "^node_modules\\/"
+  ```
 
-### Guide
+## 📚 Guide
 
-#### GitHub Actions
-
-- [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
+- GitHub Actions
+  - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
