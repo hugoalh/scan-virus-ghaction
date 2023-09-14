@@ -38,7 +38,7 @@ on:
 jobs:
   main:
     name: "Main"
-    uses: "hugoalh/hugoalh/.github/workflows/scan-virus.yml@main"
+    uses: "hugoalh/hugoalh/.github/workflows/reusable-scan-virus.yml@main"
     with:
       git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"
       git_limit: "${{github.event.inputs.git_limit || '0'}}"
