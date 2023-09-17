@@ -29,14 +29,14 @@ jobs:
       - name: "Checkout Repository"
         uses: "actions/checkout@v4.0.0"
       - name: "Sign In To Registry ${{env.REGISTRY}}"
-        uses: "docker/login-action@v2.2.0"
+        uses: "docker/login-action@v3.0.0"
         with:
           registry: "${{env.REGISTRY}}"
           username: "${{github.actor}}"
           password: "${{github.token}}"
       - name: "Generate Docker Metadata - All"
         id: "docker-meta-all"
-        uses: "docker/metadata-action@v4.6.0"
+        uses: "docker/metadata-action@v5.0.0"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |-
@@ -53,7 +53,7 @@ jobs:
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Generate Docker Metadata - ClamAV"
         id: "docker-meta-clamav"
-        uses: "docker/metadata-action@v4.6.0"
+        uses: "docker/metadata-action@v5.0.0"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |-
@@ -73,7 +73,7 @@ jobs:
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Generate Docker Metadata - YARA"
         id: "docker-meta-yara"
-        uses: "docker/metadata-action@v4.6.0"
+        uses: "docker/metadata-action@v5.0.0"
         with:
           images: "${{env.REGISTRY}}/${{env.IMAGE_NAME}}"
           tags: |-
@@ -92,7 +92,7 @@ jobs:
             org.opencontainers.image.title=Scan Virus (GitHub Action) Image (YARA)
             org.opencontainers.image.description=A Docker image for Scan Virus (GitHub Action) to scan virus in the GitHub Action workspace.
       - name: "Build & Push Docker Image - All"
-        uses: "docker/build-push-action@v4.2.1"
+        uses: "docker/build-push-action@v5.0.0"
         with:
           context: "./"
           file: "all.Dockerfile"
@@ -103,7 +103,7 @@ jobs:
           push: "true"
           tags: "${{steps.docker-meta-all.outputs.tags}}"
       - name: "Build & Push Docker Image - ClamAV"
-        uses: "docker/build-push-action@v4.2.1"
+        uses: "docker/build-push-action@v5.0.0"
         with:
           context: "./"
           file: "clamav.Dockerfile"
@@ -114,7 +114,7 @@ jobs:
           push: "true"
           tags: "${{steps.docker-meta-clamav.outputs.tags}}"
       - name: "Build & Push Docker Image - YARA"
-        uses: "docker/build-push-action@v4.2.1"
+        uses: "docker/build-push-action@v5.0.0"
         with:
           context: "./"
           file: "yara.Dockerfile"
