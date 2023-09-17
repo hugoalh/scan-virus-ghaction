@@ -3,23 +3,25 @@
 
 FROM alpine:3.18 AS stage-env
 
-# <Switch> Debian only.
+# <Switch> Uncomment when operate system is Debian.
 # ENV DEBIAN_FRONTEND=noninteractive
 
-ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=all
+# <Input> Insert tool type.
+ENV GHACTION_SCANVIRUS_BUNDLE_TOOL=clamav
+
 ENV GHACTION_SCANVIRUS_PROGRAM_ROOT=/opt/hugoalh/scan-virus-ghaction
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSET=${GHACTION_SCANVIRUS_PROGRAM_ROOT}/assets
 ENV GHACTION_SCANVIRUS_PROGRAM_LIB=${GHACTION_SCANVIRUS_PROGRAM_ROOT}/lib
 
-# <Switch> Self install PowerShell only.
+# <Switch> Uncomment when self install PowerShell.
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
 
-# <Switch> ClamAV only.
+# <Switch> Uncomment when tool type has ClamAV.
 ENV GHACTION_SCANVIRUS_CLAMAV_CONFIG=/etc/clamav
 ENV GHACTION_SCANVIRUS_CLAMAV_DATA=/var/lib/clamav
 ENV GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV=${GHACTION_SCANVIRUS_PROGRAM_ASSET}/clamav-unofficial
 
-# <Switch> YARA only.
+# <Switch> Uncomment when tool type has YARA.
 # ENV GHACTION_SCANVIRUS_PROGRAM_ASSET_YARA=${GHACTION_SCANVIRUS_PROGRAM_ASSET}/yara-unofficial
 
 
@@ -37,7 +39,7 @@ RUN apk update
 RUN apk --no-cache upgrade
 
 RUN apk --no-cache add ca-certificates clamav clamav-clamdscan clamav-daemon clamav-scanner curl freshclam git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base tzdata userspace-rcu zlib
-# <Full Format>
+# <Run Full Format>
 # RUN apk --no-cache add ca-certificates clamav clamav-clamdscan clamav-daemon clamav-scanner curl freshclam git git-lfs icu-libs krb5-libs less libgcc libintl libssl1.1 libstdc++ lttng-ust@edge ncurses-terminfo-base tzdata userspace-rcu yara@edgetesting zlib
 
 COPY --from=stage-extract-powershell ${PS_INSTALL_FOLDER}/ ${PS_INSTALL_FOLDER}/
@@ -45,7 +47,7 @@ RUN chmod +x $PS_INSTALL_FOLDER/pwsh
 RUN ln -s $PS_INSTALL_FOLDER/pwsh /usr/bin/pwsh
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'PowerShellGet' -MinimumVersion '2.2.5' -Scope 'AllUsers' -AcceptLicense -Verbose"]
-RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.7.1' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.7.2' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'psyml' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}/
 
@@ -53,13 +55,13 @@ COPY lib/ ${GHACTION_SCANVIRUS_PROGRAM_LIB}/
 # RUN clamconf --generate-config=clamd.conf
 # RUN clamconf --generate-config=freshclam.conf
 
-# <Switch> ClamAV only.
+# <Switch> Uncomment when tool type has ClamAV.
 COPY configs/clamd.conf configs/freshclam.conf ${GHACTION_SCANVIRUS_CLAMAV_CONFIG}/
 RUN freshclam --verbose
 
-RUN pwsh -NonInteractive /opt/hugoalh/scan-virus-ghaction/lib/setup.ps1
+RUN pwsh -NonInteractive $GHACTION_SCANVIRUS_PROGRAM_LIB/setup.ps1
 
 # <Debug>
-# RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 ${GHACTION_SCANVIRUS_PROGRAM_ROOT}
+# RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 $GHACTION_SCANVIRUS_PROGRAM_ROOT
 
-CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
+CMD ["pwsh", "-NonInteractive", "$GHACTION_SCANVIRUS_PROGRAM_LIB/main.ps1"]

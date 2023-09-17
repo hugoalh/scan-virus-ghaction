@@ -40,7 +40,7 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 ### GitHub Actions
 
-- **Target Version:** >= v2.303.0, &:
+- **Target Version:** >= v2.308.0, &:
   - Docker
 - **Require Permission:** *N/A*
 

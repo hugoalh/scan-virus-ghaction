@@ -13,7 +13,7 @@
 
 | **Versions** | **Status** | **Target - GitHub Actions Runner** | **Target - Docker** |
 |:-:|:-:|:-:|:-:|
-| v0.17.X | ✔️ | >= v2.303.0 | Latest Release |
+| v0.17.X | ✔️ | >= v2.308.0 | Latest Release |
 | v0.16.X | ✔️ | >= v2.303.0 | Latest Release |
 | v0.15.X | ✔️ | >= v2.303.0 | Latest Release |
 | < v0.15.0 | ❌{🐛🧓} | >= v2.303.0 | Latest Release |
