@@ -3,11 +3,11 @@ author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
   input_listdelimiter:
-    description: "{RegEx} Delimiter when the input is type of list."
+    description: "{RegEx} Delimiter when the input is accept list of values."
     required: false
     default: ",|;|\\r?\\n"
   input_tablemarkup:
-    description: "{String} Markup language when the input is type of table."
+    description: "{String} Markup language when the input is accept table of values."
     required: false
     default: "Yaml"
   targets:

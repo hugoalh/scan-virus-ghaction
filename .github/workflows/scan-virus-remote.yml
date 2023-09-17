@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       input_listdelimiter:
-        description: "{RegEx} Delimiter when the input is type of list."
+        description: "{RegEx} Delimiter when the input is accept list of values."
         required: false
         default: ",|;|\\r?\\n"
       targets:

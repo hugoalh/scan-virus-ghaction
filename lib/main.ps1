@@ -3,6 +3,7 @@ Using Module .\enum.psm1
 Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Test-GitHubActionsEnvironment -Mandatory
 Import-Module -Name (
 	@(
 		'internal',
@@ -11,7 +12,6 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-Test-GitHubActionsEnvironment -Mandatory
 Write-Host -Object 'Initialize.'
 If (Get-GitHubActionsIsDebug) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'ware-meta.psm1') -Scope 'Local'
@@ -21,111 +21,87 @@ If (Get-GitHubActionsIsDebug) {
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 Write-Host -Object 'Resolve input.'
-[RegEx]$InputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
-Try {
-	[String]$InputTableMarkupInput = Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim
-	[ScanVirusInputTableMarkup]$InputTableMarkup = [ScanVirusInputTableMarkup]::($InputTableMarkupInput)
-}
-Catch {
-	Write-GitHubActionsFail -Message "``$InputTableMarkupInput`` is not a valid table markup language: $_"
-}
-[AllowEmptyCollection()][Uri[]]$Targets = Get-InputList -Name 'targets' -Delimiter $InputListDelimiter |
+[RegEx]$InputInputListDelimiter = Get-GitHubActionsInput -Name 'input_listdelimiter' -Mandatory -EmptyStringAsNull
+[ScanVirusInputInputTableMarkup]$InputInputTableMarkup = [ScanVirusInputInputTableMarkup]::((Get-GitHubActionsInput -Name 'input_tablemarkup' -Mandatory -EmptyStringAsNull -Trim))
+[AllowEmptyCollection()][Uri[]]$InputTargets = Get-InputList -Name 'targets' -Delimiter $InputInputListDelimiter |
 	ForEach-Object -Process { $_ -as [Uri] }
-[Boolean]$GitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull -Trim))
-[AllowEmptyCollection()][PSCustomObject[]]$GitIgnores = (Get-InputTable -Name 'git_ignores' -Markup $InputTableMarkup) ?? @()
-[Boolean]$GitLfs = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_lfs' -Mandatory -EmptyStringAsNull -Trim))
-[UInt64]$GitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory -EmptyStringAsNull -Trim))
-[Boolean]$GitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory -EmptyStringAsNull -Trim))
-[AllowEmptyString()][String]$UnofficialAssetsVersion = Get-GitHubActionsInput -Name 'unofficialassets_version' -Trim
-[Boolean]$ClamAVEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull -Trim)) : $ClamAVForce
-[AllowEmptyCollection()][RegEx[]]$ClamAVUnofficialAssetsInput = $ClamAVBundle ? ((Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputListDelimiter) ?? (Get-InputList -Name 'unofficialassets_clamav' -Delimiter $InputListDelimiter) ?? @()) : @()
-[Boolean]$ClamAVUpdate = $ClamAVBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull -Trim)) : $False
-[Boolean]$YaraEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull -Trim)) : $YaraForce
-[AllowEmptyCollection()][RegEx[]]$YaraUnofficialAssetsInput = $YaraBundle ? ((Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputListDelimiter) ?? (Get-InputList -Name 'unofficialassets_yara' -Delimiter $InputListDelimiter) ?? @('.+')) : @()
-[AllowEmptyCollection()][PSCustomObject[]]$Ignores = (Get-InputTable -Name 'ignores' -Markup $InputTableMarkup) ?? @()
-Try {
-	[String]$LogElementsInput = Get-GitHubActionsInput -Name 'log_elements' -Mandatory -EmptyStringAsNull -Trim
-	[ScanVirusLogElementsChoices]$LogElements = [ScanVirusLogElementsChoices]::($LogElementsInput)
-}
-Catch {
-	Write-GitHubActionsFail -Message "``$LogElementsInput`` is not a valid value of log elements usage: $_"
-}
-Try {
-	[String]$SummaryFoundInput = Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim
-	[ScanVirusStepSummaryChoices]$SummaryFound = [ScanVirusStepSummaryChoices]::($SummaryFoundInput)
-}
-Catch {
-	Write-GitHubActionsFail -Message "``$SummaryFoundInput`` is not a valid value of found summary usage: $_"
-}
-Try {
-	[String]$SummaryStatisticsInput = Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim
-	[ScanVirusStepSummaryChoices]$SummaryStatistics = [ScanVirusStepSummaryChoices]::($SummaryStatisticsInput)
-}
-Catch {
-	Write-GitHubActionsFail -Message "``$SummaryStatisticsInput`` is not a valid value of statistics summary usage: $_"
-}
+[Boolean]$InputGitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull -Trim))
+[AllowEmptyCollection()][PSCustomObject[]]$InputGitIgnores = (Get-InputTable -Name 'git_ignores' -Markup $InputInputTableMarkup) ?? @()
+[Boolean]$InputGitLfs = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_lfs' -Mandatory -EmptyStringAsNull -Trim))
+[UInt64]$InputGitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory -EmptyStringAsNull -Trim))
+[Boolean]$InputGitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory -EmptyStringAsNull -Trim))
+[AllowEmptyString()][String]$InputUnofficialAssetsVersion = Get-GitHubActionsInput -Name 'unofficialassets_version' -Trim
+[Boolean]$InputClamAVEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull -Trim)) : $ClamAVForce
+[AllowEmptyCollection()][RegEx[]]$InputClamAVUnofficialAssetsRaw = $ClamAVBundle ? ((Get-InputList -Name 'clamav_unofficialassets' -Delimiter $InputInputListDelimiter) ?? (Get-InputList -Name 'unofficialassets_clamav' -Delimiter $InputInputListDelimiter) ?? @()) : @()
+[Boolean]$InputClamAVUpdate = $ClamAVBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull -Trim)) : $False
+[Boolean]$InputYaraEnable = $AllBundle ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull -Trim)) : $YaraForce
+[AllowEmptyCollection()][RegEx[]]$InputYaraUnofficialAssetsRaw = $YaraBundle ? ((Get-InputList -Name 'yara_unofficialassets' -Delimiter $InputInputListDelimiter) ?? (Get-InputList -Name 'unofficialassets_yara' -Delimiter $InputInputListDelimiter) ?? @('.+')) : @()
+[AllowEmptyCollection()][PSCustomObject[]]$InputIgnores = (Get-InputTable -Name 'ignores' -Markup $InputInputTableMarkup) ?? @()
+[ScanVirusLogElementsChoices]$LogElements = [ScanVirusLogElementsChoices]::((Get-GitHubActionsInput -Name 'log_elements' -Mandatory -EmptyStringAsNull -Trim))
+[ScanVirusStepSummaryChoices]$SummaryFound = [ScanVirusStepSummaryChoices]::((Get-GitHubActionsInput -Name 'summary_found' -Mandatory -EmptyStringAsNull -Trim))
+[ScanVirusStepSummaryChoices]$SummaryStatistics = [ScanVirusStepSummaryChoices]::((Get-GitHubActionsInput -Name 'summary_statistics' -Mandatory -EmptyStringAsNull -Trim))
 [PSCustomObject]@{
-	Targets_Type = ($Targets.Count -eq 0) ? 'Local' : 'Network'
-	"Git_Ignores [$($GitIgnores.Count)]" = $GitIgnores |
+	Targets_Type = ($InputTargets.Count -eq 0) ? 'Local' : 'Network'
+	"Git_Ignores [$($InputGitIgnores.Count)]" = $InputGitIgnores |
 		Format-List -Property '*' |
 		Out-String -Width 80
-	ClamAV_UnofficialAssets_RegEx = $ClamAVUnofficialAssetsInput |
+	ClamAV_UnofficialAssets_RegEx = $InputClamAVUnofficialAssetsRaw |
 		Join-String -Separator '|'
-	YARA_UnofficialAssets_RegEx = $YaraUnofficialAssetsInput |
+	YARA_UnofficialAssets_RegEx = $InputYaraUnofficialAssetsRaw |
 		Join-String -Separator '|'
-	"Ignores [$($Ignores.Count)]" = $Ignores |
+	"Ignores [$($InputIgnores.Count)]" = $InputIgnores |
 		Format-List -Property '*' |
 		Out-String -Width 80
 } |
 	Format-List |
 	Out-String -Width 120 |
 	Write-GitHubActionsDebug
-If ($True -inotin @($ClamAVEnable, $YaraEnable)) {
+If (!$InputClamAVEnable -and !$InputYaraEnable) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
 If (
-	($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) -or
-	($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0)
+	($InputClamAVEnable -and $InputClamAVUnofficialAssetsRaw.Count -gt 0) -or
+	($InputYaraEnable -and $InputYaraUnofficialAssetsRaw.Count -gt 0)
 ) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'asset.psm1') -Scope 'Local'
 	Write-Host -Object 'Import unofficial asset.'
 	Try {
-		Import-ScanVirusUnofficialAsset -Version $UnofficialAssetsVersion
+		Import-ScanVirusUnofficialAsset -Version $InputUnofficialAssetsVersion
 	}
 	Catch {
 		Write-GitHubActionsError -Message $_
 	}
 }
-If ($Targets.Count -gt 0) {
+If ($InputTargets.Count -gt 0) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'network-target.psm1') -Scope 'Local'
 }
-If ($GitIntegrate) {
+If ($InputGitIntegrate) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope 'Local'
 }
-If ($ClamAVEnable) {
+If ($InputClamAVEnable) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'clamav.psm1') -Scope 'Local'
 }
-If ($YaraEnable) {
+If ($InputYaraEnable) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'yara.psm1') -Scope 'Local'
 }
-If ($GitIntegrate -and !$GitLfs) {
-	Disable-GitLfsProcess
+If ($InputGitIntegrate -and !$InputGitLfs) {
+	Disable-InputGitLfsProcess
 }
-If ($ClamAVEnable -and $ClamAVUpdate) {
+If ($InputClamAVEnable -and $InputClamAVUpdate) {
 	Update-ClamAV
 }
-If ($ClamAVEnable -and $ClamAVUnofficialAssetsInput.Count -gt 0) {
+If ($InputClamAVEnable -and $InputClamAVUnofficialAssetsRaw.Count -gt 0) {
 	Write-Host -Object 'Register ClamAV unofficial asset.'
-	[Hashtable]$Result = Register-ClamAVUnofficialAsset -Selection $ClamAVUnofficialAssetsInput
+	[Hashtable]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsRaw
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAsset/$ApplyIssue"
 	}
 }
-If ($YaraEnable -and $YaraUnofficialAssetsInput.Count -gt 0) {
+If ($InputYaraEnable -and $InputYaraUnofficialAssetsRaw.Count -gt 0) {
 	Write-Host -Object 'Register YARA unofficial asset.'
-	Register-YaraUnofficialAsset -Selection $YaraUnofficialAssetsInput
+	Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsRaw
 }
-If ($ClamAVEnable) {
+If ($InputClamAVEnable) {
 	Start-ClamAVDaemon
 }
 Function Invoke-Tools {
@@ -151,7 +127,7 @@ Function Invoke-Tools {
 			}) -Combination @(
 				@('Path'),
 				@('Path', 'Session')
-			) -Ignore $Ignores)
+			) -Ignore $InputIgnores)
 			$ElementObject.SkipClamAV = $ElementObject.SkipAll -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 				Path = $ElementObject.Path
 				Session = $SessionId
@@ -159,7 +135,7 @@ Function Invoke-Tools {
 			}) -Combination @(
 				@('Path', 'Tool'),
 				@('Path', 'Session', 'Tool')
-			) -Ignore $Ignores)
+			) -Ignore $InputIgnores)
 			$ElementObject.SkipYara = $ElementObject.SkipAll -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
 				Path = $ElementObject.Path
 				Session = $SessionId
@@ -167,15 +143,15 @@ Function Invoke-Tools {
 			}) -Combination @(
 				@('Path', 'Tool'),
 				@('Path', 'Session', 'Tool')
-			) -Ignore $Ignores)
+			) -Ignore $InputIgnores)
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
 			}
-			If (!$ElementObject.SkipClamAV -and $ClamAVEnable) {
+			If (!$ElementObject.SkipClamAV -and $InputClamAVEnable) {
 				$ElementFlags += 'C'
 			}
-			If (!$ElementObject.SkipYara -and $YaraEnable) {
+			If (!$ElementObject.SkipYara -and $InputYaraEnable) {
 				$ElementFlags += 'Y'
 			}
 			$ElementObject.Flag = $ElementFlags |
@@ -199,13 +175,13 @@ If this is incorrect, probably something went wrong.
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	$StatisticsSession.ElementClamAV = $ClamAVEnable ? (
+	$StatisticsSession.ElementClamAV = $InputClamAVEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	) : 0
-	$StatisticsSession.ElementYara = $YaraEnable ? (
+	$StatisticsSession.ElementYara = $InputYaraEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object |
@@ -218,13 +194,13 @@ If this is incorrect, probably something went wrong.
 		Where-Object -FilterScript { !$_.SkipAll } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	$StatisticsSession.SizeClamAV = $ClamAVEnable ? (
+	$StatisticsSession.SizeClamAV = $InputClamAVEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
 	) : 0
-	$StatisticsSession.SizeYara = $YaraEnable ? (
+	$StatisticsSession.SizeYara = $InputYaraEnable ? (
 		$Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object -Property 'Size' -Sum |
@@ -257,7 +233,7 @@ If this is incorrect, probably something went wrong.
 			Write-Host
 	}
 	[PSCustomObject[]]$ResultFound = @()
-	If ($ClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
+	If ($InputClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
 		Write-Host -Object 'Scan elements via ClamAV.'
 		Try {
 			[Hashtable]$Result = Invoke-ClamAVScan -Target (
@@ -283,7 +259,7 @@ $(
 			$Script:StatisticsTotal.IssuesOperations += "$SessionId/ClamAV"
 		}
 	}
-	If ($YaraEnable -and $StatisticsSession.ElementYara -gt 0) {
+	If ($InputYaraEnable -and $StatisticsSession.ElementYara -gt 0) {
 		Write-Host -Object 'Scan elements via YARA.'
 		Try {
 			[Hashtable]$Result = Invoke-Yara -Target (
@@ -341,7 +317,7 @@ $(
 					@('Symbol'),
 					@('Path', 'Symbol'),
 					@('Path', 'Session', 'Symbol')
-				) -Ignore $Ignores
+				) -Ignore $InputIgnores
 			} |
 				Write-Output
 		} |
@@ -387,11 +363,11 @@ $(
 	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
 	Exit-GitHubActionsLogGroup
 }
-If ($Targets.Count -eq 0) {
+If ($InputTargets.Count -eq 0) {
 	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
-	If ($GitIntegrate -and (Test-IsGitRepository)) {
+	If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 		Write-Host -Object 'Import Git metadata.'
-		[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($GitReverse)
+		[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($InputGitReverse)
 		If ($GitCommitsHash.Count -le 1) {
 			Write-GitHubActionsNotice -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 		}
@@ -399,7 +375,7 @@ If ($Targets.Count -eq 0) {
 		For ([UInt64]$GitCommitsHashIndex = 0; $GitCommitsHashIndex -lt $GitCommitsHash.Count; $GitCommitsHashIndex += 1) {
 			[String]$GitCommitHash = $GitCommitsHash[$GitCommitsHashIndex]
 			[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
-			If ($GitLimit -gt 0 -and $GitCommitsPassCount -ge $GitLimit) {
+			If ($InputGitLimit -gt 0 -and $GitCommitsPassCount -ge $InputGitLimit) {
 				Write-Host -Object "Reach the Git commits count limit, these Git commits are ignore: $(
 					@($GitCommitsHashIndex..($GitCommitsHash.Count - 1)) |
 						ForEach-Object -Process { "$($GitCommitsHash[$_]) [#$($_ + 1)/$($GitCommitsHash.Count)]" } |
@@ -411,7 +387,7 @@ If ($Targets.Count -eq 0) {
 			If ($Null -ieq $GitCommit) {
 				Continue
 			}
-			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $GitIgnores) {
+			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $InputGitIgnores) {
 				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
 				Continue
 			}
@@ -451,20 +427,20 @@ Else {
 			Write-GitHubActionsWarning -Message $_
 		}
 	}
-	For ([UInt64]$TargetsIndex = 0; $TargetsIndex -lt $Targets.Count; $TargetsIndex += 1) {
-		[String]$Target = $Targets[$TargetsIndex]
+	For ([UInt64]$TargetsIndex = 0; $TargetsIndex -lt $InputTargets.Count; $TargetsIndex += 1) {
+		[String]$Target = $InputTargets[$TargetsIndex]
 		If (!(Test-StringIsUri -InputObject $Target)) {
 			Write-GitHubActionsWarning -Message "``$($Target.OriginalString)`` is not a valid URI!"
 			Continue
 		}
 		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
 		If ($Null -ine $NetworkTargetFilePath) {
-			Invoke-Tools -SessionId $Target.ToString() -SessionTitle "Remote Target $Target [#$($TargetsIndex + 1)/$($Targets.Count)]"
+			Invoke-Tools -SessionId $Target.ToString() -SessionTitle "Remote Target $Target [#$($TargetsIndex + 1)/$($InputTargets.Count)]"
 			Remove-Item -LiteralPath $NetworkTargetFilePath -Force -Confirm:$False
 		}
 	}
 }
-If ($ClamAVEnable) {
+If ($InputClamAVEnable) {
 	Stop-ClamAVDaemon
 }
 If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
