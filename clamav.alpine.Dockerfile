@@ -64,4 +64,4 @@ RUN pwsh -NonInteractive $GHACTION_SCANVIRUS_PROGRAM_LIB/setup.ps1
 # <Debug>
 # RUN ls --almost-all --escape --format=long --hyperlink=never --no-group --recursive --size --time-style=full-iso -1 $GHACTION_SCANVIRUS_PROGRAM_ROOT
 
-CMD ["pwsh", "-NonInteractive", "$GHACTION_SCANVIRUS_PROGRAM_LIB/main.ps1"]
+CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
