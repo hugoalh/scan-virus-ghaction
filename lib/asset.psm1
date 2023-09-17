@@ -1,6 +1,6 @@
 #Requires -PSEdition Core -Version 7.2
 [String]$BundleUri = 'https://github.com/hugoalh/scan-virus-ghaction-assets/archive/{0}.tar.gz'
-[SemVer]$BundleVersion = [SemVer]::Parse('1.0.0')
+[SemVer]$BundleVersion = [SemVer]::Parse('1.0.1')
 Function Import-ScanVirusUnofficialAsset {
 	[CmdletBinding()]
 	[OutputType([Void])]
@@ -29,7 +29,7 @@ Function Import-ScanVirusUnofficialAsset {
 	[String]$OutDir = "/tmp/$([System.IO.Path]::GetRandomFileName())"
 	[String]$OutFile = "$OutDir.tar.gz"
 	[String]$SubPath = "scan-virus-ghaction-assets-$SubPathSuffix"
-	$Null = Invoke-WebRequest -Uri $BundleUriResolve -MaximumRetryCount 5 -RetryIntervalSec 5 -Method 'Get' -OutFile $OutFile
+	$Null = Invoke-WebRequest -Uri $BundleUriResolve -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' -OutFile $OutFile
 	$Null = New-Item -Path $OutDir -ItemType 'Directory' -Confirm:$False
 	$Null = tar "--directory=$OutDir" --extract "--file=$OutFile" --gzip
 	If (!$Setup.IsPresent) {
