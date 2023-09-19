@@ -49,21 +49,21 @@ jobs:
   job_id:
     runs-on: "ubuntu-________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction@<Version>"
+      - uses: "hugoalh/scan-virus-ghaction@<Tag>"
 ```
 
 > **ℹ️ Notice:** This action also provide editions of each tool:
 >
-> - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Version>"`
-> - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Version>"`
+> - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Tag>"`
+> - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Tag>"`
 
 ## 🧩 Input
 
 > **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to:
 >
-> - **`@<Version>`:** Scan current workspace with the ClamAV official assets
-> - **`/clamav@<Version>`:** Scan current workspace with the ClamAV official assets
-> - **`/yara@<Version>`:** Scan current workspace with the YARA unofficial assets
+> - **`@<Tag>`:** Scan current workspace with the ClamAV official assets
+> - **`/clamav@<Tag>`:** Scan current workspace with the ClamAV official assets
+> - **`/yara@<Tag>`:** Scan current workspace with the YARA unofficial assets
 
 ### `input_listdelimiter`
 
