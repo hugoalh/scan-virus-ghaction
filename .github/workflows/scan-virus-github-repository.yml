@@ -140,9 +140,10 @@ jobs:
         continue-on-error: true
       - name: "Optimize Disk Space"
         if: "${{(steps.if-ods.outputs.result || 'True') == 'True'}}"
-        uses: "hugoalh/disk-space-optimizer-ghaction@v0.6.0"
+        uses: "hugoalh/disk-space-optimizer-ghaction@v0.7.0"
         with:
           operate_async: "True"
+          operate_sudo: "True"
           general_include: ".+"
           general_exclude: |-
             ^AzCopy$
