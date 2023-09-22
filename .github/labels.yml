@@ -1,8 +1,7 @@
+# yaml-language-server: $schema=./labels.schema.json
 - name: "Platform/Android"
   color: "#3DDC84"
   description: "Related to Android."
-  aliases:
-    - "Platform/Android 🤖"
 - name: "Platform/AssemblyScript"
   color: "#007AAC"
   description: "Related to AssemblyScript."
@@ -24,13 +23,9 @@
 - name: "Platform/Deno"
   color: "#000000"
   description: "Related to Deno."
-  aliases:
-    - "Platform/Deno 🦕"
 - name: "Platform/DenoNetwork"
   color: "#000000"
-  description: "Related to Deno Deploy, Deno KV, and/or Deno Module Registry."
-  aliases:
-    - "Platform/DenoDeploy"
+  description: "Related to Deno Deploy, Deno KV, or Deno Module Registry."
 - name: "Platform/Dependabot"
   color: "#025E8C"
   description: "Related to Dependabot."
@@ -40,8 +35,6 @@
 - name: "Platform/Docker"
   color: "#2496ED"
   description: "Related to Docker."
-  aliases:
-    - "Platform/Docker 🐳"
 - name: "Platform/DotNet"
   color: "#512BD4"
   description: "Related to .NET."
@@ -54,9 +47,6 @@
 - name: "Platform/GitHubActions"
   color: "#2088FF"
   description: "Related to GitHub Actions."
-  aliases:
-    - "Platform/GitHub/Actions"
-    - "Platform/GitHub/Actions :octocat:"
 - name: "Platform/GitHubPackages"
   color: "#181717"
   description: "Related to GitHub Packages."
@@ -81,53 +71,39 @@
 - name: "Platform/Linux"
   color: "#FCC624"
   description: "Related to Linux."
-  aliases:
-    - "Platform/Linux 🐧"
 - name: "Platform/LinuxAlpine"
   color: "#0D597F"
   description: "Related to Linux Alpine."
-  aliases:
-    - "Platform/Linux/Alpine"
-    - "Platform/Linux/Alpine 🏔"
 - name: "Platform/LinuxDebian"
   color: "#A81D33"
   description: "Related to Linux Debian."
-  aliases:
-    - "Platform/Linux/Debian"
-    - "Platform/Linux/Debian 🌪"
 - name: "Platform/LinuxUbuntu"
   color: "#E95420"
   description: "Related to Linux Ubuntu."
 - name: "Platform/MacOS"
   color: "#000000"
   description: "Related to MacOS."
-  aliases:
-    - "Platform/MacOS 🙂"
 - name: "Platform/Mastodon"
   color: "#6364FF"
   description: "Related to Mastodon."
 - name: "Platform/MicrosoftAzure"
   color: "#0078D4"
   description: "Related to Microsoft Azure."
-  aliases:
-    - "Platform/Azure"
 - name: "Platform/MicrosoftEdge"
   color: "#0078D7"
   description: "Related to Microsoft Edge."
 - name: "Platform/Minecraft"
   color: "#62B47A"
-  description: "Related to Minecraft (Bedrock)."
+  description: "Related to Minecraft (previous Minecraft Bedrock)."
 - name: "Platform/MinecraftJava"
   color: "#62B47A"
-  description: "Related to Minecraft Java."
+  description: "Related to Minecraft Java (previous Minecraft)."
 - name: "Platform/MongoDB"
   color: "#47A248"
   description: "Related to MongoDB."
 - name: "Platform/NodeJS"
   color: "#339933"
   description: "Related to NodeJS."
-  aliases:
-    - "Platform/NodeJS 🔘"
 - name: "Platform/NPM"
   color: "#CB3837"
   description: "Related to NPM."
@@ -137,16 +113,12 @@
 - name: "Platform/PowerShell"
   color: "#5391FE"
   description: "Related to PowerShell."
-  aliases:
-    - "Platform/PowerShell 🐚"
 - name: "Platform/PowerShellGallery"
   color: "#5391FE"
   description: "Related to PowerShell Gallery."
 - name: "Platform/Python"
   color: "#3776AB"
   description: "Related to Python."
-  aliases:
-    - "Platform/Python 🐍"
 - name: "Platform/Replit"
   color: "#F26207"
   description: "Related to Replit."
@@ -174,83 +146,73 @@
 - name: "Platform/Windows"
   color: "#0078D4"
   description: "Related to Windows."
-  aliases:
-    - "Platform/Windows 🪟"
 - name: "Priority/Critical 🚨"
-  color: "#B60205"
+  color: "#D50000"
   description: "Critical priority."
 - name: "Priority/High 🔴"
-  color: "#E81224"
+  color: "#F44336"
   description: "High priority."
 - name: "Priority/Low 🟢"
-  color: "#16C60C"
+  color: "#4CAF50"
   description: "Low priority."
 - name: "Priority/Medium 🟡"
-  color: "#FFF100"
+  color: "#FFEB3B"
   description: "Medium priority."
 - name: "Status/Duplicated 🔁"
-  color: "#C0C0C0"
+  color: "#CFD3D7" # GitHub Default Label Color
   description: "This already exists."
-- name: "Status/HelpWanted ⛑️"
-  color: "#008672"
-  description: "Need extra attention."
   aliases:
-    - "Status/Help-Wanted ⛑"
-    - "Status/Help-Wanted ⛑️"
-    - "Status/HelpWanted ⛑"
-    - "Type/Help-Wanted ⛑"
-    - "Type/Help-Wanted ⛑️"
-    - "Type/HelpWanted ⛑️"
-    - "Type/HelpWanted ⛑"
+    - "duplicate" # GitHub Default Label
+- name: "Status/HelpWanted ⛑️"
+  color: "#008672" # GitHub Default Label Color
+  description: "This needs extra help."
+  aliases:
+    - "help wanted" # GitHub Default Label
 - name: "Status/Invalid ⚠️"
-  color: "#E4E669"
+  color: "#E4E669" # GitHub Default Label Color
   description: "This does not seem right."
   aliases:
-    - "Status/Invalid ⚠"
+    - "invalid" # GitHub Default Label
 - name: "Status/Investigating 🔍"
-  color: "#FFC93B"
+  color: "#03A9F4"
   description: "This is in investigating."
-  aliases:
-    - "Status/Investigating 🧐"
 - name: "Status/NoSolution 🤷"
   color: "#FFFFFF"
   description: "This cannot be worked on due to no possible solution."
-  aliases:
-    - "Status/No-Solution 🤷"
 - name: "Status/Pending 🔵"
-  color: "#0078D7"
+  color: "#2196F3"
   description: "This is new."
-  aliases:
-    - "Status/Unread 🔵"
 - name: "Status/Question ❓"
-  color: "#D876E3"
+  color: "#D876E3" # GitHub Default Label Color
   description: "This needs further information."
+  aliases:
+    - "question" # GitHub Default Label
 - name: "Status/Rejected ❌"
-  color: "#F03710"
+  color: "#B71C1C"
   description: "This is rejected."
 - name: "Status/Transfer ↗️"
-  color: "#808080"
+  color: "#607D8B"
   description: "This is transferred to a more relevant place."
-  aliases:
-    - "Status/Transfer ↗"
 - name: "Status/WillNotFix 🙅"
-  color: "#FFFFFF"
+  color: "#FFFFFF" # GitHub Default Label Color
   description: "This will not be worked on."
   aliases:
-    - "Status/Will-Not-Fix 🙅"
+    - "wontfix" # GitHub Default Label
 - name: "Type/Bug 🐛"
-  color: "#D73A4A"
-  description: "Something is not working."
+  color: "#D73A4A" # GitHub Default Label Color
+  description: "Something is not working as expected or intended."
+  aliases:
+    - "bug" # GitHub Default Label
 - name: "Type/Dependency 📦"
-  color: "#BB9167"
+  color: "#6D4C41"
   description: "Related to dependency."
 - name: "Type/Documentation 📓"
-  color: "#5319E7"
-  description: "Related to documentation."
+  color: "#0075CA" # GitHub Default Label Color
+  description: "Additions or improvements to the documentation."
   aliases:
-    - "Type/Documentation 📚"
+    - "documentation" # GitHub Default Label
 - name: "Type/Enhancement 💡"
-  color: "#A2EEEF"
+  color: "#A2EEEF" # GitHub Default Label Color
   description: "New feature or request."
   aliases:
-    - "Type/Enhancement ➕"
+    - "enhancement" # GitHub Default Label
