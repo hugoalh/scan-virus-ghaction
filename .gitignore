@@ -57,7 +57,9 @@ _compareTemp
 .Trash-*
 .Trashes
 .VolumeIcon.icns
+.vscode
 .vscode-test
+.vscode/
 .yarn/build-state.yml
 .yarn/cache
 .yarn/cache/
