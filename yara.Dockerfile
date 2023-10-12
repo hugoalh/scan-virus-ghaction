@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # <Note> Do not create big size layers due to GitHub Packages have worse performance on those!
 
-FROM debian:12.1
+FROM debian:12.2
 
 # <Switch> Uncomment when operate system is Debian.
 ENV DEBIAN_FRONTEND=noninteractive
