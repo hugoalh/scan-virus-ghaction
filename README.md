@@ -9,28 +9,24 @@
 
 A GitHub Action to scan virus (including malicious file and malware) in the GitHub Action workspace.
 
-> **⚠️ Important:** This documentation is v0.17.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
+> **⚠️ Important:** This documentation is v0.20.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
 ## 🌟 Feature
 
-- 4\~96% faster than other GitHub Actions with the same purpose, especially when need to perform scan with multiple sessions (e.g.: Git commits).
-- Ability to ignore specify paths (i.e.: directories and/or files), rules, sessions (e.g.: Git commits), and/or signatures.
-- Ability to scan other things, not limited to only Git repository.
+- 4\~96% faster than other GitHub Actions with the same purpose, especially when need to perform scan with multiple sessions.
+- Ability to ignore specify paths, rules, sessions, and/or signatures.
+- Ability to scan by every Git commits.
+- Ability to use custom assets.
+- Bundle with some of the communities' unofficial rules and signatures.
 
 ## 🛡️ Tools
 
-- **[ClamAV](https://www.clamav.net):** Made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
-- **[YARA](http://virustotal.github.io/yara):** Made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
+- **`clamav`:** [ClamAV](https://www.clamav.net), made by [Cisco](https://www.cisco.com), is an open source anti virus engine for detecting trojans, viruses, malwares, and other malicious threats.
+- **`yara`:** [YARA](http://virustotal.github.io/yara), made by [VirusTotal](https://www.virustotal.com), is a tool aimed at but not limited to help malware researchers to identify and classify malware samples.
 
 ### Unofficial Assets
 
 Some of the communities have publicly published unofficial ClamAV and/or YARA assets for free. In order to adoptable, compatible, and usable with this action, these unofficial assets are stored in [hugoalh/scan-virus-ghaction-assets](https://github.com/hugoalh/scan-virus-ghaction-assets).
-
-Inputs that use these unofficial assets are:
-
-- [`unofficialassets_version`](#unofficialassets_version)
-- [`unofficialassets_clamav`](#unofficialassets_clamav) / [`clamav_unofficialassets`](#clamav_unofficialassets)
-- [`unofficialassets_yara`](#unofficialassets_yara) / [`yara_unofficialassets`](#yara_unofficialassets)
 
 ## ⚠️ Disclaimer
 
@@ -65,79 +61,9 @@ jobs:
 > - **`/clamav@<Tag>`:** Scan current workspace with the ClamAV official assets
 > - **`/yara@<Tag>`:** Scan current workspace with the YARA unofficial assets
 
-### `input_listdelimiter`
-
-`<RegEx = ",|;|\r?\n">` Delimiter when the input is accept list of values, by regular expression.
-
-### `input_tablemarkup`
-
-`<String = "yaml">` Markup language when the input is type of table.
-
-- **`"Csv"` (Comma Separated Values (Standard)):**
-  - ```csv
-    bar,foo
-    5,10
-    10,20
-    ```
-- **`"CsvM"` (Comma Separated Values (Non Standard Multiple Line)):**
-  - ```
-    bar=5,foo=10
-    bar=10,foo=20
-    ```
-- **`"CsvS"` (Comma Separated Values (Non Standard Single Line)):**
-  - ```
-    bar=5,foo=10;bar=10,foo=20
-    ```
-- **`"Json"` (JavaScript Object Notation):**
-  - ```json
-    [{"bar":5,"foo":10},{"bar":10,"foo":20}]
-    ```
-  - ```json
-    [
-      {
-        "bar": 5,
-        "foo": 10
-      },
-      {
-        "bar": 10,
-        "foo": 20
-      }
-    ]
-    ```
-- **`"Tsv"` (Tab Separated Values):**
-  - ```tsv
-    bar	foo
-    5	10
-    10	20
-    ```
-- **`"Yaml"`/`"Yml"` (YAML) *\[Default\]*:**
-  - ```yml
-    - bar: 5
-      foo: 10
-    - bar: 10
-      foo: 20
-    ```
-
-### `targets`
-
-`<Uri[]>` Targets.
-
-- **Local *\[Default\]*:** Workspace, for prepared files to the workspace (e.g.: checkout repository via action [`actions/checkout`](https://github.com/actions/checkout)) in the same job before this action.
-- **Remote:** Fetch files from the remote to the workspace by this action, by HTTP/HTTPS URI, separate each target by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); Require a clean workspace.
-
-When this is defined (i.e.: remote targets), will ignore inputs:
-
-- [`git_integrate`](#git_integrate)
-- [`git_ignores`](#git_ignores)
-- [`git_lfs`](#git_lfs)
-- [`git_limit`](#git_limit)
-- [`git_reverse`](#git_reverse)
-
-> **⚠️ Important:** Workspace will automatically clean for remote targets.
-
 ### `git_integrate`
 
-`<Boolean = False>` Whether to integrate with Git to perform scan by the commits; Require workspace is a Git repository.
+`<Boolean = False>` Whether to integrate with Git to perform scan by every commits; Require workspace is a Git repository.
 
 When this is `False`, will ignore inputs:
 
@@ -148,47 +74,28 @@ When this is `False`, will ignore inputs:
 
 ### `git_ignores`
 
-[`<Table>`](#input_tablemarkup) Ignores for the Git commits, by table; Available properties:
+`<ScriptBlock>` Ignores for the Git commits, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
 
-- **`AuthorDate`:**
-  - `<RegEx>` A regular expression to match the timestamp in ISO 8601 format
-  - `<String>` A string with specify pattern to compare the timestamp:
-    - `-ge %Y-%m-%dT%H:%M:%SZ` Author date that after or equal to this time.
-    - `-gt %Y-%m-%dT%H:%M:%SZ` Author date that after this time.
-    - `-le %Y-%m-%dT%H:%M:%SZ` Author date that before or equal to this time.
-    - `-lt %Y-%m-%dT%H:%M:%SZ` Author date that before this time.
-- **`AuthorEmail`:** `<RegEx>`
-- **`AuthorName`:** `<RegEx>`
-- **`Body`:** `<RegEx>`
-- **`CommitHash`:** `<RegEx>`
-- **`CommitterDate`:**
-  - `<RegEx>` A regular expression to match the timestamp in ISO 8601 format
-  - `<String>` A string with specify pattern to compare the timestamp:
-    - `-ge %Y-%m-%dT%H:%M:%SZ` Committer date that after or equal to this time.
-    - `-gt %Y-%m-%dT%H:%M:%SZ` Committer date that after this time.
-    - `-le %Y-%m-%dT%H:%M:%SZ` Committer date that before or equal to this time.
-    - `-lt %Y-%m-%dT%H:%M:%SZ` Committer date that before this time.
-- **`CommitterEmail`:** `<RegEx>`
-- **`CommitterName`:** `<RegEx>`
-- **`Encoding`:** `<RegEx>`
-- **`Notes`:** `<RegEx>`
-- **`ParentHashes`:** `<RegEx>`
-  - For multiple parent hashes in a commit, match any parent hash will cause ignore this commit.
-- **`ReflogIdentityEmail`:** `<RegEx>`
-- **`ReflogIdentityName`:** `<RegEx>`
-- **`ReflogSelector`:** `<RegEx>`
-- **`ReflogSubject`:** `<RegEx>`
-- **`Subject`:** `<RegEx>`
-- **`TreeHash`:** `<RegEx>`
+The script block should use this pattern in order to receive argument [`GitCommitMeta`](#gitcommitmeta):
 
-> **✍️ Example:**
->
-> ```yml
-> git_ignores: |-
->   - AuthorName: "^dependabot$"
->   - AuthorDate: "-lt 2022-01-01T00:00:00Z"
->     AuthorName: "^octocat$"
-> ```
+```ps1
+Param([PSCustomObject]$GitCommitMeta)
+<# ... Code for determine ... #>
+Return $Result
+```
+
+For example, to ignore Git commits made by Dependabot, and ignore Git commits made by octocat before 2022/01/01:
+
+```yml
+git_ignores: |-
+  Param($GitCommitMeta)
+  Return (
+    $GitCommitMeta.AuthorName -imatch '^dependabot' -or
+    ($GitCommitMeta.AuthorDate -lt ([DateTime]::Parse('2022-01-01T00:00:00Z')) -and $GitCommitMeta.AuthorName -imatch '^octocat$')
+  )
+```
+
+> **⚠️ Important:** PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
 ### `git_lfs`
 
@@ -196,13 +103,7 @@ When this is `False`, will ignore inputs:
 
 ### `git_limit`
 
-`<UInt64>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this is not defined or defined with `0`, means no limit.
-
-> **✍️ Example:**
->
-> ```yml
-> git_limit: 100
-> ```
+`<UInt64 = 0>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this value is `0`, means no limit.
 
 > **⚠️ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
 
@@ -219,94 +120,150 @@ When this is `False`, will ignore inputs:
 
 When this is `False`, will ignore inputs:
 
-- [`clamav_unofficialassets`](#clamav_unofficialassets)
 - [`clamav_update`](#clamav_update)
-
-### `clamav_unofficialassets`
-
-*Alias of input [`unofficialassets_clamav`](#unofficialassets_clamav).*
+- [`clamav_unofficial_use`](#clamav_unofficial_use)
+- [`clamav_unofficial_custom`](#clamav_unofficial_custom)
 
 ### `clamav_update`
 
-`<Boolean = True>` Whether to update the ClamAV official assets via FreshClam before scan anything.
+`<Boolean = True>` Whether to update the ClamAV official assets before scan anything.
 
 > **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
 
+### `clamav_unofficial_use`
+
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the ClamAV unofficial assets list, separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
+
+### `clamav_unofficial_custom`
+
+`<String>` Custom ClamAV assets to use, by directory path which mapped directory on the container (e.g.: `RUNNER_TEMP`).
+
 ### `yara_enable`
 
-`<Boolean = False>` Whether to use YARA. When this is `False`, will ignore input [`yara_unofficialassets`](#yara_unofficialassets).
+`<Boolean = False>` Whether to use YARA. When this is `False`, will ignore inputs:
 
-### `yara_unofficialassets`
+- [`yara_unofficial_use`](#yara_unofficial_use)
+- [`yara_unofficial_custom`](#yara_unofficial_custom)
 
-*Alias of input [`unofficialassets_yara`](#unofficialassets_yara).*
+### `yara_unofficial_use`
 
-### `unofficialassets_version`
+`<RegEx[] = .+>` YARA unofficial assets to use, by regular expression and the YARA unofficial assets list, separate each regular expression per line; By default, all of the YARA unofficial assets are in use.
 
-`<String>` Git tree-ish of the [unofficial assets store](#unofficial-assets). By default, bundled version of the unofficial assets are use.
+### `yara_unofficial_custom`
 
-### `unofficialassets_clamav`
+`<String>` Custom YARA assets to use, by directory path which mapped directory on the container (e.g.: `RUNNER_TEMP`).
 
-`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the ClamAV unofficial assets list, separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter); By default, all of the unofficial assets are not in use.
+### `ignores_pre`
 
-### `unofficialassets_yara`
+`<ScriptBlock>` Ignores for the paths, sessions, and tools before the scan, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
 
-`<RegEx[]>` YARA unofficial assets to use, by regular expression and the YARA unofficial assets list, separate each name by [list delimiter (input `input_listdelimiter`)](#input_listdelimiter).
+The script block should use this pattern in order to receive argument [`ElementPreMeta`](#elementpremeta):
 
-> **⚠️ Important:** All of the unofficial assets are in use if not specified.
+```ps1
+Param([PSCustomObject]$ElementPreMeta)
+<# ... Code for determine ... #>
+Return $Result
+```
 
-### `ignores`
+For example, to ignore path `node_modules`:
 
-[`<Table>`](#input_tablemarkup) Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV), by table. Available properties:
+```yml
+ignores_pre: |-
+  Param($ElementPreMeta)
+  Return ($ElementPreMeta.Path -imatch '^node_modules\\/')
+```
 
-- **`Path`:** `<RegEx>` Relative path based on GitHub Action workspace without `./` (e.g.: `path/to/file.extension`).
-- **`Session`:** `<RegEx>` Git commit hash.
-- **`Symbol`:** `<RegEx>`
-  - Rule (YARA)
-  - Signature (ClamAV) (`{Platform}.{Category}.{Name}-{SignatureID}-{Revision}`)
-- **`Tool`:** `<RegEx>` Tool name, only useful with properties `Path` and/or `Session`.
+> **⚠️ Important:** PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
-> **✍️ Example:**
->
-> ```yml
-> ignores: |-
->   - Path: "^node_modules\\/"
-> ```
+### `ignores_post`
+
+`<ScriptBlock>` Ignores for the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
+
+The script block should use this pattern in order to receive argument [`ElementPostMeta`](#elementpostmeta):
+
+```ps1
+Param([PSCustomObject]$ElementPostMeta)
+<# ... Code for determine ... #>
+Return $Result
+```
 
 > **⚠️ Important:**
 >
-> - It is not recommended to use this on the ClamAV official signatures due to these rarely have false positives in most cases.
-> - ClamAV unofficial signatures maybe not follow the recommended signatures name pattern.
-> - YARA rules are have their owned rules name pattern.
+> - PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
+> - It is not recommended to ignore any official symbol due to these rarely have false positives in most cases.
 
-### `log_elements`
+### `found_log`
 
-`<String = "All">` Whether to list elements in the log.
+`<Boolean = True>` Whether to record elements which found virus in the log.
 
-- **`"None"`:** Disable.
-- **`"OnlyCurrent"`:** Enable, only for session "Current".
-- **`"All"`:** Enable.
+### `found_summary`
 
-> **⚠️ Important:** Begin from v0.16.0, elements are list in the log only when enabled debug mode.
-
-### `summary_found`
-
-`<String = "None">` Whether to list elements which found virus in the step summary.
-
-- **`"None"`:** Disable, and record in the log.
-- **`"Clone"`:** Enable, and still record in the log.
-- **`"Redirect"`:** Enable, and will not record in the log.
+`<Boolean = False>` Whether to record elements which found virus in the step summary.
 
 > **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
 
-### `summary_statistics`
+### `statistics_log`
 
-`<String = "None">` Whether to list statistics in the step summary.
+`<Boolean = True>` Whether to record statistics in the log.
 
-- **`"None"`:** Disable, and record in the log.
-- **`"Clone"`:** Enable, and still record in the log.
-- **`"Redirect"`:** Enable, and will not record in the log.
+### `statistics_summary`
+
+`<Boolean = False>` Whether to record statistics in the step summary.
 
 > **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
+
+## 🧩 Input's Script Block Argument Syntax
+
+### `ElementPreMeta`
+
+```ps1
+[PSCustomObject]$ElementPreMeta = @{
+  Path = [String] # Relative path based on GitHub Action workspace without `./` (e.g.: `relative/path/to/file.extension`).
+  Session = [PSCustomObject]@{
+    IsGitCommit = [Boolean] # Whether this session is on a Git commit; `$False` for "Current" session.
+    GitCommitMeta = $GitCommitMeta -or $Null # Git commit meta, only exists when this session is on a Git commit.
+  }
+  Tool = [String] # Tool ID.
+}
+```
+
+### `ElementPostMeta`
+
+```ps1
+[PSCustomObject]$ElementPostMeta = @{
+  Path = [String] # Relative path based on GitHub Action workspace without `./` (e.g.: `relative/path/to/file.extension`).
+  Session = [PSCustomObject]@{
+    IsGitCommit = [Boolean] # Whether this session is on a Git commit; `$False` for "Current" session.
+    GitCommitMeta = $GitCommitMeta -or $Null # Git commit meta, only exists when this session is on a Git commit.
+  }
+  Symbol = [String] # Rule or signature.
+  Tool = [String] # Tool ID.
+}
+```
+
+### `GitCommitMeta`
+
+```ps1
+[PSCustomObject]$GitCommitMeta = @{
+  AuthorDate = [DateTime]
+  AuthorEmail = [String]
+  AuthorName = [String]
+  Body = [String]
+  CommitHash = [String]
+  CommitterDate = [DateTime]
+  CommitterEmail = [String]
+  CommitterName = [String]
+  Encoding = [String]
+  Notes = [String]
+  ParentHashes = [String[]]
+  ReflogIdentityEmail = [String]
+  ReflogIdentityName = [String]
+  ReflogSelector = [String]
+  ReflogSubject = [String]
+  Subject = [String]
+  TreeHash = [String]
+}
+```
 
 ## 🧩 Output
 
@@ -331,18 +288,23 @@ When this is `False`, will ignore inputs:
           with:
             fetch-depth: 0
         - name: "Scan Repository"
-          uses: "hugoalh/scan-virus-ghaction@v0.17.0"
+          uses: "hugoalh/scan-virus-ghaction@v0.20.0"
           with:
             git_ignores: |-
-              - AuthorName: "^dependabot$"
-              - AuthorDate: "-lt 2022-01-01T00:00:00Z"
-                AuthorName: "^octocat$"
+              Param($GitCommitMeta)
+              Return (
+                $GitCommit.AuthorName -imatch '^dependabot' -or
+                ($GitCommit.AuthorDate -lt ([DateTime]::Parse('2022-01-01T00:00:00Z')) -and $GitCommit.AuthorName -imatch '^octocat$')
+              )
             git_limit: 100
-            ignores: |-
-              - Path: "^node_modules\\/"
+            ignores_pre: |-
+              Param($ElementPreMeta)
+              Return ($Meta.Path -imatch '^node_modules\\/')
   ```
 
 ## 📚 Guide
 
 - GitHub Actions
   - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
+- PowerShell
+  - [About Script Blocks](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_script_blocks)

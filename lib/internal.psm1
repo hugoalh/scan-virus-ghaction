@@ -1,5 +1,4 @@
 #Requires -PSEdition Core -Version 7.2
-Using Module .\enum.psm1
 Import-Module -Name @(
 	'hugoalh.GitHubActionsToolkit',
 	'psyml'

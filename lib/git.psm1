@@ -2,23 +2,32 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'datetime',
 		'token'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [Hashtable[]]$GitCommitsProperties = @(
-	@{ Name = 'AuthorDate'; Placeholder = '%aI'; AsType = [DateTime] },
+	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Transform = {
+		Param ([String]$Item)
+		Return ([DateTime]::Parse($Item))
+	} },
 	@{ Name = 'AuthorEmail'; Placeholder = '%ae' },
 	@{ Name = 'AuthorName'; Placeholder = '%an' },
-	@{ Name = 'Body'; Placeholder = '%b'; IsMultipleLine = $True },
+	@{ Name = 'Body'; Placeholder = '%b' },
 	@{ Name = 'CommitHash'; Placeholder = '%H'; AsIndex = $True },
-	@{ Name = 'CommitterDate'; Placeholder = '%cI'; AsType = [DateTime] },
+	@{ Name = 'CommitterDate'; Placeholder = '%cI'; Transform = {
+		Param ([String]$Item)
+		Return ([DateTime]::Parse($Item))
+	} },
 	@{ Name = 'CommitterEmail'; Placeholder = '%ce' },
 	@{ Name = 'CommitterName'; Placeholder = '%cn' },
 	@{ Name = 'Encoding'; Placeholder = '%e' },
-	@{ Name = 'Notes'; Placeholder = '%N'; IsMultipleLine = $True },
-	@{ Name = 'ParentHashes'; Placeholder = '%P'; IsArraySpace = $True },
+	@{ Name = 'Notes'; Placeholder = '%N' },
+	@{ Name = 'ParentHashes'; Placeholder = '%P'; Transform = {
+		Param ([String]$Item)
+		Write-Output -InputObject ($Item -isplit ' ') -NoEnumerate
+		Return
+	} },
 	@{ Name = 'ReflogIdentityEmail'; Placeholder = '%ge' },
 	@{ Name = 'ReflogIdentityName'; Placeholder = '%gn' },
 	@{ Name = 'ReflogSelector'; Placeholder = '%gD' },
@@ -111,11 +120,8 @@ Function Get-GitCommitMeta {
 	For ([UInt64]$Line = 0; $Line -lt $ResultResolve.Count; $Line += 1) {
 		[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 		[String]$Value = $ResultResolve[$Line]
-		If ($GitCommitsPropertiesCurrent.IsArraySpace) {
-			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -isplit ' '
-		}
-		ElseIf ($GitCommitsPropertiesCurrent.AsType) {
-			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value -as $GitCommitsPropertiesCurrent.AsType
+		If ($GitCommitsPropertiesCurrent.Transform) {
+			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = Invoke-Command -ScriptBlock $GitCommitsPropertiesCurrent.Transform -ArgumentList @($Value)
 		}
 		Else {
 			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
@@ -144,81 +150,9 @@ If this is incorrect, probably Git database is broken and/or invalid.
 		Write-Output -InputObject $False
 	}
 }
-Function Test-GitCommitIsIgnore {
-	[CmdletBinding()]
-	[OutputType([Boolean])]
-	Param (
-		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject]$GitCommit,
-		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][Alias('Ignores')][PSCustomObject[]]$Ignore
-	)
-	ForEach ($IgnoreItem In $Ignore) {
-		[UInt64]$IgnoreMatchCount = 0
-		ForEach ($GitCommitsProperty In $GitCommitsProperties) {
-			If ($Null -ieq $IgnoreItem.($GitCommitsProperty.Name)) {
-				Continue
-			}
-			Try {
-				If ($GitCommitsProperty.AsType -ieq [DateTime]) {
-					If (($IgnoreItem.($GitCommitsProperty.Name) -as [String]) -imatch '^-[gl][et] \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
-						[String]$CompareOperator, [String]$IgnoreTimestampRaw = $IgnoreItem.($GitCommitsProperty.Name) -isplit ' '
-						[DateTime]$IgnoreTimestamp = Get-Date -Date $IgnoreTimestampRaw
-						Switch -Exact ($CompareOperator) {
-							'-ge' {
-								If ($GitCommit.($GitCommitsProperty.Name) -ge $IgnoreTimestamp) {
-									$IgnoreMatchCount += 1
-									Break
-								}
-							}
-							'-gt' {
-								If ($GitCommit.($GitCommitsProperty.Name) -gt $IgnoreTimestamp) {
-									$IgnoreMatchCount += 1
-									Break
-								}
-							}
-							'-le' {
-								If ($GitCommit.($GitCommitsProperty.Name) -le $IgnoreTimestamp) {
-									$IgnoreMatchCount += 1
-									Break
-								}
-							}
-							'-lt' {
-								If ($GitCommit.($GitCommitsProperty.Name) -lt $IgnoreTimestamp) {
-									$IgnoreMatchCount += 1
-									Break
-								}
-							}
-						}
-					}
-					Else {
-						If ((ConvertTo-DateTimeIsoString -InputObject $GitCommit.($GitCommitsProperty.Name)) -imatch $IgnoreItem.($GitCommitsProperty.Name)) {
-							$IgnoreMatchCount += 1
-						}
-					}
-				}
-				ElseIf ($GitCommitsProperty.IsArraySpace) {
-					If (($GitCommit.($GitCommitsProperty.Name) -isplit ' ') -inotmatch $IgnoreItem.($GitCommitsProperty.Name)) {
-						$IgnoreMatchCount += 1
-					}
-				}
-				Else {
-					If ($GitCommit.($GitCommitsProperty.Name) -inotmatch $IgnoreItem.($GitCommitsProperty.Name)) {
-						$IgnoreMatchCount += 1
-					}
-				}
-			}
-			Catch {}
-		}
-		If ($IgnoreMatchCount -ge $IgnoreItem.PSObject.Properties.Name.Count) {
-			Write-Output -InputObject $True
-			Return
-		}
-	}
-	Write-Output -InputObject $False
-}
 Export-ModuleMember -Function @(
 	'Disable-GitLfsProcess',
 	'Get-GitCommitIndex',
 	'Get-GitCommitMeta',
-	'Test-IsGitRepository',
-	'Test-GitCommitIsIgnore'
+	'Test-IsGitRepository'
 )

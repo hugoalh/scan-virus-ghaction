@@ -2,23 +2,12 @@ name: "Scan Virus (Build)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
-  input_listdelimiter:
-    description: "{RegEx} Delimiter when the input is accept list of values."
-    required: false
-    default: ",|;|\\r?\\n"
-  input_tablemarkup:
-    description: "{String} Markup language when the input is accept table of values."
-    required: false
-    default: "Yaml"
-  targets:
-    description: "{Uri[]} Targets."
-    required: false
   git_integrate:
-    description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
+    description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
     required: false
     default: "False"
   git_ignores:
-    description: "{Table} Ignores for the Git commits."
+    description: "{ScriptBlock} Ignores for the Git commits."
     required: false
   git_lfs:
     description: "{Boolean} Whether to process Git LFS files."
@@ -36,44 +25,49 @@ inputs:
     description: "{Boolean} Whether to use ClamAV."
     required: false
     default: "True"
-  clamav_unofficialassets:
-    description: "[ALIAS] unofficialassets_clamav"
-    required: false
   clamav_update:
-    description: "{Boolean} Whether to update the ClamAV official assets via FreshClam before scan anything."
+    description: "{Boolean} Whether to update the ClamAV official assets before scan anything."
     required: false
     default: "True"
+  clamav_unofficial_use:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
+    required: false
+  clamav_unofficial_custom:
+    description: "{String} Custom ClamAV assets to use, by directory path which mapped directory on the container."
+    required: false
   yara_enable:
     description: "{Boolean} Whether to use YARA."
     required: false
     default: "False"
-  yara_unofficialassets:
-    description: "[ALIAS] unofficialassets_yara"
-    required: false
-  unofficialassets_version:
-    description: "Git tree-ish of the unofficial assets store."
-    required: false
-  unofficialassets_clamav:
-    description: "{RegEx[]} ClamAV unofficial assets to use."
-    required: false
-  unofficialassets_yara:
+  yara_unofficial_use:
     description: "{RegEx[]} YARA unofficial assets to use."
     required: false
-  ignores:
-    description: "{Table} Ignores for the paths, rules (YARA), sessions, and/or signatures (ClamAV)."
+    default: ".+"
+  yara_unofficial_custom:
+    description: "{String} Custom YARA assets to use, by directory path which mapped directory on the container."
     required: false
-  log_elements:
-    description: "{String} Whether to list elements in the log."
+  ignores_pre:
+    description: "{ScriptBlock} Ignores for the paths, sessions, and tools before the scan."
     required: false
-    default: "All"
-  summary_found:
-    description: "{String} Whether to list elements which found virus in the step summary."
+  ignores_post:
+    description: "{ScriptBlock} Ignores for the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan."
     required: false
-    default: "None"
-  summary_statistics:
-    description: "{String} Whether to list statistics in the step summary."
+  found_log:
+    description: "{Boolean} Whether to record elements which found virus in the log."
     required: false
-    default: "None"
+    default: "True"
+  found_summary:
+    description: "{Boolean} Whether to record elements which found virus in the step summary."
+    required: false
+    default: "False"
+  statistics_log:
+    description: "{Boolean} Whether to record statistics in the log."
+    required: false
+    default: "True"
+  statistics_summary:
+    description: "{Boolean} Whether to record statistics in the step summary."
+    required: false
+    default: "False"
 outputs:
   finish:
     description: "{Boolean} Whether this action correctly finished without non catch issues."
