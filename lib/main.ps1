@@ -26,6 +26,23 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
+[Boolean]$InputClamAVEnable = ($Tools -icontains 'clamav' -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
+[Boolean]$InputClamAVUpdate = ($Tools -icontains 'clamav') ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
+[AllowEmptyCollection()][RegEx[]]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+	Where-Object -FilterScript { $_.Length -gt 0 } |
+	Join-String -Separator '|'
+$InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customassets_directory' -EmptyStringAsNull
+[AllowEmptyCollection()][RegEx[]]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+	Where-Object -FilterScript { $_.Length -gt 0 } |
+	Join-String -Separator '|'
+[Boolean]$InputYaraEnable = ($Tools -icontains 'yara' -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
+[AllowEmptyCollection()][RegEx[]]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+	Where-Object -FilterScript { $_.Length -gt 0 } |
+	Join-String -Separator '|'
+$InputYaraCustomAssetsDirectory = Get-GitHubActionsInput -Name 'yara_customassets_directory' -EmptyStringAsNull
+[AllowEmptyCollection()][RegEx[]]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+	Where-Object -FilterScript { $_.Length -gt 0 } |
+	Join-String -Separator '|'
 [Boolean]$InputGitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull))
 $InputGitIgnoresRaw = Get-GitHubActionsInput -Name 'git_ignores' -EmptyStringAsNull
 If ($Null -ne $InputGitIgnoresRaw) {
@@ -34,17 +51,6 @@ If ($Null -ne $InputGitIgnoresRaw) {
 [Boolean]$InputGitLfs = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_lfs' -Mandatory -EmptyStringAsNull))
 [UInt64]$InputGitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory -EmptyStringAsNull))
 [Boolean]$InputGitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory -EmptyStringAsNull))
-[Boolean]$InputClamAVEnable = ($Tools -icontains 'clamav' -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
-[Boolean]$InputClamAVUpdate = ($Tools -icontains 'clamav') ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
-[AllowEmptyCollection()][RegEx[]]$InputClamAVUnofficialUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
-	Where-Object -FilterScript { $_.Length -gt 0 } |
-	Join-String -Separator '|'
-$InputClamAVUnofficialCustom = Get-GitHubActionsInput -Name 'clamav_customassets' -EmptyStringAsNull
-[Boolean]$InputYaraEnable = ($Tools -icontains 'yara' -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
-[AllowEmptyCollection()][RegEx[]]$InputYaraUnofficialUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
-	Where-Object -FilterScript { $_.Length -gt 0 } |
-	Join-String -Separator '|'
-$InputYaraUnofficialCustom = Get-GitHubActionsInput -Name 'yara_customassets' -EmptyStringAsNull
 $InputIgnoresPreRaw = Get-GitHubActionsInput -Name 'ignores_pre' -EmptyStringAsNull
 If ($Null -ne $InputIgnoresPreRaw) {
 	[ScriptBlock]$InputIgnoresPre = [ScriptBlock]::Create($InputIgnoresPreRaw)
@@ -59,22 +65,6 @@ If ($Null -ne $InputIgnoresPostRaw) {
 [Boolean]$InputStatisticsSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_summary' -Mandatory -EmptyStringAsNull))
 If (!$InputClamAVEnable -and !$InputYaraEnable) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
-}
-If (
-	($InputClamAVEnable -and $InputClamAVUnofficialAssetsRaw.Count -gt 0) -or
-	($InputYaraEnable -and $InputYaraUnofficialAssetsRaw.Count -gt 0)
-) {
-	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'asset.psm1') -Scope 'Local'
-	Write-Host -Object 'Import unofficial asset.'
-	Try {
-		Import-ScanVirusUnofficialAsset -Version $InputUnofficialAssetsVersion
-	}
-	Catch {
-		Write-GitHubActionsError -Message $_
-	}
-}
-If ($InputTargets.Count -gt 0) {
-	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'network-target.psm1') -Scope 'Local'
 }
 If ($InputGitIntegrate) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'git.psm1') -Scope 'Local'
@@ -91,14 +81,14 @@ If ($InputGitIntegrate -and !$InputGitLfs) {
 If ($InputClamAVEnable -and $InputClamAVUpdate) {
 	Update-ClamAV
 }
-If ($InputClamAVEnable -and $InputClamAVUnofficialAssetsRaw.Count -gt 0) {
+If ($InputClamAVEnable -and $InputClamAVUnofficialAssetsUse.Count -gt 0) {
 	Write-Host -Object 'Register ClamAV unofficial asset.'
 	[Hashtable]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsRaw
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAsset/$ApplyIssue"
 	}
 }
-If ($InputYaraEnable -and $InputYaraUnofficialAssetsRaw.Count -gt 0) {
+If ($InputYaraEnable -and $InputYaraUnofficialAssetsUse.Count -gt 0) {
 	Write-Host -Object 'Register YARA unofficial asset.'
 	Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsRaw
 }
@@ -364,81 +354,54 @@ $(
 	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
 	Exit-GitHubActionsLogGroup
 }
-If ($InputTargets.Count -eq 0) {
-	Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
-	If ($InputGitIntegrate -and (Test-IsGitRepository)) {
-		Write-Host -Object 'Import Git metadata.'
-		[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($InputGitReverse)
-		If ($GitCommitsHash.Count -le 1) {
-			Write-GitHubActionsNotice -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
-		}
-		[UInt64]$GitCommitsPassCount = 0
-		For ([UInt64]$GitCommitsHashIndex = 0; $GitCommitsHashIndex -lt $GitCommitsHash.Count; $GitCommitsHashIndex += 1) {
-			[String]$GitCommitHash = $GitCommitsHash[$GitCommitsHashIndex]
-			[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
-			If ($InputGitLimit -gt 0 -and $GitCommitsPassCount -ge $InputGitLimit) {
-				Write-Host -Object "Reach the Git commits count limit, these Git commits are ignore: $(
-					@($GitCommitsHashIndex..($GitCommitsHash.Count - 1)) |
-						ForEach-Object -Process { "$($GitCommitsHash[$_]) [#$($_ + 1)/$($GitCommitsHash.Count)]" } |
-						Join-String -Separator ', '
-				)"
-				Break
-			}
-			$GitCommit = Get-GitCommitMeta -Index $GitCommitHash
-			If ($Null -ieq $GitCommit) {
-				Continue
-			}
-			If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $InputGitIgnores) {
-				Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
-				Continue
-			}
-			$GitCommitsPassCount += 1
-			Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
-			$GitCommit |
-				Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
-				Out-String -Width 120 |
-				Write-Host
-			Try {
-				git --no-pager checkout $GitCommitHash --force --quiet |
-					Write-GitHubActionsDebug
-				If ($LASTEXITCODE -ne 0) {
-					Throw "Exit code is ``$LASTEXITCODE``"
-				}
-			}
-			Catch {
-				Exit-GitHubActionsLogGroup
-				Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitHash)``: $_"
-				$StatisticsTotal.IssuesOperations += "Git/$GitCommitHash"
-				Continue
-			}
-			Exit-GitHubActionsLogGroup
-			Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
-		}
+Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
+If ($InputGitIntegrate -and (Test-IsGitRepository)) {
+	Write-Host -Object 'Get Git commits meta.'
+	[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($InputGitReverse)
+	If ($GitCommitsHash.Count -le 1) {
+		Write-GitHubActionsNotice -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 	}
-}
-Else {
-	$WorkspaceElements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force
-	If ($WorkspaceElements.Count -gt 0) {
-		Write-Host -Object 'Clean workspace.'
-		Try {
-			$WorkspaceElements |
-				Remove-Item -Recurse -Force -Confirm:$False
+	[UInt64]$GitCommitsPassCount = 0
+	For ([UInt64]$GitCommitsHashIndex = 0; $GitCommitsHashIndex -lt $GitCommitsHash.Count; $GitCommitsHashIndex += 1) {
+		[String]$GitCommitHash = $GitCommitsHash[$GitCommitsHashIndex]
+		[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
+		If ($InputGitLimit -gt 0 -and $GitCommitsPassCount -ge $InputGitLimit) {
+			Write-Host -Object "Reach the Git commits count limit, these Git commits are ignore: $(
+				@($GitCommitsHashIndex..($GitCommitsHash.Count - 1)) |
+					ForEach-Object -Process { "$($GitCommitsHash[$_]) [#$($_ + 1)/$($GitCommitsHash.Count)]" } |
+					Join-String -Separator ', '
+			)"
+			Break
 		}
-		Catch {
-			Write-GitHubActionsWarning -Message $_
-		}
-	}
-	For ([UInt64]$TargetsIndex = 0; $TargetsIndex -lt $InputTargets.Count; $TargetsIndex += 1) {
-		[String]$Target = $InputTargets[$TargetsIndex]
-		If (!(Test-StringIsUri -InputObject $Target)) {
-			Write-GitHubActionsWarning -Message "``$($Target.OriginalString)`` is not a valid URI!"
+		$GitCommit = Get-GitCommitMeta -Index $GitCommitHash
+		If ($Null -ieq $GitCommit) {
 			Continue
 		}
-		$NetworkTargetFilePath = Import-NetworkTarget -Target $Target
-		If ($Null -ine $NetworkTargetFilePath) {
-			Invoke-Tools -SessionId $Target.ToString() -SessionTitle "Remote Target $Target [#$($TargetsIndex + 1)/$($InputTargets.Count)]"
-			Remove-Item -LiteralPath $NetworkTargetFilePath -Force -Confirm:$False
+		If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $InputGitIgnores) {
+			Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
+			Continue
 		}
+		$GitCommitsPassCount += 1
+		Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
+		$GitCommit |
+			Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
+			Out-String -Width 120 |
+			Write-Host
+		Try {
+			git --no-pager checkout $GitCommitHash --force --quiet |
+				Write-GitHubActionsDebug
+			If ($LASTEXITCODE -ne 0) {
+				Throw "Exit code is ``$LASTEXITCODE``"
+			}
+		}
+		Catch {
+			Exit-GitHubActionsLogGroup
+			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitHash)``: $_"
+			$StatisticsTotal.IssuesOperations += "Git/$GitCommitHash"
+			Continue
+		}
+		Exit-GitHubActionsLogGroup
+		Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
 	}
 }
 If ($InputClamAVEnable) {
