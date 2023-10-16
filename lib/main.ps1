@@ -3,6 +3,11 @@ Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
+Enter-GitHubActionsLogGroup -Title 'Softwares Version: '
+Get-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Raw -Encoding 'UTF8NoBOM' |
+	ConvertFrom-Json -Depth 100 |
+	Format-List
+Exit-GitHubActionsLogGroup
 $InputDebugScript = Get-GitHubActionsInput -Name 'debug_script' -EmptyStringAsNull
 If ($Null -ine $InputDebugScript) {
 	Write-GitHubActionsNotice -Message 'Debug script exists! Only execute debug script.'
@@ -10,23 +15,18 @@ If ($Null -ine $InputDebugScript) {
 		Write-Host
 	Exit ($LASTEXITCODE ?? 0)
 }
-Enter-GitHubActionsLogGroup -Title 'Softwares Version: '
-Get-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Raw -Encoding 'UTF8NoBOM' |
-	ConvertFrom-Json -Depth 100 |
-	Format-List
-Exit-GitHubActionsLogGroup
 Write-Host -Object 'Initialize.'
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 Import-Module -Name (
 	@(
-		'splat-parameter',
+		'control',
 		'summary'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
-[Boolean]$InputClamAVEnable = ($Tools -icontains 'clamav' -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
-[Boolean]$InputClamAVUpdate = ($Tools -icontains 'clamav') ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
+[Boolean]$InputClamAVEnable = ($ToolHasClamAV -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
+[Boolean]$InputClamAVUpdate = ($ToolHasClamAV) ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
 [AllowEmptyCollection()][RegEx[]]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
@@ -34,7 +34,7 @@ $InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customa
 [AllowEmptyCollection()][RegEx[]]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
-[Boolean]$InputYaraEnable = ($Tools -icontains 'yara' -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
+[Boolean]$InputYaraEnable = ($ToolHasYara -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
 [AllowEmptyCollection()][RegEx[]]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'

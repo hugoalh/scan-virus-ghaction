@@ -2,7 +2,7 @@
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name (
 	@(
-		'splat-parameter'
+		'control'
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
@@ -10,46 +10,39 @@ Function Invoke-ClamAVScan {
 	[CmdletBinding()]
 	[OutputType([Hashtable])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements')][String[]]$Element
 	)
 	[Hashtable]$Result = @{
-		ErrorMessage = @()
-		Found = @()
+		Errors = @()
+		Founds = @()
 	}
-	$TargetListFile = New-TemporaryFile
-	Set-Content -LiteralPath $TargetListFile -Value (
-		$Target |
+	$ScanListFile = New-TemporaryFile
+	Set-Content -LiteralPath $ScanListFile -Value (
+		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	[String[]]$Output = @()
 	Try {
-		$Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($TargetListFile.FullName)`" --multiscan" |
+		$Output += Invoke-Expression -Command "clamdscan --fdpass --file-list=`"$($ScanListFile.FullName)`" --multiscan" |
 			Write-GitHubActionsDebug -PassThru
 	}
 	Catch {
-		$Result.ErrorMessage += $_
+		$Result.Errors += $_
+		$LASTEXITCODE = 0
 	}
 	Finally {
-		Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
+		Remove-Item -LiteralPath $ScanListFile -Force -Confirm:$False
 	}
-	<#
-	If ($Output.Count -gt 0) {
-		Write-GitHubActionsDebug -Message (
-			$Output |
-				Join-String -Separator "`n"
-		)
-	}
-	#>
 	ForEach ($OutputLine In (
 		$Output |
-			ForEach-Object -Process { $_ -ireplace "^$GitHubActionsWorkspaceRootRegEx", '' }
+			ForEach-Object -Process { $_ -ireplace "^$($CurrentWorkingDirectoryRegExEscape)[\\/]", '' }
 	)) {
 		If ($OutputLine -imatch '^[-=]+\s*SCAN SUMMARY\s*[-=]+$') {
 			Break
 		}
 		If (
-			($OutputLine -imatch ': OK$') -or
-			($OutputLine -imatch '^\s*$')
+			$OutputLine -imatch ': OK$' -or
+			$OutputLine -imatch '^\s*$'
 		) {
 			Continue
 		}
@@ -62,11 +55,11 @@ Function Invoke-ClamAVScan {
 			Continue
 		}
 		If ($OutputLine.Length -gt 0) {
-			$Result.ErrorMessage += $OutputLine
+			$Result.Errors += $OutputLine
 			Continue
 		}
 	}
-	Write-Output -InputObject $Result
+	Write-Output -InputObject ([PSCustomObject]$Result)
 }
 Function Register-ClamAVUnofficialAsset {
 	[CmdletBinding()]
@@ -74,8 +67,8 @@ Function Register-ClamAVUnofficialAsset {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Selections')][RegEx[]]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_CLAMAV -ChildPath $UnofficialAssetIndexFileName) @TsvParameters |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
+		Where-Object -FilterScript { $_.Type -ieq 'Signature' -and $_.Path.Length -gt 0 } |
 		ForEach-Object -Process { [PSCustomObject]@{
 			Type = $_.Type
 			Name = $_.Name
