@@ -55,17 +55,26 @@ jobs:
           [String]$RepositoriesInput = '${{github.event.inputs.repositories}}'
           [String[]]$RepositoriesRaw = @()
           If ($RepositoriesInput.Length -eq 0) {
-            For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
-              Try {
-                [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "$($Env:GITHUB_API_URL)/events?page=$($Page)&per_page=100" -Headers @{
-                  'Content-Type' = 'application/vnd.github+json'
-                  'X-GitHub-Api-Version' = '2022-11-28'
-                } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' |
-                  Select-Object -ExpandProperty 'Content' |
-                  ConvertFrom-Json -Depth 100
-                $RepositoriesRaw += $Response.repo.name
+            Try {
+              $RepositoriesRaw += gh api events?per_page=100 --paginate |
+                ConvertFrom-Json -Depth 100 |
+                Select-Object -ExpandProperty 'repo' |
+                Select-Object -ExpandProperty 'name'
+            }
+            Catch {
+              Write-Warning -Message "Use ``gh`` cause error: $_; Use the old way instead."
+              For ([UInt64]$Page = 1; $Page -le 3; $Page += 1) {
+                Try {
+                  [PSCustomObject[]]$Response = Invoke-WebRequest -Uri "$($Env:GITHUB_API_URL)/events?page=$($Page)&per_page=100" -Headers @{
+                    'Content-Type' = 'application/vnd.github+json'
+                    'X-GitHub-Api-Version' = '2022-11-28'
+                  } -MaximumRedirection 1 -MaximumRetryCount 2 -RetryIntervalSec 5 -Method 'Get' |
+                    Select-Object -ExpandProperty 'Content' |
+                    ConvertFrom-Json -Depth 100
+                  $RepositoriesRaw += $Response.repo.name
+                }
+                Catch {}
               }
-              Catch {}
             }
           }
           Else {
