@@ -19,7 +19,6 @@ Write-Host -Object 'Initialize.'
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
 Import-Module -Name (
 	@(
-		'internal',
 		'splat-parameter',
 		'summary'
 	) |
@@ -103,7 +102,7 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
 	Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`"."
-	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $Env:GITHUB_WORKSPACE -Recurse -Force |
+	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath ([System.Environment]::CurrentDirectory) -Recurse -Force |
 		Sort-Object -Property @('FullName') |
 		ForEach-Object -Process {
 			[Hashtable]$ElementObject = @{

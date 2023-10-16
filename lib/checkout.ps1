@@ -33,6 +33,23 @@ If ($Tools -icontains 'yara') {
 $SoftwaresVersionTable |
 	ConvertTo-Json -Depth 100 -Compress |
 	Set-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Confirm:$False -Encoding 'UTF8NoBOM'
+$CurrentWorkingDirectory = Get-Location
+Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ROOT
+git clone --depth 1 https://github.com/hugoalh/scan-virus-ghaction-assets.git asset
+Set-Location -LiteralPath $CurrentWorkingDirectory
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath '.git') -Recurse -Force -Confirm:$False
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath '.github') -Recurse -Force -Confirm:$False
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath '.gitattributes') -Recurse -Force -Confirm:$False
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath '.gitignore') -Recurse -Force -Confirm:$False
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath 'README.md') -Recurse -Force -Confirm:$False
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath '_updater.ps1') -Recurse -Force -Confirm:$False
+Remove-Item -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath '_updater_gitignore.txt') -Recurse -Force -Confirm:$False
+If ($Tools -inotcontains 'clamav') {
+	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -Recurse -Force -Confirm:$False
+}
+If ($Tools -inotcontains 'yara') {
+	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_YARA -Recurse -Force -Confirm:$False
+}
 Write-Host -Object 'Softwares Version: '
 [PSCustomObject]$SoftwaresVersionTable |
 	Format-List

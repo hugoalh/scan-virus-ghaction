@@ -7,9 +7,8 @@ If ($Tools.Count -eq 0) {
 }
 [Boolean]$ToolForceClamAV = $Tools.Count -eq 1 -and $Tools -icontains 'clamav'
 [Boolean]$ToolForceYara = $Tools.Count -eq 1 -and $Tools -icontains 'yara'
-[RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
 Export-ModuleMember -Variable @(
-	'GitHubActionsWorkspaceRootRegEx',
 	'ToolForceClamAV',
-	'ToolForceYara'
+	'ToolForceYara',
+	'Tools'
 )

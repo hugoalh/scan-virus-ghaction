@@ -33,7 +33,7 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -Index 0
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
-$Null = git --no-pager config --global --add 'safe.directory' $Env:GITHUB_WORKSPACE
+$Null = git --no-pager config --global --add 'safe.directory' ([System.Environment]::CurrentDirectory)
 Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
