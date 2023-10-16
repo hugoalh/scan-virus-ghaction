@@ -1,33 +1,15 @@
 #Requires -PSEdition Core -Version 7.2
-Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-If ($Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -inotin @('all', 'clamav', 'yara')) {
-	Write-GitHubActionsFail -Message 'Invalid environment variable `GHACTION_SCANVIRUS_BUNDLE_TOOL`!'
+[String[]]$Tools = ($Env:SCANVIRUS_GHACTION_TOOLS ?? '') -isplit ',' |
+	ForEach-Object -Process { $_.Trim() } |
+	Where-Object -FilterScript { $_.Length -gt 0 }
+If ($Tools.Count -eq 0) {
+	Write-Error -Message 'Invalid environment variable `SCANVIRUS_GHACTION_TOOLS`!' -ErrorAction 'Stop'
 }
-[Boolean]$AllBundle = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'all'
-[Boolean]$ClamAVForce = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'clamav'
-[Boolean]$YaraForce = $Env:GHACTION_SCANVIRUS_BUNDLE_TOOL -ieq 'yara'
-[Boolean]$ClamAVBundle = $AllBundle -or $ClamAVForce
-[Boolean]$YaraBundle = $AllBundle -or $YaraForce
+[Boolean]$ToolForceClamAV = $Tools.Count -eq 1 -and $Tools -icontains 'clamav'
+[Boolean]$ToolForceYara = $Tools.Count -eq 1 -and $Tools -icontains 'yara'
 [RegEx]$GitHubActionsWorkspaceRootRegEx = [RegEx]::Escape("$($Env:GITHUB_WORKSPACE)/")
-[Hashtable]$InvokeWebRequestParameters_Get = @{
-	MaximumRedirection = 1
-	MaximumRetryCount = 2
-	Method = 'Get'
-	RetryIntervalSec = 5
-}
-[Hashtable]$TsvParameters = @{
-	Delimiter = "`t"
-	Encoding = 'UTF8NoBOM'
-}
-[String]$UnofficialAssetIndexFileName = 'index.tsv'
 Export-ModuleMember -Variable @(
-	'AllBundle',
-	'ClamAVBundle',
-	'ClamAVForce',
 	'GitHubActionsWorkspaceRootRegEx',
-	'InvokeWebRequestParameters_Get',
-	'TsvParameters',
-	'UnofficialAssetIndexFileName',
-	'YaraBundle',
-	'YaraForce'
+	'ToolForceClamAV',
+	'ToolForceYara'
 )

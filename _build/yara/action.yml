@@ -2,6 +2,16 @@ name: "Scan Virus (YARA)(Build)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
+  yara_unofficialassets_use:
+    description: "{RegEx[]} YARA unofficial assets to use."
+    required: false
+  yara_customassets_directory:
+    description: "{String} YARA custom assets absolute directory path, must be a mapped directory on the container."
+    required: false
+  yara_customassets_use:
+    description: "{RegEx[]} YARA custom assets to use."
+    required: false
+    default: ".+"
   git_integrate:
     description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
     required: false
@@ -21,13 +31,6 @@ inputs:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
-  yara_unofficial_use:
-    description: "{RegEx[]} YARA unofficial assets to use."
-    required: false
-    default: ".+"
-  yara_unofficial_custom:
-    description: "{String} Custom YARA assets to use, by directory path which mapped directory on the container."
-    required: false
   ignores_pre:
     description: "{ScriptBlock} Ignores for the paths, sessions, and tools before the scan."
     required: false

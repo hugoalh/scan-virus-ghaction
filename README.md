@@ -61,11 +61,56 @@ jobs:
 > - **`/clamav@<Tag>`:** Scan current workspace with the ClamAV official assets
 > - **`/yara@<Tag>`:** Scan current workspace with the YARA unofficial assets
 
+### `clamav_enable`
+
+`<Boolean = True>` Whether to use ClamAV. When this is `False`, will ignore inputs:
+
+- [`clamav_update`](#clamav_update)
+- [`clamav_unofficialassets_use`](#clamav_unofficialassets_use)
+- [`clamav_customassets_directory`](#clamav_customassets_directory)
+- [`clamav_customassets_use`](#clamav_customassets_use)
+
+### `clamav_update`
+
+`<Boolean = True>` Whether to update the ClamAV official assets before scan anything.
+
+> **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
+
+### `clamav_unofficialassets_use`
+
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression of names in the ClamAV unofficial assets list, separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
+
+### `clamav_customassets_directory`
+
+`<String>` ClamAV custom assets absolute directory path, must be a mapped directory on the container (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
+
+### `clamav_customassets_use`
+
+`<RegEx[] = .+>` ClamAV custom assets to use, by regular expression of relative paths in the input [`clamav_customassets_directory`](#clamav_customassets_directory), separate each regular expression per line; By default, all of the ClamAV custom assets are in use.
+
+### `yara_enable`
+
+`<Boolean = False>` Whether to use YARA. When this is `False`, will ignore inputs:
+
+- [`yara_unofficialassets_use`](#yara_unofficialassets_use)
+- [`yara_customassets_directory`](#yara_customassets_directory)
+- [`yara_customassets_use`](#yara_customassets_use)
+
+### `yara_unofficialassets_use`
+
+`<RegEx[]>` YARA unofficial assets to use, by regular expression of names in the YARA unofficial assets list, separate each regular expression per line; By default, all of the YARA unofficial assets are not in use.
+
+### `yara_customassets_directory`
+
+`<String>` YARA custom assets absolute directory path, must be a mapped directory on the container (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
+
+### `yara_customassets_use`
+
+`<RegEx[] = .+>` YARA custom assets to use, by regular expression of relative paths in the input [`yara_customassets_directory`](#yara_customassets_directory), separate each regular expression per line; By default, all of the YARA custom assets are in use.
+
 ### `git_integrate`
 
-`<Boolean = False>` Whether to integrate with Git to perform scan by every commits; Require workspace is a Git repository.
-
-When this is `False`, will ignore inputs:
+`<Boolean = False>` Whether to integrate with Git to perform scan by every commits; Require workspace is a Git repository. When this is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
 - [`git_lfs`](#git_lfs)
@@ -84,7 +129,7 @@ Param([PSCustomObject]$GitCommitMeta)
 Return $Result
 ```
 
-For example, to ignore Git commits made by Dependabot, and ignore Git commits made by octocat before 2022/01/01:
+For example, to ignore Git commits made by Dependabot, and ignore Git commits made by OctoCat before 2022/01/01:
 
 ```yml
 git_ignores: |-
@@ -113,45 +158,6 @@ git_ignores: |-
 
 - **`False`:** From the newest commit to the oldest commit.
 - **`True`:** From the oldest commit to the newest commit.
-
-### `clamav_enable`
-
-`<Boolean = True>` Whether to use ClamAV.
-
-When this is `False`, will ignore inputs:
-
-- [`clamav_update`](#clamav_update)
-- [`clamav_unofficial_use`](#clamav_unofficial_use)
-- [`clamav_unofficial_custom`](#clamav_unofficial_custom)
-
-### `clamav_update`
-
-`<Boolean = True>` Whether to update the ClamAV official assets before scan anything.
-
-> **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
-
-### `clamav_unofficial_use`
-
-`<RegEx[]>` ClamAV unofficial assets to use, by regular expression and the ClamAV unofficial assets list, separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
-
-### `clamav_unofficial_custom`
-
-`<String>` Custom ClamAV assets to use, by directory path which mapped directory on the container (e.g.: `RUNNER_TEMP`).
-
-### `yara_enable`
-
-`<Boolean = False>` Whether to use YARA. When this is `False`, will ignore inputs:
-
-- [`yara_unofficial_use`](#yara_unofficial_use)
-- [`yara_unofficial_custom`](#yara_unofficial_custom)
-
-### `yara_unofficial_use`
-
-`<RegEx[] = .+>` YARA unofficial assets to use, by regular expression and the YARA unofficial assets list, separate each regular expression per line; By default, all of the YARA unofficial assets are in use.
-
-### `yara_unofficial_custom`
-
-`<String>` Custom YARA assets to use, by directory path which mapped directory on the container (e.g.: `RUNNER_TEMP`).
 
 ### `ignores_pre`
 

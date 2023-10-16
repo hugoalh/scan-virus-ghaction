@@ -58,7 +58,6 @@ jobs:
           clamav_unofficialassets: |-
             .+
           yara_enable: "True"
-          log_elements: "OnlyCurrent"
           summary_found: "None"
           summary_statistics: "Clone"
   clamav:

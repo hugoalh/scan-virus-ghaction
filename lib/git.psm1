@@ -1,11 +1,5 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name (
-	@(
-		'token'
-	) |
-		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
-) -Scope 'Local'
 [Hashtable[]]$GitCommitsProperties = @(
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Transform = {
 		Param ([String]$Item)
@@ -44,7 +38,6 @@ Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
-	Write-Host -Object 'Config Git LFS.'
 	Try {
 		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip' |
 			Write-GitHubActionsDebug
@@ -84,7 +77,7 @@ Function Get-GitCommitMeta {
 	)
 	Do {
 		Try {
-			[String]$DelimiterToken = "=====$(New-RandomToken)====="
+			[String]$DelimiterToken = "=====$((Get-Random -Minimum 0 -Maximum ([UInt64]::MaxValue)).ToString('X'))====="
 			[String[]]$Result = Invoke-Expression -Command "git --no-pager show --format=`"$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |

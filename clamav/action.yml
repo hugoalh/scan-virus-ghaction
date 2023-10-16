@@ -2,6 +2,20 @@ name: "Scan Virus (ClamAV)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
 inputs:
+  clamav_update:
+    description: "{Boolean} Whether to update the ClamAV official assets before scan anything."
+    required: false
+    default: "True"
+  clamav_unofficialassets_use:
+    description: "{RegEx[]} ClamAV unofficial assets to use."
+    required: false
+  clamav_customassets_directory:
+    description: "{String} ClamAV custom assets absolute directory path, must be a mapped directory on the container."
+    required: false
+  clamav_customassets_use:
+    description: "{RegEx[]} ClamAV custom assets to use."
+    required: false
+    default: ".+"
   git_integrate:
     description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
     required: false
@@ -21,16 +35,6 @@ inputs:
     description: "{Boolean} Whether to reverse the scan order of the Git commits."
     required: false
     default: "False"
-  clamav_update:
-    description: "{Boolean} Whether to update the ClamAV official assets before scan anything."
-    required: false
-    default: "True"
-  clamav_unofficial_use:
-    description: "{RegEx[]} ClamAV unofficial assets to use."
-    required: false
-  clamav_unofficial_custom:
-    description: "{String} Custom ClamAV assets to use, by directory path which mapped directory on the container."
-    required: false
   ignores_pre:
     description: "{ScriptBlock} Ignores for the paths, sessions, and tools before the scan."
     required: false

@@ -1,18 +1,20 @@
 # syntax=docker/dockerfile:1
 # <Note> Do not create big size layers due to GitHub Packages have worse performance on those!
 
+
+
 FROM debian:12.2
 
-# Variable for tools, must corresponding to install packages.
-ENV SCANVIRUS_GHACTION_TOOL_CLAMAV=true
-ENV SCANVIRUS_GHACTION_TOOL_YARA=false
+# Environment variable for tools, separate each name with comma (`,`) , must corresponding to install packages.
+ENV SCANVIRUS_GHACTION_TOOLS=clamav
 
-# Variable for paths.
+# Environment variables for paths.
 ENV SCANVIRUS_GHACTION_ROOT=/opt/hugoalh/scan-virus-ghaction
 ENV SCANVIRUS_GHACTION_ASSET_ROOT=${SCANVIRUS_GHACTION_ROOT}/asset
 ENV SCANVIRUS_GHACTION_ASSET_CLAMAV=${SCANVIRUS_GHACTION_ASSET_ROOT}/clamav
 ENV SCANVIRUS_GHACTION_ASSET_YARA=${SCANVIRUS_GHACTION_ASSET_ROOT}/yara
-ENV SCANVIRUS_GHACTION_LIB=${SCANVIRUS_GHACTION_ROOT}/lib
+ENV SCANVIRUS_GHACTION_LIB_ROOT=${SCANVIRUS_GHACTION_ROOT}/lib
+ENV SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE=${SCANVIRUS_GHACTION_ROOT}/softwares.json
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/7
@@ -38,6 +40,6 @@ RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHu
 COPY config/clamd.conf config/freshclam.conf ${SCANVIRUS_GHACTION_CLAMAV_CONFIG}/
 RUN freshclam --verbose
 
-COPY lib/ ${SCANVIRUS_GHACTION_LIB}/
-RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/check.ps1"]
+COPY lib/ ${SCANVIRUS_GHACTION_LIB_ROOT}/
+RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/checkout.ps1"]
 CMD ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/main.ps1"]
