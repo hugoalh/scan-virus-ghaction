@@ -113,7 +113,7 @@ If ($InputYaraEnable) {
 }
 If ($InputGitIntegrate -and !$InputGitLfs) {
 	Write-Host -Object 'Disable Git LFS process.'
-	Disable-InputGitLfsProcess
+	Disable-GitLfsProcess
 }
 If ($InputClamAVEnable -and $InputClamAVUpdate) {
 	Write-Host -Object 'Update ClamAV.'
