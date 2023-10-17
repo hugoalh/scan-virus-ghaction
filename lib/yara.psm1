@@ -7,6 +7,21 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [String[]]$RulesPath = @()
+$InvokeYaraParallelScriptBlock = {
+	Param ([String]$ScanListFilePath, [String]$RulePath)
+	$ErrorActionPreference = 'Continue'
+	[String[]]$Output = @()
+	Try {
+		$Output += yara --no-warnings --scan-list $RulePath $ScanListFilePath *>&1
+	}
+	Catch {
+		$Output += $_
+	}
+	Finally {
+		$LASTEXITCODE = 0
+	}
+	Write-Output -InputObject $Output -NoEnumerate
+}
 Function Invoke-Yara {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
@@ -22,24 +37,24 @@ Function Invoke-Yara {
 		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
-	[String[]]$Output = @()
 	ForEach ($RulePath In (
 		$RulesPath |
 			Select-Object -Unique
 	)) {
-		Try {
-			$Output += yara --no-warnings --scan-list $RulePath $ScanListFile.FullName *>&1 |
-				Write-GitHubActionsDebug -PassThru
-		}
-		Catch {
-			$Result.Errors += $_
-		}
-		Finally {
-			$LASTEXITCODE = 0
-		}
+		Start-Job -Name "Yara:$RulePath" -ScriptBlock $InvokeYaraParallelScriptBlock -ArgumentList @($ScanListFile.FullName, $RulePath)
 	}
+	Wait-Job -Name 'Yara:*'
 	Remove-Item -LiteralPath $ScanListFile -Force -Confirm:$False
+	[String[]]$Output = Get-Job -Name 'Yara:*' |
+		Receive-Job -AutoRemoveJob |
+		ForEach-Object -Process {
+			$_ |
+				Write-Output
+		}
 	ForEach ($OutputLine In $Output) {
+		If ($OutputLine -imatch '^\s*$') {
+			Continue
+		}
 		If ($OutputLine -imatch "^.+? $CurrentWorkingDirectoryRegExEscape.+$") {
 			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $CurrentWorkingDirectoryRegExEscape"
 			$Result.Founds += [PSCustomObject]@{
@@ -54,6 +69,27 @@ Function Invoke-Yara {
 		}
 	}
 	Write-Output -InputObject ([PSCustomObject]$Result)
+}
+Function Register-YaraCustomAsset {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$RootPath,
+		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Selection
+	)
+	[RegEx]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
+	[String[]]$RootChildItem = Get-ChildItem -LiteralPath $RootPath -Recurse -Force -File |
+		Where-Object -FilterScript { $_.Extension -iin @(
+			'.yar',
+			'.yara',
+			'.yarac',
+			'.yarc'
+		) } |
+		ForEach-Object -Process { $_.FullName -ireplace $RootPathRegExEscape, '' }
+	[String[]]$RootChildItemSelect = $RootChildItem |
+		Where-Object -FilterScript { $_ -imatch $Selection }
+	$Script:RulesPath += $RootChildItemSelect |
+		ForEach-Object -Process { Join-Path -Path $RootPath -ChildPath $_ }
 }
 Function Register-YaraUnofficialAsset {
 	[CmdletBinding()]

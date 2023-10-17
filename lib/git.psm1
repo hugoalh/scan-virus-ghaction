@@ -62,11 +62,11 @@ Function Get-GitCommitIndex {
 					Join-String -Separator "`n"
 			)
 		}
-		Write-Output -InputObject $Result
+		Write-Output -InputObject $Result -NoEnumerate
 	}
 	Catch {
 		Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
-		Write-Output -InputObject @()
+		Write-Output -InputObject @() -NoEnumerate
 	}
 }
 Function Get-GitCommitMeta {
@@ -120,8 +120,7 @@ Function Get-GitCommitMeta {
 			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
 		}
 	}
-	[PSCustomObject]$GitCommitMeta |
-		Write-Output
+	Write-Output -InputObject ([PSCustomObject]$GitCommitMeta)
 }
 Function Test-IsGitRepository {
 	[CmdletBinding()]
@@ -131,7 +130,7 @@ Function Test-IsGitRepository {
 		[String]$Result = git --no-pager rev-parse --is-inside-work-tree *>&1 |
 			Join-String -Separator "`n"
 		If ($Result -ine 'True') {
-			Throw 'Workspace is not a Git repository!'
+			Throw 'Current working directory is not a Git repository!'
 		}
 		Write-Output -InputObject $True
 	}

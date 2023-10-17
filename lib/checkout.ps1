@@ -8,7 +8,7 @@ Import-Module -Name (
 ) -Scope 'Local'
 $SoftwaresVersionTable = [Ordered]@{
 	'PowerShell' = $PSVersionTable.PSVersion.ToString()
-	'PowerShell/Gallery:hugoalh.GitHubActionsToolkit' = Get-InstalledModule -Name 'hugoalh.GitHubActionsToolkit' -AllVersions |
+	"PowerShell/Gallery:`nhugoalh.GitHubActionsToolkit" = Get-InstalledModule -Name 'hugoalh.GitHubActionsToolkit' -AllVersions |
 		Select-Object -ExpandProperty 'Version' |
 		Join-String -Separator ', '
 	'Git' = git --version |

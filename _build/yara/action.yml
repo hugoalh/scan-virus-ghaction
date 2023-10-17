@@ -1,6 +1,6 @@
 name: "Scan Virus (YARA)(Build)"
 author: "hugoalh"
-description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
+description: "Scan virus (including malicious file and malware)."
 inputs:
   yara_unofficialassets_use:
     description: "{RegEx[]} YARA unofficial assets to use."

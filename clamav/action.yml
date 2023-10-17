@@ -1,6 +1,6 @@
 name: "Scan Virus (ClamAV)"
 author: "hugoalh"
-description: "Scan virus (including malicious file and malware) in the GitHub Action workspace."
+description: "Scan virus (including malicious file and malware)."
 inputs:
   clamav_update:
     description: "{Boolean} Whether to update the ClamAV official assets before scan anything."

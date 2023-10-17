@@ -3,6 +3,30 @@ Using Module .\statistics.psm1
 $Script:ErrorActionPreference = 'Stop'
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Test-GitHubActionsEnvironment -Mandatory
+Function Invoke-ProtectiveScriptBlock {
+	[CmdletBinding()]
+	[OutputType([Boolean])]
+	Param (
+		[Parameter(Mandatory = $True, Position = 0)][String]$Name,
+		[Parameter(Mandatory = $True, Position = 1)][AllowNull()][ScriptBlock]$ScriptBlock,
+		[Parameter(Mandatory = $True, Position = 2)][Object[]]$ArgumentList
+	)
+	If ($Null -ieq $ScriptBlock) {
+		Write-Output -InputObject $False
+		Return
+	}
+	Try {
+		$Result = Invoke-Command -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
+		If ($Result -is [Boolean]) {
+			Write-Output -InputObject $Result
+			Return
+		}
+		Write-GitHubActionsFail -Message "Unexpected issues with script block ``$Name``: Result is not a boolean!"
+	}
+	Catch {
+		Write-GitHubActionsFail -Message "Unexpected issues with script block ``$Name``: $_"
+	}
+}
 Enter-GitHubActionsLogGroup -Title 'Softwares Version: '
 Get-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Raw -Encoding 'UTF8NoBOM' |
 	ConvertFrom-Json -Depth 100 |
@@ -72,6 +96,9 @@ If ($Null -ne $InputIgnoresPostRaw) {
 [Boolean]$InputFoundSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'found_summary' -Mandatory -EmptyStringAsNull))
 [Boolean]$InputStatisticsLog = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_log' -Mandatory -EmptyStringAsNull))
 [Boolean]$InputStatisticsSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_summary' -Mandatory -EmptyStringAsNull))
+[RegEx]$InputDebugListElements = ((Get-GitHubActionsInput -Name 'debug_listelements' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+	Where-Object -FilterScript { $_.Length -gt 0 } |
+	Join-String -Separator '|'
 If (!$InputClamAVEnable -and !$InputYaraEnable) {
 	Write-GitHubActionsFail -Message 'No tools are enabled!'
 }
@@ -85,94 +112,90 @@ If ($InputYaraEnable) {
 	Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'yara.psm1') -Scope 'Local'
 }
 If ($InputGitIntegrate -and !$InputGitLfs) {
+	Write-Host -Object 'Disable Git LFS process.'
 	Disable-InputGitLfsProcess
 }
 If ($InputClamAVEnable -and $InputClamAVUpdate) {
+	Write-Host -Object 'Update ClamAV.'
 	Update-ClamAV
 }
-If ($InputClamAVEnable -and $InputClamAVUnofficialAssetsUse.Count -gt 0) {
+If ($InputClamAVEnable -and $InputClamAVUnofficialAssetsUse.ToString().Length -gt 0) {
 	Write-Host -Object 'Register ClamAV unofficial asset.'
-	[Hashtable]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsRaw
+	[PSCustomObject]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsUse
 	ForEach ($ApplyIssue In $Result.ApplyIssues) {
 		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAsset/$ApplyIssue"
 	}
 }
-If ($InputYaraEnable -and $InputYaraUnofficialAssetsUse.Count -gt 0) {
+If ($InputYaraEnable -and $InputYaraUnofficialAssetsUse.ToString().Length -gt 0) {
 	Write-Host -Object 'Register YARA unofficial asset.'
 	Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsRaw
 }
 If ($InputClamAVEnable) {
+	Write-Host -Object 'Start ClamAV daemon.'
 	Start-ClamAVDaemon
 }
 Function Invoke-Tools {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][String]$SessionId,
-		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
+		[Parameter(Mandatory = $True, Position = 0)][String]$SessionName,
+		[Parameter(Mandatory = $True, Position = 1)][AllowNull()][PSCustomObject]$Meta
 	)
-	Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`"."
-	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath ([System.Environment]::CurrentDirectory) -Recurse -Force |
+	Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionName`"."
+	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $CurrentWorkingDirectory -Recurse -Force |
 		Sort-Object -Property @('FullName') |
 		ForEach-Object -Process {
 			[Hashtable]$ElementObject = @{
 				FullName = $_.FullName
-				Path = $_.FullName -ireplace "^$GitHubActionsWorkspaceRootRegEx", ''
+				Path = $_.FullName -ireplace "^$CurrentWorkingDirectoryRegExEscape", ''
 				Size = $_.Length
 				IsDirectory = $_.PSIsContainer
 			}
-			$ElementObject.SkipAll = $ElementObject.IsDirectory -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+			$ElementObject.SkipClamAV = !$InputClamAVEnable -or $ElementObject.IsDirectory -or (Invoke-ProtectiveScriptBlock -Name 'ignores_pre' -ScriptBlock $InputIgnoresPre -ArgumentList @($SessionName, ([PSCustomObject]@{
 				Path = $ElementObject.Path
-				Session = $SessionId
-			}) -Combination @(
-				@('Path'),
-				@('Path', 'Session')
-			) -Ignore $InputIgnores)
-			$ElementObject.SkipClamAV = $ElementObject.SkipAll -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
-				Path = $ElementObject.Path
-				Session = $SessionId
+				Session = [PSCustomObject]@{
+					Name = $SessionName
+					GitCommitMeta = $Meta
+				}
 				Tool = 'clamav'
-			}) -Combination @(
-				@('Path', 'Tool'),
-				@('Path', 'Session', 'Tool')
-			) -Ignore $InputIgnores)
-			$ElementObject.SkipYara = $ElementObject.SkipAll -or (Test-ElementIsIgnore -Element ([PSCustomObject]@{
+			})))
+			$ElementObject.SkipYara = !$InputYaraEnable -or $ElementObject.IsDirectory -or (Invoke-ProtectiveScriptBlock -Name 'ignores_pre' -ScriptBlock $InputIgnoresPre -ArgumentList @($SessionName, ([PSCustomObject]@{
 				Path = $ElementObject.Path
-				Session = $SessionId
+				Session = [PSCustomObject]@{
+					Name = $SessionName
+					GitCommitMeta = $Meta
+				}
 				Tool = 'yara'
-			}) -Combination @(
-				@('Path', 'Tool'),
-				@('Path', 'Session', 'Tool')
-			) -Ignore $InputIgnores)
+			})))
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
 			}
-			If (!$ElementObject.SkipClamAV -and $InputClamAVEnable) {
+			If (!$ElementObject.SkipClamAV) {
 				$ElementFlags += 'C'
 			}
-			If (!$ElementObject.SkipYara -and $InputYaraEnable) {
+			If (!$ElementObject.SkipYara) {
 				$ElementFlags += 'Y'
 			}
 			$ElementObject.Flag = $ElementFlags |
 				Sort-Object |
 				Join-String -Separator ''
-			[PSCustomObject]$ElementObject |
-				Write-Output
+			Write-Output -InputObject ([PSCustomObject]$ElementObject)
 		}
 	If ($Elements.Count -eq 0){
-		Write-GitHubActionsError -Message @"
-Unable to scan session `"$SessionTitle`": Workspace is empty!
+		[String]$Message = @"
+Unable to scan session `"$SessionName`": Empty!
 If this is incorrect, probably something went wrong.
 "@
-		$Script:StatisticsTotal.IssuesOperations += "Workspace/$SessionId"
+		Write-GitHubActionsError -Message $Message
+		$Script:StatisticsTotal.IssuesOperations += $Message
 		Exit-GitHubActionsLogGroup
 		Return
 	}
 	[ScanVirusStatistics]$StatisticsSession = [ScanVirusStatistics]::new()
 	$StatisticsSession.ElementDiscover = $Elements.Count
 	$StatisticsSession.ElementScan = $Elements |
-		Where-Object -FilterScript { !$_.SkipAll } |
+		Where-Object -FilterScript { !$_.SkipClamAV -or !$_.SkipYara } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	$StatisticsSession.ElementClamAV = $InputClamAVEnable ? (
@@ -191,7 +214,7 @@ If this is incorrect, probably something went wrong.
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
 	$StatisticsSession.SizeScan = $Elements |
-		Where-Object -FilterScript { !$_.SkipAll } |
+		Where-Object -FilterScript { !$_.SkipClamAV -or !$_.SkipYara } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
 	$StatisticsSession.SizeClamAV = $InputClamAVEnable ? (
@@ -219,10 +242,7 @@ If this is incorrect, probably something went wrong.
 	Catch {
 		$Script:StatisticsTotal.IsOverflow = $True
 	}
-	If ((Get-GitHubActionsIsDebug) -and (
-		$LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::All).GetHashCode() -or
-		($LogElements.GetHashCode() -eq ([ScanVirusLogElementsChoices]::OnlyCurrent).GetHashCode() -and $SessionId -ieq 'current')
-	)) {
+	If ($InputDebugListElements.ToString().Length -gt 0 -and $SessionName -imatch $InputDebugListElements) {
 		$Elements |
 			Format-Table -Property @(
 				@{ Name = ''; Expression = 'Flag' },
@@ -230,67 +250,55 @@ If this is incorrect, probably something went wrong.
 				'Path'
 			) -AutoSize:$False -Wrap |
 			Out-String -Width 120 |
-			Write-Host
+			Write-GitHubActionsDebug
 	}
-	[PSCustomObject[]]$ResultFound = @()
+	[PSCustomObject[]]$ResultFounds = @()
 	If ($InputClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
-		Write-Host -Object 'Scan elements via ClamAV.'
-		Try {
-			[Hashtable]$Result = Invoke-ClamAVScan -Target (
-				$Elements |
-					Where-Object -FilterScript { !$_.SkipClamAV } |
-					Select-Object -ExpandProperty 'FullName'
-			)
-			If ($Result.ErrorMessage.Count -gt 0) {
-				Write-GitHubActionsError -Message @"
-Unexpected issue in session `"$SessionTitle`" via ClamAV:
+		Write-Host -Object 'Scan via ClamAV.'
+		[PSCustomObject]$Result = Invoke-ClamAVScan -Element (
+			$Elements |
+				Where-Object -FilterScript { !$_.SkipClamAV } |
+				Select-Object -ExpandProperty 'FullName'
+		)
+		If ($Result.Errors.Count -gt 0) {
+			Write-GitHubActionsError -Message @"
+Unexpected issue in session `"$SessionName`" via ClamAV:
 
 $(
-	$Result.ErrorMessage |
-		Join-String -Separator "`n" -FormatString '- {0}'
+$Result.Errors |
+	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-				$Script:StatisticsTotal.IssuesOperations += "$SessionId/ClamAV"
-			}
-			$ResultFound += $Result.Found
+			$Script:StatisticsTotal.IssuesOperations += $Result.Errors
 		}
-		Catch {
-			Write-GitHubActionsError -Message $_
-			$Script:StatisticsTotal.IssuesOperations += "$SessionId/ClamAV"
-		}
+		$ResultFounds += $Result.Founds
 	}
 	If ($InputYaraEnable -and $StatisticsSession.ElementYara -gt 0) {
-		Write-Host -Object 'Scan elements via YARA.'
-		Try {
-			[Hashtable]$Result = Invoke-Yara -Target (
-				$Elements |
-					Where-Object -FilterScript { !$_.SkipYara } |
-					Select-Object -ExpandProperty 'FullName'
-			)
-			If ($Result.ErrorMessage.Count -gt 0) {
-				Write-GitHubActionsError -Message @"
-Unexpected issue in session `"$SessionTitle`" via YARA:
+		Write-Host -Object 'Scan via YARA.'
+		[PSCustomObject]$Result = Invoke-Yara -Element (
+			$Elements |
+				Where-Object -FilterScript { !$_.SkipYara } |
+				Select-Object -ExpandProperty 'FullName'
+		)
+		If ($Result.Errors.Count -gt 0) {
+			Write-GitHubActionsError -Message @"
+Unexpected issue in session `"$SessionName`" via YARA:
 
 $(
-	$Result.ErrorMessage |
-		Join-String -Separator "`n" -FormatString '- {0}'
+$Result.Errors |
+	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-				$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
-			}
-			$ResultFound += $Result.Found
+			$Script:StatisticsTotal.IssuesOperations += $Result.Errors
 		}
-		Catch {
-			Write-GitHubActionsError -Message $_
-			$Script:StatisticsTotal.IssuesOperations += "$SessionId/YARA"
-		}
+		$ResultFounds += $Result.Founds
 	}
-	$StatisticsSession.ElementFound = $ResultFound.Element |
+	$StatisticsSession.ElementFound = $ResultFounds.Element |
 		Select-Object -Unique |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
 	$StatisticsSession.SizeFound = $Elements |
-		Where-Object -FilterScript { $_.Path -iin $ResultFound.Element } |
+		Where-Object -FilterScript { $_.Path -iin $ResultFounds.Element } |
 		Select-Object -ExpandProperty 'Size' |
 		Measure-Object -Sum |
 		Select-Object -ExpandProperty 'Sum'
@@ -301,31 +309,29 @@ $(
 	Catch {
 		$Script:StatisticsTotal.IsOverflow = $True
 	}
-	[PSCustomObject[]]$ResultFoundResolve = $ResultFound |
+	[PSCustomObject[]]$ResultFoundResolve = $ResultFounds |
 		Group-Object -Property @('Element', 'Symbol') -NoElement |
 		ForEach-Object -Process {
 			[String]$Element, [String]$Symbol = $_.Name -isplit ', '
-			[PSCustomObject]@{
+			Write-Output -InputObject ([PSCustomObject]@{
 				Path = $Element
 				Symbol = $Symbol
 				Hit = $_.Count
-				IsIgnore = Test-ElementIsIgnore -Element ([PSCustomObject]@{
+				IsIgnore = Invoke-ProtectiveScriptBlock -Name 'ignores_post' -ScriptBlock $InputIgnoresPost -ArgumentList @($SessionName, ([PSCustomObject]@{
 					Path = $Element
-					Session = $SessionId
+					Session = [PSCustomObject]@{
+						Name = $SessionName
+						GitCommitMeta = $Meta
+					}
 					Symbol = $Symbol
-				}) -Combination @(
-					@('Symbol'),
-					@('Path', 'Symbol'),
-					@('Path', 'Session', 'Symbol')
-				) -Ignore $InputIgnores
-			} |
-				Write-Output
+				}))
+			})
 		} |
 		Sort-Object -Property @('Path', 'Symbol') |
 		Sort-Object -Property @('Hit') -Descending |
 		Sort-Object -Property @('IsIgnore')
 	If ($ResultFoundResolve.Count -gt 0) {
-		If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
+		If ($InputFoundLog) {
 			$ResultFoundResolve |
 				Format-Table -Property @(
 					@{ Name = ''; Expression = { $_.IsIgnore ? '🟡' : '🔴' } },
@@ -336,7 +342,7 @@ $(
 				Out-String -Width 120 |
 				Write-Host
 		}
-		If ($SummaryFound.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
+		If ($InputFoundSummary) {
 			Add-StepSummaryFound -Session $SessionId -Issue (
 				$ResultFoundResolve |
 					ForEach-Object -Process { [PSCustomObject]@{
@@ -354,16 +360,16 @@ $(
 				Select-Object -ExpandProperty 'Count'
 		) -gt 0) {
 			$Script:StatisticsTotal.IssuesSessions += $SessionId
-			Write-GitHubActionsError -Message "Found in session `"$SessionTitle`"!"
+			Write-GitHubActionsError -Message "Found in session `"$SessionName`"!"
 		}
 		Else {
-			Write-GitHubActionsWarning -Message "Found in session `"$SessionTitle`" but ignored!"
+			Write-GitHubActionsWarning -Message "Found in session `"$SessionName`" but ignored!"
 		}
 	}
 	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
 	Exit-GitHubActionsLogGroup
 }
-Invoke-Tools -SessionId 'current' -SessionTitle 'Current'
+Invoke-Tools -SessionName 'Current' -Meta $Null
 If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 	Write-Host -Object 'Get Git commits meta.'
 	[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($InputGitReverse)
@@ -386,7 +392,7 @@ If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 		If ($Null -ieq $GitCommit) {
 			Continue
 		}
-		If (Test-GitCommitIsIgnore -GitCommit $GitCommit -Ignore $InputGitIgnores) {
+		If (Invoke-ProtectiveScriptBlock -Name 'git_ignores' -ScriptBlock $InputGitIgnores -ArgumentList @($GitCommit)) {
 			Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
 			Continue
 		}
@@ -410,16 +416,17 @@ If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 			Continue
 		}
 		Exit-GitHubActionsLogGroup
-		Invoke-Tools -SessionId $GitCommitHash -SessionTitle "Git Commit $GitSessionTitle"
+		Invoke-Tools -SessionName $GitCommitHash -Meta $GitCommit
 	}
 }
 If ($InputClamAVEnable) {
+	Write-Host -Object 'Stop ClamAV daemon.'
 	Stop-ClamAVDaemon
 }
-If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::Redirect).GetHashCode()) {
+If ($InputStatisticsLog) {
 	$StatisticsTotal.StatisticsDisplay()
 }
-If ($SummaryStatistics.GetHashCode() -ne ([ScanVirusStepSummaryChoices]::None).GetHashCode()) {
+If ($InputStatisticsSummary) {
 	$StatisticsTotal.StatisticsSummary()
 }
 Set-GitHubActionsOutput -Name 'finish' -Value $True.ToString().ToLower()

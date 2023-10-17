@@ -152,7 +152,7 @@ Function Register-ClamAVUnofficialAsset {
 		Write-GitHubActionsDebug
 	$IndexTable |
 		Format-Table -Property @(
-			@{ Name = ''; Expression = { ($_.Name -iin $IndexRegister) ? '+' : '' } },
+			@{ Name = ''; Expression = { ($_.Name -iin $IndexTableSelect.Name) ? '+' : '' } },
 			'Type',
 			'Name'
 		) -AutoSize:$False -Wrap |
@@ -184,7 +184,7 @@ Function Start-ClamAVDaemon {
 			Write-GitHubActionsDebug
 	}
 	Catch {
-		Write-GitHubActionsFail -Message "Unexpected issues when start ClamAV daemon: $_"
+		Write-GitHubActionsFail -Message "Unable to start ClamAV daemon: $_"
 	}
 }
 Function Stop-ClamAVDaemon {
@@ -204,7 +204,7 @@ Function Update-ClamAV {
 	}
 	Catch {
 		Write-GitHubActionsWarning -Message @"
-Unexpected issues when update ClamAV: $_
+Unable to update ClamAV: $_
 This is fine, but the local assets maybe outdated.
 "@
 	}

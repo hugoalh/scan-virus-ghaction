@@ -7,7 +7,7 @@
 |:-:|:-:|:-:|:-:|
 | [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction) | [![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=&logoColor=ffffff&style=flat-square "GitHub Stars")](https://github.com/hugoalh/scan-virus-ghaction/stargazers) \| ![GitHub Total Downloads](https://img.shields.io/github/downloads/hugoalh/scan-virus-ghaction/total?label=&style=flat-square "GitHub Total Downloads") | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=&style=flat-square "GitHub Latest Release Version") (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Release Date")) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=&style=flat-square "GitHub Latest Pre-Release Version") (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Pre-Release Date")) |
 
-A GitHub Action to scan virus (including malicious file and malware) in the GitHub Action workspace.
+A GitHub Action to scan virus (including malicious file and malware).
 
 > **⚠️ Important:** This documentation is v0.20.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
@@ -57,9 +57,9 @@ jobs:
 
 > **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to:
 >
-> - **`@<Tag>`:** Scan current workspace with the ClamAV official assets
-> - **`/clamav@<Tag>`:** Scan current workspace with the ClamAV official assets
-> - **`/yara@<Tag>`:** Scan current workspace with the YARA unofficial assets
+> - **`@<Tag>`:** Scan with the ClamAV official assets
+> - **`/clamav@<Tag>`:** Scan with the ClamAV official assets
+> - **`/yara@<Tag>`:** Scan with the YARA unofficial assets
 
 ### `clamav_enable`
 
@@ -78,7 +78,7 @@ jobs:
 
 ### `clamav_unofficialassets_use`
 
-`<RegEx[]>` ClamAV unofficial assets to use, by regular expression of names in the ClamAV unofficial assets list, separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression of names in the [ClamAV unofficial assets list](https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav/index.tsv), separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
 
 ### `clamav_customassets_directory`
 
@@ -98,7 +98,7 @@ jobs:
 
 ### `yara_unofficialassets_use`
 
-`<RegEx[]>` YARA unofficial assets to use, by regular expression of names in the YARA unofficial assets list, separate each regular expression per line; By default, all of the YARA unofficial assets are not in use.
+`<RegEx[]>` YARA unofficial assets to use, by regular expression of names in the [YARA unofficial assets list](https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara/index.tsv), separate each regular expression per line; By default, all of the YARA unofficial assets are not in use.
 
 ### `yara_customassets_directory`
 
@@ -110,7 +110,7 @@ jobs:
 
 ### `git_integrate`
 
-`<Boolean = False>` Whether to integrate with Git to perform scan by every commits; Require workspace is a Git repository. When this is `False`, will ignore inputs:
+`<Boolean = False>` Whether to integrate with Git to perform scan by every commits; Require directory is a Git repository. When this is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
 - [`git_lfs`](#git_lfs)
@@ -224,10 +224,10 @@ Return $Result
 
 ```ps1
 [PSCustomObject]$ElementPreMeta = @{
-  Path = [String] # Relative path based on GitHub Action workspace without `./` (e.g.: `relative/path/to/file.extension`).
+  Path = [String] # Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
   Session = [PSCustomObject]@{
-    IsGitCommit = [Boolean] # Whether this session is on a Git commit; `$False` for "Current" session.
-    GitCommitMeta = $GitCommitMeta -or $Null # Git commit meta, only exists when this session is on a Git commit.
+    Name = [String] # "Current" or Git commit hash.
+    GitCommitMeta = $GitCommitMeta -or $Null # Git commit meta, only exists when the session is on a Git commit.
   }
   Tool = [String] # Tool ID.
 }
@@ -237,10 +237,10 @@ Return $Result
 
 ```ps1
 [PSCustomObject]$ElementPostMeta = @{
-  Path = [String] # Relative path based on GitHub Action workspace without `./` (e.g.: `relative/path/to/file.extension`).
+  Path = [String] # Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
   Session = [PSCustomObject]@{
-    IsGitCommit = [Boolean] # Whether this session is on a Git commit; `$False` for "Current" session.
-    GitCommitMeta = $GitCommitMeta -or $Null # Git commit meta, only exists when this session is on a Git commit.
+    Name = [String] # "Current" or Git commit hash.
+    GitCommitMeta = $GitCommitMeta -or $Null # Git commit meta, only exists when the session is on a Git commit.
   }
   Symbol = [String] # Rule or signature.
   Tool = [String] # Tool ID.
