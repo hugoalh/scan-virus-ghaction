@@ -6,79 +6,69 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
-[PSCustomObject[]]$UnofficialAssetIndexTable = @()
+[String[]]$RulesPath = @()
 Function Invoke-Yara {
 	[CmdletBinding()]
-	[OutputType([Hashtable])]
+	[OutputType([PSCustomObject])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][Alias('Targets')][String[]]$Target
+		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements')][String[]]$Element
 	)
 	[Hashtable]$Result = @{
-		ErrorMessage = @()
-		Found = @()
+		Errors = @()
+		Founds = @()
 	}
-	$TargetListFile = New-TemporaryFile
-	Set-Content -LiteralPath $TargetListFile -Value (
-		$Target |
+	$ScanListFile = New-TemporaryFile
+	Set-Content -LiteralPath $ScanListFile -Value (
+		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	[String[]]$Output = @()
-	ForEach ($_A In (
-		$UnofficialAssetIndexTable |
-			Where-Object -FilterScript { $_.Select }
+	ForEach ($RulePath In (
+		$RulesPath |
+			Select-Object -Unique
 	)) {
 		Try {
-			$Output += Invoke-Expression -Command "yara --no-warnings --scan-list `"$($_A.FilePath)`" `"$($TargetListFile.FullName)`"" |
+			$Output += yara --no-warnings --scan-list $RulePath $ScanListFile.FullName *>&1 |
 				Write-GitHubActionsDebug -PassThru
 		}
 		Catch {
-			$Result.ErrorMessage += $_
+			$Result.Errors += $_
+		}
+		Finally {
+			$LASTEXITCODE = 0
 		}
 	}
-	Remove-Item -LiteralPath $TargetListFile -Force -Confirm:$False
-	<#
-	If ($Output.Count -gt 0) {
-		Write-GitHubActionsDebug -Message (
-			$Output |
-				Join-String -Separator "`n"
-		)
-	}
-	#>
+	Remove-Item -LiteralPath $ScanListFile -Force -Confirm:$False
 	ForEach ($OutputLine In $Output) {
-		If ($OutputLine -imatch "^.+? $GitHubActionsWorkspaceRootRegEx.+$") {
-			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $GitHubActionsWorkspaceRootRegEx"
-			$Result.Found += [PSCustomObject]@{
+		If ($OutputLine -imatch "^.+? $CurrentWorkingDirectoryRegExEscape.+$") {
+			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $CurrentWorkingDirectoryRegExEscape"
+			$Result.Founds += [PSCustomObject]@{
 				Element = $Element
 				Symbol = $Symbol
 			}
 			Continue
 		}
 		If ($OutputLine.Length -gt 0) {
-			$Result.ErrorMessage += $OutputLine
+			$Result.Errors += $OutputLine
 			Continue
 		}
 	}
-	Write-Output -InputObject $Result
+	Write-Output -InputObject ([PSCustomObject]$Result)
 }
 Function Register-YaraUnofficialAsset {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject[]])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][AllowEmptyCollection()][Alias('Selections')][RegEx[]]$Selection
+		[Parameter(Mandatory = $True, Position = 0)][RegEx]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_YARA -ChildPath $UnofficialAssetIndexFileName) @TsvParameters |
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_YARA -ChildPath 'index.tsv') @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
-		ForEach-Object -Process { [PSCustomObject]@{
-			Type = $_.Type
-			Name = $_.Name
-			FilePath = Join-Path -Path $Env:GHACTION_SCANVIRUS_PROGRAM_ASSET_YARA -ChildPath $_.Path
-			Select = Test-StringMatchRegEx -Item $_.Name -Matcher $Selection
-		} } |
 		Sort-Object -Property @('Type', 'Name')
+	[PSCustomObject[]]$IndexTableSelect = $IndexTable |
+		Where-Object -FilterScript { $_.Name -imatch $Selection }
 	[PSCustomObject]@{
 		All = $IndexTable.Count
-		Select = $IndexTable |
-			Where-Object -FilterScript { $_.Select } |
+		Select = $IndexTableSelect |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
 	} |
@@ -87,13 +77,14 @@ Function Register-YaraUnofficialAsset {
 		Write-GitHubActionsDebug
 	$IndexTable |
 		Format-Table -Property @(
-			@{ Name = ''; Expression = { $_.Select ? '+' : '' } },
+			@{ Name = ''; Expression = { ($_.Name -iin $IndexTableSelect.Name) ? '+' : '' } },
 			'Type',
 			'Name'
 		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
 		Write-GitHubActionsDebug
-	$Script:UnofficialAssetIndexTable += $IndexTable
+	$Script:RulesPath += $IndexTableSelect |
+		ForEach-Object -Process { Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_YARA -ChildPath $_.Path }
 }
 Export-ModuleMember -Function @(
 	'Invoke-Yara',

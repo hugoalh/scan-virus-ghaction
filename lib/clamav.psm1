@@ -8,7 +8,7 @@ Import-Module -Name (
 ) -Scope 'Local'
 Function Invoke-ClamAVScan {
 	[CmdletBinding()]
-	[OutputType([Hashtable])]
+	[OutputType([PSCustomObject])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements')][String[]]$Element
 	)
@@ -48,7 +48,7 @@ Function Invoke-ClamAVScan {
 		}
 		If ($OutputLine -imatch ': .+ FOUND$') {
 			[String]$Element, [String]$Symbol = ($OutputLine -ireplace ' FOUND$', '') -isplit '(?<=^.+?): '
-			$Result.Found += [PSCustomObject]@{
+			$Result.Founds += [PSCustomObject]@{
 				Element = $Element
 				Symbol = $Symbol
 			}
