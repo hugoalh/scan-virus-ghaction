@@ -57,7 +57,7 @@ Function Invoke-Yara {
 }
 Function Register-YaraUnofficialAsset {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject[]])]
+	[OutputType([Void])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][RegEx]$Selection
 	)
