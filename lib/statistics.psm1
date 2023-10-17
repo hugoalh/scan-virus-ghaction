@@ -23,10 +23,10 @@ Class ScanVirusStatistics {
 	[Boolean]$IsOverflow = $False
 	[PSCustomObject[]]GetStatisticsTable() {
 		[String[]]$Types = @('Scan')
-		If ($Script:Tools -icontains 'clamav') {
+		If ($Script:ToolHasClamAV) {
 			$Types += 'ClamAV'
 		}
-		If ($Script:Tools -icontains 'yara') {
+		If ($Script:ToolHasYara) {
 			$Types += 'Yara'
 		}
 		$Types += 'Found'

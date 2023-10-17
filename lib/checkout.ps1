@@ -13,7 +13,7 @@ $SoftwaresVersionTable = [Ordered]@{
 		Join-String -Separator ', '
 	'Git' = git --version |
 		Join-String -Separator "`n"
-	'GitLFS' = git-lfs --version |
+	'Git LFS' = git-lfs --version |
 		Join-String -Separator "`n"
 }
 If ($ToolHasClamAV) {

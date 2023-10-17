@@ -27,19 +27,29 @@ Import-Module -Name (
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 [Boolean]$InputClamAVEnable = ($ToolHasClamAV -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
 [Boolean]$InputClamAVUpdate = ($ToolHasClamAV) ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
-[AllowEmptyCollection()][RegEx[]]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[RegEx]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 $InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customassets_directory' -EmptyStringAsNull
-[AllowEmptyCollection()][RegEx[]]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+If ($Null -ine $InputClamAVCustomAssetsDirectory) {
+	If (!(Test-Path -LiteralPath $InputClamAVCustomAssetsDirectory -PathType 'Container')) {
+		Write-GitHubActionsFail -Message "``$InputClamAVCustomAssetsDirectory`` is not a valid ClamAV custom assets absolute directory path!"
+	}
+}
+[RegEx]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 [Boolean]$InputYaraEnable = ($ToolHasYara -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
-[AllowEmptyCollection()][RegEx[]]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[RegEx]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 $InputYaraCustomAssetsDirectory = Get-GitHubActionsInput -Name 'yara_customassets_directory' -EmptyStringAsNull
-[AllowEmptyCollection()][RegEx[]]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+If ($Null -ine $InputYaraCustomAssetsDirectory) {
+	If (!(Test-Path -LiteralPath $InputYaraCustomAssetsDirectory -PathType 'Container')) {
+		Write-GitHubActionsFail -Message "``$InputYaraCustomAssetsDirectory`` is not a valid YARA custom assets absolute directory path!"
+	}
+}
+[RegEx]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 [Boolean]$InputGitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull))
@@ -102,7 +112,7 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 1)][String]$SessionTitle
 	)
 	Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionTitle`"."
-	[AllowEmptyCollection()][PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath ([System.Environment]::CurrentDirectory) -Recurse -Force |
+	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath ([System.Environment]::CurrentDirectory) -Recurse -Force |
 		Sort-Object -Property @('FullName') |
 		ForEach-Object -Process {
 			[Hashtable]$ElementObject = @{
