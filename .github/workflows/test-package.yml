@@ -5,7 +5,7 @@ on:
     inputs:
       git_integrate:
         type: "choice"
-        description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
+        description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
         required: false
         default: "True"
         options:
@@ -13,7 +13,7 @@ on:
           - "True"
       git_limit:
         type: "string"
-        description: "{UInt} Limit on how many Git commits will scan."
+        description: "{UInt64} Limit on how many Git commits will scan."
         required: false
         default: "0"
       git_reverse:
