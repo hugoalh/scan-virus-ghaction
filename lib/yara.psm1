@@ -28,7 +28,8 @@ Function Invoke-Yara {
 			Select-Object -Unique
 	)) {
 		Try {
-			$Output += yara --no-warnings --scan-list $RulePath $ScanListFile.FullName *>&1
+			$Output += yara --no-warnings --scan-list $RulePath $ScanListFile.FullName *>&1 |
+				Write-GitHubActionsDebug -PassThru
 		}
 		Catch {
 			$Output += $_
