@@ -7,21 +7,6 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [String[]]$RulesPath = @()
-$InvokeYaraParallelScriptBlock = {
-	Param ([String]$ScanListFilePath, [String]$RulePath)
-	$ErrorActionPreference = 'Continue'
-	[String[]]$Output = @()
-	Try {
-		$Output += yara --no-warnings --scan-list $RulePath $ScanListFilePath *>&1
-	}
-	Catch {
-		$Output += $_
-	}
-	Finally {
-		$LASTEXITCODE = 0
-	}
-	Write-Output -InputObject $Output -NoEnumerate
-}
 Function Invoke-Yara {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
@@ -37,20 +22,22 @@ Function Invoke-Yara {
 		$Element |
 			Join-String -Separator "`n"
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
+	[String[]]$Output = @()
 	ForEach ($RulePath In (
 		$RulesPath |
 			Select-Object -Unique
 	)) {
-		Start-Job -Name "Yara:$RulePath" -ScriptBlock $InvokeYaraParallelScriptBlock -ArgumentList @($ScanListFile.FullName, $RulePath)
-	}
-	Wait-Job -Name 'Yara:*'
-	Remove-Item -LiteralPath $ScanListFile -Force -Confirm:$False
-	[String[]]$Output = Get-Job -Name 'Yara:*' |
-		Receive-Job -AutoRemoveJob |
-		ForEach-Object -Process {
-			$_ |
-				Write-Output
+		Try {
+			$Output += yara --no-warnings --scan-list $RulePath $ScanListFile.FullName *>&1
 		}
+		Catch {
+			$Output += $_
+		}
+		Finally {
+			$LASTEXITCODE = 0
+		}
+	}
+	Remove-Item -LiteralPath $ScanListFile -Force -Confirm:$False
 	ForEach ($OutputLine In $Output) {
 		If ($OutputLine -imatch '^\s*$') {
 			Continue
