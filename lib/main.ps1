@@ -262,16 +262,33 @@ If this is incorrect, probably something went wrong.
 		)
 		If ($Result.Issues.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
-Unexpected issue in session `"$SessionName`" via ClamAV:
+Unexpected issues in session `"$SessionName`" via ClamAV:
 
 $(
 $Result.Issues |
 	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-			$Script:StatisticsTotal.Issues += $Result.Issues
+			$Script:StatisticsTotal.Issues += $Result.Issues |
+				ForEach-Object -Process { "[$SessionName/ClamAV] $_" }
 		}
-		$ResultFounds += $Result.Founds
+		$ResultFounds += $Result.Founds |
+			ForEach-Object -Process { [PSCustomObject]@{
+				Tool = 'clamav'
+				Element = $_.Element
+				Symbol = $_.Symbol
+			} }
+		$StatisticsSession.ElementClamAVFound = $Result.Founds.Element |
+			Select-Object -Unique |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+		$StatisticsSession.SizeClamAVFound = $Elements |
+			Where-Object -FilterScript { $_.Path -iin $Result.Founds.Element } |
+			Select-Object -ExpandProperty 'Size' |
+			Measure-Object -Sum |
+			Select-Object -ExpandProperty 'Sum'
+		$Script:StatisticsTotal.ElementClamAVFound += $StatisticsSession.ElementClamAVFound
+		$Script:StatisticsTotal.SizeClamAVFound += $StatisticsSession.SizeClamAVFound
 	}
 	If ($InputYaraEnable -and $StatisticsSession.ElementYaraScan -gt 0) {
 		Write-Host -Object 'Scan via YARA.'
@@ -282,16 +299,33 @@ $Result.Issues |
 		)
 		If ($Result.Issues.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
-Unexpected issue in session `"$SessionName`" via YARA:
+Unexpected issues in session `"$SessionName`" via YARA:
 
 $(
 $Result.Issues |
 	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-			$Script:StatisticsTotal.Issues += $Result.Issues
+			$Script:StatisticsTotal.Issues += $Result.Issues |
+				ForEach-Object -Process { "[$SessionName/YARA] $_" }
 		}
-		$ResultFounds += $Result.Founds
+		$ResultFounds += $Result.Founds |
+			ForEach-Object -Process { [PSCustomObject]@{
+				Tool = 'yara'
+				Element = $_.Element
+				Symbol = $_.Symbol
+			} }
+		$StatisticsSession.ElementYaraFound = $Result.Founds.Element |
+			Select-Object -Unique |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+		$StatisticsSession.SizeYaraFound = $Elements |
+			Where-Object -FilterScript { $_.Path -iin $Result.Founds.Element } |
+			Select-Object -ExpandProperty 'Size' |
+			Measure-Object -Sum |
+			Select-Object -ExpandProperty 'Sum'
+		$Script:StatisticsTotal.ElementYaraFound += $StatisticsSession.ElementYaraFound
+		$Script:StatisticsTotal.SizeYaraFound += $StatisticsSession.SizeYaraFound
 	}
 	$StatisticsSession.ElementFound = $ResultFounds.Element |
 		Select-Object -Unique |
@@ -302,19 +336,15 @@ $Result.Issues |
 		Select-Object -ExpandProperty 'Size' |
 		Measure-Object -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	Try {
-		$Script:StatisticsTotal.ElementFound += $StatisticsSession.ElementFound
-		$Script:StatisticsTotal.SizeFound += $StatisticsSession.SizeFound
-	}
-	Catch {
-		$Script:StatisticsTotal.IsOverflow = $True
-	}
+	$Script:StatisticsTotal.ElementFound += $StatisticsSession.ElementFound
+	$Script:StatisticsTotal.SizeFound += $StatisticsSession.SizeFound
 	[PSCustomObject[]]$ResultFoundResolve = $ResultFounds |
-		Group-Object -Property @('Element', 'Symbol') -NoElement |
+		Group-Object -Property @('Element', 'Symbol', 'Tool') -NoElement |
 		ForEach-Object -Process {
-			[String]$Element, [String]$Symbol = $_.Name -isplit ', '
+			[String]$Element, [String]$Symbol, [String]$Tool = $_.Name -isplit ', '
 			Write-Output -InputObject ([PSCustomObject]@{
 				Path = $Element
+				Tool = $Tool
 				Symbol = $Symbol
 				Hit = $_.Count
 				IsIgnore = Invoke-ProtectiveScriptBlock -Name 'ignores_post' -ScriptBlock $InputIgnoresPost -ArgumentList @($SessionName, ([PSCustomObject]@{
@@ -324,10 +354,11 @@ $Result.Issues |
 						GitCommitMeta = $Meta
 					}
 					Symbol = $Symbol
+					Tool = $Tool
 				}))
 			})
 		} |
-		Sort-Object -Property @('Path', 'Symbol') |
+		Sort-Object -Property @('Path', 'Tool', 'Symbol') |
 		Sort-Object -Property @('Hit') -Descending |
 		Sort-Object -Property @('IsIgnore')
 	If ($ResultFoundResolve.Count -gt 0) {
@@ -337,6 +368,7 @@ $Result.Issues |
 					@{ Name = ''; Expression = { $_.IsIgnore ? '🟡' : '🔴' } },
 					@{ Expression = 'Hit'; Alignment = 'Right' },
 					@{ Expression = 'Path'; Width = 40 },
+					@{ Expression = 'Tool' },
 					@{ Expression = 'Symbol'; Width = 40 }
 				) -AutoSize:$False -Wrap |
 				Out-String -Width 120 |
@@ -348,6 +380,7 @@ $Result.Issues |
 					ForEach-Object -Process { [PSCustomObject]@{
 						Indicator = $_.IsIgnore ? '🟡' : '🔴'
 						Path = $_.Path
+						Tool = $_.Tool
 						Symbol = $_.Symbol
 						Hit = $_.Hit
 					} }
@@ -356,10 +389,9 @@ $Result.Issues |
 		If ((
 			$ResultFoundResolve |
 				Where-Object -FilterScript { !$_.IsIgnore } |
-				Measure-Object |
-				Select-Object -ExpandProperty 'Count'
-		) -gt 0) {
-			$Script:StatisticsTotal.IssuesSessions += $SessionId
+				Measure-Object
+		).Count -gt 0) {
+			$Script:StatisticsTotal.SessionsFound += $SessionName
 			Write-GitHubActionsError -Message "Found in session `"$SessionName`"!"
 		}
 		Else {
