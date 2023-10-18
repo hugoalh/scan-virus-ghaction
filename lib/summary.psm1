@@ -50,41 +50,41 @@ Function Add-StepSummaryStatistics {
 	[OutputType([Void])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][PSCustomObject[]]$StatisticsTable,
-		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][String[]]$IssuesOperations,
-		[Parameter(Mandatory = $True, Position = 2)][AllowEmptyCollection()][String[]]$IssuesSessions
+		[Parameter(Mandatory = $True, Position = 1)][AllowEmptyCollection()][String[]]$Issues,
+		[Parameter(Mandatory = $True, Position = 2)][AllowEmptyCollection()][String[]]$SessionsFound
 	)
 	Ensure-StepSummaryFileExist
 	[String[]]$Result = @(@"
 
 # Statistics
 
-| **Type** | **Element** | **Element %** | **Size B** | **Size KB** | **Size MB** | **Size GB** | **Size %** |
-|:-:|--:|--:|--:|--:|--:|--:|--:|
+| **Type** | **Element** | **Size B** | **Size KB** | **Size MB** | **Size GB** | **Size TB** |
+|:-:|--:|--:|--:|--:|--:|--:|
 $(
 	$StatisticsTable |
-		ForEach-Object -Process { "| $($_.Type) | $($_.Element) | $($_.ElementPercentage ?? '') | $($_.SizeB) | $($_.SizeKb) | $($_.SizeMb) | $($_.SizeGb) | $($_.SizePercentage ?? '') |" } |
+		ForEach-Object -Process { "| $($_.Type) | $($_.Element) | $($_.SizeB) | $($_.SizeKb) | $($_.SizeMb) | $($_.SizeGb) | $($_.SizeTb) |" } |
 		Join-String -Separator "`n"
 )
 "@)
-	If ($IssuesOperations.Count -gt 0) {
+	If ($Issues.Count -gt 0) {
 		$Result += @"
 
-## Issues Operations
+## Issues
 
 $(
-	$IssuesOperations |
+	$Issues |
 		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
 		Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
 	}
-	If ($IssuesSessions.Count -gt 0) {
+	If ($SessionsFound.Count -gt 0) {
 		$Result += @"
 
-## Issues Sessions
+## Sessions Found
 
 $(
-	$IssuesSessions |
+	$SessionsFound |
 		ForEach-Object -Process { Escape-MarkdownCharacter -InputObject $_ } |
 		Join-String -Separator "`n" -FormatString '- {0}'
 )

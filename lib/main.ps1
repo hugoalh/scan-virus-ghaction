@@ -30,7 +30,8 @@ Function Invoke-ProtectiveScriptBlock {
 Enter-GitHubActionsLogGroup -Title 'Softwares Version: '
 Get-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Raw -Encoding 'UTF8NoBOM' |
 	ConvertFrom-Json -Depth 100 |
-	Format-List
+	Format-List |
+	Out-String -Width 120
 Exit-GitHubActionsLogGroup
 $InputDebugScript = Get-GitHubActionsInput -Name 'debug_script' -EmptyStringAsNull
 If ($Null -ine $InputDebugScript) {
@@ -51,7 +52,7 @@ Import-Module -Name (
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 [Boolean]$InputClamAVEnable = ($ToolHasClamAV -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
 [Boolean]$InputClamAVUpdate = ($ToolHasClamAV) ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
-[RegEx]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 $InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customassets_directory' -EmptyStringAsNull
@@ -60,11 +61,11 @@ If ($Null -ine $InputClamAVCustomAssetsDirectory) {
 		Write-GitHubActionsFail -Message "``$InputClamAVCustomAssetsDirectory`` is not a valid ClamAV custom assets absolute directory path!"
 	}
 }
-[RegEx]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 [Boolean]$InputYaraEnable = ($ToolHasYara -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
-[RegEx]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 $InputYaraCustomAssetsDirectory = Get-GitHubActionsInput -Name 'yara_customassets_directory' -EmptyStringAsNull
@@ -73,7 +74,7 @@ If ($Null -ine $InputYaraCustomAssetsDirectory) {
 		Write-GitHubActionsFail -Message "``$InputYaraCustomAssetsDirectory`` is not a valid YARA custom assets absolute directory path!"
 	}
 }
-[RegEx]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 [Boolean]$InputGitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull))
@@ -96,7 +97,7 @@ If ($Null -ne $InputIgnoresPostRaw) {
 [Boolean]$InputFoundSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'found_summary' -Mandatory -EmptyStringAsNull))
 [Boolean]$InputStatisticsLog = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_log' -Mandatory -EmptyStringAsNull))
 [Boolean]$InputStatisticsSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_summary' -Mandatory -EmptyStringAsNull))
-[RegEx]$InputDebugListElements = ((Get-GitHubActionsInput -Name 'debug_listelements' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputDebugListElements = ((Get-GitHubActionsInput -Name 'debug_listelements' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 If (!$InputClamAVEnable -and !$InputYaraEnable) {
@@ -115,20 +116,32 @@ If ($InputGitIntegrate -and !$InputGitLfs) {
 	Write-Host -Object 'Disable Git LFS process.'
 	Disable-GitLfsProcess
 }
-If ($InputClamAVEnable -and $InputClamAVUpdate) {
-	Write-Host -Object 'Update ClamAV.'
-	Update-ClamAV
-}
-If ($InputClamAVEnable -and $InputClamAVUnofficialAssetsUse.ToString().Length -gt 0) {
-	Write-Host -Object 'Register ClamAV unofficial asset.'
-	[PSCustomObject]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsUse
-	ForEach ($ApplyIssue In $Result.ApplyIssues) {
-		$StatisticsTotal.IssuesOperations += "ClamAV/UnofficialAsset/$ApplyIssue"
+If ($InputClamAVEnable) {
+	If ($InputClamAVUpdate) {
+		Write-Host -Object 'Update ClamAV.'
+		Update-ClamAV
+	}
+	If ($InputClamAVCustomAssetsDirectory.Length -gt 0) {
+		Write-Host -Object 'Register ClamAV custom asset.'
+		[PSCustomObject]$Result = Register-ClamAVCustomAsset -RootPath $InputClamAVCustomAssetsDirectory -Selection $InputClamAVCustomAssetsUse
+		$StatisticsTotal.Issues += $Result.Issues
+	}
+	If ($InputClamAVUnofficialAssetsUse.Length -gt 0) {
+		Write-Host -Object 'Register ClamAV unofficial asset.'
+		[PSCustomObject]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsUse
+		$StatisticsTotal.Issues += $Result.Issues
 	}
 }
-If ($InputYaraEnable -and $InputYaraUnofficialAssetsUse.ToString().Length -gt 0) {
-	Write-Host -Object 'Register YARA unofficial asset.'
-	Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsRaw
+If ($InputYaraEnable) {
+	If ($InputYaraCustomAssetsDirectory.Length -gt 0) {
+		Write-Host -Object 'Register YARA custom asset.'
+		Register-YaraCustomAsset -RootPath $InputYaraCustomAssetsDirectory -Selection $InputYaraCustomAssetsUse
+	}
+	If ($InputYaraUnofficialAssetsUse.Length -gt 0) {
+		Write-Host -Object 'Register YARA unofficial asset.'
+		Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsRaw
+	}
+	Register-YaraUnofficialAssetFallback
 }
 If ($InputClamAVEnable) {
 	Write-Host -Object 'Start ClamAV daemon.'
@@ -147,7 +160,7 @@ Function Invoke-Tools {
 		ForEach-Object -Process {
 			[Hashtable]$ElementObject = @{
 				FullName = $_.FullName
-				Path = $_.FullName -ireplace "^$CurrentWorkingDirectoryRegExEscape", ''
+				Path = $_.FullName -ireplace "^$CurrentWorkingDirectoryRegExEscape[\\/]", ''
 				Size = $_.Length
 				IsDirectory = $_.PSIsContainer
 			}
@@ -193,56 +206,43 @@ If this is incorrect, probably something went wrong.
 		Return
 	}
 	[ScanVirusStatistics]$StatisticsSession = [ScanVirusStatistics]::new()
-	$StatisticsSession.ElementDiscover = $Elements.Count
-	$StatisticsSession.ElementScan = $Elements |
+	$StatisticsSession.ElementDiscover += $Elements.Count
+	$StatisticsSession.ElementScan += $Elements |
 		Where-Object -FilterScript { !$_.SkipClamAV -or !$_.SkipYara } |
 		Measure-Object |
 		Select-Object -ExpandProperty 'Count'
-	$StatisticsSession.ElementClamAV = $InputClamAVEnable ? (
-		$Elements |
+	$StatisticsSession.ElementClamAVScan += $Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	) : 0
-	$StatisticsSession.ElementYara = $InputYaraEnable ? (
-		$Elements |
+	$StatisticsSession.ElementYaraScan += $Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object |
 			Select-Object -ExpandProperty 'Count'
-	) : 0
-	$StatisticsSession.SizeDiscover = $Elements |
+	$StatisticsSession.SizeDiscover += $Elements |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	$StatisticsSession.SizeScan = $Elements |
+	$StatisticsSession.SizeScan += $Elements |
 		Where-Object -FilterScript { !$_.SkipClamAV -or !$_.SkipYara } |
 		Measure-Object -Property 'Size' -Sum |
 		Select-Object -ExpandProperty 'Sum'
-	$StatisticsSession.SizeClamAV = $InputClamAVEnable ? (
-		$Elements |
+	$StatisticsSession.SizeClamAVScan += $Elements |
 			Where-Object -FilterScript { !$_.SkipClamAV } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
-	) : 0
-	$StatisticsSession.SizeYara = $InputYaraEnable ? (
-		$Elements |
+	$StatisticsSession.SizeYaraScan += $Elements |
 			Where-Object -FilterScript { !$_.SkipYara } |
 			Measure-Object -Property 'Size' -Sum |
 			Select-Object -ExpandProperty 'Sum'
-	) : 0
-	Try {
-		$Script:StatisticsTotal.ElementDiscover += $StatisticsSession.ElementDiscover
-		$Script:StatisticsTotal.ElementScan += $StatisticsSession.ElementScan
-		$Script:StatisticsTotal.ElementClamAV += $StatisticsSession.ElementClamAV
-		$Script:StatisticsTotal.ElementYara += $StatisticsSession.ElementYara
-		$Script:StatisticsTotal.SizeDiscover += $StatisticsSession.SizeDiscover
-		$Script:StatisticsTotal.SizeScan += $StatisticsSession.SizeScan
-		$Script:StatisticsTotal.SizeClamAV += $StatisticsSession.SizeClamAV
-		$Script:StatisticsTotal.SizeYara += $StatisticsSession.SizeYara
-	}
-	Catch {
-		$Script:StatisticsTotal.IsOverflow = $True
-	}
-	If ($InputDebugListElements.ToString().Length -gt 0 -and $SessionName -imatch $InputDebugListElements) {
+	$Script:StatisticsTotal.ElementDiscover += $StatisticsSession.ElementDiscover
+	$Script:StatisticsTotal.ElementScan += $StatisticsSession.ElementScan
+	$Script:StatisticsTotal.ElementClamAVScan += $StatisticsSession.ElementClamAVScan
+	$Script:StatisticsTotal.ElementYaraScan += $StatisticsSession.ElementYaraScan
+	$Script:StatisticsTotal.SizeDiscover += $StatisticsSession.SizeDiscover
+	$Script:StatisticsTotal.SizeScan += $StatisticsSession.SizeScan
+	$Script:StatisticsTotal.SizeClamAVScan += $StatisticsSession.SizeClamAVScan
+	$Script:StatisticsTotal.SizeYaraScan += $StatisticsSession.SizeYaraScan
+	If ($InputDebugListElements.Length -gt 0 -and $SessionName -imatch $InputDebugListElements) {
 		$Elements |
 			Format-Table -Property @(
 				@{ Name = ''; Expression = 'Flag' },
@@ -253,23 +253,23 @@ If this is incorrect, probably something went wrong.
 			Write-GitHubActionsDebug
 	}
 	[PSCustomObject[]]$ResultFounds = @()
-	If ($InputClamAVEnable -and $StatisticsSession.ElementClamAV -gt 0) {
+	If ($InputClamAVEnable -and $StatisticsSession.ElementClamAVScan -gt 0) {
 		Write-Host -Object 'Scan via ClamAV.'
 		[PSCustomObject]$Result = Invoke-ClamAVScan -Element (
 			$Elements |
 				Where-Object -FilterScript { !$_.SkipClamAV } |
 				Select-Object -ExpandProperty 'FullName'
 		)
-		If ($Result.Errors.Count -gt 0) {
+		If ($Result.Issues.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionName`" via ClamAV:
 
 $(
-$Result.Errors |
+$Result.Issues |
 	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-			$Script:StatisticsTotal.IssuesOperations += $Result.Errors
+			$Script:StatisticsTotal.Issues += $Result.Issues
 		}
 		$ResultFounds += $Result.Founds
 	}
@@ -280,16 +280,16 @@ $Result.Errors |
 				Where-Object -FilterScript { !$_.SkipYara } |
 				Select-Object -ExpandProperty 'FullName'
 		)
-		If ($Result.Errors.Count -gt 0) {
+		If ($Result.Issues.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
 Unexpected issue in session `"$SessionName`" via YARA:
 
 $(
-$Result.Errors |
+$Result.Issues |
 	Join-String -Separator "`n" -FormatString '- {0}'
 )
 "@
-			$Script:StatisticsTotal.IssuesOperations += $Result.Errors
+			$Script:StatisticsTotal.Issues += $Result.Issues
 		}
 		$ResultFounds += $Result.Founds
 	}
@@ -393,7 +393,7 @@ If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 			Continue
 		}
 		If (Invoke-ProtectiveScriptBlock -Name 'git_ignores' -ScriptBlock $InputGitIgnores -ArgumentList @($GitCommit)) {
-			Write-Host -Object "Ignore Git commit $($GitSessionTitle): Git ignore"
+			Write-Host -Object "Ignore Git commit $($GitSessionTitle)."
 			Continue
 		}
 		$GitCommitsPassCount += 1
@@ -430,5 +430,5 @@ If ($InputStatisticsSummary) {
 	$StatisticsTotal.StatisticsSummary()
 }
 Set-GitHubActionsOutput -Name 'finish' -Value $True.ToString().ToLower()
-Set-GitHubActionsOutput -Name 'found' -Value ($StatisticsTotal.IssuesSessions.Count -gt 0).ToString().ToLower()
+Set-GitHubActionsOutput -Name 'found' -Value ($StatisticsTotal.SessionsFound.Count -gt 0).ToString().ToLower()
 Exit $StatisticsTotal.GetExitCode()

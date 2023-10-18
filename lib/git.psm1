@@ -104,7 +104,7 @@ Function Get-GitCommitMeta {
 	[String[]]$ResultResolve = (
 		$Result |
 			Join-String -Separator "`n"
-	) -isplit ([RegEx]::Escape("`n$DelimiterToken`n"))
+	) -isplit "\r?\n$([RegEx]::Escape($DelimiterToken))\r?\n"
 	If ($GitCommitsProperties.Count -ne $ResultResolve.Count) {
 		Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
 		Return

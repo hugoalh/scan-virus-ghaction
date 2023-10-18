@@ -59,4 +59,5 @@ If (!$ToolHasYara) {
 }
 Write-Host -Object 'Softwares Version: '
 [PSCustomObject]$SoftwaresVersionTable |
-	Format-List
+	Format-List |
+	Out-String -Width 120

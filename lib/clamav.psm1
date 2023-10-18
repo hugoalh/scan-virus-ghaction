@@ -13,7 +13,7 @@ Function Invoke-ClamAVScan {
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements')][String[]]$Element
 	)
 	[Hashtable]$Result = @{
-		Errors = @()
+		Issues = @()
 		Founds = @()
 	}
 	$ScanListFile = New-TemporaryFile
@@ -27,7 +27,7 @@ Function Invoke-ClamAVScan {
 			Write-GitHubActionsDebug -PassThru
 	}
 	Catch {
-		$Result.Errors += $_
+		$Result.Issues += $_
 	}
 	Finally {
 		$LASTEXITCODE = 0
@@ -55,7 +55,7 @@ Function Invoke-ClamAVScan {
 			Continue
 		}
 		If ($OutputLine.Length -gt 0) {
-			$Result.Errors += $OutputLine
+			$Result.Issues += $OutputLine
 			Continue
 		}
 	}
@@ -66,9 +66,9 @@ Function Register-ClamAVCustomAsset {
 	[OutputType([PSCustomObject])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$RootPath,
-		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Selection
+		[Parameter(Mandatory = $True, Position = 1)][String]$Selection
 	)
-	[RegEx]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
+	[String]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
 	[String[]]$RootChildItem = Get-ChildItem -LiteralPath $RootPath -Recurse -Force -File |
 		Where-Object -FilterScript { $_.Extension -iin @(
 			'.cat',
@@ -125,7 +125,7 @@ Function Register-ClamAVUnofficialAsset {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][RegEx]$Selection
+		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
@@ -211,6 +211,7 @@ This is fine, but the local assets maybe outdated.
 }
 Export-ModuleMember -Function @(
 	'Invoke-ClamAVScan',
+	'Register-ClamAVCustomAsset',
 	'Register-ClamAVUnofficialAsset',
 	'Start-ClamAVDaemon',
 	'Stop-ClamAVDaemon',

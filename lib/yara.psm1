@@ -29,7 +29,7 @@ Function Invoke-Yara {
 		[Parameter(Mandatory = $True, Position = 0)][Alias('Elements')][String[]]$Element
 	)
 	[Hashtable]$Result = @{
-		Errors = @()
+		Issues = @()
 		Founds = @()
 	}
 	$ScanListFile = New-TemporaryFile
@@ -55,8 +55,8 @@ Function Invoke-Yara {
 		If ($OutputLine -imatch '^\s*$') {
 			Continue
 		}
-		If ($OutputLine -imatch "^.+? $CurrentWorkingDirectoryRegExEscape.+$") {
-			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $CurrentWorkingDirectoryRegExEscape"
+		If ($OutputLine -imatch "^.+? $CurrentWorkingDirectoryRegExEscape[\\/].+$") {
+			[String]$Symbol, [String]$Element = $OutputLine -isplit "(?<=^.+?) $CurrentWorkingDirectoryRegExEscape[\\/]"
 			$Result.Founds += [PSCustomObject]@{
 				Element = $Element
 				Symbol = $Symbol
@@ -64,7 +64,7 @@ Function Invoke-Yara {
 			Continue
 		}
 		If ($OutputLine.Length -gt 0) {
-			$Result.Errors += $OutputLine
+			$Result.Issues += $OutputLine
 			Continue
 		}
 	}
@@ -75,9 +75,9 @@ Function Register-YaraCustomAsset {
 	[OutputType([Void])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$RootPath,
-		[Parameter(Mandatory = $True, Position = 1)][RegEx]$Selection
+		[Parameter(Mandatory = $True, Position = 1)][String]$Selection
 	)
-	[RegEx]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
+	[String]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
 	[String[]]$RootChildItem = Get-ChildItem -LiteralPath $RootPath -Recurse -Force -File |
 		Where-Object -FilterScript { $_.Extension -iin @(
 			'.yar',
@@ -95,7 +95,7 @@ Function Register-YaraUnofficialAsset {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param (
-		[Parameter(Mandatory = $True, Position = 0)][RegEx]$Selection
+		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_YARA -ChildPath 'index.tsv') @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
@@ -122,7 +122,17 @@ Function Register-YaraUnofficialAsset {
 	$Script:RulesPath += $IndexTableSelect |
 		ForEach-Object -Process { Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_YARA -ChildPath $_.Path }
 }
+Function Register-YaraUnofficialAssetFallback {
+	[CmdletBinding()]
+	[OutputType([Void])]
+	Param ()
+	If ($RulesPath.Count -eq 0) {
+		Register-YaraUnofficialAsset -Selection '.+'
+	}
+}
 Export-ModuleMember -Function @(
 	'Invoke-Yara',
-	'Register-YaraUnofficialAsset'
+	'Register-YaraCustomAsset',
+	'Register-YaraUnofficialAsset',
+	'Register-YaraUnofficialAssetFallback'
 )

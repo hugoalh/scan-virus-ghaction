@@ -8,52 +8,66 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Class ScanVirusStatistics {
-	[String[]]$IssuesOperations = @()
-	[String[]]$IssuesSessions = @()
-	[UInt64]$ElementDiscover = 0
-	[UInt64]$ElementScan = 0
-	[UInt64]$ElementFound = 0
-	[UInt64]$ElementClamAV = 0
-	[UInt64]$ElementYara = 0
-	[UInt64]$SizeDiscover = 0
-	[UInt64]$SizeScan = 0
-	[UInt64]$SizeFound = 0
-	[UInt64]$SizeClamAV = 0
-	[UInt64]$SizeYara = 0
-	[Boolean]$IsOverflow = $False
+	[String[]]$Issues = @()
+	[String[]]$SessionsFound = @()
+	[UInt64[]]$ElementDiscover = @()
+	[UInt64[]]$ElementScan = @()
+	[UInt64[]]$ElementFound = @()
+	[UInt64[]]$ElementClamAVScan = @()
+	[UInt64[]]$ElementClamAVFound = @()
+	[UInt64[]]$ElementYaraScan = @()
+	[UInt64[]]$ElementYaraFound = @()
+	[UInt64[]]$SizeDiscover = @()
+	[UInt64[]]$SizeScan = @()
+	[UInt64[]]$SizeFound = @()
+	[UInt64[]]$SizeClamAVScan = @()
+	[UInt64[]]$SizeClamAVFound = @()
+	[UInt64[]]$SizeYaraScan = @()
+	[UInt64[]]$SizeYaraFound = @()
 	[PSCustomObject[]]GetStatisticsTable() {
-		[String[]]$Types = @('Scan')
+		[String[]]$Types = @('Scan', 'Found')
 		If ($Script:ToolHasClamAV) {
-			$Types += 'ClamAV'
+			$Types += 'ClamAVScan'
+			$Types += 'ClamAVFound'
 		}
 		If ($Script:ToolHasYara) {
-			$Types += 'Yara'
+			$Types += 'YaraScan'
+			$Types += 'YaraFound'
 		}
-		$Types += 'Found'
-		[Boolean]$IsNoElement = $This.ElementDiscover -eq 0
-		[Boolean]$IsNoSize = $This.SizeDiscover -eq 0
+		$ThisSizeDiscoverSum = (
+			$This.SizeDiscover |
+				Measure-Object -Sum
+		).Sum
 		[PSCustomObject[]]$StatisticsTable = @(
 			[PSCustomObject]@{
 				Type = 'Discover'
-				Element = $This.ElementDiscover.ToString()
-				ElementPercentage = $Null
-				SizeB = $This.SizeDiscover.ToString()
-				SizeKb = ($This.SizeDiscover / 1KB).ToString('0.000')
-				SizeMb = ($This.SizeDiscover / 1MB).ToString('0.000')
-				SizeGb = ($This.SizeDiscover / 1GB).ToString('0.000')
-				SizePercentage = $Null
+				Element = (
+					$This.ElementDiscover |
+						Measure-Object -Sum
+				).Sum.ToString()
+				SizeB = $ThisSizeDiscoverSum.ToString()
+				SizeKb = ($ThisSizeDiscoverSum / 1KB).ToString('F3')
+				SizeMb = ($ThisSizeDiscoverSum / 1MB).ToString('F3')
+				SizeGb = ($ThisSizeDiscoverSum / 1GB).ToString('F3')
+				SizeTb = ($ThisSizeDiscoverSum / 1TB).ToString('F3')
 			}
 		)
 		ForEach ($Type In $Types) {
+			$ThisSizeTypeSum = (
+				$This.("Size$($Type)") |
+					Measure-Object -Sum
+			).Sum
 			$StatisticsTable += [PSCustomObject]@{
 				Type = $Type
-				Element = $This.("Element$($Type)").ToString()
-				ElementPercentage = ($IsNoElement ? 0 : ($This.("Element$($Type)") / $This.ElementDiscover * 100)).ToString('0.000')
-				SizeB = $This.("Size$($Type)").ToString()
-				SizeKb = ($This.("Size$($Type)") / 1KB).ToString('0.000')
-				SizeMb = ($This.("Size$($Type)") / 1MB).ToString('0.000')
-				SizeGb = ($This.("Size$($Type)") / 1GB).ToString('0.000')
-				SizePercentage = ($IsNoSize ? 0 : ($This.("Size$($Type)") / $This.SizeDiscover * 100)).ToString('0.000')
+				Element = (
+					$This.("Element$($Type)") |
+						Measure-Object -Sum
+				).Sum.ToString()
+				SizeB = $ThisSizeTypeSum.ToString()
+				SizeKb = ($ThisSizeTypeSum / 1KB).ToString('F3')
+				SizeMb = ($ThisSizeTypeSum / 1MB).ToString('F3')
+				SizeGb = ($ThisSizeTypeSum / 1GB).ToString('F3')
+				SizeTb = ($ThisSizeTypeSum / 1TB).ToString('F3')
 			}
 		}
 		Return $StatisticsTable
@@ -61,36 +75,31 @@ Class ScanVirusStatistics {
 	[String]GetStatisticsTableString([UInt16]$Width) {
 		Return (
 			$This.GetStatisticsTable() |
-			Format-Table -Property @(
-				'Type',
-				@{ Expression = 'Element'; Alignment = 'Right' },
-				@{ Expression = 'ElementPercentage'; Name = 'Element %'; Alignment = 'Right' },
-				@{ Expression = 'SizeB'; Name = 'Size B'; Alignment = 'Right' },
-				@{ Expression = 'SizeKb'; Name = 'Size KB'; Alignment = 'Right' },
-				@{ Expression = 'SizeMb'; Name = 'Size MB'; Alignment = 'Right' },
-				@{ Expression = 'SizeGb'; Name = 'Size GB'; Alignment = 'Right' },
-				@{ Expression = 'SizePercentage'; Name = 'Size %'; Alignment = 'Right' }
-			) -AutoSize:$False -Wrap |
-			Out-String -Width $Width
+				Format-Table -Property @(
+					'Type',
+					@{ Expression = 'Element'; Alignment = 'Right' },
+					@{ Expression = 'SizeB'; Name = 'Size B'; Alignment = 'Right' },
+					@{ Expression = 'SizeKb'; Name = 'Size KB'; Alignment = 'Right' },
+					@{ Expression = 'SizeMb'; Name = 'Size MB'; Alignment = 'Right' },
+					@{ Expression = 'SizeGb'; Name = 'Size GB'; Alignment = 'Right' },
+					@{ Expression = 'SizeTb'; Name = 'Size TB'; Alignment = 'Right' }
+				) -AutoSize:$False -Wrap |
+				Out-String -Width $Width
 		)
 	}
 	[String]GetStatisticsTableString() {
 		Return $This.GetStatisticsTableString(80)
 	}
 	[Void]StatisticsDisplay() {
-		If ($This.IsOverflow) {
-			Write-GitHubActionsNotice -Message 'Statistics is not display: Overflow'
-			Return
-		}
 		$DisplayList = [Ordered]@{
 			Statistics = $This.GetStatisticsTableString()
 		}
-		If ($This.IssuesOperations.Count -gt 0) {
-			$DisplayList.("IssuesOperations [$($This.IssuesOperations.Count)]") = $This.IssuesOperations |
-				Join-String -Separator ', '
+		If ($This.Issues.Count -gt 0) {
+			$DisplayList.("Issues [$($This.Issues.Count)]") = $This.Issues |
+				Join-String -Separator "`n" -FormatString '- {0}'
 		}
-		If ($This.IssuesSessions.Count -gt 0) {
-			$DisplayList.("IssuesSessions [$($This.IssuesSessions.Count)]") = $This.IssuesSessions |
+		If ($This.SessionsFound.Count -gt 0) {
+			$DisplayList.("SessionsFound [$($This.SessionsFound.Count)]") = $This.SessionsFound |
 				Join-String -Separator ', '
 		}
 		Write-GitHubActionsNotice -Message (
@@ -100,13 +109,9 @@ Class ScanVirusStatistics {
 		)
 	}
 	[Void]StatisticsSummary() {
-		If ($This.IsOverflow) {
-			Write-GitHubActionsNotice -Message 'Statistics is not display: Overflow'
-			Return
-		}
-		Add-StepSummaryStatistics -StatisticsTable $This.GetStatisticsTable() -IssuesOperations $This.IssuesOperations -IssuesSessions $This.IssuesSessions
+		Add-StepSummaryStatistics -StatisticsTable $This.GetStatisticsTable() -Issues $This.Issues -SessionsFound $This.SessionsFound
 	}
 	[Byte]GetExitCode() {
-		Return (($This.IssuesSessions.Count -gt 0) ? 1 : 0)
+		Return (($This.SessionsFound.Count -gt 0) ? 1 : 0)
 	}
 }
