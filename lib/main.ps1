@@ -21,7 +21,7 @@ Function Invoke-ProtectiveScriptBlock {
 			Write-Output -InputObject $Result
 			Return
 		}
-		Write-GitHubActionsFail -Message "Unexpected issues with script block ``$Name``: Result is not a boolean!"
+		Throw 'Result is not a boolean!'
 	}
 	Catch {
 		Write-GitHubActionsFail -Message "Unexpected issues with script block ``$Name``: $_"
