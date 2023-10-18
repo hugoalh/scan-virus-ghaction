@@ -156,7 +156,7 @@ jobs:
           homebrew_prune: "True"
           npm_prune: "True"
       - name: "Checkout Repository"
-        uses: "actions/checkout@v4.1.0"
+        uses: "actions/checkout@v4.1.1"
         with:
           repository: "${{matrix.group}}"
           token: "${{secrets.GHP_SCANVIRUSCLONEREPOSITORY}}"
