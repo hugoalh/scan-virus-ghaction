@@ -139,7 +139,7 @@ If ($InputYaraEnable) {
 	}
 	If ($InputYaraUnofficialAssetsUse.Length -gt 0) {
 		Write-Host -Object 'Register YARA unofficial asset.'
-		Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsRaw
+		Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsUse
 	}
 	Register-YaraUnofficialAssetFallback
 }
@@ -273,7 +273,7 @@ $Result.Issues |
 		}
 		$ResultFounds += $Result.Founds
 	}
-	If ($InputYaraEnable -and $StatisticsSession.ElementYara -gt 0) {
+	If ($InputYaraEnable -and $StatisticsSession.ElementYaraScan -gt 0) {
 		Write-Host -Object 'Scan via YARA.'
 		[PSCustomObject]$Result = Invoke-Yara -Element (
 			$Elements |

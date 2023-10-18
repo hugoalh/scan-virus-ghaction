@@ -77,7 +77,7 @@ Function Get-GitCommitMeta {
 	)
 	Do {
 		Try {
-			[String]$DelimiterToken = "=====$((Get-Random -Minimum 0 -Maximum ([UInt64]::MaxValue)).ToString('X'))====="
+			[String]$DelimiterToken = "=====$((Get-Random -Minimum 0 -Maximum 281474976710656).ToString('X'))====="
 			[String[]]$Result = Invoke-Expression -Command "git --no-pager show --format=`"$(
 				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
