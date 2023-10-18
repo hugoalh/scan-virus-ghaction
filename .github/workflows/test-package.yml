@@ -46,7 +46,7 @@ jobs:
         run: |
           docker image ls --all --digests --no-trunc
       - name: "Checkout Repository"
-        uses: "actions/checkout@v4.1.0"
+        uses: "actions/checkout@v4.1.1"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
@@ -69,7 +69,7 @@ jobs:
         run: |
           docker image ls --all --digests --no-trunc
       - name: "Checkout Repository"
-        uses: "actions/checkout@v4.1.0"
+        uses: "actions/checkout@v4.1.1"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
@@ -91,7 +91,7 @@ jobs:
         run: |
           docker image ls --all --digests --no-trunc
       - name: "Checkout Repository"
-        uses: "actions/checkout@v4.1.0"
+        uses: "actions/checkout@v4.1.1"
         with:
           fetch-depth: 0
       - name: "Scan Repository"
