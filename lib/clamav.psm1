@@ -6,6 +6,37 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+[String[]]$AllowExtensions = @(
+	'.cat',
+	'.cbc',
+	'.cdb',
+	'.crb',
+	'.fp',
+	'.ftm',
+	'.gdb',
+	'.hdb',
+	'.hdu',
+	'.hsb',
+	'.hsu',
+	'.idb',
+	'.ign',
+	'.ign2',
+	'.info',
+	'.ldb',
+	'.ldu',
+	'.mdb',
+	'.mdu',
+	'.msb',
+	'.msu',
+	'.ndb',
+	'.ndu',
+	'.pdb',
+	'.pwdb',
+	'.sfp',
+	'.wdb',
+	'.yar',
+	'.yara'
+)
 Function Invoke-ClamAVScan {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
@@ -70,37 +101,7 @@ Function Register-ClamAVCustomAsset {
 	)
 	[String]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
 	[String[]]$RootChildItem = Get-ChildItem -LiteralPath $RootPath -Recurse -Force -File |
-		Where-Object -FilterScript { $_.Extension -iin @(
-			'.cat',
-			'.cbc',
-			'.cdb',
-			'.crb',
-			'.fp',
-			'.ftm',
-			'.gdb',
-			'.hdb',
-			'.hdu',
-			'.hsb',
-			'.hsu',
-			'.idb',
-			'.ign',
-			'.ign2',
-			'.info',
-			'.ldb',
-			'.ldu',
-			'.mdb',
-			'.mdu',
-			'.msb',
-			'.msu',
-			'.ndb',
-			'.ndu',
-			'.pdb',
-			'.pwdb',
-			'.sfp',
-			'.wdb',
-			'.yar',
-			'.yara'
-		) } |
+		Where-Object -FilterScript { $_.Extension -iin $AllowExtensions } |
 		ForEach-Object -Process { $_.FullName -ireplace $RootPathRegExEscape, '' }
 	[String[]]$RootChildItemSelect = $RootChildItem |
 		Where-Object -FilterScript { $_ -imatch $Selection }
@@ -128,7 +129,7 @@ Function Register-ClamAVUnofficialAsset {
 		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Type -ine 'Unusable' -and $_.Path.Length -gt 0 } |
 		Sort-Object -Property @('Type', 'Name')
 	[String[]]$IndexRegister = @()
 	ForEach ($Index In $IndexTable) {

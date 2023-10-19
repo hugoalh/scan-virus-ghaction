@@ -6,6 +6,12 @@ Import-Module -Name (
 	) |
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
+[String[]]$AllowExtensions = @(
+	'.yar',
+	'.yara',
+	'.yarac',
+	'.yarc'
+)
 [String[]]$RulesPath = @()
 Function Invoke-Yara {
 	[CmdletBinding()]
@@ -67,12 +73,7 @@ Function Register-YaraCustomAsset {
 	)
 	[String]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
 	[String[]]$RootChildItem = Get-ChildItem -LiteralPath $RootPath -Recurse -Force -File |
-		Where-Object -FilterScript { $_.Extension -iin @(
-			'.yar',
-			'.yara',
-			'.yarac',
-			'.yarc'
-		) } |
+		Where-Object -FilterScript { $_.Extension -iin $AllowExtensions } |
 		ForEach-Object -Process { $_.FullName -ireplace $RootPathRegExEscape, '' }
 	[String[]]$RootChildItemSelect = $RootChildItem |
 		Where-Object -FilterScript { $_ -imatch $Selection }
@@ -86,7 +87,7 @@ Function Register-YaraUnofficialAsset {
 		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
 	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_YARA -ChildPath 'index.tsv') @TsvParameters |
-		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Path.Length -gt 0 } |
+		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Type -ine 'Unusable' -and $_.Path.Length -gt 0 } |
 		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject[]]$IndexTableSelect = $IndexTable |
 		Where-Object -FilterScript { $_.Name -imatch $Selection }
