@@ -8,14 +8,10 @@ Import-Module -Name (
 ) -Scope 'Local'
 $SoftwaresVersionTable = [Ordered]@{
 	'PowerShell' = $PSVersionTable.PSVersion.ToString()
-	"PowerShell/Gallery" = @"
-hugoalh.GitHubActionsToolkit = $(
-	Get-InstalledModule -Name 'hugoalh.GitHubActionsToolkit' -AllVersions |
+	"powershell/gallery:hugoalh.GitHubActionsToolkit" = Get-InstalledModule -Name 'hugoalh.GitHubActionsToolkit' -AllVersions |
 		Select-Object -ExpandProperty 'Version' |
 		Join-String -Separator ', '
-)
-"@
-	'Git' = git --version |
+	'Git' = git --no-pager --version |
 		Join-String -Separator "`n"
 	'Git LFS' = git-lfs --version |
 		Join-String -Separator "`n"
@@ -34,11 +30,10 @@ If ($ToolHasYara) {
 	$SoftwaresVersionTable.('YARA') = yara --version |
 		Join-String -Separator "`n"
 }
-$SoftwaresVersionTable |
-	ConvertTo-Json -Depth 100 -Compress |
-	Set-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Confirm:$False -Encoding 'UTF8NoBOM'
 Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ROOT
-git clone --depth 1 https://github.com/hugoalh/scan-virus-ghaction-assets.git asset
+git --no-pager clone --depth 1 https://github.com/hugoalh/scan-virus-ghaction-assets.git asset
+$SoftwaresVersionTable.('git/github:hugoalh/scan-virus-ghaction-assets') = git --no-pager log '--format=%H' --no-color |
+	Join-String -Separator "`n"
 Set-Location -LiteralPath $CurrentWorkingDirectory
 @(
 	'.git',
@@ -46,8 +41,7 @@ Set-Location -LiteralPath $CurrentWorkingDirectory
 	'.gitattributes',
 	'.gitignore',
 	'README.md',
-	'_updater.ps1',
-	'_updater_gitignore.txt'
+	'updater.ps1'
 ) |
 	ForEach-Object -Process { Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath $_ } |
 	ForEach-Object -Process { Remove-Item -LiteralPath $_ -Recurse -Force -Confirm:$False }
@@ -57,6 +51,9 @@ If (!$ToolHasClamAV) {
 If (!$ToolHasYara) {
 	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_YARA -Recurse -Force -Confirm:$False
 }
+$SoftwaresVersionTable |
+	ConvertTo-Json -Depth 100 -Compress |
+	Set-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Confirm:$False -Encoding 'UTF8NoBOM'
 Write-Host -Object 'Softwares Version: '
 [PSCustomObject]$SoftwaresVersionTable |
 	Format-List |
