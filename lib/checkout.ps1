@@ -32,6 +32,8 @@ If ($ToolHasYara) {
 }
 Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ROOT
 git --no-pager clone --depth 1 https://github.com/hugoalh/scan-virus-ghaction-assets.git asset
+Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_ROOT
+$Null = git --no-pager config --global --add 'safe.directory' $Env:SCANVIRUS_GHACTION_ASSET_ROOT
 $SoftwaresVersionTable.('git/github:hugoalh/scan-virus-ghaction-assets') = git --no-pager log '--format=%H' --no-color |
 	Join-String -Separator "`n"
 Set-Location -LiteralPath $CurrentWorkingDirectory

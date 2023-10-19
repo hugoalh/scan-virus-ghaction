@@ -1,5 +1,11 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
+Import-Module -Name (
+	@(
+		'control'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
+) -Scope 'Local'
 [Hashtable[]]$GitCommitsProperties = @(
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Transform = {
 		Param ([String]$Item)
@@ -33,7 +39,7 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -Index 0
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
-$Null = git --no-pager config --global --add 'safe.directory' ([System.Environment]::CurrentDirectory)
+$Null = git --no-pager config --global --add 'safe.directory' $CurrentWorkingDirectory
 Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
