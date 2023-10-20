@@ -228,7 +228,9 @@ Function Start-ClamAVDaemon {
 		If ($LASTEXITCODE -ne 0) {
 			Throw $Result
 		}
-		Write-GitHubActionsWarning -Message $Result
+		If ($Result.Length -gt 0) {
+			Write-GitHubActionsWarning -Message $Result
+		}
 	}
 	Catch {
 		Write-GitHubActionsFail -Message "Unable to start ClamAV daemon: $_"
