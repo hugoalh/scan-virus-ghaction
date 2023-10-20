@@ -58,7 +58,7 @@ Import-Module -Name (
 $InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customassets_directory' -EmptyStringAsNull
 If ($Null -ine $InputClamAVCustomAssetsDirectory) {
 	If (!(Test-Path -LiteralPath $InputClamAVCustomAssetsDirectory -PathType 'Container')) {
-		Write-GitHubActionsFail -Message "``$InputClamAVCustomAssetsDirectory`` is not a valid ClamAV custom assets absolute directory path!"
+		Write-GitHubActionsFail -Message "``$InputClamAVCustomAssetsDirectory`` is not a valid and exist ClamAV custom assets absolute directory path!"
 	}
 }
 [String]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
@@ -71,7 +71,7 @@ If ($Null -ine $InputClamAVCustomAssetsDirectory) {
 $InputYaraCustomAssetsDirectory = Get-GitHubActionsInput -Name 'yara_customassets_directory' -EmptyStringAsNull
 If ($Null -ine $InputYaraCustomAssetsDirectory) {
 	If (!(Test-Path -LiteralPath $InputYaraCustomAssetsDirectory -PathType 'Container')) {
-		Write-GitHubActionsFail -Message "``$InputYaraCustomAssetsDirectory`` is not a valid YARA custom assets absolute directory path!"
+		Write-GitHubActionsFail -Message "``$InputYaraCustomAssetsDirectory`` is not a valid and exist YARA custom assets absolute directory path!"
 	}
 }
 [String]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
@@ -122,26 +122,25 @@ If ($InputClamAVEnable) {
 		Update-ClamAV
 	}
 	If ($InputClamAVCustomAssetsDirectory.Length -gt 0) {
-		Write-Host -Object 'Register ClamAV custom asset.'
-		[PSCustomObject]$Result = Register-ClamAVCustomAsset -RootPath $InputClamAVCustomAssetsDirectory -Selection $InputClamAVCustomAssetsUse
-		$StatisticsTotal.Issues += $Result.Issues
+		Write-Host -Object 'Register ClamAV custom assets.'
+		Register-ClamAVCustomAssets -RootPath $InputClamAVCustomAssetsDirectory -Selection $InputClamAVCustomAssetsUse
 	}
 	If ($InputClamAVUnofficialAssetsUse.Length -gt 0) {
-		Write-Host -Object 'Register ClamAV unofficial asset.'
-		[PSCustomObject]$Result = Register-ClamAVUnofficialAsset -Selection $InputClamAVUnofficialAssetsUse
+		Write-Host -Object 'Register ClamAV unofficial assets.'
+		[PSCustomObject]$Result = Register-ClamAVUnofficialAssets -Selection $InputClamAVUnofficialAssetsUse
 		$StatisticsTotal.Issues += $Result.Issues
 	}
 }
 If ($InputYaraEnable) {
 	If ($InputYaraCustomAssetsDirectory.Length -gt 0) {
-		Write-Host -Object 'Register YARA custom asset.'
-		Register-YaraCustomAsset -RootPath $InputYaraCustomAssetsDirectory -Selection $InputYaraCustomAssetsUse
+		Write-Host -Object 'Register YARA custom assets.'
+		Register-YaraCustomAssets -RootPath $InputYaraCustomAssetsDirectory -Selection $InputYaraCustomAssetsUse
 	}
 	If ($InputYaraUnofficialAssetsUse.Length -gt 0) {
-		Write-Host -Object 'Register YARA unofficial asset.'
-		Register-YaraUnofficialAsset -Selection $InputYaraUnofficialAssetsUse
+		Write-Host -Object 'Register YARA unofficial assets.'
+		Register-YaraUnofficialAssets -Selection $InputYaraUnofficialAssetsUse
 	}
-	Register-YaraUnofficialAssetFallback
+	Register-YaraUnofficialAssetsFallback
 }
 If ($InputClamAVEnable) {
 	Write-Host -Object 'Start ClamAV daemon.'
@@ -154,7 +153,7 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionName,
 		[Parameter(Mandatory = $True, Position = 1)][AllowNull()][PSCustomObject]$Meta
 	)
-	Enter-GitHubActionsLogGroup -Title "[$SessionName] Begin."
+	Enter-GitHubActionsLogGroup -Title "[$SessionName] Begin session."
 	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $CurrentWorkingDirectory -Recurse -Force |
 		Sort-Object -Property @('FullName') |
 		ForEach-Object -Process {

@@ -31,9 +31,9 @@ If ($ToolHasYara) {
 		Join-String -Separator "`n"
 }
 Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ROOT
-git --no-pager clone --depth 1 https://github.com/hugoalh/scan-virus-ghaction-assets.git asset
-Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_ROOT
-$Null = git --no-pager config --global --add 'safe.directory' $Env:SCANVIRUS_GHACTION_ASSET_ROOT
+git --no-pager clone --depth 1 https://github.com/hugoalh/scan-virus-ghaction-assets.git assets
+Set-Location -LiteralPath $Env:SCANVIRUS_GHACTION_ASSETS_ROOT
+$Null = git --no-pager config --global --add 'safe.directory' $Env:SCANVIRUS_GHACTION_ASSETS_ROOT
 $SoftwaresVersionTable.('git/github:hugoalh/scan-virus-ghaction-assets') = git --no-pager log '--format=%H' --no-color |
 	Join-String -Separator "`n"
 Set-Location -LiteralPath $CurrentWorkingDirectory
@@ -45,13 +45,13 @@ Set-Location -LiteralPath $CurrentWorkingDirectory
 	'README.md',
 	'updater.ps1'
 ) |
-	ForEach-Object -Process { Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_ROOT -ChildPath $_ } |
+	ForEach-Object -Process { Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_ROOT -ChildPath $_ } |
 	ForEach-Object -Process { Remove-Item -LiteralPath $_ -Recurse -Force -Confirm:$False }
 If (!$ToolHasClamAV) {
-	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -Recurse -Force -Confirm:$False
+	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSETS_CLAMAV -Recurse -Force -Confirm:$False
 }
 If (!$ToolHasYara) {
-	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSET_YARA -Recurse -Force -Confirm:$False
+	Remove-Item -LiteralPath $Env:SCANVIRUS_GHACTION_ASSETS_YARA -Recurse -Force -Confirm:$False
 }
 $SoftwaresVersionTable |
 	ConvertTo-Json -Depth 100 -Compress |

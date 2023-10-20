@@ -45,13 +45,13 @@ Function Disable-GitLfsProcess {
 	[OutputType([Void])]
 	Param ()
 	Try {
-		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip' |
+		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip' *>&1 |
 			Write-GitHubActionsDebug
-		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f' |
+		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f' *>&1 |
 			Write-GitHubActionsDebug
 	}
 	Catch {
-		Write-GitHubActionsWarning -Message "Unable to config Git LFS: $_"
+		Write-GitHubActionsWarning -Message "Unable to disable Git LFS process: $_"
 	}
 }
 Function Get-GitCommitIndex {

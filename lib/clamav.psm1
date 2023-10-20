@@ -7,35 +7,35 @@ Import-Module -Name (
 		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [String[]]$AllowExtensions = @(
-	'.cat',
-	'.cbc',
-	'.cdb',
-	'.crb',
-	'.fp',
-	'.ftm',
-	'.gdb',
-	'.hdb',
-	'.hdu',
-	'.hsb',
-	'.hsu',
-	'.idb',
-	'.ign',
-	'.ign2',
-	'.info',
-	'.ldb',
-	'.ldu',
-	'.mdb',
-	'.mdu',
-	'.msb',
-	'.msu',
-	'.ndb',
-	'.ndu',
-	'.pdb',
-	'.pwdb',
-	'.sfp',
-	'.wdb',
-	'.yar',
-	'.yara'
+	'*.cat',
+	'*.cbc',
+	'*.cdb',
+	'*.crb',
+	'*.fp',
+	'*.ftm',
+	'*.gdb',
+	'*.hdb',
+	'*.hdu',
+	'*.hsb',
+	'*.hsu',
+	'*.idb',
+	'*.ign',
+	'*.ign2',
+	'*.info',
+	'*.ldb',
+	'*.ldu',
+	'*.mdb',
+	'*.mdu',
+	'*.msb',
+	'*.msu',
+	'*.ndb',
+	'*.ndu',
+	'*.pdb',
+	'*.pwdb',
+	'*.sfp',
+	'*.wdb',
+	'*.yar',
+	'*.yara'
 )
 Function Invoke-ClamAVScan {
 	[CmdletBinding()]
@@ -92,43 +92,74 @@ Function Invoke-ClamAVScan {
 	}
 	Write-Output -InputObject ([PSCustomObject]$Result)
 }
-Function Register-ClamAVCustomAsset {
+Function Register-ClamAVCustomAssets {
 	[CmdletBinding()]
-	[OutputType([PSCustomObject])]
+	[OutputType([Void])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$RootPath,
 		[Parameter(Mandatory = $True, Position = 1)][String]$Selection
 	)
 	[String]$RootPathRegExEscape = "^$([RegEx]::Escape($RootPath))[\\/]"
-	[String[]]$RootChildItem = Get-ChildItem -LiteralPath $RootPath -Recurse -Force -File |
-		Where-Object -FilterScript { $_.Extension -iin $AllowExtensions } |
-		ForEach-Object -Process { $_.FullName -ireplace $RootPathRegExEscape, '' }
-	[String[]]$RootChildItemSelect = $RootChildItem |
-		Where-Object -FilterScript { $_ -imatch $Selection }
-	[String[]]$Issues = @()
-	ForEach ($ItemSelect In $RootChildItemSelect) {
-		[String]$PathSource = Join-Path -Path $RootPath -ChildPath $ItemSelect
-		[String]$PathDestination = Join-Path -Path $Env:SCANVIRUS_GHACTION_CLAMAV_DATA -ChildPath ($ItemSelect -ireplace '[\\/]', '__')
+	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $RootPath -Include $AllowExtensions -Recurse -Force -File |
+		Sort-Object -Property @('FullName') |
+		ForEach-Object -Process {
+			[Hashtable]$ElementObject = @{
+				FullName = $_.FullName
+				Path = $_.FullName -ireplace $RootPathRegExEscape, ''
+				Size = $_.Length
+			}
+			$ElementObject.IsSelect = $ElementObject.Path -imatch $Selection
+			Write-Output -InputObject ([PSCustomObject]$ElementObject)
+		}
+	[PSCustomObject]@{
+		All = $Elements.Count
+		Select = $Elements |
+			Where-Object -FilterScript { $_.IsSelect } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	} |
+		Format-List |
+		Out-String -Width 120 |
+		Write-GitHubActionsDebug
+	$Elements |
+		Format-Table -Property @(
+			@{ Name = ''; Expression = { $_.IsSelect ? '+' : '' } },
+			@{ Expression = 'Size'; Alignment = 'Right' },
+			'Path'
+		) -AutoSize:$False -Wrap |
+		Out-String -Width 120 |
+		Write-GitHubActionsDebug
+	[PSCustomObject[]]$Issues = @()
+	ForEach ($Element In $Elements) {
 		Try {
-			Copy-Item -LiteralPath $PathSource -Destination $PathDestination -Confirm:$False
+			Copy-Item -LiteralPath $Element.FullName -Destination (Join-Path -Path $Env:SCANVIRUS_GHACTION_CLAMAV_DATA -ChildPath ($Element.Path -ireplace '[\\/]', '__')) -Confirm:$False
 		}
 		Catch {
-			[String]$Message = "Unable to register ClamAV custom asset ``$($ItemSelect)``: $_"
-			Write-GitHubActionsError -Message $Message
-			$Issues += $Message
+			$Issues += [PSCustomObject]@{
+				Element = $Element.FullName
+				Reason = $_
+			}
 		}
 	}
-	Write-Output -InputObject ([PSCustomObject]@{
-		Issues = $Issues
-	})
+	If ($Issues.Count -gt 0) {
+		Write-GitHubActionsFail -Message @"
+Unable to register ClamAV custom assets:
+
+$(
+$Issues |
+	ForEach-Object -Process { "$($_.Element): $($_.Reason)" } |
+	Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+	}
 }
-Function Register-ClamAVUnofficialAsset {
+Function Register-ClamAVUnofficialAssets {
 	[CmdletBinding()]
 	[OutputType([PSCustomObject])]
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Type -ine 'Unusable' -and $_.Path.Length -gt 0 } |
 		Sort-Object -Property @('Type', 'Name')
 	[String[]]$IndexRegister = @()
@@ -144,9 +175,7 @@ Function Register-ClamAVUnofficialAsset {
 		Where-Object -FilterScript { $_.Name -iin $IndexRegister }
 	[PSCustomObject]@{
 		All = $IndexTable.Count
-		Select = $IndexTableSelect |
-			Measure-Object |
-			Select-Object -ExpandProperty 'Count'
+		Select = $IndexTableSelect.Count
 	} |
 		Format-List |
 		Out-String -Width 120 |
@@ -159,21 +188,34 @@ Function Register-ClamAVUnofficialAsset {
 		) -AutoSize:$False -Wrap |
 		Out-String -Width 120 |
 		Write-GitHubActionsDebug
-	[String[]]$Issues = @()
+	[PSCustomObject[]]$Issues = @()
 	ForEach ($IndexSelect In $IndexTableSelect) {
-		[String]$PathSource = Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSET_CLAMAV -ChildPath $IndexSelect.Path
+		[String]$PathSource = Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_CLAMAV -ChildPath $IndexSelect.Path
 		[String]$PathDestination = Join-Path -Path $Env:SCANVIRUS_GHACTION_CLAMAV_DATA -ChildPath ($IndexSelect.Path -ireplace '[\\/]', '__')
 		Try {
 			Copy-Item -LiteralPath $PathSource -Destination $PathDestination -Confirm:$False
 		}
 		Catch {
-			[String]$Message = "Unable to register ClamAV unofficial asset ``$($IndexSelect.Name)``: $_"
-			Write-GitHubActionsError -Message $Message
-			$Issues += $Message
+			$Issues += [PSCustomObject]@{
+				Name = $IndexSelect.Name
+				Reason = $_
+			}
 		}
 	}
+	If ($Issues.Count -gt 0) {
+		Write-GitHubActionsError -Message @"
+Unable to register ClamAV unofficial assets:
+
+$(
+$Issues |
+	ForEach-Object -Process { "$($_.Name): $($_.Reason)" } |
+	Join-String -Separator "`n" -FormatString '- {0}'
+)
+"@
+	}
 	Write-Output -InputObject ([PSCustomObject]@{
-		Issues = $Issues
+		Issues = $Issues |
+			ForEach-Object -Process { "Unable to register ClamAV unofficial asset ``$($_.Name)``: $($_.Reason)" }
 	})
 }
 Function Start-ClamAVDaemon {
@@ -181,8 +223,12 @@ Function Start-ClamAVDaemon {
 	[OutputType([Void])]
 	Param ()
 	Try {
-		clamd |
-			Write-GitHubActionsDebug
+		[String]$Result = clamd *>&1 |
+			Join-String -Separator "`n"
+		If ($LASTEXITCODE -ne 0) {
+			Throw $Result
+		}
+		Write-GitHubActionsWarning -Message $Result
 	}
 	Catch {
 		Write-GitHubActionsFail -Message "Unable to start ClamAV daemon: $_"
@@ -200,7 +246,7 @@ Function Update-ClamAV {
 	[OutputType([Void])]
 	Param ()
 	Try {
-		freshclam --verbose |
+		freshclam --verbose *>&1 |
 			Write-GitHubActionsDebug
 	}
 	Catch {
@@ -212,8 +258,8 @@ This is fine, but the local assets maybe outdated.
 }
 Export-ModuleMember -Function @(
 	'Invoke-ClamAVScan',
-	'Register-ClamAVCustomAsset',
-	'Register-ClamAVUnofficialAsset',
+	'Register-ClamAVCustomAssets',
+	'Register-ClamAVUnofficialAssets',
 	'Start-ClamAVDaemon',
 	'Stop-ClamAVDaemon',
 	'Update-ClamAV'

@@ -119,7 +119,7 @@ jobs:
 
 ### `git_ignores`
 
-`<ScriptBlock>` Ignores for the Git commits, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
+`<ScriptBlock>` Ignores by the Git commits, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore). Ignored Git commits will not be scanned.
 
 The script block should use this pattern in order to receive argument [`GitCommitMeta`](#gitcommitmeta):
 
@@ -161,7 +161,9 @@ git_ignores: |-
 
 ### `ignores_pre`
 
-`<ScriptBlock>` Ignores for the paths, sessions, and tools before the scan, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
+`<ScriptBlock>` Ignores by the paths, sessions, and tools before the scan, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
+
+To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
 
 The script block should use this pattern in order to receive argument [`ElementPreMeta`](#elementpremeta):
 
@@ -183,7 +185,9 @@ ignores_pre: |-
 
 ### `ignores_post`
 
-`<ScriptBlock>` Ignores for the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
+`<ScriptBlock>` Ignores by the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore).
+
+To ignore only by the paths and/or sessions, use input [`ignores_pre`](#ignores_pre) is more efficiency. To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
 
 The script block should use this pattern in order to receive argument [`ElementPostMeta`](#elementpostmeta):
 
