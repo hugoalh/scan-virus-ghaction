@@ -154,7 +154,7 @@ Function Invoke-Tools {
 		[Parameter(Mandatory = $True, Position = 0)][String]$SessionName,
 		[Parameter(Mandatory = $True, Position = 1)][AllowNull()][PSCustomObject]$Meta
 	)
-	Enter-GitHubActionsLogGroup -Title "Scan session `"$SessionName`"."
+	Enter-GitHubActionsLogGroup -Title "[$SessionName] Begin."
 	[PSCustomObject[]]$Elements = Get-ChildItem -LiteralPath $CurrentWorkingDirectory -Recurse -Force |
 		Sort-Object -Property @('FullName') |
 		ForEach-Object -Process {
@@ -197,11 +197,11 @@ Function Invoke-Tools {
 		}
 	If ($Elements.Count -eq 0){
 		[String]$Message = @"
-Unable to scan session `"$SessionName`": Empty!
+[$SessionName] Unable to scan: Empty!
 If this is incorrect, probably something went wrong.
 "@
 		Write-GitHubActionsError -Message $Message
-		$Script:StatisticsTotal.IssuesOperations += $Message
+		$Script:StatisticsTotal.Issues += $Message
 		Exit-GitHubActionsLogGroup
 		Return
 	}
@@ -254,7 +254,7 @@ If this is incorrect, probably something went wrong.
 	}
 	[PSCustomObject[]]$ResultFounds = @()
 	If ($InputClamAVEnable -and $StatisticsSession.ElementClamAVScan -gt 0) {
-		Write-Host -Object 'Scan via ClamAV.'
+		Write-Host -Object "[$SessionName] Scan via ClamAV."
 		[PSCustomObject]$Result = Invoke-ClamAVScan -Element (
 			$Elements |
 				Where-Object -FilterScript { !$_.SkipClamAV } |
@@ -262,7 +262,7 @@ If this is incorrect, probably something went wrong.
 		)
 		If ($Result.Issues.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
-Unexpected issues in session `"$SessionName`" via ClamAV:
+[$SessionName] Unexpected issues with ClamAV:
 
 $(
 $Result.Issues |
@@ -291,7 +291,7 @@ $Result.Issues |
 		$Script:StatisticsTotal.SizeClamAVFound += $StatisticsSession.SizeClamAVFound
 	}
 	If ($InputYaraEnable -and $StatisticsSession.ElementYaraScan -gt 0) {
-		Write-Host -Object 'Scan via YARA.'
+		Write-Host -Object "[$SessionName] Scan via YARA."
 		[PSCustomObject]$Result = Invoke-Yara -Element (
 			$Elements |
 				Where-Object -FilterScript { !$_.SkipYara } |
@@ -299,7 +299,7 @@ $Result.Issues |
 		)
 		If ($Result.Issues.Count -gt 0) {
 			Write-GitHubActionsError -Message @"
-Unexpected issues in session `"$SessionName`" via YARA:
+[$SessionName] Unexpected issues with YARA:
 
 $(
 $Result.Issues |
@@ -392,10 +392,10 @@ $Result.Issues |
 				Measure-Object
 		).Count -gt 0) {
 			$Script:StatisticsTotal.SessionsFound += $SessionName
-			Write-GitHubActionsError -Message "Found in session `"$SessionName`"!"
+			Write-GitHubActionsError -Message "[$SessionName] Found virus!"
 		}
 		Else {
-			Write-GitHubActionsWarning -Message "Found in session `"$SessionName`" but ignored!"
+			Write-GitHubActionsWarning -Message "[$SessionName] Found virus but ignored!"
 		}
 	}
 	Write-Host -Object $StatisticsSession.GetStatisticsTableString(120)
@@ -411,7 +411,6 @@ If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 	[UInt64]$GitCommitsPassCount = 0
 	For ([UInt64]$GitCommitsHashIndex = 0; $GitCommitsHashIndex -lt $GitCommitsHash.Count; $GitCommitsHashIndex += 1) {
 		[String]$GitCommitHash = $GitCommitsHash[$GitCommitsHashIndex]
-		[String]$GitSessionTitle = "$GitCommitHash [#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count)]"
 		If ($InputGitLimit -gt 0 -and $GitCommitsPassCount -ge $InputGitLimit) {
 			Write-Host -Object "Reach the Git commits count limit, these Git commits are ignore: $(
 				@($GitCommitsHashIndex..($GitCommitsHash.Count - 1)) |
@@ -425,11 +424,11 @@ If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 			Continue
 		}
 		If (Invoke-ProtectiveScriptBlock -Name 'git_ignores' -ScriptBlock $InputGitIgnores -ArgumentList @($GitCommit)) {
-			Write-Host -Object "Ignore Git commit $($GitSessionTitle)."
+			Write-Host -Object "[$GitCommitHash] Ignore Git commit (#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count))."
 			Continue
 		}
 		$GitCommitsPassCount += 1
-		Enter-GitHubActionsLogGroup -Title "Git checkout for commit $GitSessionTitle."
+		Enter-GitHubActionsLogGroup -Title "[$GitCommitHash] Git checkout for commit (#$($GitCommitsHashIndex + 1)/$($GitCommitsHash.Count))."
 		$GitCommit |
 			Format-List -Property @('AuthorDate', 'AuthorName', 'CommitHash', 'CommitterDate', 'CommitterName', 'Subject') |
 			Out-String -Width 120 |
@@ -442,9 +441,10 @@ If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 			}
 		}
 		Catch {
+			[String]$Message = "[$GitCommitHash] Unexpected issues when Git checkout: $_"
+			Write-GitHubActionsError -Message $Message
+			$StatisticsTotal.Issues += $Message
 			Exit-GitHubActionsLogGroup
-			Write-GitHubActionsError -Message "Unexpected issues when invoke Git checkout with commit hash ``$($GitCommitHash)``: $_"
-			$StatisticsTotal.IssuesOperations += "Git/$GitCommitHash"
 			Continue
 		}
 		Exit-GitHubActionsLogGroup
