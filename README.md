@@ -82,7 +82,7 @@ jobs:
 
 ### `clamav_customassets_directory`
 
-`<String>` ClamAV custom assets absolute directory path, must be a mapped directory on the container (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
+`<String>` ClamAV custom assets absolute directory path, must be a mapped directory (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
 
 ### `clamav_customassets_use`
 
@@ -102,7 +102,7 @@ jobs:
 
 ### `yara_customassets_directory`
 
-`<String>` YARA custom assets absolute directory path, must be a mapped directory on the container (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
+`<String>` YARA custom assets absolute directory path, must be a mapped directory (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
 
 ### `yara_customassets_use`
 

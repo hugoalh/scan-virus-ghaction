@@ -14,7 +14,7 @@ inputs:
     description: "{RegEx[]} ClamAV unofficial assets to use."
     required: false
   clamav_customassets_directory:
-    description: "{String} ClamAV custom assets absolute directory path, must be a mapped directory on the container."
+    description: "{String} ClamAV custom assets absolute directory path, must be a mapped directory."
     required: false
   clamav_customassets_use:
     description: "{RegEx[]} ClamAV custom assets to use."
@@ -28,7 +28,7 @@ inputs:
     description: "{RegEx[]} YARA unofficial assets to use."
     required: false
   yara_customassets_directory:
-    description: "{String} YARA custom assets absolute directory path, must be a mapped directory on the container."
+    description: "{String} YARA custom assets absolute directory path, must be a mapped directory."
     required: false
   yara_customassets_use:
     description: "{RegEx[]} YARA custom assets to use."
