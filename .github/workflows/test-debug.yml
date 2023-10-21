@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "Test - Debug"
+on:
+  workflow_dispatch:
+    inputs:
+      debug_script:
+        type: "string"
+        description: "{ScriptBlock}"
+        required: true
+jobs:
+  main:
+    name: "Main"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "List Docker Image"
+        run: |
+          docker image ls --all --digests --no-trunc
+      - name: "Scan Repository"
+        uses: "hugoalh/scan-virus-ghaction/_build/clamav@main"
+        with:
+          debug_script: "${{inputs.debug_script}}"
