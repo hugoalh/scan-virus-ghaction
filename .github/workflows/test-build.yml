@@ -58,6 +58,9 @@ jobs:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
+          ignores_post: |-
+            Param($ElementPostMeta)
+            Return ((Get-Random -Minimum 0 -Maximum 2) -eq 1)
           found_summary: "True"
           statistics_summary: "True"
   clamav:
@@ -80,6 +83,9 @@ jobs:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
+          ignores_post: |-
+            Param($ElementPostMeta)
+            Return ((Get-Random -Minimum 0 -Maximum 2) -eq 1)
           found_summary: "True"
           statistics_summary: "True"
   yara:
@@ -100,5 +106,8 @@ jobs:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
+          ignores_post: |-
+            Param($ElementPostMeta)
+            Return ((Get-Random -Minimum 0 -Maximum 2) -eq 1)
           found_summary: "True"
           statistics_summary: "True"
