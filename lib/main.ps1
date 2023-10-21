@@ -163,22 +163,22 @@ Function Invoke-Tools {
 				Size = $_.Length
 				IsDirectory = $_.PSIsContainer
 			}
-			$ElementObject.SkipClamAV = !$InputClamAVEnable -or $ElementObject.IsDirectory -or (Invoke-ProtectiveScriptBlock -Name 'ignores_pre' -ScriptBlock $InputIgnoresPre -ArgumentList @($SessionName, ([PSCustomObject]@{
+			$ElementObject.SkipClamAV = !$InputClamAVEnable -or $ElementObject.IsDirectory -or (Invoke-ProtectiveScriptBlock -Name 'ignores_pre' -ScriptBlock $InputIgnoresPre -ArgumentList @([PSCustomObject]@{
 				Path = $ElementObject.Path
 				Session = [PSCustomObject]@{
 					Name = $SessionName
 					GitCommitMeta = $Meta
 				}
 				Tool = 'clamav'
-			})))
-			$ElementObject.SkipYara = !$InputYaraEnable -or $ElementObject.IsDirectory -or (Invoke-ProtectiveScriptBlock -Name 'ignores_pre' -ScriptBlock $InputIgnoresPre -ArgumentList @($SessionName, ([PSCustomObject]@{
+			}))
+			$ElementObject.SkipYara = !$InputYaraEnable -or $ElementObject.IsDirectory -or (Invoke-ProtectiveScriptBlock -Name 'ignores_pre' -ScriptBlock $InputIgnoresPre -ArgumentList @([PSCustomObject]@{
 				Path = $ElementObject.Path
 				Session = [PSCustomObject]@{
 					Name = $SessionName
 					GitCommitMeta = $Meta
 				}
 				Tool = 'yara'
-			})))
+			}))
 			[String[]]$ElementFlags = @()
 			If ($ElementObject.IsDirectory) {
 				$ElementFlags += 'D'
@@ -346,7 +346,7 @@ $Result.Issues |
 				Tool = $Tool
 				Symbol = $Symbol
 				Hit = $_.Count
-				IsIgnore = Invoke-ProtectiveScriptBlock -Name 'ignores_post' -ScriptBlock $InputIgnoresPost -ArgumentList @($SessionName, ([PSCustomObject]@{
+				IsIgnore = Invoke-ProtectiveScriptBlock -Name 'ignores_post' -ScriptBlock $InputIgnoresPost -ArgumentList @([PSCustomObject]@{
 					Path = $Element
 					Session = [PSCustomObject]@{
 						Name = $SessionName
@@ -354,7 +354,7 @@ $Result.Issues |
 					}
 					Symbol = $Symbol
 					Tool = $Tool
-				}))
+				})
 			})
 		} |
 		Sort-Object -Property @('Path', 'Tool', 'Symbol') |
