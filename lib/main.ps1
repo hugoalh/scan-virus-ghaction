@@ -374,7 +374,7 @@ $Result.Issues |
 				Write-Host
 		}
 		If ($InputFoundSummary) {
-			Add-StepSummaryFound -Session $SessionId -Issue (
+			Add-StepSummaryFound -Session $SessionName -Issue (
 				$ResultFoundResolve |
 					ForEach-Object -Process { [PSCustomObject]@{
 						Indicator = $_.IsIgnore ? '🟡' : '🔴'
