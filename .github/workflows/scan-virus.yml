@@ -16,7 +16,7 @@ on:
     inputs:
       git_integrate:
         type: "choice"
-        description: "{Boolean} Whether to integrate with Git to perform scan by the commits."
+        description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
         required: false
         default: "False"
         options:
@@ -24,7 +24,7 @@ on:
           - "True"
       git_limit:
         type: "string"
-        description: "{UInt} Limit on how many Git commits will scan."
+        description: "{UInt64} Limit on how many Git commits will scan."
         required: false
         default: "0"
       git_reverse:
@@ -38,21 +38,18 @@ on:
 jobs:
   main:
     name: "Main"
-    uses: "hugoalh/hugoalh/.github/workflows/reusable-scan-virus.yml@main"
+    uses: "hugoalh/hugoalh/.github/workflows/reusable-scan-virus-1.yml@main"
     with:
       git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"
       git_limit: "${{github.event.inputs.git_limit || '0'}}"
       git_reverse: "${{github.event.inputs.git_reverse || 'False'}}"
-      ignores: |-
-        - Path: "\\.[chln]db$"
-          Symbol: ".+"
-        - Path: "\\.hsb$"
-          Symbol: ".+"
-        - Path: "\\.ign2?$"
-          Symbol: ".+"
-        - Path: "\\.yara?$"
-          Symbol: ".+"
-        - Path: "^\\.git\\/"
-          Symbol: ".+"
-        - Path: "^node_modules\\/"
-          Symbol: ".+"
+      ignores_post: |-
+        Param($ElementPostMeta)
+        Return (
+          $ElementPostMeta.Path -imatch '\.[chln]db$' -or
+          $ElementPostMeta.Path -imatch '\.hsb$' -or
+          $ElementPostMeta.Path -imatch '\.ign2?$' -or
+          $ElementPostMeta.Path -imatch '\.yara?$' -or
+          $ElementPostMeta.Path -imatch '^\.git[\\/]' -or
+          $ElementPostMeta.Path -imatch '^node_modules[\\/]'
+        )
