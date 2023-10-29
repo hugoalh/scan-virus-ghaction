@@ -8,9 +8,7 @@ Import-Module -Name (
 ) -Scope 'Local'
 [String[]]$AllowExtensions = @(
 	'*.yar',
-	'*.yara',
-	'*.yarac',
-	'*.yarc'
+	'*.yara'
 )
 [String[]]$RulesPath = @()
 Function Invoke-Yara {

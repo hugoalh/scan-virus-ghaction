@@ -112,6 +112,9 @@ Class ScanVirusStatistics {
 		Add-StepSummaryStatistics -StatisticsTable $This.GetStatisticsTable() -Issues $This.Issues -SessionsFound $This.SessionsFound
 	}
 	[Byte]GetExitCode() {
-		Return (($This.SessionsFound.Count -gt 0) ? 1 : 0)
+		Return (((
+			$This.SizeFound |
+				Measure-Object -Sum
+		).Sum -gt 0) ? 1 : 0)
 	}
 }

@@ -39,22 +39,22 @@ Import-Module -Name (
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -Index 0
 [Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
-$Null = git --no-pager config --global --add 'safe.directory' $CurrentWorkingDirectory
+$Null = git --no-pager config --global --add safe.directory $CurrentWorkingDirectory
 Function Disable-GitLfsProcess {
 	[CmdletBinding()]
 	[OutputType([Void])]
 	Param ()
 	Try {
-		git --no-pager config --global 'filter.lfs.process' 'git-lfs filter-process --skip' *>&1 |
+		git --no-pager config --global filter.lfs.process 'git-lfs filter-process --skip' *>&1 |
 			Write-GitHubActionsDebug
-		git --no-pager config --global 'filter.lfs.smudge' 'git-lfs smudge --skip -- %f' *>&1 |
+		git --no-pager config --global filter.lfs.smudge 'git-lfs smudge --skip -- %f' *>&1 |
 			Write-GitHubActionsDebug
 	}
 	Catch {
 		Write-GitHubActionsWarning -Message "Unable to disable Git LFS process: $_"
 	}
 }
-Function Get-GitCommitIndex {
+Function Get-GitCommitsIndex {
 	[CmdletBinding()]
 	[OutputType([String[]])]
 	Param (
@@ -71,7 +71,7 @@ Function Get-GitCommitIndex {
 		Write-Output -InputObject $Result -NoEnumerate
 	}
 	Catch {
-		Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
+		Write-GitHubActionsError -Message "Unable to get Git commit index: $_"
 		Write-Output -InputObject @() -NoEnumerate
 	}
 }
@@ -97,7 +97,7 @@ Function Get-GitCommitMeta {
 			}
 		}
 		Catch {
-			Write-GitHubActionsError -Message "Unexpected Git database issue: $_"
+			Write-GitHubActionsError -Message "Unable to get Git commit meta $($Index): $_"
 			Return
 		}
 	}
@@ -142,7 +142,8 @@ Function Test-IsGitRepository {
 	}
 	Catch {
 		Write-GitHubActionsError -Message @"
-Unable to integrate with Git: $_ $Result
+Unable to integrate with Git: $_
+$Result
 If this is incorrect, probably Git database is broken and/or invalid.
 "@
 		Write-Output -InputObject $False
@@ -150,7 +151,7 @@ If this is incorrect, probably Git database is broken and/or invalid.
 }
 Export-ModuleMember -Function @(
 	'Disable-GitLfsProcess',
-	'Get-GitCommitIndex',
+	'Get-GitCommitsIndex',
 	'Get-GitCommitMeta',
 	'Test-IsGitRepository'
 )

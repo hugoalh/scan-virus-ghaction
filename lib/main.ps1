@@ -403,7 +403,7 @@ $Result.Issues |
 Invoke-Tools -SessionName 'Current' -Meta $Null
 If ($InputGitIntegrate -and (Test-IsGitRepository)) {
 	Write-Host -Object 'Get Git commits meta.'
-	[String[]]$GitCommitsHash = Get-GitCommitIndex -SortFromOldest:($InputGitReverse)
+	[String[]]$GitCommitsHash = Get-GitCommitsIndex -SortFromOldest:($InputGitReverse)
 	If ($GitCommitsHash.Count -le 1) {
 		Write-GitHubActionsNotice -Message "Current Git repository has $($GitCommitsHash.Count) commit! If this is incorrect, please define ``actions/checkout`` input ``fetch-depth`` to ``0`` and re-trigger the workflow."
 	}

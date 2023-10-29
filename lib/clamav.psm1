@@ -54,7 +54,7 @@ Function Invoke-ClamAVScan {
 	) -Confirm:$False -NoNewline -Encoding 'UTF8NoBOM'
 	[String[]]$Output = @()
 	Try {
-		$Output += clamdscan --fdpass --file-list="$($ScanListFile.FullName)" --multiscan *>&1 |
+		$Output += clamdscan --fdpass "--file-list=$($ScanListFile.FullName)" --multiscan *>&1 |
 			Write-GitHubActionsDebug -PassThru
 	}
 	Catch {
