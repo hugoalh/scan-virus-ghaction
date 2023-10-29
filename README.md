@@ -178,7 +178,7 @@ For example, to ignore path `node_modules`:
 ```yml
 ignores_pre: |-
   Param($ElementPreMeta)
-  Return ($ElementPreMeta.Path -imatch '^node_modules\\/')
+  Return ($ElementPreMeta.Path -imatch '^node_modules[\\/]')
 ```
 
 > **⚠️ Important:** PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
@@ -309,7 +309,7 @@ Return $Result
             git_limit: 100
             ignores_pre: |-
               Param($ElementPreMeta)
-              Return ($Meta.Path -imatch '^node_modules\\/')
+              Return ($Meta.Path -imatch '^node_modules[\\/]')
   ```
 
 ## 📚 Guide
