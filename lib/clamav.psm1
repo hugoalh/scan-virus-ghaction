@@ -130,7 +130,10 @@ Function Register-ClamAVCustomAssets {
 		Out-String -Width 120 |
 		Write-GitHubActionsDebug
 	[PSCustomObject[]]$Issues = @()
-	ForEach ($Element In $Elements) {
+	ForEach ($Element In (
+		$Elements |
+			Where-Object -FilterScript { $_.IsSelect }
+	)) {
 		Try {
 			Copy-Item -LiteralPath $Element.FullName -Destination (Join-Path -Path $Env:SCANVIRUS_GHACTION_CLAMAV_DATA -ChildPath ($Element.Path -ireplace '[\\/]', '__')) -Confirm:$False
 		}
