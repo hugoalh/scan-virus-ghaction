@@ -7,6 +7,7 @@
 > | ✔️ | 🟤 | Pending / Pre Release / Unstable |
 > | ✔️ | 🔵 | Current Release |
 > | ✔️ | 🟢 | Long Term Support |
+> | ✔️ | 🟠 | Maintenance |
 > | ❌ | 🔴 | End of Life |
 
 | **Versions** | **Status** | **🔵 Date** | **🟢 Date** | **🔴 Date** | **Target - GitHub Actions Runner** | **Target - Docker** |
