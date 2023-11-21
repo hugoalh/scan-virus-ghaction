@@ -33,7 +33,7 @@ Get-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Raw -Enco
 	Format-List |
 	Out-String -Width 120
 Exit-GitHubActionsLogGroup
-$InputDebugScript = Get-GitHubActionsInput -Name 'debug_script' -EmptyStringAsNull
+$InputDebugScript = Get-GitHubActionsInput -Name 'debug_script'
 If ($Null -ine $InputDebugScript) {
 	Write-GitHubActionsNotice -Message 'Debug script exists! Only execute debug script.'
 	Invoke-Command -ScriptBlock ([ScriptBlock]::Create($InputDebugScript)) |
@@ -47,54 +47,54 @@ Import-Module -Name @(
 	(Join-Path -Path $PSScriptRoot -ChildPath 'summary.psm1')
 ) -Scope 'Local'
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
-[Boolean]$InputClamAVEnable = ($ToolHasClamAV -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
-[Boolean]$InputClamAVUpdate = ($ToolHasClamAV) ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory -EmptyStringAsNull)) : $False
-[String]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[Boolean]$InputClamAVEnable = ($ToolHasClamAV -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory))) : $ToolForceClamAV
+[Boolean]$InputClamAVUpdate = ($ToolHasClamAV) ? [Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_update' -Mandatory)) : $False
+[String]$InputClamAVUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_unofficialassets_use') ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
-$InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customassets_directory' -EmptyStringAsNull
+$InputClamAVCustomAssetsDirectory = Get-GitHubActionsInput -Name 'clamav_customassets_directory'
 If ($Null -ine $InputClamAVCustomAssetsDirectory) {
 	If (!(Test-Path -LiteralPath $InputClamAVCustomAssetsDirectory -PathType 'Container')) {
 		Write-GitHubActionsFail -Message "``$InputClamAVCustomAssetsDirectory`` is not a valid and exist ClamAV custom assets absolute directory path!"
 	}
 }
-[String]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputClamAVCustomAssetsUse = ((Get-GitHubActionsInput -Name 'clamav_customassets_use') ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
-[Boolean]$InputYaraEnable = ($ToolHasYara -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceYara
-[String]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[Boolean]$InputYaraEnable = ($ToolHasYara -and !$ToolForceYara) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'yara_enable' -Mandatory))) : $ToolForceYara
+[String]$InputYaraUnofficialAssetsUse = ((Get-GitHubActionsInput -Name 'yara_unofficialassets_use') ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
-$InputYaraCustomAssetsDirectory = Get-GitHubActionsInput -Name 'yara_customassets_directory' -EmptyStringAsNull
+$InputYaraCustomAssetsDirectory = Get-GitHubActionsInput -Name 'yara_customassets_directory'
 If ($Null -ine $InputYaraCustomAssetsDirectory) {
 	If (!(Test-Path -LiteralPath $InputYaraCustomAssetsDirectory -PathType 'Container')) {
 		Write-GitHubActionsFail -Message "``$InputYaraCustomAssetsDirectory`` is not a valid and exist YARA custom assets absolute directory path!"
 	}
 }
-[String]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[String]$InputYaraCustomAssetsUse = ((Get-GitHubActionsInput -Name 'yara_customassets_use') ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
-[Boolean]$InputGitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory -EmptyStringAsNull))
-$InputGitIgnoresRaw = Get-GitHubActionsInput -Name 'git_ignores' -EmptyStringAsNull
+[Boolean]$InputGitIntegrate = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_integrate' -Mandatory))
+$InputGitIgnoresRaw = Get-GitHubActionsInput -Name 'git_ignores'
 If ($Null -ne $InputGitIgnoresRaw) {
 	[ScriptBlock]$InputGitIgnores = [ScriptBlock]::Create($InputGitIgnoresRaw)
 }
-[Boolean]$InputGitLfs = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_lfs' -Mandatory -EmptyStringAsNull))
-[UInt64]$InputGitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory -EmptyStringAsNull))
-[Boolean]$InputGitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory -EmptyStringAsNull))
-$InputIgnoresPreRaw = Get-GitHubActionsInput -Name 'ignores_pre' -EmptyStringAsNull
+[Boolean]$InputGitLfs = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_lfs' -Mandatory))
+[UInt64]$InputGitLimit = [UInt64]::Parse((Get-GitHubActionsInput -Name 'git_limit' -Mandatory))
+[Boolean]$InputGitReverse = [Boolean]::Parse((Get-GitHubActionsInput -Name 'git_reverse' -Mandatory))
+$InputIgnoresPreRaw = Get-GitHubActionsInput -Name 'ignores_pre'
 If ($Null -ne $InputIgnoresPreRaw) {
 	[ScriptBlock]$InputIgnoresPre = [ScriptBlock]::Create($InputIgnoresPreRaw)
 }
-$InputIgnoresPostRaw = Get-GitHubActionsInput -Name 'ignores_post' -EmptyStringAsNull
+$InputIgnoresPostRaw = Get-GitHubActionsInput -Name 'ignores_post'
 If ($Null -ne $InputIgnoresPostRaw) {
 	[ScriptBlock]$InputIgnoresPost = [ScriptBlock]::Create($InputIgnoresPostRaw)
 }
-[Boolean]$InputFoundLog = [Boolean]::Parse((Get-GitHubActionsInput -Name 'found_log' -Mandatory -EmptyStringAsNull))
-[Boolean]$InputFoundSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'found_summary' -Mandatory -EmptyStringAsNull))
-[Boolean]$InputStatisticsLog = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_log' -Mandatory -EmptyStringAsNull))
-[Boolean]$InputStatisticsSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_summary' -Mandatory -EmptyStringAsNull))
-[String]$InputDebugListElements = ((Get-GitHubActionsInput -Name 'debug_listelements' -EmptyStringAsNull) ?? '') -isplit '\r?\n' |
+[Boolean]$InputFoundLog = [Boolean]::Parse((Get-GitHubActionsInput -Name 'found_log' -Mandatory))
+[Boolean]$InputFoundSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'found_summary' -Mandatory))
+[Boolean]$InputStatisticsLog = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_log' -Mandatory))
+[Boolean]$InputStatisticsSummary = [Boolean]::Parse((Get-GitHubActionsInput -Name 'statistics_summary' -Mandatory))
+[String]$InputDebugListElements = ((Get-GitHubActionsInput -Name 'debug_listelements') ?? '') -isplit '\r?\n' |
 	Where-Object -FilterScript { $_.Length -gt 0 } |
 	Join-String -Separator '|'
 If (!$InputClamAVEnable -and !$InputYaraEnable) {
