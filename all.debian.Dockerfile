@@ -34,7 +34,7 @@ RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install powershell
 RUN apt-get --assume-yes dist-upgrade
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
-RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.7.2' -Scope 'AllUsers' -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '2.0.0-beta4' -Scope 'AllUsers' -AllowPrerelease -AcceptLicense -Verbose"]
 
 # Initialize ClamAV.
 COPY config/clamd.conf config/freshclam.conf ${SCANVIRUS_GHACTION_CLAMAV_CONFIG}/
