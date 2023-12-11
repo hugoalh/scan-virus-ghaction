@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: "Scan Virus"
+author: "hugoalh"
+description: "Scan virus (including malicious file and malware)."
+inputs:
+  operate_setup_pre:
+    description: "{boolean} Whether to setup at the pre step instead of at the main step."
+    required: false
+    default: "false"
+  operate_cleanup_enable:
+    description: "{boolean} Whether to clean up."
+    required: false
+    default: "false"
+  operate_cleanup_post:
+    description: "{boolean} Whether to clean up at the post step instead of at the main step."
+    required: false
+    default: "false"
+  clamav_enable:
+    description: "{boolean} Whether to use ClamAV."
+    required: false
+    default: "true"
+  clamav_update:
+    description: "{boolean} Whether to update the ClamAV official assets before scan anything."
+    required: false
+    default: "true"
+  clamav_unofficialassets_use:
+    description: "{RegExp[]} ClamAV unofficial assets to use."
+    required: false
+  clamav_customassets_directory:
+    description: "{string} ClamAV custom assets absolute directory path, must be a mapped directory."
+    required: false
+  clamav_customassets_use:
+    description: "{RegExp[]} ClamAV custom assets to use."
+    required: false
+    default: ".+"
+  yara_enable:
+    description: "{boolean} Whether to use YARA."
+    required: false
+    default: "false"
+  yara_unofficialassets_use:
+    description: "{RegExp[]} YARA unofficial assets to use."
+    required: false
+  yara_customassets_directory:
+    description: "{string} YARA custom assets absolute directory path, must be a mapped directory."
+    required: false
+  yara_customassets_use:
+    description: "{RegExp[]} YARA custom assets to use."
+    required: false
+    default: ".+"
+  git_integrate:
+    description: "{boolean} Whether to integrate with Git to perform scan by every commits."
+    required: false
+    default: "false"
+  git_ignores:
+    description: "{function} Ignores by the Git commits."
+    required: false
+  git_lfs:
+    description: "{boolean} Whether to process Git LFS files."
+    required: false
+    default: "false"
+  git_limit:
+    description: "{UInt64} Limit on how many Git commits will scan."
+    required: false
+    default: "0"
+  git_reverse:
+    description: "{boolean} Whether to reverse the scan order of the Git commits."
+    required: false
+    default: "false"
+  ignores_pre:
+    description: "{function} Ignores by the paths, sessions, and tools before the scan."
+    required: false
+  ignores_post:
+    description: "{function} Ignores by the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan."
+    required: false
+  found_log:
+    description: "{boolean} Whether to record elements which found virus in the log."
+    required: false
+    default: "true"
+  found_summary:
+    description: "{boolean} Whether to record elements which found virus in the step summary."
+    required: false
+    default: "false"
+  statistics_log:
+    description: "{boolean} Whether to record statistics in the log."
+    required: false
+    default: "true"
+  statistics_summary:
+    description: "{boolean} Whether to record statistics in the step summary."
+    required: false
+    default: "false"
+outputs:
+  finish:
+    description: "{boolean} Whether this action correctly finished without non catch issues."
+  found:
+    description: "{boolean} Whether there has element which found virus."
+runs:
+  using: "node20"
+  pre: "../dist/pre.js"
+  main: "../dist/main.js"
+  post: "../dist/post.js"
+branding:
+  icon: "shield"
+  color: "red"

@@ -1,0 +1,19 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"allowJs": true,
+		"declaration": false,
+		"declarationMap": false,
+		"emitBOM": false,
+		"emitDeclarationOnly": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"outDir": "./temp",
+		"target": "ES2022"
+	},
+	"include": [
+		"./src/**/*.ts"
+	]
+}

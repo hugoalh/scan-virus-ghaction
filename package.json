@@ -1,0 +1,45 @@
+{
+	"name": "@hugoalh/scan-virus-ghaction",
+	"version": "0.21.0",
+	"description": "A GitHub Action to scan virus (including malicious file and malware).",
+	"keywords": [
+		"github-action",
+		"scan",
+		"virus"
+	],
+	"homepage": "https://github.com/hugoalh/scan-virus-ghaction#readme",
+	"bugs": {
+		"url": "https://github.com/hugoalh/scan-virus-ghaction/issues"
+	},
+	"license": "MIT",
+	"author": "hugoalh",
+	"type": "module",
+	"main": "./dist/main.js",
+	"exports": {
+		"import": "./dist/main.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/hugoalh/scan-virus-ghaction.git"
+	},
+	"scripts": {
+		"build": "node bundler.js"
+	},
+	"dependencies": {
+		"@actions/cache": "^3.2.2",
+		"@actions/core": "^1.10.1"
+	},
+	"devDependencies": {
+		"@types/node": "^20.10.4",
+		"@typescript-eslint/eslint-plugin": "^6.13.2",
+		"@typescript-eslint/parser": "^6.13.2",
+		"@vercel/ncc": "^0.38.1",
+		"eslint": "^8.55.0",
+		"eslint-plugin-only-warn": "^1.1.0",
+		"typescript": "^5.3.3"
+	},
+	"engines": {
+		"node": "^20.9.0"
+	},
+	"private": true
+}

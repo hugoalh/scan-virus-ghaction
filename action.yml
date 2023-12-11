@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
 name: "Scan Virus"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware)."
@@ -82,7 +83,7 @@ outputs:
     description: "{Boolean} Whether there has element which found virus."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.20.1"
+  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.21.0"
 branding:
   icon: "shield"
   color: "red"
