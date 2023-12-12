@@ -13,8 +13,9 @@ jobs:
         shell: "pwsh"
       - name: "List Directory"
         run: |
-          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Recurse -Directory |
-            Select-Object -ExpandProperty 'FullName'
+          Get-ChildItem -LiteralPath '/' -Recurse -Directory -ErrorAction 'Continue' |
+            Select-Object -ExpandProperty 'FullName' |
+            Where-Object -FilterScript { $_ -imatch 'clamav' }
         shell: "pwsh"
   ubuntu:
     name: "Ubuntu"
@@ -26,8 +27,9 @@ jobs:
         shell: "pwsh"
       - name: "List Directory"
         run: |
-          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Recurse -Directory |
-            Select-Object -ExpandProperty 'FullName'
+          Get-ChildItem -LiteralPath '/' -Recurse -Directory -ErrorAction 'Continue' |
+            Select-Object -ExpandProperty 'FullName' |
+            Where-Object -FilterScript { $_ -imatch 'clamav' }
         shell: "pwsh"
   windows:
     name: "Windows"
@@ -39,6 +41,7 @@ jobs:
         shell: "pwsh"
       - name: "List Directory"
         run: |
-          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Recurse -Directory |
-            Select-Object -ExpandProperty 'FullName'
+          Get-ChildItem -LiteralPath '/' -Recurse -Directory -ErrorAction 'Continue' |
+            Select-Object -ExpandProperty 'FullName' |
+            Where-Object -FilterScript { $_ -imatch 'clamav' }
         shell: "pwsh"
