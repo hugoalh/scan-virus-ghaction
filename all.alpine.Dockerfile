@@ -3,7 +3,7 @@
 
 
 
-FROM alpine:3.19 AS stage-env
+FROM alpine:3.18 AS stage-env
 
 # Environment variable for tools, separate each name with comma (`,`) , must corresponding to install packages.
 ENV SCANVIRUS_GHACTION_TOOLS=clamav,yara
@@ -44,7 +44,7 @@ COPY --from=stage-extract-powershell ${PS_INSTALL_FOLDER}/ ${PS_INSTALL_FOLDER}/
 RUN chmod +x $PS_INSTALL_FOLDER/pwsh
 RUN ln -s $PS_INSTALL_FOLDER/pwsh /usr/bin/pwsh
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
-RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '2.0.0' -Scope 'AllUsers' -AllowPrerelease -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '2.0.0-beta4' -Scope 'AllUsers' -AllowPrerelease -AcceptLicense -Verbose"]
 
 # Initialize ClamAV.
 COPY config/clamd.conf config/freshclam.conf ${SCANVIRUS_GHACTION_CLAMAV_CONFIG}/

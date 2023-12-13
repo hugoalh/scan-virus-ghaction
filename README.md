@@ -3,9 +3,9 @@
 [⚖️ MIT](./LICENSE.md)
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square "CodeFactor Grade")](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
 
-|  | **Release - Latest** | **Release - Pre** |
-|:-:|:-:|:-:|
-| [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction) | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=&style=flat-square "GitHub Latest Release Version") (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Release Date")) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=&style=flat-square "GitHub Latest Pre-Release Version") (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Pre-Release Date")) |
+|  | **Heat** | **Release - Latest** | **Release - Pre** |
+|:-:|:-:|:-:|:-:|
+| [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction) | [![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=&logoColor=ffffff&style=flat-square "GitHub Stars")](https://github.com/hugoalh/scan-virus-ghaction/stargazers) \| ![GitHub Total Downloads](https://img.shields.io/github/downloads/hugoalh/scan-virus-ghaction/total?label=&style=flat-square "GitHub Total Downloads") | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=&style=flat-square "GitHub Latest Release Version") (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Release Date")) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=&style=flat-square "GitHub Latest Pre-Release Version") (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Pre-Release Date")) |
 
 A GitHub Action to scan virus (including malicious file and malware).
 
@@ -34,9 +34,9 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 ## 🔰 Begin
 
-### GitHub Actions - Docker
+### GitHub Actions
 
-- **Target Version:** >= v2.311.0, &:
+- **Target Version:** >= v2.308.0, &:
   - Docker
 - **Require Permission:** *N/A*
 
@@ -45,87 +45,25 @@ jobs:
   job_id:
     runs-on: "ubuntu-________"
     steps:
-      - uses: "hugoalh/scan-virus-ghaction@<Tag>" # Docker, All (Default)
-      - uses: "hugoalh/scan-virus-ghaction/clamav@<Tag>" # Docker, Only ClamAV
-      - uses: "hugoalh/scan-virus-ghaction/yara@<Tag>" # Docker, Only YARA
+      - uses: "hugoalh/scan-virus-ghaction@<Tag>"
 ```
 
-### GitHub Actions - Native
-
-> **🧪 Experimental:** Still under development.
-
-- **Target Version:** >= v2.311.0, &:
-  - Git ^ v2.43.0
-  - NodeJS ^ v20.9.0
-  - **For Linux:**
-    - apt-get (Advanced Packaging Tools)
-  - **For MacOS:**
-    - Homebrew ^ v4.1.0
-  - **For Windows:**
-    - Chocolatey ^ v2.2.0
-- **Require Permission:** *N/A*
-
-```yml
-jobs:
-  job_id:
-    runs-on: "________" # Any
-    steps:
-      - uses: "hugoalh/scan-virus-ghaction/native@<Tag>" # Native, All
-      - uses: "hugoalh/scan-virus-ghaction/native-clamav@<Tag>" # Native, Only ClamAV
-      - uses: "hugoalh/scan-virus-ghaction/native-yara@<Tag>" # Native, Only YARA
-```
+> **ℹ️ Notice:** This action also provide editions of each tool:
+>
+> - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Tag>"`
+> - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Tag>"`
 
 ## 🧩 Input
 
 > **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to:
 >
-> | **Variant** | **Behaviour** |
-> |:-:|:--|
-> | All | Scan with the ClamAV official assets. |
-> | Only ClamAV | Scan with the ClamAV official assets. |
-> | Only YARA | Scan with the YARA unofficial assets. |
-
-### `operate_setup_pre`
-
-> **🧪 Experimental:** Still under development.
-
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ❌ | ❌ | ❌ | ✔️ | ✔️ | ✔️ |
-| **Type** | *N/A* | *N/A* | *N/A* | `<boolean = false>` | `<boolean = false>` | `<boolean = false>` |
-
-**(>= v0.21.0)** Whether to setup at the pre step instead of at the main step.
-
-### `operate_cleanup_enable`
-
-> **🧪 Experimental:** Still under development.
-
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ❌ | ❌ | ❌ | ✔️ | ✔️ | ✔️ |
-| **Type** | *N/A* | *N/A* | *N/A* | `<boolean = false>` | `<boolean = false>` | `<boolean = false>` |
-
-**(>= v0.21.0)** Whether to clean up. For workflows which run on the GitHub-hosted runner, this is pointless due to each run is a new instance.
-
-### `operate_cleanup_post`
-
-> **🧪 Experimental:** Still under development.
-
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ❌ | ❌ | ❌ | ✔️ | ✔️ | ✔️ |
-| **Type** | *N/A* | *N/A* | *N/A* | `<boolean = false>` | `<boolean = false>` | `<boolean = false>` |
-
-**(>= v0.21.0)** Whether to clean up at the post step instead of at the main step.
+> - **`@<Tag>`:** Scan with the ClamAV official assets
+> - **`/clamav@<Tag>`:** Scan with the ClamAV official assets
+> - **`/yara@<Tag>`:** Scan with the YARA unofficial assets
 
 ### `clamav_enable`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ❌ | ❌ | ✔️ | ❌ | ❌ |
-| **Type** | `<Boolean = True>` | *N/A* | *N/A* | `<boolean = true>` | *N/A* | *N/A* |
-
-Whether to use ClamAV. When this is `False`/`false`, will ignore inputs:
+`<Boolean = True>` Whether to use ClamAV. When this is `False`, will ignore inputs:
 
 - [`clamav_update`](#clamav_update)
 - [`clamav_unofficialassets_use`](#clamav_unofficialassets_use)
@@ -134,50 +72,25 @@ Whether to use ClamAV. When this is `False`/`false`, will ignore inputs:
 
 ### `clamav_update`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ✔️ | ❌ | ❌ | ❌ | ❌ |
-| **Type** | `<Boolean = True>` | `<Boolean = True>` | *N/A* | *N/A* | *N/A* | *N/A* |
-
-Whether to update the ClamAV official assets before scan anything.
+`<Boolean = True>` Whether to update the ClamAV official assets before scan anything.
 
 > **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
 
 ### `clamav_unofficialassets_use`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ✔️ | ❌ | ✔️ | ✔️ | ❌ |
-| **Type** | `<RegEx[]>` (PowerShell) | `<RegEx[]>` (PowerShell) | *N/A* | `<RegExp[]>` (NodeJS, Source) | `<RegExp[]>` (NodeJS, Source) | *N/A* |
-
-ClamAV unofficial assets to use, by regular expression of names in the [ClamAV unofficial assets list](https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav/index.tsv), separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
+`<RegEx[]>` ClamAV unofficial assets to use, by regular expression of names in the [ClamAV unofficial assets list](https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/clamav/index.tsv), separate each regular expression per line; By default, all of the ClamAV unofficial assets are not in use.
 
 ### `clamav_customassets_directory`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ✔️ | ❌ | ✔️ | ✔️ | ❌ |
-| **Type** | `<String>` | `<String>` | *N/A* | `<string>` | `<string>` | *N/A* |
-
-ClamAV custom assets absolute directory path, must be a mapped directory/volume (e.g.: `RUNNER_TEMP`) for Docker entrypoints. When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
+`<String>` ClamAV custom assets absolute directory path, must be a mapped directory/volume (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
 
 ### `clamav_customassets_use`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ✔️ | ❌ | ✔️ | ✔️ | ❌ |
-| **Type** | `<RegEx[] = .+>` (PowerShell) | `<RegEx[] = .+>` (PowerShell) | *N/A* | `<RegExp[] = .+>` (NodeJS, Source) | `<RegExp[] = .+>` (NodeJS, Source) | *N/A* |
-
-ClamAV custom assets to use, by regular expression of relative paths in the input [`clamav_customassets_directory`](#clamav_customassets_directory), separate each regular expression per line; By default, all of the ClamAV custom assets are in use.
+`<RegEx[] = .+>` ClamAV custom assets to use, by regular expression of relative paths in the input [`clamav_customassets_directory`](#clamav_customassets_directory), separate each regular expression per line; By default, all of the ClamAV custom assets are in use.
 
 ### `yara_enable`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ❌ | ❌ | ✔️ | ❌ | ❌ |
-| **Type** | `<Boolean = False>` | *N/A* | *N/A* | `<boolean = false>` | *N/A* | *N/A* |
-
-Whether to use YARA. When this is `False`/`false`, will ignore inputs:
+`<Boolean = False>` Whether to use YARA. When this is `False`, will ignore inputs:
 
 - [`yara_unofficialassets_use`](#yara_unofficialassets_use)
 - [`yara_customassets_directory`](#yara_customassets_directory)
@@ -185,39 +98,19 @@ Whether to use YARA. When this is `False`/`false`, will ignore inputs:
 
 ### `yara_unofficialassets_use`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ❌ | ✔️ | ✔️ | ❌ | ✔️ |
-| **Type** | `<RegEx[]>` (PowerShell) | *N/A* | `<RegEx[] = .+>` (PowerShell) | `<RegExp[]>` (NodeJS, Source) | *N/A* | `<RegExp[] = .+>` (NodeJS, Source) |
-
-YARA unofficial assets to use, by regular expression of names in the [YARA unofficial assets list](https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara/index.tsv), separate each regular expression per line; By default, all of the YARA unofficial assets are not in use.
+`<RegEx[]>` YARA unofficial assets to use, by regular expression of names in the [YARA unofficial assets list](https://github.com/hugoalh/scan-virus-ghaction-assets/blob/main/yara/index.tsv), separate each regular expression per line; By default, all of the YARA unofficial assets are not in use.
 
 ### `yara_customassets_directory`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ❌ | ✔️ | ✔️ | ❌ | ✔️ |
-| **Type** | `<String>` | *N/A* | `<String>` | `<string>` | *N/A* | `<string>` |
-
-`<String>` YARA custom assets absolute directory path, must be a mapped directory/volume (e.g.: `RUNNER_TEMP`) for Docker entrypoints. When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
+`<String>` YARA custom assets absolute directory path, must be a mapped directory/volume (e.g.: `RUNNER_TEMP`). When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
 
 ### `yara_customassets_use`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ❌ | ✔️ | ✔️ | ❌ | ✔️ |
-| **Type** | `<RegEx[]>` (PowerShell) | *N/A* | `<RegEx[] = .+>` (PowerShell) | `<RegExp[]>` (NodeJS, Source) | *N/A* | `<RegExp[] = .+>` (NodeJS, Source) |
-
-YARA custom assets to use, by regular expression of relative paths in the input [`yara_customassets_directory`](#yara_customassets_directory), separate each regular expression per line; By default, all of the YARA custom assets are in use.
+`<RegEx[] = .+>` YARA custom assets to use, by regular expression of relative paths in the input [`yara_customassets_directory`](#yara_customassets_directory), separate each regular expression per line; By default, all of the YARA custom assets are in use.
 
 ### `git_integrate`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| **Type** | `<Boolean = False>` | `<Boolean = False>` | `<Boolean = False>` | `<boolean = false>` | `<boolean = false>` | `<boolean = false>` |
-
-Whether to integrate with Git to perform scan by every commits; Require directory is a Git repository. When this is `False`/`false`, will ignore inputs:
+`<Boolean = False>` Whether to integrate with Git to perform scan by every commits; Require directory is a Git repository. When this is `False`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
 - [`git_lfs`](#git_lfs)
@@ -226,12 +119,7 @@ Whether to integrate with Git to perform scan by every commits; Require director
 
 ### `git_ignores`
 
-|  | **Docker, All (Default)** | **Docker, Only ClamAV** | **Docker, Only YARA** | **Native, All** | **Native, Only ClamAV** | **Native, Only YARA** |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Availability** | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| **Type** | `<ScriptBlock>` | `<ScriptBlock>` | `<ScriptBlock>` | `<function>` | `<function>` | `<function>` |
-
-Ignores by the Git commits, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore). Ignored Git commits will not be scanned.
+`<ScriptBlock>` Ignores by the Git commits, by PowerShell script block and must return type of `Boolean` (only return `$True` to able ignore). Ignored Git commits will not be scanned.
 
 The script block should use this pattern in order to receive argument [`GitCommitMeta`](#gitcommitmeta):
 

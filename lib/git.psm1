@@ -3,7 +3,7 @@ Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
 Import-Module -Name @(
 	(Join-Path -Path $PSScriptRoot -ChildPath 'control.psm1')
 ) -Scope 'Local'
-[Hashtable[]]$GitCommitPropertiesMeta = @(
+[Hashtable[]]$GitCommitsProperties = @(
 	@{ Name = 'AuthorDate'; Placeholder = '%aI'; Transform = {
 		Param ([String]$Item)
 		Return ([DateTime]::Parse($Item))
@@ -32,9 +32,10 @@ Import-Module -Name @(
 	@{ Name = 'Subject'; Placeholder = '%s' },
 	@{ Name = 'TreeHash'; Placeholder = '%T' }
 )
-[Hashtable]$GitCommitsPropertyIndexer = $GitCommitPropertiesMeta |
+[Hashtable]$GitCommitsPropertyIndexer = $GitCommitsProperties |
 	Where-Object -FilterScript { $_.AsIndex } |
 	Select-Object -Index 0
+[Byte]$DelimiterTokenCountPerCommit = $GitCommitsProperties.Count - 1
 $Null = git --no-pager config --global --add safe.directory $CurrentWorkingDirectory
 Function Disable-GitLfsProcess {
 	[CmdletBinding()]
@@ -79,33 +80,47 @@ Function Get-GitCommitMeta {
 	)
 	Do {
 		Try {
-			[String]$DelimiterToken = (New-Guid).Guid.ToUpper() -ireplace '-', ''
-			[String]$Output = Invoke-Expression -Command "git --no-pager show --format=`"$(
-				$GitCommitPropertiesMeta |
+			[String]$DelimiterToken = "=====$((Get-Random -Minimum 0 -Maximum 281474976710656).ToString('X'))====="
+			[String[]]$Result = Invoke-Expression -Command "git --no-pager show --format=`"$(
+				$GitCommitsProperties |
 					Select-Object -ExpandProperty 'Placeholder' |
 					Join-String -Separator "%n$DelimiterToken%n"
-			)`" --no-color --no-patch `"$Index`"" |
-				Join-String -Separator "`n"
+			)`" --no-color --no-patch `"$Index`""
 			If ($LASTEXITCODE -ne 0) {
-				Throw $Output
+				Throw (
+					$Result |
+						Join-String -Separator "`n"
+				)
 			}
-			[String[]]$Result = $Output -csplit "\r?\n$($DelimiterToken)\r?\n"
 		}
 		Catch {
 			Write-GitHubActionsError -Message "Unable to get Git commit meta $($Index): $_"
 			Return
 		}
 	}
-	While ($Result.Count -ine $GitCommitPropertiesMeta.Count)
+	While ((
+		$Result |
+			Where-Object -FilterScript { $_ -ieq $DelimiterToken } |
+			Measure-Object |
+			Select-Object -ExpandProperty 'Count'
+	) -ine $DelimiterTokenCountPerCommit)
+	[String[]]$ResultResolve = (
+		$Result |
+			Join-String -Separator "`n"
+	) -isplit "\r?\n$([RegEx]::Escape($DelimiterToken))\r?\n"
+	If ($GitCommitsProperties.Count -ne $ResultResolve.Count) {
+		Write-GitHubActionsError -Message 'Unexpected Git database issue: Columns are not match!'
+		Return
+	}
 	[Hashtable]$GitCommitMeta = @{}
 	For ([UInt64]$Line = 0; $Line -lt $ResultResolve.Count; $Line += 1) {
-		[Hashtable]$GitCommitPropertiesMetaCurrent = $GitCommitPropertiesMeta[$Line]
+		[Hashtable]$GitCommitsPropertiesCurrent = $GitCommitsProperties[$Line]
 		[String]$Value = $ResultResolve[$Line]
-		If ($GitCommitPropertiesMetaCurrent.Transform) {
-			$GitCommitMeta.($GitCommitPropertiesMetaCurrent.Name) = Invoke-Command -ScriptBlock $GitCommitPropertiesMetaCurrent.Transform -ArgumentList @($Value)
+		If ($GitCommitsPropertiesCurrent.Transform) {
+			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = Invoke-Command -ScriptBlock $GitCommitsPropertiesCurrent.Transform -ArgumentList @($Value)
 		}
 		Else {
-			$GitCommitMeta.($GitCommitPropertiesMetaCurrent.Name) = $Value
+			$GitCommitMeta.($GitCommitsPropertiesCurrent.Name) = $Value
 		}
 	}
 	Write-Output -InputObject ([PSCustomObject]$GitCommitMeta)

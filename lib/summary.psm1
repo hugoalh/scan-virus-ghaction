@@ -32,7 +32,7 @@ Function Add-StepSummaryFound {
 	Ensure-StepSummaryFileExist -Content @'
 # Found
 '@
-	Add-GitHubActionsSummary -Value @"
+	Add-GitHubActionsStepSummary -Value @"
 
 ## $(Escape-MarkdownCharacter -InputObject $Session)
 
@@ -90,7 +90,7 @@ $(
 )
 "@
 	}
-	Add-GitHubActionsSummary -Value (
+	Add-GitHubActionsStepSummary -Value (
 		$Result |
 			Join-String -Separator "`n"
 	)

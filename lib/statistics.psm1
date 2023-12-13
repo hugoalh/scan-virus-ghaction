@@ -97,7 +97,7 @@ Class ScanVirusStatistics {
 		)
 	}
 	[Void]StatisticsSummary() {
-		Add-SummaryStatistics -StatisticsTable $This.GetStatisticsTable() -Issues $This.Issues -SessionsFound $This.SessionsFound
+		Add-StepSummaryStatistics -StatisticsTable $This.GetStatisticsTable() -Issues $This.Issues -SessionsFound $This.SessionsFound
 	}
 	[Byte]GetExitCode() {
 		Return (((
