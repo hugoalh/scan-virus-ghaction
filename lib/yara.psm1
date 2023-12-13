@@ -1,7 +1,10 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name @(
-	(Join-Path -Path $PSScriptRoot -ChildPath 'control.psm1')
+Import-Module -Name (
+	@(
+		'control'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [String[]]$AllowExtensions = @(
 	'*.yar',

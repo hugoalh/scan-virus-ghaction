@@ -1,7 +1,10 @@
 #Requires -PSEdition Core -Version 7.2
 $Script:ErrorActionPreference = 'Stop'
-Import-Module -Name @(
-	(Join-Path -Path $PSScriptRoot -ChildPath 'control.psm1')
+Import-Module -Name (
+	@(
+		'control'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 $SoftwaresVersionTable = [Ordered]@{
 	'PowerShell' = $PSVersionTable.PSVersion.ToString()

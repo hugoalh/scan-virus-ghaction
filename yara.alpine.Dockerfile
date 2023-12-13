@@ -44,7 +44,7 @@ COPY --from=stage-extract-powershell ${PS_INSTALL_FOLDER}/ ${PS_INSTALL_FOLDER}/
 RUN chmod +x $PS_INSTALL_FOLDER/pwsh
 RUN ln -s $PS_INSTALL_FOLDER/pwsh /usr/bin/pwsh
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
-RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '2.0.0-beta4' -Scope 'AllUsers' -AllowPrerelease -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.7.2' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 
 COPY lib/ ${SCANVIRUS_GHACTION_LIB_ROOT}/
 RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/checkout.ps1"]

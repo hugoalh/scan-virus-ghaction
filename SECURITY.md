@@ -20,7 +20,6 @@
 > **ℹ️ Notice:**
 >
 > - The date format is according to ISO 8601 standard.
-> - Values in italic format are subject to change.
 > - Versions which not in the list are also end of life.
 
 ## Report Vulnerability

@@ -1,8 +1,11 @@
 #Requires -PSEdition Core -Version 7.2
 Import-Module -Name 'hugoalh.GitHubActionsToolkit' -Scope 'Local'
-Import-Module -Name @(
-	(Join-Path -Path $PSScriptRoot -ChildPath 'control.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'summary.psm1')
+Import-Module -Name (
+	@(
+		'control',
+		'summary'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 Class ScanVirusStatistics {
 	[String[]]$Issues = @()
@@ -88,10 +91,19 @@ Class ScanVirusStatistics {
 		Return $This.GetStatisticsTableString(80)
 	}
 	[Void]StatisticsDisplay() {
+		$DisplayList = [Ordered]@{
+			Statistics = $This.GetStatisticsTableString()
+		}
+		If ($This.Issues.Count -gt 0) {
+			$DisplayList.("Issues [$($This.Issues.Count)]") = $This.Issues |
+				Join-String -Separator "`n" -FormatString '- {0}'
+		}
+		If ($This.SessionsFound.Count -gt 0) {
+			$DisplayList.("SessionsFound [$($This.SessionsFound.Count)]") = $This.SessionsFound |
+				Join-String -Separator ', '
+		}
 		Write-GitHubActionsNotice -Message (
-			[PSCustomObject]@{
-				Statistics = $This.GetStatisticsTableString()
-			} |
+			[PSCustomObject]$DisplayList |
 				Format-List -Property '*' |
 				Out-String -Width 120
 		)

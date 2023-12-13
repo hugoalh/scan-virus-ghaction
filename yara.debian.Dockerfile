@@ -34,7 +34,7 @@ RUN apt-get --assume-yes update
 RUN apt-get --assume-yes install powershell
 RUN apt-get --assume-yes dist-upgrade
 RUN ["pwsh", "-NonInteractive", "-Command", "Set-PSRepository -Name 'PSGallery' -InstallationPolicy 'Trusted' -Verbose"]
-RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '2.0.0-beta4' -Scope 'AllUsers' -AllowPrerelease -AcceptLicense -Verbose"]
+RUN ["pwsh", "-NonInteractive", "-Command", "Install-Module -Name 'hugoalh.GitHubActionsToolkit' -RequiredVersion '1.7.2' -Scope 'AllUsers' -AcceptLicense -Verbose"]
 
 COPY lib/ ${SCANVIRUS_GHACTION_LIB_ROOT}/
 RUN ["pwsh", "-NonInteractive", "/opt/hugoalh/scan-virus-ghaction/lib/checkout.ps1"]

@@ -42,9 +42,12 @@ If ($Null -ine $InputDebugScript) {
 }
 Write-Host -Object 'Initialize.'
 Set-GitHubActionsOutput -Name 'finish' -Value $False.ToString().ToLower()
-Import-Module -Name @(
-	(Join-Path -Path $PSScriptRoot -ChildPath 'control.psm1'),
-	(Join-Path -Path $PSScriptRoot -ChildPath 'summary.psm1')
+Import-Module -Name (
+	@(
+		'control',
+		'summary'
+	) |
+		ForEach-Object -Process { Join-Path -Path $PSScriptRoot -ChildPath "$_.psm1" }
 ) -Scope 'Local'
 [ScanVirusStatistics]$StatisticsTotal = [ScanVirusStatistics]::New()
 [Boolean]$InputClamAVEnable = ($ToolHasClamAV -and !$ToolForceClamAV) ? ([Boolean]::Parse((Get-GitHubActionsInput -Name 'clamav_enable' -Mandatory -EmptyStringAsNull))) : $ToolForceClamAV
