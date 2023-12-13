@@ -9,11 +9,11 @@ jobs:
     steps:
       - name: "Setup Software"
         run: |
-          brew install clamav
+          sudo brew install clamav
         shell: "pwsh"
       - name: "List Directory"
         run: |
-          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Recurse -Directory |
+          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Directory |
             Select-Object -ExpandProperty 'FullName'
         shell: "pwsh"
   ubuntu:
@@ -26,7 +26,7 @@ jobs:
         shell: "pwsh"
       - name: "List Directory"
         run: |
-          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Recurse -Directory |
+          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Directory |
             Select-Object -ExpandProperty 'FullName'
         shell: "pwsh"
   windows:
@@ -39,6 +39,6 @@ jobs:
         shell: "pwsh"
       - name: "List Directory"
         run: |
-          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Recurse -Directory |
+          Get-ChildItem -LiteralPath '/' -Include 'clamav' -Directory |
             Select-Object -ExpandProperty 'FullName'
         shell: "pwsh"
