@@ -25,7 +25,7 @@ ENV SCANVIRUS_GHACTION_CLAMAV_DATA=/var/lib/clamav
 
 FROM stage-env AS stage-extract-powershell
 ARG PWSH_TARFILEPATH=/tmp/powershell-linux-alpine-x64.tar.gz
-ARG PWSH_VERSION=7.4.0
+ARG PWSH_VERSION=7.3.8
 ADD https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell-${PWSH_VERSION}-linux-alpine-x64.tar.gz ${PWSH_TARFILEPATH}
 RUN mkdir --parents --verbose $PS_INSTALL_FOLDER
 RUN tar "--directory=$PS_INSTALL_FOLDER" --extract "--file=$PWSH_TARFILEPATH" --gzip --verbose
