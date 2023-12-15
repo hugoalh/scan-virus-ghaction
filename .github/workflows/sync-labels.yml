@@ -13,4 +13,4 @@ permissions:
 jobs:
   main:
     name: "Main"
-    uses: "hugoalh/hugoalh/.github/workflows/reusable-sync-labels.yml@main"
+    uses: "hugoalh/hugoalh/.github/workflows/call-sync-labels-0.yml@main"
