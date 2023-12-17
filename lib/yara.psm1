@@ -109,7 +109,7 @@ Function Register-YaraUnofficialAssets {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_YARA -ChildPath 'index.tsv') @TsvParameters |
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SVGHA_ASSETS_YARA -ChildPath 'index.tsv') @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Type -ine 'Unusable' -and $_.Path.Length -gt 0 } |
 		Sort-Object -Property @('Type', 'Name')
 	[PSCustomObject[]]$IndexTableSelect = $IndexTable |
@@ -130,7 +130,7 @@ Function Register-YaraUnofficialAssets {
 		Out-String -Width 120 |
 		Write-GitHubActionsDebug
 	$Script:RulesPath += $IndexTableSelect |
-		ForEach-Object -Process { Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_YARA -ChildPath $_.Path }
+		ForEach-Object -Process { Join-Path -Path $Env:SVGHA_ASSETS_YARA -ChildPath $_.Path }
 }
 Function Register-YaraUnofficialAssetsFallback {
 	[CmdletBinding()]

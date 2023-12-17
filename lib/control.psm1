@@ -5,11 +5,11 @@
 	Delimiter = "`t"
 	Encoding = 'UTF8NoBOM'
 }
-[String[]]$Tools = ($Env:SCANVIRUS_GHACTION_TOOLS ?? '') -isplit ',' |
+[String[]]$Tools = ($Env:SVGHA_TOOLS ?? '') -isplit ',' |
 	ForEach-Object -Process { $_.Trim() } |
 	Where-Object -FilterScript { $_.Length -gt 0 }
 If ($Tools.Count -eq 0) {
-	Write-Error -Message 'Invalid environment variable `SCANVIRUS_GHACTION_TOOLS`!' -ErrorAction 'Stop'
+	Write-Error -Message 'Invalid environment variable `SVGHA_TOOLS`!' -ErrorAction 'Stop'
 }
 [Boolean]$ToolHasClamAV = $Tools -icontains 'clamav'
 [Boolean]$ToolForceClamAV = $ToolHasClamAV -and $Tools.Count -eq 1

@@ -135,7 +135,7 @@ Function Register-ClamAVCustomAssets {
 			Where-Object -FilterScript { $_.IsSelect }
 	)) {
 		Try {
-			Copy-Item -LiteralPath $Element.FullName -Destination (Join-Path -Path $Env:SCANVIRUS_GHACTION_CLAMAV_DATA -ChildPath ($Element.Path -ireplace '[\\/]', '__')) -Confirm:$False
+			Copy-Item -LiteralPath $Element.FullName -Destination (Join-Path -Path $Env:SVGHA_CLAMAV_DATA -ChildPath ($Element.Path -ireplace '[\\/]', '__')) -Confirm:$False
 		}
 		Catch {
 			$Issues += [PSCustomObject]@{
@@ -162,7 +162,7 @@ Function Register-ClamAVUnofficialAssets {
 	Param (
 		[Parameter(Mandatory = $True, Position = 0)][String]$Selection
 	)
-	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
+	[PSCustomObject[]]$IndexTable = Import-Csv -LiteralPath (Join-Path -Path $Env:SVGHA_ASSETS_CLAMAV -ChildPath 'index.tsv') @TsvParameters |
 		Where-Object -FilterScript { $_.Type -ine 'Group' -and $_.Type -ine 'Unusable' -and $_.Path.Length -gt 0 } |
 		Sort-Object -Property @('Type', 'Name')
 	[String[]]$IndexRegister = @()
@@ -193,8 +193,8 @@ Function Register-ClamAVUnofficialAssets {
 		Write-GitHubActionsDebug
 	[PSCustomObject[]]$Issues = @()
 	ForEach ($IndexSelect In $IndexTableSelect) {
-		[String]$PathSource = Join-Path -Path $Env:SCANVIRUS_GHACTION_ASSETS_CLAMAV -ChildPath $IndexSelect.Path
-		[String]$PathDestination = Join-Path -Path $Env:SCANVIRUS_GHACTION_CLAMAV_DATA -ChildPath ($IndexSelect.Path -ireplace '[\\/]', '__')
+		[String]$PathSource = Join-Path -Path $Env:SVGHA_ASSETS_CLAMAV -ChildPath $IndexSelect.Path
+		[String]$PathDestination = Join-Path -Path $Env:SVGHA_CLAMAV_DATA -ChildPath ($IndexSelect.Path -ireplace '[\\/]', '__')
 		Try {
 			Copy-Item -LiteralPath $PathSource -Destination $PathDestination -Confirm:$False
 		}

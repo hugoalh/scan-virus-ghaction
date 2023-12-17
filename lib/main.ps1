@@ -28,7 +28,7 @@ Function Invoke-ProtectiveScriptBlock {
 	}
 }
 Enter-GitHubActionsLogGroup -Title 'Softwares Version: '
-Get-Content -LiteralPath $Env:SCANVIRUS_GHACTION_SOFTWARESVERSIONFILE -Raw -Encoding 'UTF8NoBOM' |
+Get-Content -LiteralPath $Env:SVGHA_SOFTWARESVERSIONFILE -Raw -Encoding 'UTF8NoBOM' |
 	ConvertFrom-Json -Depth 100 |
 	Format-List |
 	Out-String -Width 120
