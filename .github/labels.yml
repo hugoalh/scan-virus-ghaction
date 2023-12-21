@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./labels.schema.json
+# yaml-language-server: $schema=https://hugoalh.github.io/schema/json/github-labels.json
 - name: "Platform/Android"
   color: "#3DDC84"
   description: "Related to Android."
