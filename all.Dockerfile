@@ -3,7 +3,7 @@
 
 
 
-FROM debian:12.2
+FROM debian:12.4
 
 # Environment variable for tools, separate each name with comma (`,`) , must corresponding to install packages.
 ENV SCANVIRUS_GHACTION_TOOLS=clamav,yara
