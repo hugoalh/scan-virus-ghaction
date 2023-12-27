@@ -15,7 +15,6 @@ updates:
     open-pull-requests-limit: 100
     pull-request-branch-name:
       separator: "/"
-    rebase-strategy: "disabled"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -30,4 +29,3 @@ updates:
     open-pull-requests-limit: 100
     pull-request-branch-name:
       separator: "/"
-    rebase-strategy: "disabled"

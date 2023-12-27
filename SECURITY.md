@@ -22,8 +22,6 @@
 > - The date format is according to ISO 8601 standard.
 > - Versions which not in the list are also end of life.
 
-## Report Vulnerability
+## Report A Vulnerability
 
-If you believe you have found any security vulnerability, please report it via the [Security Advisories system](https://github.com/hugoalh/scan-virus-ghaction/security/advisories/new) instead of create an issue and/or report it publicly.
-
-All new reports may need `~48 hours (~2 days)` to begin the process.
+You can report a security vulnerability by [create a security vulnerability report](https://github.com/hugoalh/hugoalh/blob/main/universal-guide/contributing.md#create-a-security-vulnerability-report).
