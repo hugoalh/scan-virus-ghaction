@@ -1,6 +1,6 @@
 import { rm as fsRm, writeFile as fsWriteFile } from "node:fs/promises";
 import { join as pathJoin } from "node:path";
-import { toolKit } from "./control.js";
+import { toolKit, type SVGHAProgramVersion } from "./control.js";
 import { executeChildProcess, type ChildProcessResult } from "./execute.js";
 console.log("Import assets.");
 await executeChildProcess(["git", "--no-pager", "clone", "--depth", "1", "https://github.com/hugoalh/scan-virus-ghaction-assets.git", "assets"], { cwd: process.env.SVGHA_ROOT }).then((result: ChildProcessResult): void => {
@@ -69,11 +69,7 @@ if (
 		retryDelay: 1000
 	});
 }
-interface ScanVirusGitHubActionProgramVersion {
-	"Name": string;
-	"Version": string;
-}
-const programsVersionTable: ScanVirusGitHubActionProgramVersion[] = Array.from(programsVersionMap.entries(), ([name, version]: [string, string]): ScanVirusGitHubActionProgramVersion => {
+const programsVersionTable: SVGHAProgramVersion[] = Array.from(programsVersionMap.entries(), ([name, version]: [string, string]): SVGHAProgramVersion => {
 	return {
 		Name: name,
 		Version: version
