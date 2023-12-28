@@ -291,10 +291,8 @@ To ignore only by the paths and/or sessions, use input [`ignores_pre`](#ignores_
 > It is TypeScript syntax at the above in order to show the type of the parameters; But remember to use JavaScript syntax for this input.
 
 > [!CAUTION]
-> It is not recommended to ignore any official symbol due to these rarely have false positives in most cases.
-
-> [!CAUTION]
-> JavaScript function is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
+> - It is not recommended to ignore any official symbol due to these rarely have false positives in most cases.
+> - JavaScript function is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
 ### `summary`
 
