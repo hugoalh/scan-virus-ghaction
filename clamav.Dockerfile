@@ -10,10 +10,6 @@ FROM node:20-alpine3.19
 ENV SVGHA_CLAMAV_CONFIG=/etc/clamav
 ENV SVGHA_CLAMAV_DATA=/var/lib/clamav
 ENV SVGHA_ROOT=/opt/hugoalh/scan-virus-ghaction
-ENV SVGHA_ASSETS_ROOT=${SVGHA_ROOT}/assets
-ENV SVGHA_ASSETS_CLAMAV=${SVGHA_ASSETS_ROOT}/clamav
-ENV SVGHA_ASSETS_YARA=${SVGHA_ASSETS_ROOT}/yara
-ENV SVGHA_PROGRAMSVERSIONFILE=${SVGHA_ROOT}/programs-version.json
 
 # Environment variable for tool that forced.
 ENV SVGHA_TOOLKIT=clamav
@@ -31,5 +27,5 @@ RUN freshclam --verbose
 
 COPY dist package.json package-lock.json ${SVGHA_ROOT}/
 RUN cd $SVGHA_ROOT && npm install --omit=dev
-RUN ["node", "/opt/hugoalh/scan-virus-ghaction/dist/checkout.js"]
-CMD ["node", "/opt/hugoalh/scan-virus-ghaction/dist/main.js"]
+RUN node $SVGHA_ROOT/dist/checkout.js
+CMD node $SVGHA_ROOT/dist/main.js

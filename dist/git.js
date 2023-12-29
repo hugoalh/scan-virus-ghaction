@@ -130,6 +130,8 @@ export async function getGitCommitMeta(index) {
         }
         return gitCommitMeta;
     }
+    ghactionsError(`Unable to get Git commit meta ${index}: Columns are not match!`);
+    return undefined;
 }
 export async function getGitCommitsIndex({ sortFromOldest = false } = {}) {
     const command = ["git", "--no-pager", "log", `--format=${gitCommitsPropertyIndexer.placeholder}`, "--no-color", "--all", "--reflog"];
@@ -144,9 +146,6 @@ export async function getGitCommitsIndex({ sortFromOldest = false } = {}) {
     return result.stdout.split(/\r?\n/gu);
 }
 export async function isGitRepository() {
-    const result = await executeChildProcess(["git", "--no-pager", "rev-parse", "--is-inside-work-tree", "*>&1"]);
-    if (!result.success) {
-        throw new Error(`Unable to integrate with Git: ${result.stderr}`);
-    }
-    return /^true$/iu.test(result.stdout);
+    const { stdout } = await executeChildProcess(["git", "--no-pager", "rev-parse", "--is-inside-work-tree", "*>&1"]);
+    return /^true$/iu.test(stdout);
 }

@@ -1,9 +1,21 @@
+import { join as pathJoin } from "node:path";
 import escapeStringRegExp from "escape-string-regexp";
-const toolSet = ["*", "clamav", "yara"];
-export const toolKit = (() => {
-    const value = process.env.SVGHA_TOOLKIT ?? "*";
-    if (!toolSet.includes(value)) {
-        throw new Error(`${value} is not a valid tool set!`);
+export const pathRoot = (() => {
+    const value = process.env.SVGHA_ROOT;
+    if (typeof value === "undefined") {
+        throw new Error(`Environment variable \`SVGHA_ROOT\` is missing!`);
+    }
+    return value;
+})();
+export const pathAssetsRootName = "assets";
+export const pathAssetsRootAbsolute = pathJoin(pathRoot, pathAssetsRootName);
+export const pathProgramsVersionFileName = "programs-version.json";
+export const pathProgramsVersionFileAbsolute = pathJoin(pathRoot, pathProgramsVersionFileName);
+const toolkitSet = ["*", "clamav", "yara"];
+export const toolkit = (() => {
+    const value = process.env.SVGHA_TOOLKIT;
+    if (!toolkitSet.includes(value)) {
+        throw new Error(`${value} is not a valid toolkit set!`);
     }
     return value;
 })();
