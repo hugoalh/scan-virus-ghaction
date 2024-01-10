@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://json.schemastore.org/eslintrc.json
-# ESLint v8.50.0
+# ESLint v8.55.0 + ESLint Stylistic v1.5.0 + ESLint TypeScript v6.13.0
 env:
   browser: true
   node: true
@@ -67,6 +67,7 @@ parserOptions:
     templateStrings: true
     unicodeCodePointEscapes: true
 plugins:
+  - "@stylistic"
   - "@typescript-eslint"
   - "only-warn"
 rules:
@@ -265,66 +266,63 @@ rules:
     - "warn"
     - "never"
     - exceptRange: true
-  array-bracket-spacing:
+  "@stylistic/array-bracket-spacing":
     - "warn"
     - "never"
-    - singleValue: false
-      objectsInArrays: false
-      arraysInArrays: false
-  array-element-newline:
+  "@stylistic/array-element-newline":
     - "warn"
     - "consistent"
-  arrow-parens:
+  "@stylistic/arrow-parens":
     - "warn"
     - "always"
-  arrow-spacing:
+  "@stylistic/arrow-spacing":
     - "warn"
     - before: true
       after: true
-  block-spacing:
+  "@stylistic/block-spacing":
     - "warn"
     - "always"
-  brace-style:
+  "@stylistic/brace-style":
     - "warn"
     - "1tbs"
     - allowSingleLine: false
-  comma-dangle:
+  "@stylistic/comma-dangle":
     - "warn"
     - "never"
-  comma-spacing:
+  "@stylistic/comma-spacing":
     - "warn"
     - before: false
       after: true
-  comma-style:
+  "@stylistic/comma-style":
     - "warn"
     - "last"
-  computed-property-spacing:
+  "@stylistic/computed-property-spacing":
     - "warn"
     - "never"
     - enforceForClassMembers: true
-  dot-location:
+  "@stylistic/dot-location":
     - "warn"
     - "object"
-  eol-last:
+  "@stylistic/eol-last":
     - "warn"
     - "always"
-  func-call-spacing:
+  "@stylistic/func-call-spacing":
     - "warn"
     - "never"
-  function-call-argument-newline:
+  "@stylistic/function-call-argument-newline":
     - "warn"
     - "consistent"
-  function-paren-newline:
+  "@stylistic/function-paren-newline":
     - "warn"
     - "multiline-arguments"
-  generator-star-spacing:
+  "@stylistic/generator-star-spacing":
     - "warn"
     - before: false
       after: true
-  implicit-arrow-linebreak:
+  "@stylistic/implicit-arrow-linebreak":
     - "warn"
     - "beside"
-  indent:
+  "@stylistic/indent":
     - "warn"
     - "tab"
     - SwitchCase: 1
@@ -347,25 +345,25 @@ rules:
       flatTernaryExpressions: true
       offsetTernaryExpressions: false
       ignoreComments: false
-  jsx-quotes:
+  "@stylistic/jsx-quotes":
     - "warn"
     - "prefer-double"
-  key-spacing:
+  "@stylistic/key-spacing":
     - "warn"
     - beforeColon: false
       afterColon: true
       mode: "strict"
-  keyword-spacing:
+  "@stylistic/keyword-spacing":
     - "warn"
     - before: true
       after: true
-  multiline-ternary:
+  "@stylistic/multiline-ternary":
     - "warn"
     - "always-multiline"
-  new-parens:
+  "@stylistic/new-parens":
     - "warn"
     - "always"
-  no-extra-parens:
+  "@stylistic/no-extra-parens":
     - "warn"
     - "all"
     - conditionalAssign: false
@@ -377,87 +375,87 @@ rules:
       enforceForSequenceExpressions: false
       enforceForNewInMemberExpressions: true
       enforceForFunctionPrototypeMethods: true
-  no-multi-spaces:
+  "@stylistic/no-multi-spaces":
     - "warn"
-  no-multiple-empty-lines:
+  "@stylistic/no-multiple-empty-lines":
     - "warn"
     - max: 1
-  no-tabs:
+  "@stylistic/no-tabs":
     - "warn"
     - allowIndentationTabs: true
-  no-trailing-spaces:
+  "@stylistic/no-trailing-spaces":
     - "warn"
     - skipBlankLines: false
       ignoreComments: false
-  no-whitespace-before-property:
+  "@stylistic/no-whitespace-before-property":
     - "warn"
-  nonblock-statement-body-position:
+  "@stylistic/nonblock-statement-body-position":
     - "warn"
     - "beside"
-  object-curly-newline:
+  "@stylistic/object-curly-newline":
     - "warn"
     - multiline: true
       consistent: true
-  object-curly-spacing:
+  "@stylistic/object-curly-spacing":
     - "warn"
     - "always"
-  operator-linebreak:
+  "@stylistic/operator-linebreak":
     - "warn"
-  padded-blocks:
+  "@stylistic/padded-blocks":
     - "warn"
     - "never"
     - allowSingleLineBlocks: false
-  padding-line-between-statements:
+  "@stylistic/padding-line-between-statements":
     - "warn"
-  quotes:
+  "@stylistic/quotes":
     - "warn"
     - "double"
     - avoidEscape: false
       allowTemplateLiterals: true
-  rest-spread-spacing:
+  "@stylistic/rest-spread-spacing":
     - "warn"
     - "never"
-  semi:
+  "@stylistic/semi":
     - "warn"
     - "always"
     - omitLastInOneLineBlock: false
       omitLastInOneLineClassBody: false
-  semi-spacing:
+  "@stylistic/semi-spacing":
     - "warn"
     - before: false
       after: true
-  semi-style:
+  "@stylistic/semi-style":
     - "warn"
     - "last"
-  space-before-blocks:
+  "@stylistic/space-before-blocks":
     - "warn"
     - "always"
-  space-before-function-paren:
+  "@stylistic/space-before-function-paren":
     - "warn"
     - anonymous: "always"
       named: "never"
       asyncArrow: "always"
-  space-in-parens:
+  "@stylistic/space-in-parens":
     - "warn"
     - "never"
-  space-infix-ops:
+  "@stylistic/space-infix-ops":
     - "warn"
-  space-unary-ops:
+  "@stylistic/space-unary-ops":
     - "warn"
-  switch-colon-spacing:
+  "@stylistic/switch-colon-spacing":
     - "warn"
     - before: false
       after: true
-  template-curly-spacing:
+  "@stylistic/template-curly-spacing":
     - "warn"
     - "never"
-  template-tag-spacing:
+  "@stylistic/template-tag-spacing":
     - "warn"
     - "never"
-  wrap-iife:
+  "@stylistic/wrap-iife":
     - "warn"
     - "any"
-  yield-star-spacing:
+  "@stylistic/yield-star-spacing":
     - "warn"
     - before: false
       after: true
@@ -471,3 +469,5 @@ rules:
       ts-check: "allow-with-description"
   "@typescript-eslint/ban-tslint-comment":
     - "warn"
+  "@typescript-eslint/no-duplicate-enum-values":
+    - "off"
