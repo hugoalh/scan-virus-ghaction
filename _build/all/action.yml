@@ -14,7 +14,7 @@ inputs:
     description: "{RegExp[]} ClamAV unofficial assets to use."
     required: false
   clamav_customassets_artifact:
-    description: "{string} Artifact name of the ClamAV custom assets."
+    description: "{number} Artifact ID of the ClamAV custom assets."
     required: false
   clamav_customassets_use:
     description: "{RegExp[]} ClamAV custom assets to use."
@@ -28,7 +28,7 @@ inputs:
     description: "{RegExp[]} YARA unofficial assets to use."
     required: false
   yara_customassets_artifact:
-    description: "{string} Artifact name of the YARA custom assets."
+    description: "{number} Artifact ID of the YARA custom assets."
     required: false
   yara_customassets_use:
     description: "{RegExp[]} YARA custom assets to use."

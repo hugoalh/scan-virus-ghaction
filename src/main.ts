@@ -1,77 +1,90 @@
 import { readFile } from "node:fs/promises";
-import { endGroup as ghactionsEndGroup, error as ghactionsError, getBooleanInput as ghactionsGetBooleanInput, getInput as ghactionsGetInput, getMultilineInput as ghactionsGetMultilineInput, startGroup as ghactionsStartGroup } from "@actions/core";
+import { InputOptions as GitHubActionsGetInputOptions, endGroup as ghactionsEndGroup, error as ghactionsError, getBooleanInput as ghactionsGetBooleanInput, getInput as ghactionsGetInput, getMultilineInput as ghactionsGetMultilineInput, startGroup as ghactionsStartGroup } from "@actions/core";
 import { pathProgramsVersionFileAbsolute, toolkit } from "./control.js";
-ghactionsStartGroup(`Software Version: `);
+console.log(`Software Version: `);
 console.table(JSON.parse(await readFile(pathProgramsVersionFileAbsolute, { encoding: "utf-8" })));
-ghactionsEndGroup();
 console.log(`Initialize.`);
-const inputClamAVEnable: boolean = (toolkit === "*") ? ghactionsGetBooleanInput("clamav_enable", {
-	required: true,
-	trimWhitespace: false
-}) : toolkit === "clamav";
+function getBooleanInput(name: string, { required = true, trimWhitespace = false }: GitHubActionsGetInputOptions = {}): boolean {
+	return ghactionsGetBooleanInput(name, { required, trimWhitespace });
+}
+const inputClamAVEnable: boolean = (toolkit === "*") ? getBooleanInput("clamav_enable") : (toolkit === "clamav");
 const inputClamAVUpdate: boolean = (
 	toolkit === "*" ||
 	toolkit === "clamav"
-) ? ghactionsGetBooleanInput("clamav_update", {
-	required: true,
-	trimWhitespace: false
-}) : false;
+) ? getBooleanInput("clamav_update") : false;
 const inputClamAVUnofficialAssetsUse: RegExp[] = ghactionsGetMultilineInput("clamav_unofficialassets_use", { trimWhitespace: false }).filter((value: string): boolean => {
 	return (value.length > 0);
 }).map((value: string): RegExp => {
 	return new RegExp(value, "iu");
 });
-const inputClamAVCustomAssetsArtifact: string = ghactionsGetInput("clamav_customassets_artifact", { trimWhitespace: false });
+const inputClamAVCustomAssetsArtifact: number | undefined = ((): number | undefined => {
+	const raw: string = ghactionsGetInput("clamav_customassets_artifact", { trimWhitespace: false });
+	if (raw.length === 0) {
+		return undefined;
+	}
+	let value: number;
+	try {
+		value = Number(raw);
+	} catch {
+		throw new TypeError(`\`${raw}\` is not a number!`);
+	}
+	if (!(Number.isSafeInteger(value) && value >= 0)) {
+		throw new RangeError(`Input \`clamav_customassets_artifact\` is not a number which is integer, positive, and safe!`);
+	}
+	return value;
+})();
 const inputClamAVCustomAssetsUse: RegExp[] = ghactionsGetMultilineInput("clamav_customassets_use", { trimWhitespace: false }).filter((value: string): boolean => {
 	return (value.length > 0);
 }).map((value: string): RegExp => {
 	return new RegExp(value, "iu");
 });
-const inputYARAEnable: boolean = (toolkit === "*") ? ghactionsGetBooleanInput("yara_enable", {
-	required: true,
-	trimWhitespace: false
-}) : toolkit === "yara";
+const inputYARAEnable: boolean = (toolkit === "*") ? getBooleanInput("yara_enable") : (toolkit === "yara");
 const inputYARAUnofficialAssetsUse: RegExp[] = ghactionsGetMultilineInput("yara_unofficialassets_use", { trimWhitespace: false }).filter((value: string): boolean => {
 	return (value.length > 0);
 }).map((value: string): RegExp => {
 	return new RegExp(value, "iu");
 });
-const inputYARACustomAssetsArtifact: string = ghactionsGetInput("yara_customassets_artifact", { trimWhitespace: false });
+const inputYARACustomAssetsArtifact: number | undefined = ((): number | undefined => {
+	const raw: string = ghactionsGetInput("yara_customassets_artifact", { trimWhitespace: false });
+	if (raw.length === 0) {
+		return undefined;
+	}
+	let value: number;
+	try {
+		value = Number(raw);
+	} catch {
+		throw new TypeError(`\`${raw}\` is not a number!`);
+	}
+	if (!(Number.isSafeInteger(value) && value >= 0)) {
+		throw new RangeError(`Input \`yara_customassets_artifact\` is not a number which is integer, positive, and safe!`);
+	}
+	return value;
+})();
 const inputYARACustomAssetsUse: RegExp[] = ghactionsGetMultilineInput("yara_customassets_use", { trimWhitespace: false }).filter((value: string): boolean => {
 	return (value.length > 0);
 }).map((value: string): RegExp => {
 	return new RegExp(value, "iu");
 });
-const inputGitIntegrate: boolean = ghactionsGetBooleanInput("git_integrate", {
-	required: true,
-	trimWhitespace: false
-});
-const inputGitLFS: boolean = ghactionsGetBooleanInput("git_lfs", {
-	required: true,
-	trimWhitespace: false
-});
+const inputGitIntegrate: boolean = getBooleanInput("git_integrate");
+const inputGitLFS: boolean = getBooleanInput("git_lfs");
 const inputGitLimit: bigint = ((): bigint => {
 	const raw: string = ghactionsGetInput("git_limit", {
 		required: true,
 		trimWhitespace: false
 	});
-	if (!/^(?:0|[1-9]\d*)n?$/u.test(raw)) {
-		throw new TypeError(`\`${raw}\` is not a big integer!`);
+	let value: bigint;
+	try {
+		value = BigInt(raw.replace(/n$/u, ""));
+	} catch {
+		throw new TypeError(`\`${raw}\` is not a bigint!`);
 	}
-	const value = BigInt(raw);
 	if (value < 0n) {
 		throw new RangeError(`Input \`git_limit\` is not a bigint which is positive!`);
 	}
 	return value;
 })();
-const inputGitReverse: boolean = ghactionsGetBooleanInput("git_reverse", {
-	required: true,
-	trimWhitespace: false
-});
-const inputSummary: boolean = ghactionsGetBooleanInput("summary", {
-	required: true,
-	trimWhitespace: false
-});
+const inputGitReverse: boolean = getBooleanInput("git_reverse");
+const inputSummary: boolean = getBooleanInput("summary");
 if (!inputClamAVEnable && !inputYARAEnable) {
 	ghactionsError(`No tools are enabled!`);
 	process.exit(1);

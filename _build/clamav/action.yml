@@ -10,7 +10,7 @@ inputs:
     description: "{RegExp[]} ClamAV unofficial assets to use."
     required: false
   clamav_customassets_artifact:
-    description: "{string} Artifact name of the ClamAV custom assets."
+    description: "{number} Artifact ID of the ClamAV custom assets."
     required: false
   clamav_customassets_use:
     description: "{RegExp[]} ClamAV custom assets to use."

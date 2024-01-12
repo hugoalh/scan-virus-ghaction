@@ -1,6 +1,12 @@
 import { error as ghactionsError } from "@actions/core";
 import { cwd } from "./control.js";
-import { executeChildProcess, type ChildProcessResult } from "./execute.js";
+import { executeChildProcess, type ChildProcessResult } from "./execute-child-process.js";
+await executeChildProcess(["git", "--no-pager", "config", "--global", "--add", "safe.directory", cwd]).then(({ code, stderr, success }: ChildProcessResult): void => {
+	if (!success) {
+		console.error(`Unable to config Git: ${stderr}`);
+		process.exit(code);
+	}
+});
 export interface GitCommitMeta {
 	authorDate: Date;
 	authorEmail: string;
@@ -24,7 +30,7 @@ interface GitCommitsProperty {
 	asIndex?: boolean;
 	name: keyof GitCommitMeta;
 	placeholder: `%${string}`;
-	transform?: (item: string) => unknown;
+	transform?: (item: string) => GitCommitMeta[this["name"]];
 }
 const gitCommitsProperties: GitCommitsProperty[] = [
 	{
@@ -106,45 +112,36 @@ const gitCommitsProperties: GitCommitsProperty[] = [
 		placeholder: "%T"
 	}
 ];
-const gitCommitsPropertyIndexer: GitCommitsProperty = gitCommitsProperties.filter((property: GitCommitsProperty): boolean => {
-	return property.asIndex ?? false;
+const gitCommitsPropertyIndexer: GitCommitsProperty = gitCommitsProperties.filter(({ asIndex = false }: GitCommitsProperty): boolean => {
+	return asIndex;
 })[0];
-await executeChildProcess(["git", "--no-pager", "config", "--global", "--add", "safe.directory", cwd]).then((result: ChildProcessResult): void => {
-	if (!result.success) {
-		console.error(result.stderr);
-		process.exit(result.code);
-	}
-});
 export async function disableGitLFSProcess(): Promise<void> {
 	try {
-		await executeChildProcess(["git", "--no-pager", "config", "--global", "filter.lfs.process", "git-lfs filter-process --skip"]).then((result: ChildProcessResult): void => {
-			if (!result.success) {
-				throw result.stderr;
+		await executeChildProcess(["git", "--no-pager", "config", "--global", "filter.lfs.process", "git-lfs filter-process --skip"]).then(({ stderr, success }: ChildProcessResult): void => {
+			if (!success) {
+				throw stderr;
 			}
 		});
-		await executeChildProcess(["git", "--no-pager", "config", "--global", "filter.lfs.smudge", "git-lfs smudge --skip -- %f"]).then((result: ChildProcessResult): void => {
-			if (!result.success) {
-				throw result.stderr;
+		await executeChildProcess(["git", "--no-pager", "config", "--global", "filter.lfs.smudge", "git-lfs smudge --skip -- %f"]).then(({ stderr, success }: ChildProcessResult): void => {
+			if (!success) {
+				throw stderr;
 			}
 		});
 	} catch (error) {
 		console.warn(`Unable to disable Git LFS process: ${error}`);
 	}
 }
-interface GitGetCommitsIndexOptions {
-	sortFromOldest?: boolean;
-}
 export async function getGitCommitMeta(index: string): Promise<GitCommitMeta | undefined> {
 	for (let trial = 0; trial < 10; trial += 1) {
 		const delimiter: string = crypto.randomUUID().replace(/-/gu, "");
-		const result: ChildProcessResult = await executeChildProcess(["git", "--no-pager", "show", `--format=${gitCommitsProperties.map((property: GitCommitsProperty): string => {
+		const { stderr, stdout, success }: ChildProcessResult = await executeChildProcess(["git", "--no-pager", "show", `--format=${gitCommitsProperties.map((property: GitCommitsProperty): string => {
 			return property.placeholder;
 		}).join(`%%${delimiter}%%`)}`, "--no-color", "--no-patch", index]);
-		if (!result.success) {
-			ghactionsError(`Unable to get Git commit meta ${index}: ${result.stderr}`);
+		if (!success) {
+			ghactionsError(`Unable to get Git commit meta of ${index}: ${stderr}`);
 			return undefined;
 		}
-		const raw: string[] = result.stdout.split(`%${delimiter}%`);
+		const raw: string[] = stdout.split(`%${delimiter}%`);
 		if (raw.length !== gitCommitsProperties.length) {
 			continue;
 		}
@@ -157,20 +154,23 @@ export async function getGitCommitMeta(index: string): Promise<GitCommitMeta | u
 		}
 		return gitCommitMeta as GitCommitMeta;
 	}
-	ghactionsError(`Unable to get Git commit meta ${index}: Columns are not match!`);
+	ghactionsError(`Unable to get Git commit meta of ${index}: Columns are not match!`);
 	return undefined;
+}
+interface GitGetCommitsIndexOptions {
+	sortFromOldest?: boolean;
 }
 export async function getGitCommitsIndex({ sortFromOldest = false }: GitGetCommitsIndexOptions = {}): Promise<string[]> {
 	const command: string[] = ["git", "--no-pager", "log", `--format=${gitCommitsPropertyIndexer.placeholder}`, "--no-color", "--all", "--reflog"];
 	if (sortFromOldest) {
 		command.push("--reverse");
 	}
-	const result: ChildProcessResult = await executeChildProcess(command);
-	if (!result.success) {
-		ghactionsError(`Unable to get Git commit index: ${result.stderr}`);
+	const { stderr, stdout, success }: ChildProcessResult = await executeChildProcess(command);
+	if (!success) {
+		ghactionsError(`Unable to get Git commit index: ${stderr}`);
 		return [];
 	}
-	return result.stdout.split(/\r?\n/gu);
+	return stdout.split(/\r?\n/gu);
 }
 export async function isGitRepository(): Promise<boolean> {
 	const { stdout }: ChildProcessResult = await executeChildProcess(["git", "--no-pager", "rev-parse", "--is-inside-work-tree", "*>&1"]);
