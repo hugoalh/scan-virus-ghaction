@@ -3,61 +3,49 @@ author: "hugoalh"
 description: "Scan virus (including malicious file and malware)."
 inputs:
   yara_unofficialassets_use:
-    description: "{RegEx[]} YARA unofficial assets to use."
+    description: "{RegExp[]} YARA unofficial assets to use."
     required: false
-  yara_customassets_directory:
-    description: "{String} YARA custom assets absolute directory path, must be a mapped directory."
+  yara_customassets_artifact:
+    description: "{string} Artifact name of the YARA custom assets."
     required: false
   yara_customassets_use:
-    description: "{RegEx[]} YARA custom assets to use."
+    description: "{RegExp[]} YARA custom assets to use."
     required: false
     default: ".+"
   git_integrate:
-    description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
+    description: "{boolean} Whether to integrate with Git to perform scan by every commits."
     required: false
-    default: "False"
+    default: "false"
   git_ignores:
-    description: "{ScriptBlock} Ignores by the Git commits."
+    description: "{function} Ignores by the Git commits."
     required: false
   git_lfs:
-    description: "{Boolean} Whether to process Git LFS files."
+    description: "{boolean} Whether to process Git LFS files."
     required: false
-    default: "False"
+    default: "false"
   git_limit:
-    description: "{UInt64} Limit on how many Git commits will scan."
+    description: "{bigint} Limit on how many Git commits will scan."
     required: false
     default: "0"
   git_reverse:
-    description: "{Boolean} Whether to reverse the scan order of the Git commits."
+    description: "{boolean} Whether to reverse the scan order of the Git commits."
     required: false
-    default: "False"
+    default: "false"
   ignores_pre:
-    description: "{ScriptBlock} Ignores by the paths, sessions, and tools before the scan."
+    description: "{function} Ignores by the paths, sessions, and tools before the scan."
     required: false
   ignores_post:
-    description: "{ScriptBlock} Ignores by the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan."
+    description: "{function} Ignores by the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan."
     required: false
-  found_log:
-    description: "{Boolean} Whether to record elements which found virus in the log."
+  summary:
+    description: "{boolean} Whether to generate summary."
     required: false
-    default: "True"
-  found_summary:
-    description: "{Boolean} Whether to record elements which found virus in the step summary."
-    required: false
-    default: "False"
-  statistics_log:
-    description: "{Boolean} Whether to record statistics in the log."
-    required: false
-    default: "True"
-  statistics_summary:
-    description: "{Boolean} Whether to record statistics in the step summary."
-    required: false
-    default: "False"
+    default: "false"
 outputs:
   finish:
-    description: "{Boolean} Whether this action correctly finished without non catch issues."
+    description: "{boolean} Whether this action correctly finished without non catch issues."
   found:
-    description: "{Boolean} Whether there has element which found virus."
+    description: "{boolean} Whether there has element which found virus."
 runs:
   using: "docker"
   image: "../../yara.Dockerfile"

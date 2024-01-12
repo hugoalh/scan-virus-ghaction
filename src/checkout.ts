@@ -1,8 +1,8 @@
-import { rm as fsRm, writeFile as fsWriteFile } from "node:fs/promises";
+import { rm as fsRm, writeFile } from "node:fs/promises";
 import { join as pathJoin } from "node:path";
-import { pathAssetsRootAbsolute, pathProgramsVersionFileAbsolute, pathRoot, toolkit } from "./control.js";
+import { pathAssetsRootAbsolute, pathAssetsRootName, pathProgramsVersionFileAbsolute, pathRoot, toolkit } from "./control.js";
 import { executeChildProcess, type ChildProcessResult } from "./execute.js";
-await executeChildProcess(["git", "--no-pager", "clone", "--depth", "1", "https://github.com/hugoalh/scan-virus-ghaction-assets.git", "assets"], { cwd: pathRoot }).then(({ code, stderr, success }: ChildProcessResult): void => {
+await executeChildProcess(["git", "--no-pager", "clone", "--depth", "1", "https://github.com/hugoalh/scan-virus-ghaction-assets.git", pathAssetsRootName], { cwd: pathRoot }).then(({ code, stderr, success }: ChildProcessResult): void => {
 	if (!success) {
 		console.error(stderr);
 		process.exit(code);
@@ -72,12 +72,9 @@ interface SVGHAProgramVersion {
 	"Name": string;
 	"Version": string;
 }
-const programsVersionTable: SVGHAProgramVersion[] = Array.from(programsVersionMap.entries(), ([name, version]: [string, string]): SVGHAProgramVersion => {
-	return {
-		Name: name,
-		Version: version
-	};
+const programsVersionTable: SVGHAProgramVersion[] = Array.from(programsVersionMap.entries(), ([Name, Version]: [string, string]): SVGHAProgramVersion => {
+	return { Name, Version };
 });
-await fsWriteFile(pathProgramsVersionFileAbsolute, JSON.stringify(programsVersionTable), { encoding: "utf-8" });
+await writeFile(pathProgramsVersionFileAbsolute, JSON.stringify(programsVersionTable), { encoding: "utf-8" });
 console.log("Programs Version: ");
 console.table(programsVersionTable);

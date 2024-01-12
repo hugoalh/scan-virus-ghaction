@@ -25,13 +25,13 @@
 		"url": "git+https://github.com/hugoalh/scan-virus-ghaction.git"
 	},
 	"dependencies": {
-		"@actions/artifact": "^2.0.0",
+		"@actions/artifact": "^2.0.1",
 		"@actions/core": "^1.10.1",
 		"escape-string-regexp": "^5.0.0"
 	},
 	"devDependencies": {
 		"@stylistic/eslint-plugin": "^1.5.3",
-		"@types/node": "^20.10.8",
+		"@types/node": "^20.11.0",
 		"@typescript-eslint/eslint-plugin": "^6.18.1",
 		"@typescript-eslint/parser": "^6.18.1",
 		"eslint": "^8.56.0",

@@ -3,7 +3,7 @@ import escapeStringRegExp from "escape-string-regexp";
 export const pathRoot: string = ((): string => {
 	const value: string | undefined = process.env.SVGHA_ROOT;
 	if (typeof value === "undefined") {
-		throw new Error(`Environment variable \`SVGHA_ROOT\` is missing!`);
+		throw new ReferenceError(`Environment variable \`SVGHA_ROOT\` is not defined!`);
 	}
 	return value;
 })();
