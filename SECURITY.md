@@ -2,13 +2,13 @@
 
 ## Supported Versions
 
-> | **Support** | **Legend** | **Description** |
-> |:-:|:-:|:--|
-> | ✔️ | 🟤 | Pending / Pre Release / Unstable |
-> | ✔️ | 🔵 | Current Release |
-> | ✔️ | 🟢 | Long Term Support |
-> | ✔️ | 🟠 | Maintenance |
-> | ❌ | 🔴 | End of Life |
+> | **Legend** | **Description** |
+> |:-:|:--|
+> | 🟤 | Pending / Pre Release / Unstable |
+> | 🔵 | Current Release |
+> | 🟢 | Long Term Support |
+> | 🟠 | Maintenance |
+> | 🔴 | End Of Life / Not Supported |
 
 | **Versions** | **Status** | **🔵 Date** | **🟢 Date** | **🔴 Date** | **Target - GitHub Actions Runner** | **Target - Docker** |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|

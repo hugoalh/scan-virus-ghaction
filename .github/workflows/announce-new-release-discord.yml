@@ -4,14 +4,14 @@ on:
   release:
     types:
       - "published"
-permissions: {}
 jobs:
   main:
     name: "Main"
+    permissions: {}
     runs-on: "ubuntu-latest"
     steps:
       - name: "Send Discord Webhook"
-        uses: "hugoalh/send-discord-webhook-ghaction@v6.0.0"
+        uses: "hugoalh/send-discord-webhook-ghaction@v6.0.1"
         with:
           key: "${{secrets.DISCORD_HXHS_PROJECTNEWRELEASEANNOUNCER_WEBHOOK}}"
           embeds: |
