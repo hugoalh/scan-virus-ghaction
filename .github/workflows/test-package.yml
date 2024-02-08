@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "Test - Package"
+name: "Test Package"
 on:
   workflow_dispatch:
     inputs:

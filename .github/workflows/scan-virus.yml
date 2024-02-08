@@ -35,11 +35,11 @@ on:
         options:
           - "False"
           - "True"
-permissions:
-  contents: "read"
 jobs:
   main:
     name: "Main"
+    permissions:
+      contents: "read"
     uses: "hugoalh/hugoalh/.github/workflows/call-scan-virus-0.yml@main"
     with:
       git_integrate: "${{github.event.inputs.git_integrate || 'False'}}"

@@ -1,15 +1,15 @@
 # Scan Virus (GitHub Action)
 
 [⚖️ MIT](./LICENSE.md)
-[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/hugoalh/scan-virus-ghaction?label=Grade&logo=codefactor&logoColor=ffffff&style=flat-square "CodeFactor Grade")](https://www.codefactor.io/repository/github/hugoalh/scan-virus-ghaction)
 
-|  | **Heat** | **Release - Latest** | **Release - Pre** |
-|:-:|:-:|:-:|:-:|
-| [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction) | [![GitHub Stars](https://img.shields.io/github/stars/hugoalh/scan-virus-ghaction?label=&logoColor=ffffff&style=flat-square "GitHub Stars")](https://github.com/hugoalh/scan-virus-ghaction/stargazers) \| ![GitHub Total Downloads](https://img.shields.io/github/downloads/hugoalh/scan-virus-ghaction/total?label=&style=flat-square "GitHub Total Downloads") | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=&style=flat-square "GitHub Latest Release Version") (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Release Date")) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=&style=flat-square "GitHub Latest Pre-Release Version") (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Pre-Release Date")) |
+|  | **Release - Latest** | **Release - Pre** |
+|:-:|:-:|:-:|
+| [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction) | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=&style=flat-square "GitHub Latest Release Version") (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Release Date")) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=&style=flat-square "GitHub Latest Pre-Release Version") (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Pre-Release Date")) |
 
 A GitHub Action to scan virus (including malicious file and malware).
 
-> **⚠️ Important:** This documentation is v0.20.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
+> [!IMPORTANT]
+> This documentation is v0.20.0 based; To view other version's documentation, please visit the [versions list](https://github.com/hugoalh/scan-virus-ghaction/tags) and select the correct version.
 
 ## 🌟 Feature
 
@@ -48,18 +48,20 @@ jobs:
       - uses: "hugoalh/scan-virus-ghaction@<Tag>"
 ```
 
-> **ℹ️ Notice:** This action also provide editions of each tool:
+> [!NOTE]
+> This action also provide editions of each tool:
 >
 > - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Tag>"`
 > - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Tag>"`
 
 ## 🧩 Input
 
-> **ℹ️ Notice:** All of the inputs are optional; Use this action without any input will default to:
+> [!NOTE]
+> All of the inputs are optional; Use this action without any input will default to:
 >
-> - **`@<Tag>`:** Scan with the ClamAV official assets
-> - **`/clamav@<Tag>`:** Scan with the ClamAV official assets
-> - **`/yara@<Tag>`:** Scan with the YARA unofficial assets
+> - **`@<Tag>`:** Scan with the ClamAV official assets.
+> - **`/clamav@<Tag>`:** Scan with the ClamAV official assets.
+> - **`/yara@<Tag>`:** Scan with the YARA unofficial assets.
 
 ### `clamav_enable`
 
@@ -74,7 +76,8 @@ jobs:
 
 `<Boolean = True>` Whether to update the ClamAV official assets before scan anything.
 
-> **⚠️ Important:** It is recommended to keep this enable to have the latest ClamAV official assets.
+> [!IMPORTANT]
+> It is recommended to keep this enable to have the latest ClamAV official assets.
 
 ### `clamav_unofficialassets_use`
 
@@ -140,7 +143,8 @@ git_ignores: |-
   )
 ```
 
-> **⚠️ Important:** PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
+> [!IMPORTANT]
+> PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
 ### `git_lfs`
 
@@ -150,7 +154,8 @@ git_ignores: |-
 
 `<UInt64 = 0>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this value is `0`, means no limit.
 
-> **⚠️ Important:** For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
+> [!IMPORTANT]
+> For actions which run on the GitHub host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
 
 ### `git_reverse`
 
@@ -181,7 +186,8 @@ ignores_pre: |-
   Return ($ElementPreMeta.Path -imatch '^node_modules[\\/]')
 ```
 
-> **⚠️ Important:** PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
+> [!IMPORTANT]
+> PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
 ### `ignores_post`
 
@@ -197,8 +203,7 @@ Param([PSCustomObject]$ElementPostMeta)
 Return $Result
 ```
 
-> **⚠️ Important:**
->
+> [!IMPORTANT]
 > - PowerShell script block is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 > - It is not recommended to ignore any official symbol due to these rarely have false positives in most cases.
 
@@ -210,7 +215,8 @@ Return $Result
 
 `<Boolean = False>` Whether to record elements which found virus in the step summary.
 
-> **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
+> [!IMPORTANT]
+> If there has many elements which found virus, step summary maybe get truncated and unable to display all of them.
 
 ### `statistics_log`
 
@@ -220,7 +226,8 @@ Return $Result
 
 `<Boolean = False>` Whether to record statistics in the step summary.
 
-> **⚠️ Important:** If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
+> [!IMPORTANT]
+> If there has many elements which found virus, step summary maybe get truncated and unable to display statistics.
 
 ## 🧩 Input's Script Block Argument Syntax
 
