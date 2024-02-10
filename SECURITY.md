@@ -2,20 +2,18 @@
 
 ## Supported Versions
 
-> | **Support** | **Legend** | **Description** |
-> |:-:|:-:|:--|
-> | ✔️ | 🟤 | Pending / Pre Release / Unstable |
-> | ✔️ | 🔵 | Current Release |
-> | ✔️ | 🟢 | Long Term Support |
-> | ✔️ | 🟠 | Maintenance |
-> | ❌ | 🔴 | End of Life |
+> | **Legend** | **Description** |
+> |:-:|:--|
+> | 🟤 | Pending / Pre Release / Unstable |
+> | 🔵 | Current Release |
+> | 🟢 | Long Term Support |
+> | 🟠 | Maintenance |
+> | 🔴 | End Of Life / Not Supported |
 
 | **Versions** | **Status** | **🔵 Date** | **🟢 Date** | **🔴 Date** | **Target - GitHub Actions Runner** | **Target - Docker** |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | v0.21.X | 🟤 | *Unknown* | *N/A* | *N/A* | >= v2.310.0 | Latest Release |
 | v0.20.X | 🔵 | 2023-10-21 | *N/A* | *Unknown* | >= v2.308.0 | Latest Release |
-| v0.16.X | 🔴 | 2023-06-23 | *N/A* | 2023-10-26 | >= v2.303.0 | Latest Release |
-| v0.15.X | 🔴 | 2023-06-10 | *N/A* | 2023-07-01 | >= v2.303.0 | Latest Release |
 
 > **ℹ️ Notice:**
 >
