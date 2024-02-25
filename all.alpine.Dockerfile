@@ -3,7 +3,7 @@
 
 
 
-FROM alpine:3.18 AS stage-env
+FROM alpine:3.19 AS stage-env
 
 # Environment variable for tools, separate each name with comma (`,`) , must corresponding to install packages.
 ENV SCANVIRUS_GHACTION_TOOLS=clamav,yara
