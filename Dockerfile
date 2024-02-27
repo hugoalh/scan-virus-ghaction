@@ -38,5 +38,5 @@ RUN freshclam --verbose
 
 COPY lib checkout.ts deno.jsonc main.ts ${SVGHA_ROOT}/
 RUN cd $SVGHA_ROOT && deno cache checkout.ts main.ts
-RUN deno run --allow-all --cached-only --unstable-kv $SVGHA_ROOT/checkout.ts
-CMD deno run --allow-all --cached-only --unstable-kv $SVGHA_ROOT/main.ts
+RUN deno run --allow-all --cached-only $SVGHA_ROOT/checkout.ts
+CMD deno run --allow-all --cached-only $SVGHA_ROOT/main.ts

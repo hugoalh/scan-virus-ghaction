@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://citation-file-format.github.io/1.2.0/schema.json
+cff-version: "1.2.0"
+title: "Scan Virus (GitHub Action)"
+message: "If you use this software, please cite it using the metadata from this file."
+type: "software"
+authors:
+  - name: "hugoalh"
+repository-code: "https://github.com/hugoalh/scan-virus-ghaction"
+keywords:
+  - "anti-malware"
+  - "anti-virus"
+  - "antivirus"
+  - "gh-action"
+  - "ghaction"
+  - "github-action"
+  - "scan"
+license: "MIT"

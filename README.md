@@ -36,7 +36,7 @@ This does not provide any guarantee that carefully hidden objects will be scanne
 
 ### GitHub Actions
 
-- **Target Version:** >= v2.311.0, &:
+- **Target Version:** >= v2.314.0, &:
   - Docker
 - **Require Permission:** *N/A*
 
@@ -77,7 +77,9 @@ When this input is `false`, will ignore inputs:
 
 ### `clamav_customassets_artifact`
 
-`<string>` Artifact name of the ClamAV custom assets, which the artifact must uploaded in the same workflow run and before this action. When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
+`<string>` Artifact name of the ClamAV custom assets, which the artifact must uploaded in the same workflow run and before this action.
+
+When this input is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
 
 ### `clamav_customassets_use`
 
@@ -99,15 +101,17 @@ When this input is `false`, will ignore inputs:
 
 ### `yara_customassets_artifact`
 
-`<string>` Artifact name of the YARA custom assets, which the artifact must uploaded in the same workflow run and before this action. When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
+`<string>` Artifact name of the YARA custom assets, which the artifact must uploaded in the same workflow run and before this action.
+
+When this input is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
 
 ### `yara_customassets_use`
 
 `<RegExp[] = .+>` YARA custom assets to use, by regular expression of relative paths in the input [`yara_customassets_artifact`](#yara_customassets_artifact), separate each regular expression per line; By default, all of the YARA custom assets are in use.
 
-### `git_integrate`
+### `git_iterate`
 
-`<boolean = false>` Whether to integrate with Git to perform scan by every commits; Require working directory is a Git repository.
+`<boolean = false>` Whether to iterate Git commits to perform scan by every commits; Require working directory is a Git repository.
 
 When this input is `false`, will ignore inputs:
 
@@ -118,27 +122,27 @@ When this input is `false`, will ignore inputs:
 
 ### `git_ignores`
 
-`<function<boolean>>` Ignores Git commits, by JavaScript function and must return type of `boolean` (`true` to ignore). Ignored Git commits will not be scanned.
+`<function<boolean = false>>` Ignore Git commits to not be scanned, by JavaScript function and must return type of `boolean` (`true` to ignore).
 
-> **Available contexts:**
->
-> - **`authorDate`:** `<Date>` Git commit author date.
-> - **`authorEmail`:** `<string>` Git commit author e-mail.
-> - **`authorName`:** `<string>` Git commit author name.
-> - **`body`:** `<string>` Git commit body.
-> - **`commitHash`:** `<string>` Git commit commit hash.
-> - **`committerDate`:** `<Date>` Git commit committer date.
-> - **`committerEmail`:** `<string>` Git commit committer e-mail.
-> - **`committerName`:** `<string>` Git commit committer name.
-> - **`encoding`:** `<string>` Git commit encoding.
-> - **`notes`:** `<string>` Git commit notes.
-> - **`parentHashes`:** `<string[]>` Git commit parent hashes.
-> - **`reflogIdentityEmail`:** `<string>` Git commit reflog identity e-mail.
-> - **`reflogIdentityName`:** `<string>` Git commit reflog identity name.
-> - **`reflogSelector`:** `<string>` Git commit reflog selector.
-> - **`reflogSubject`:** `<string>` Git commit reflog subject.
-> - **`subject`:** `<string>` Git commit subject.
-> - **`treeHash`:** `<string>` Git commit tree hash.
+**Available Contexts:**
+
+- **`authorDate`:** `<Date>` Git commit author date.
+- **`authorEmail`:** `<string>` Git commit author e-mail.
+- **`authorName`:** `<string>` Git commit author name.
+- **`body`:** `<string>` Git commit body.
+- **`commitHash`:** `<string>` Git commit commit hash.
+- **`committerDate`:** `<Date>` Git commit committer date.
+- **`committerEmail`:** `<string>` Git commit committer e-mail.
+- **`committerName`:** `<string>` Git commit committer name.
+- **`encoding`:** `<string>` Git commit encoding.
+- **`notes`:** `<string>` Git commit notes.
+- **`parentHashes`:** `<string[]>` Git commit parent hashes.
+- **`reflogIdentityEmail`:** `<string>` Git commit reflog identity e-mail.
+- **`reflogIdentityName`:** `<string>` Git commit reflog identity name.
+- **`reflogSelector`:** `<string>` Git commit reflog selector.
+- **`reflogSubject`:** `<string>` Git commit reflog subject.
+- **`subject`:** `<string>` Git commit subject.
+- **`treeHash`:** `<string>` Git commit tree hash.
 
 For example, to ignore Git commits made by Dependabot, and ignore Git commits made by OctoCat before 2022-01-01:
 
@@ -155,11 +159,13 @@ git_ignores: |-
 
 ### `git_lfs`
 
-`<boolean = false>` Whether to process Git LFS files.
+`<boolean = false>` Whether to allow Git LFS process through entire Git commits iteration.
 
 ### `git_limit`
 
-`<bigint = 0>` Limit on how many Git commits will scan, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse); When this value is `0`, means no limit.
+`<bigint = 0>` Limit the number of Git commits will be scanned, counting is affected by inputs [`git_ignores`](#git_ignores) and [`git_reverse`](#git_reverse).
+
+When this input is `0`, means no limit.
 
 > [!IMPORTANT]
 > For actions which run on the GitHub-host, it is highly recommended to define this due to the limit of the job execution time (currently is `6 hours`).
@@ -173,32 +179,32 @@ git_ignores: |-
 
 ### `ignores`
 
-`<function<boolean>>` Ignores elements before the scan, by JavaScript function and must return type of `boolean` (`true` to ignore). Ignored elements will not be scanned.
+`<function<boolean = false>>` Ignore elements to not be scanned, by JavaScript function and must return type of `boolean` (`true` to ignore).
 
-To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
+To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `<ToolID>_enable` is more efficiency.
 
-> **Available contexts:**
->
-> - **`gitCommit.authorDate`:** `<Date | undefined>` Git commit author date. Only exists when the session is on a Git commit.
-> - **`gitCommit.authorEmail`:** `<string | undefined>` Git commit author e-mail. Only exists when the session is on a Git commit.
-> - **`gitCommit.authorName`:** `<string | undefined>` Git commit author name. Only exists when the session is on a Git commit.
-> - **`gitCommit.body`:** `<string | undefined>` Git commit body. Only exists when the session is on a Git commit.
-> - **`gitCommit.commitHash`:** `<string | undefined>` Git commit commit hash. Only exists when the session is on a Git commit.
-> - **`gitCommit.committerDate`:** `<Date | undefined>` Git commit committer date. Only exists when the session is on a Git commit.
-> - **`gitCommit.committerEmail`:** `<string | undefined>` Git commit committer e-mail. Only exists when the session is on a Git commit.
-> - **`gitCommit.committerName`:** `<string | undefined>` Git commit committer name. Only exists when the session is on a Git commit.
-> - **`gitCommit.encoding`:** `<string | undefined>` Git commit encoding. Only exists when the session is on a Git commit.
-> - **`gitCommit.notes`:** `<string | undefined>` Git commit notes. Only exists when the session is on a Git commit.
-> - **`gitCommit.parentHashes`:** `<string[] | undefined>` Git commit parent hashes. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogIdentityEmail`:** `<string | undefined>` Git commit reflog identity e-mail. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogIdentityName`:** `<string | undefined>` Git commit reflog identity name. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogSelector`:** `<string | undefined>` Git commit reflog selector. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogSubject`:** `<string | undefined>` Git commit reflog subject. Only exists when the session is on a Git commit.
-> - **`gitCommit.subject`:** `<string | undefined>` Git commit subject. Only exists when the session is on a Git commit.
-> - **`gitCommit.treeHash`:** `<string | undefined>` Git commit tree hash. Only exists when the session is on a Git commit.
-> - **`path`:** `<string>` Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
-> - **`session`:** `<string>` `"Current"` or Git commit hash (equivalent with `gitCommit.commitHash`).
-> - **`tool`:** `<string>` Tool ID (e.g.: `"clamav"`).
+**Available Contexts:**
+
+- **`gitCommit.authorDate`:** `<Date | undefined>` Git commit author date. Only exists when the session is on a Git commit.
+- **`gitCommit.authorEmail`:** `<string | undefined>` Git commit author e-mail. Only exists when the session is on a Git commit.
+- **`gitCommit.authorName`:** `<string | undefined>` Git commit author name. Only exists when the session is on a Git commit.
+- **`gitCommit.body`:** `<string | undefined>` Git commit body. Only exists when the session is on a Git commit.
+- **`gitCommit.commitHash`:** `<string | undefined>` Git commit commit hash. Only exists when the session is on a Git commit.
+- **`gitCommit.committerDate`:** `<Date | undefined>` Git commit committer date. Only exists when the session is on a Git commit.
+- **`gitCommit.committerEmail`:** `<string | undefined>` Git commit committer e-mail. Only exists when the session is on a Git commit.
+- **`gitCommit.committerName`:** `<string | undefined>` Git commit committer name. Only exists when the session is on a Git commit.
+- **`gitCommit.encoding`:** `<string | undefined>` Git commit encoding. Only exists when the session is on a Git commit.
+- **`gitCommit.notes`:** `<string | undefined>` Git commit notes. Only exists when the session is on a Git commit.
+- **`gitCommit.parentHashes`:** `<string[] | undefined>` Git commit parent hashes. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogIdentityEmail`:** `<string | undefined>` Git commit reflog identity e-mail. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogIdentityName`:** `<string | undefined>` Git commit reflog identity name. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogSelector`:** `<string | undefined>` Git commit reflog selector. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogSubject`:** `<string | undefined>` Git commit reflog subject. Only exists when the session is on a Git commit.
+- **`gitCommit.subject`:** `<string | undefined>` Git commit subject. Only exists when the session is on a Git commit.
+- **`gitCommit.treeHash`:** `<string | undefined>` Git commit tree hash. Only exists when the session is on a Git commit.
+- **`path`:** `<string>` Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
+- **`session`:** `<string>` `"Current"` or Git commit hash (equivalent with `gitCommit.commitHash`).
+- **`tool`:** `<string>` Tool ID (e.g.: `"clamav"`).
 
 For example, to ignore path `node_modules`:
 
@@ -212,39 +218,45 @@ ignores: |-
 
 ### `report_filter`
 
-`<function<Severity = "High">>` Filter the report after the scan, by JavaScript function and must return type of `Severity`. By default, all of the symbols are high severity.
+`<function<Severity = "High">>` Filter the report after the scan, by JavaScript function and must return type of `Severity`. By default, all of the symbols are high severity (i.e.: fail).
 
-To ignore only by the paths and/or sessions, use input [`ignores`](#ignores) is more efficiency. To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
+To ignore only by the paths and/or sessions, use input [`ignores`](#ignores) is more efficiency. To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `<ToolID>_enable` is more efficiency.
 
-> **Available contexts:**
->
-> - **`gitCommit.authorDate`:** `<Date | undefined>` Git commit author date. Only exists when the session is on a Git commit.
-> - **`gitCommit.authorEmail`:** `<string | undefined>` Git commit author e-mail. Only exists when the session is on a Git commit.
-> - **`gitCommit.authorName`:** `<string | undefined>` Git commit author name. Only exists when the session is on a Git commit.
-> - **`gitCommit.body`:** `<string | undefined>` Git commit body. Only exists when the session is on a Git commit.
-> - **`gitCommit.commitHash`:** `<string | undefined>` Git commit commit hash. Only exists when the session is on a Git commit.
-> - **`gitCommit.committerDate`:** `<Date | undefined>` Git commit committer date. Only exists when the session is on a Git commit.
-> - **`gitCommit.committerEmail`:** `<string | undefined>` Git commit committer e-mail. Only exists when the session is on a Git commit.
-> - **`gitCommit.committerName`:** `<string | undefined>` Git commit committer name. Only exists when the session is on a Git commit.
-> - **`gitCommit.encoding`:** `<string | undefined>` Git commit encoding. Only exists when the session is on a Git commit.
-> - **`gitCommit.notes`:** `<string | undefined>` Git commit notes. Only exists when the session is on a Git commit.
-> - **`gitCommit.parentHashes`:** `<string[] | undefined>` Git commit parent hashes. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogIdentityEmail`:** `<string | undefined>` Git commit reflog identity e-mail. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogIdentityName`:** `<string | undefined>` Git commit reflog identity name. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogSelector`:** `<string | undefined>` Git commit reflog selector. Only exists when the session is on a Git commit.
-> - **`gitCommit.reflogSubject`:** `<string | undefined>` Git commit reflog subject. Only exists when the session is on a Git commit.
-> - **`gitCommit.subject`:** `<string | undefined>` Git commit subject. Only exists when the session is on a Git commit.
-> - **`gitCommit.treeHash`:** `<string | undefined>` Git commit tree hash. Only exists when the session is on a Git commit.
-> - **`path`:** `<string>` Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
-> - **`session`:** `<string>` `"Current"` or Git commit hash (equivalent with `gitCommit.commitHash`).
-> - **`symbol`:** `<string>` Rule or signature (e.g.: `"Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor"`).
-> - **`tool`:** `<string>` Tool ID (e.g.: `"clamav"`).
+**Available Contexts:**
 
-> **Severity:**
->
->
+- **`gitCommit.authorDate`:** `<Date | undefined>` Git commit author date. Only exists when the session is on a Git commit.
+- **`gitCommit.authorEmail`:** `<string | undefined>` Git commit author e-mail. Only exists when the session is on a Git commit.
+- **`gitCommit.authorName`:** `<string | undefined>` Git commit author name. Only exists when the session is on a Git commit.
+- **`gitCommit.body`:** `<string | undefined>` Git commit body. Only exists when the session is on a Git commit.
+- **`gitCommit.commitHash`:** `<string | undefined>` Git commit commit hash. Only exists when the session is on a Git commit.
+- **`gitCommit.committerDate`:** `<Date | undefined>` Git commit committer date. Only exists when the session is on a Git commit.
+- **`gitCommit.committerEmail`:** `<string | undefined>` Git commit committer e-mail. Only exists when the session is on a Git commit.
+- **`gitCommit.committerName`:** `<string | undefined>` Git commit committer name. Only exists when the session is on a Git commit.
+- **`gitCommit.encoding`:** `<string | undefined>` Git commit encoding. Only exists when the session is on a Git commit.
+- **`gitCommit.notes`:** `<string | undefined>` Git commit notes. Only exists when the session is on a Git commit.
+- **`gitCommit.parentHashes`:** `<string[] | undefined>` Git commit parent hashes. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogIdentityEmail`:** `<string | undefined>` Git commit reflog identity e-mail. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogIdentityName`:** `<string | undefined>` Git commit reflog identity name. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogSelector`:** `<string | undefined>` Git commit reflog selector. Only exists when the session is on a Git commit.
+- **`gitCommit.reflogSubject`:** `<string | undefined>` Git commit reflog subject. Only exists when the session is on a Git commit.
+- **`gitCommit.subject`:** `<string | undefined>` Git commit subject. Only exists when the session is on a Git commit.
+- **`gitCommit.treeHash`:** `<string | undefined>` Git commit tree hash. Only exists when the session is on a Git commit.
+- **`path`:** `<string>` Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
+- **`session`:** `<string>` `"Current"` or Git commit hash (equivalent with `gitCommit.commitHash`).
+- **`symbol`:** `<string>` Rule or signature (e.g.: `"Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor"`).
+- **`tool`:** `<string>` Tool ID (e.g.: `"clamav"`).
 
-For example, to adjust severity of symbol `Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor`:
+**Available Severity:**
+
+| **Value** | **Annotation** | **SARIF** |
+|:-:|:-:|:-:|
+| `"Critical"` | Error | 9 |
+| `"High"` | Error | 7 |
+| `"Medium"` | Warning | 4 |
+| `"Low"` | Notice | 1 |
+| `"FalsePositive"` | *N/A* | *N/A* |
+
+For example, to adjust severity of symbol `Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor` to low:
 
 ```yml
 report_filter: |-
@@ -254,19 +266,17 @@ report_filter: |-
 ```
 
 > [!CAUTION]
-> - It is not recommended to ignore any official symbol due to these rarely have false positives in most cases.
+> - It is not recommended to mark any official symbol as false positive due to these rarely have false positives in most cases.
 > - JavaScript function is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
-### `report_sarif_enable`
+### `report_sarif`
 
-`<boolean = false>` Whether to (allow to) generate the [SARIF report][sarif-github]. When this is `false`, will ignore input [`report_sarif_upload`](#report_sarif_upload).
+`<boolean = false>` Whether to (allow to) generate and upload the [SARIF report][sarif-github] to the current repository.
 
-> [!IMPORTANT]
-> Due to the limitations, generate the [SARIF report][sarif-github] is only available when current working directory is a Git repository of the current repository, and input [`git_integrate`](#git_integrate) is `false`.
+Due to the limitations, this feature is only available when these conditions are all fulfilled:
 
-### `report_sarif_upload`
-
-`<boolean = false>` Whether to (allow to) upload the [SARIF report][sarif-github] to the current repository.
+- Input [`git_iterate`](#git_iterate) is `false`.
+- Working directory is a Git repository of the current repository.
 
 ### `token`
 
