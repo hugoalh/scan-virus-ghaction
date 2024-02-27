@@ -14,7 +14,7 @@ A GitHub Action to scan virus (including malicious file and malware).
 ## 🌟 Feature
 
 - 4\~96% faster than other GitHub Actions with the same purpose, especially when need to perform scan with multiple sessions.
-- Ability to ignore specify paths, rules, sessions, and/or signatures.
+- Ability to filter specify paths, rules, sessions, and/or signatures.
 - Ability to scan by every Git commits.
 - Ability to use custom assets.
 - Bundle with some of the communities' unofficial rules and signatures.
@@ -48,24 +48,16 @@ jobs:
       - uses: "hugoalh/scan-virus-ghaction@<Tag>"
 ```
 
-> [!NOTE]
-> This action also provide editions of each tool:
->
-> - **ClamAV:** `"hugoalh/scan-virus-ghaction/clamav@<Tag>"`
-> - **YARA:** `"hugoalh/scan-virus-ghaction/yara@<Tag>"`
-
 ## 🧩 Input
 
 > [!NOTE]
-> All of the inputs are optional; Use this action without any input will default to:
->
-> - **`@<Tag>`:** Scan with the ClamAV official assets.
-> - **`/clamav@<Tag>`:** Scan with the ClamAV official assets.
-> - **`/yara@<Tag>`:** Scan with the YARA unofficial assets.
+> All of the inputs are optional; Use this action without any input will default to scan with the ClamAV official assets.
 
 ### `clamav_enable`
 
-`<boolean = true>` Whether to use ClamAV. When this is `false`, will ignore inputs:
+`<boolean = true>` Whether to use ClamAV.
+
+When this input is `false`, will ignore inputs:
 
 - [`clamav_update`](#clamav_update)
 - [`clamav_unofficialassets_use`](#clamav_unofficialassets_use)
@@ -85,7 +77,7 @@ jobs:
 
 ### `clamav_customassets_artifact`
 
-`<string>` Artifact name of the ClamAV custom assets, which the artifact must uploaded before this action. When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
+`<string>` Artifact name of the ClamAV custom assets, which the artifact must uploaded in the same workflow run and before this action. When this is not defined, will ignore input [`clamav_customassets_use`](#clamav_customassets_use).
 
 ### `clamav_customassets_use`
 
@@ -93,7 +85,9 @@ jobs:
 
 ### `yara_enable`
 
-`<boolean = false>` Whether to use YARA. When this is `false`, will ignore inputs:
+`<boolean = false>` Whether to use YARA.
+
+When this input is `false`, will ignore inputs:
 
 - [`yara_unofficialassets_use`](#yara_unofficialassets_use)
 - [`yara_customassets_artifact`](#yara_customassets_artifact)
@@ -105,7 +99,7 @@ jobs:
 
 ### `yara_customassets_artifact`
 
-`<string>` Artifact name of the YARA custom assets, which the artifact must uploaded before this action. When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
+`<string>` Artifact name of the YARA custom assets, which the artifact must uploaded in the same workflow run and before this action. When this is not defined, will ignore input [`yara_customassets_use`](#yara_customassets_use).
 
 ### `yara_customassets_use`
 
@@ -113,7 +107,9 @@ jobs:
 
 ### `git_integrate`
 
-`<boolean = false>` Whether to integrate with Git to perform scan by every commits; Require directory is a Git repository. When this is `false`, will ignore inputs:
+`<boolean = false>` Whether to integrate with Git to perform scan by every commits; Require working directory is a Git repository.
+
+When this input is `false`, will ignore inputs:
 
 - [`git_ignores`](#git_ignores)
 - [`git_lfs`](#git_lfs)
@@ -122,46 +118,36 @@ jobs:
 
 ### `git_ignores`
 
-`<function>` Ignores by the Git commits, by JavaScript function and must return type of `boolean` (only return `true` to able ignore). Ignored Git commits will not be scanned.
+`<function<boolean>>` Ignores Git commits, by JavaScript function and must return type of `boolean` (`true` to ignore). Ignored Git commits will not be scanned.
 
-```ts
-({ ... }: {
-  authorDate: Date;
-  authorEmail: string;
-  authorName: string;
-  body: string;
-  commitHash: string;
-  committerDate: Date;
-  committerEmail: string;
-  committerName: string;
-  encoding: string;
-  notes: string;
-  parentHashes: string[];
-  reflogIdentityEmail: string;
-  reflogIdentityName: string;
-  reflogSelector: string;
-  reflogSubject: string;
-  subject: string;
-  treeHash: string;
-}) => {
-  /* ... Code for determine ... */
-  return result;
-}
-```
-
-> [!NOTE]
-> It is TypeScript syntax at the above in order to show the type of the parameters; But remember to use JavaScript syntax for this input.
+> **Available contexts:**
+>
+> - **`authorDate`:** `<Date>` Git commit author date.
+> - **`authorEmail`:** `<string>` Git commit author e-mail.
+> - **`authorName`:** `<string>` Git commit author name.
+> - **`body`:** `<string>` Git commit body.
+> - **`commitHash`:** `<string>` Git commit commit hash.
+> - **`committerDate`:** `<Date>` Git commit committer date.
+> - **`committerEmail`:** `<string>` Git commit committer e-mail.
+> - **`committerName`:** `<string>` Git commit committer name.
+> - **`encoding`:** `<string>` Git commit encoding.
+> - **`notes`:** `<string>` Git commit notes.
+> - **`parentHashes`:** `<string[]>` Git commit parent hashes.
+> - **`reflogIdentityEmail`:** `<string>` Git commit reflog identity e-mail.
+> - **`reflogIdentityName`:** `<string>` Git commit reflog identity name.
+> - **`reflogSelector`:** `<string>` Git commit reflog selector.
+> - **`reflogSubject`:** `<string>` Git commit reflog subject.
+> - **`subject`:** `<string>` Git commit subject.
+> - **`treeHash`:** `<string>` Git commit tree hash.
 
 For example, to ignore Git commits made by Dependabot, and ignore Git commits made by OctoCat before 2022-01-01:
 
 ```yml
 git_ignores: |-
-  ({ authorDate, authorName }) => {
-    return (
-      /^dependabot/iu.test(authorName) ||
-      (authorDate.valueOf() < new Date("2022-01-01T00:00:00Z").valueOf() && /^octocat$/iu.test(authorName))
-    );
-  }
+  return (
+    /^dependabot/iu.test(authorName) ||
+    (authorDate.valueOf() < new Date("2022-01-01T00:00:00Z").valueOf() && /^octocat$/iu.test(authorName))
+  );
 ```
 
 > [!CAUTION]
@@ -185,117 +171,106 @@ git_ignores: |-
 - **`false`:** From the newest commit to the oldest commit.
 - **`true`:** From the oldest commit to the newest commit.
 
-### `ignores_pre`
+### `ignores`
 
-`<function>` Ignores by the paths, sessions, and tools before the scan, by JavaScript function and must return type of `boolean` (only return `true` to able ignore).
+`<function<boolean>>` Ignores elements before the scan, by JavaScript function and must return type of `boolean` (`true` to ignore). Ignored elements will not be scanned.
 
 To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
 
-```ts
-({ ... }: {
-  /** Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`). */
-  path: string;
-  session: {
-    /** "Current" or Git commit hash. */
-    name: string;
-    /** Git commit meta, only exists when the session is on a Git commit. */
-    gitCommitMeta?: {
-      authorDate: Date;
-      authorEmail: string;
-      authorName: string;
-      body: string;
-      commitHash: string;
-      committerDate: Date;
-      committerEmail: string;
-      committerName: string;
-      encoding: string;
-      notes: string;
-      parentHashes: string[];
-      reflogIdentityEmail: string;
-      reflogIdentityName: string;
-      reflogSelector: string;
-      reflogSubject: string;
-      subject: string;
-      treeHash: string;
-    };
-  };
-  /** Tool ID. */
-  tool: string;
-}) => {
-  /* ... Code for determine ... */
-  return result;
-}
-```
-
-> [!NOTE]
-> It is TypeScript syntax at the above in order to show the type of the parameters; But remember to use JavaScript syntax for this input.
+> **Available contexts:**
+>
+> - **`gitCommit.authorDate`:** `<Date | undefined>` Git commit author date. Only exists when the session is on a Git commit.
+> - **`gitCommit.authorEmail`:** `<string | undefined>` Git commit author e-mail. Only exists when the session is on a Git commit.
+> - **`gitCommit.authorName`:** `<string | undefined>` Git commit author name. Only exists when the session is on a Git commit.
+> - **`gitCommit.body`:** `<string | undefined>` Git commit body. Only exists when the session is on a Git commit.
+> - **`gitCommit.commitHash`:** `<string | undefined>` Git commit commit hash. Only exists when the session is on a Git commit.
+> - **`gitCommit.committerDate`:** `<Date | undefined>` Git commit committer date. Only exists when the session is on a Git commit.
+> - **`gitCommit.committerEmail`:** `<string | undefined>` Git commit committer e-mail. Only exists when the session is on a Git commit.
+> - **`gitCommit.committerName`:** `<string | undefined>` Git commit committer name. Only exists when the session is on a Git commit.
+> - **`gitCommit.encoding`:** `<string | undefined>` Git commit encoding. Only exists when the session is on a Git commit.
+> - **`gitCommit.notes`:** `<string | undefined>` Git commit notes. Only exists when the session is on a Git commit.
+> - **`gitCommit.parentHashes`:** `<string[] | undefined>` Git commit parent hashes. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogIdentityEmail`:** `<string | undefined>` Git commit reflog identity e-mail. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogIdentityName`:** `<string | undefined>` Git commit reflog identity name. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogSelector`:** `<string | undefined>` Git commit reflog selector. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogSubject`:** `<string | undefined>` Git commit reflog subject. Only exists when the session is on a Git commit.
+> - **`gitCommit.subject`:** `<string | undefined>` Git commit subject. Only exists when the session is on a Git commit.
+> - **`gitCommit.treeHash`:** `<string | undefined>` Git commit tree hash. Only exists when the session is on a Git commit.
+> - **`path`:** `<string>` Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
+> - **`session`:** `<string>` `"Current"` or Git commit hash (equivalent with `gitCommit.commitHash`).
+> - **`tool`:** `<string>` Tool ID (e.g.: `"clamav"`).
 
 For example, to ignore path `node_modules`:
 
 ```yml
-ignores_pre: |-
-  ({ path }) => {
-    return /^node_modules[\\\/]/u.test(path);
-  }
+ignores: |-
+  return /^node_modules\//u.test(path);
 ```
 
 > [!CAUTION]
 > JavaScript function is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
-### `ignores_post`
+### `report_filter`
 
-`<function>` Ignores by the paths, sessions, symbols (i.e. rules or signatures), and tools after the scan, by JavaScript function and must return type of `boolean` (only return `true` to able ignore).
+`<function<Severity = "High">>` Filter the report after the scan, by JavaScript function and must return type of `Severity`. By default, all of the symbols are high severity.
 
-To ignore only by the paths and/or sessions, use input [`ignores_pre`](#ignores_pre) is more efficiency. To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
+To ignore only by the paths and/or sessions, use input [`ignores`](#ignores) is more efficiency. To ignore only by the Git commits, use input [`git_ignores`](#git_ignores) is more efficiency. To ignore only by the tools, use inputs `*_enable` is more efficiency.
 
-```ts
-({ ... }: {
-  /** Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`). */
-  path: string;
-  session: {
-    /** "Current" or Git commit hash. */
-    name: string;
-    /** Git commit meta, only exists when the session is on a Git commit. */
-    gitCommitMeta?: {
-      authorDate: Date;
-      authorEmail: string;
-      authorName: string;
-      body: string;
-      commitHash: string;
-      committerDate: Date;
-      committerEmail: string;
-      committerName: string;
-      encoding: string;
-      notes: string;
-      parentHashes: string[];
-      reflogIdentityEmail: string;
-      reflogIdentityName: string;
-      reflogSelector: string;
-      reflogSubject: string;
-      subject: string;
-      treeHash: string;
-    };
-  };
-  /** Rule or signature. */
-  symbol: string;
-  /** Tool ID. */
-  tool: string;
-}) => {
-  /* ... Code for determine ... */
-  return result;
-}
+> **Available contexts:**
+>
+> - **`gitCommit.authorDate`:** `<Date | undefined>` Git commit author date. Only exists when the session is on a Git commit.
+> - **`gitCommit.authorEmail`:** `<string | undefined>` Git commit author e-mail. Only exists when the session is on a Git commit.
+> - **`gitCommit.authorName`:** `<string | undefined>` Git commit author name. Only exists when the session is on a Git commit.
+> - **`gitCommit.body`:** `<string | undefined>` Git commit body. Only exists when the session is on a Git commit.
+> - **`gitCommit.commitHash`:** `<string | undefined>` Git commit commit hash. Only exists when the session is on a Git commit.
+> - **`gitCommit.committerDate`:** `<Date | undefined>` Git commit committer date. Only exists when the session is on a Git commit.
+> - **`gitCommit.committerEmail`:** `<string | undefined>` Git commit committer e-mail. Only exists when the session is on a Git commit.
+> - **`gitCommit.committerName`:** `<string | undefined>` Git commit committer name. Only exists when the session is on a Git commit.
+> - **`gitCommit.encoding`:** `<string | undefined>` Git commit encoding. Only exists when the session is on a Git commit.
+> - **`gitCommit.notes`:** `<string | undefined>` Git commit notes. Only exists when the session is on a Git commit.
+> - **`gitCommit.parentHashes`:** `<string[] | undefined>` Git commit parent hashes. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogIdentityEmail`:** `<string | undefined>` Git commit reflog identity e-mail. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogIdentityName`:** `<string | undefined>` Git commit reflog identity name. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogSelector`:** `<string | undefined>` Git commit reflog selector. Only exists when the session is on a Git commit.
+> - **`gitCommit.reflogSubject`:** `<string | undefined>` Git commit reflog subject. Only exists when the session is on a Git commit.
+> - **`gitCommit.subject`:** `<string | undefined>` Git commit subject. Only exists when the session is on a Git commit.
+> - **`gitCommit.treeHash`:** `<string | undefined>` Git commit tree hash. Only exists when the session is on a Git commit.
+> - **`path`:** `<string>` Relative path based on the current working directory without `./` (e.g.: `relative/path/to/file.extension`).
+> - **`session`:** `<string>` `"Current"` or Git commit hash (equivalent with `gitCommit.commitHash`).
+> - **`symbol`:** `<string>` Rule or signature (e.g.: `"Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor"`).
+> - **`tool`:** `<string>` Tool ID (e.g.: `"clamav"`).
+
+> **Severity:**
+>
+>
+
+For example, to adjust severity of symbol `Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor`:
+
+```yml
+report_filter: |-
+  if (symbol === "Heuristics.Broken.Media.GIF.TruncatedScreenDescriptor") {
+    return "Low";
+  }
 ```
-
-> [!NOTE]
-> It is TypeScript syntax at the above in order to show the type of the parameters; But remember to use JavaScript syntax for this input.
 
 > [!CAUTION]
 > - It is not recommended to ignore any official symbol due to these rarely have false positives in most cases.
 > - JavaScript function is extremely powerful, which also able to execute malicious actions, user should always take extra review for this input value.
 
-### `summary`
+### `report_sarif_enable`
 
-`<boolean = false>` Whether to generate summary.
+`<boolean = false>` Whether to (allow to) generate the [SARIF report][sarif-github]. When this is `false`, will ignore input [`report_sarif_upload`](#report_sarif_upload).
+
+> [!IMPORTANT]
+> Due to the limitations, generate the [SARIF report][sarif-github] is only available when current working directory is a Git repository of the current repository, and input [`git_integrate`](#git_integrate) is `false`.
+
+### `report_sarif_upload`
+
+`<boolean = false>` Whether to (allow to) upload the [SARIF report][sarif-github] to the current repository.
+
+### `token`
+
+**🔒** `<string = ${{github.token}}>` GitHub token, require for upload the [SARIF report][sarif-github] to the current repository.
 
 ## 🧩 Output
 
@@ -316,27 +291,27 @@ To ignore only by the paths and/or sessions, use input [`ignores_pre`](#ignores_
       runs-on: "ubuntu-latest"
       steps:
         - name: "Checkout Repository"
-          uses: "actions/checkout@v4.0.0"
+          uses: "actions/checkout@v4.1.1"
           with:
             fetch-depth: 0
         - name: "Scan Repository"
-          uses: "hugoalh/scan-virus-ghaction@v0.20.0"
+          uses: "hugoalh/scan-virus-ghaction@v0.30.0"
           with:
             git_ignores: |-
-              ({ authorDate, authorName }) => {
-                return (
-                  /^dependabot/iu.test(authorName) ||
-                  (authorDate.valueOf() < new Date("2022-01-01T00:00:00Z").valueOf() && /^octocat$/iu.test(authorName))
-                );
-              }
+              return (
+                /^dependabot/iu.test(authorName) ||
+                (authorDate.valueOf() < new Date("2022-01-01T00:00:00Z").valueOf() && /^octocat$/iu.test(authorName))
+              );
             git_limit: 100
             ignores_pre: |-
-              ({ path }) => {
-                return /^node_modules[\\\/]/u.test(path);
-              }
+              return /^node_modules\//u.test(path);
   ```
 
 ## 📚 Guide
 
+- GitHub
+  - [SARIF support for code scanning][sarif-github]
 - GitHub Actions
   - [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
+
+[sarif-github]: https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning

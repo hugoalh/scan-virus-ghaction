@@ -1,7 +1,29 @@
-name: "Scan Virus (YARA)"
+name: "Scan Virus (Build)"
 author: "hugoalh"
 description: "Scan virus (including malicious file and malware)."
 inputs:
+  clamav_enable:
+    description: "{boolean} Whether to use ClamAV."
+    required: false
+    default: "true"
+  clamav_update:
+    description: "{boolean} Whether to update the ClamAV official assets before scan anything."
+    required: false
+    default: "true"
+  clamav_unofficialassets_use:
+    description: "{RegExp[]} ClamAV unofficial assets to use."
+    required: false
+  clamav_customassets_artifact:
+    description: "{number} Artifact ID of the ClamAV custom assets."
+    required: false
+  clamav_customassets_use:
+    description: "{RegExp[]} ClamAV custom assets to use."
+    required: false
+    default: ".+"
+  yara_enable:
+    description: "{boolean} Whether to use YARA."
+    required: false
+    default: "false"
   yara_unofficialassets_use:
     description: "{RegExp[]} YARA unofficial assets to use."
     required: false
@@ -48,7 +70,7 @@ outputs:
     description: "{boolean} Whether there has element which found virus."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/hugoalh/scan-virus-ghaction:0.30.0-yara"
+  image: "../../Dockerfile"
 branding:
   icon: "shield"
   color: "red"

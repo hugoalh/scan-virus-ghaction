@@ -5,41 +5,28 @@ on:
     inputs:
       git_integrate:
         type: "choice"
-        description: "{Boolean} Whether to integrate with Git to perform scan by every commits."
+        description: "{boolean} Whether to integrate with Git to perform scan by every commits."
         required: false
-        default: "True"
+        default: "true"
         options:
-          - "False"
-          - "True"
+          - "false"
+          - "true"
       git_limit:
         type: "string"
-        description: "{UInt64} Limit on how many Git commits will scan."
+        description: "{bigint} Limit on how many Git commits will scan."
         required: false
         default: "0"
       git_reverse:
         type: "choice"
-        description: "{Boolean} Whether to reverse the scan order of the Git commits."
+        description: "{boolean} Whether to reverse the scan order of the Git commits."
         required: false
-        default: "False"
+        default: "false"
         options:
-          - "False"
-          - "True"
-      tool_all:
-        type: "boolean"
-        description: "{Switch} All."
-        default: true
-      tool_clamav:
-        type: "boolean"
-        description: "{Switch} ClamAV."
-        default: true
-      tool_yara:
-        type: "boolean"
-        description: "{Switch} YARA."
-        default: true
+          - "false"
+          - "true"
 jobs:
-  all:
-    name: "All"
-    if: "${{inputs.tool_all == true}}"
+  main:
+    name: "Main"
     runs-on: "ubuntu-latest"
     steps:
       - name: "List Docker Image"
@@ -55,54 +42,6 @@ jobs:
           clamav_unofficialassets_use: |-
             .+
           yara_enable: "True"
-          git_integrate: "${{github.event.inputs.git_integrate}}"
-          git_limit: "${{github.event.inputs.git_limit}}"
-          git_reverse: "${{github.event.inputs.git_reverse}}"
-          ignores_post: |-
-            Param($ElementPostMeta)
-            Return ((Get-Random -Minimum 0 -Maximum 2) -eq 1)
-          found_summary: "True"
-          statistics_summary: "True"
-  clamav:
-    name: "ClamAV"
-    if: "${{inputs.tool_clamav == true}}"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "List Docker Image"
-        run: |
-          docker image ls --all --digests --no-trunc
-      - name: "Checkout Repository"
-        uses: "actions/checkout@v4.1.1"
-        with:
-          fetch-depth: 0
-      - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction/clamav@main"
-        with:
-          clamav_unofficialassets_use: |-
-            .+
-          git_integrate: "${{github.event.inputs.git_integrate}}"
-          git_limit: "${{github.event.inputs.git_limit}}"
-          git_reverse: "${{github.event.inputs.git_reverse}}"
-          ignores_post: |-
-            Param($ElementPostMeta)
-            Return ((Get-Random -Minimum 0 -Maximum 2) -eq 1)
-          found_summary: "True"
-          statistics_summary: "True"
-  yara:
-    name: "YARA"
-    if: "${{inputs.tool_yara == true}}"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "List Docker Image"
-        run: |
-          docker image ls --all --digests --no-trunc
-      - name: "Checkout Repository"
-        uses: "actions/checkout@v4.1.1"
-        with:
-          fetch-depth: 0
-      - name: "Scan Repository"
-        uses: "hugoalh/scan-virus-ghaction/yara@main"
-        with:
           git_integrate: "${{github.event.inputs.git_integrate}}"
           git_limit: "${{github.event.inputs.git_limit}}"
           git_reverse: "${{github.event.inputs.git_reverse}}"
