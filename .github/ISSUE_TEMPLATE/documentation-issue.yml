@@ -20,8 +20,7 @@ body:
       description: |-
         What the issue is? Add images and/or videos to help for explain this issue if needed.
 
-        > **ℹ️ Notice:**
-        >
+        > [!NOTE]
         > - Should not blur anything in the images and/or videos, except personal secrets.
         > - For external images and/or videos, please ensure we are able to view those.
     validations:

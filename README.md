@@ -1,10 +1,11 @@
 # Scan Virus (GitHub Action)
 
-[⚖️ MIT](./LICENSE.md)
+[**⚖️** MIT](./LICENSE.md)
 
-|  | **Release - Latest** | **Release - Pre** |
-|:-:|:-:|:-:|
-| [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=ffffff&style=flat-square "GitHub")](https://github.com/hugoalh/scan-virus-ghaction) | ![GitHub Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&label=&style=flat-square "GitHub Latest Release Version") (![GitHub Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Release Date")) | ![GitHub Latest Pre-Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?include_prereleases&sort=semver&label=&style=flat-square "GitHub Latest Pre-Release Version") (![GitHub Latest Pre-Release Date](https://img.shields.io/github/release-date-pre/hugoalh/scan-virus-ghaction?label=&style=flat-square "GitHub Latest Pre-Release Date")) |
+**🗂️**
+[![GitHub: hugoalh/scan-virus-ghaction](https://img.shields.io/badge/hugoalh/scan--virus--ghaction-181717?logo=github&logoColor=ffffff&style=flat "GitHub: hugoalh/scan-virus-ghaction")](https://github.com/hugoalh-studio/range-iterator-ts)
+
+**🆙** ![Latest Release Version](https://img.shields.io/github/release/hugoalh/scan-virus-ghaction?sort=semver&color=2187C0&label=&style=flat "Latest Release Version") (![Latest Release Date](https://img.shields.io/github/release-date/hugoalh/scan-virus-ghaction?color=2187C0&label=&style=flat "Latest Release Date"))
 
 A GitHub Action to scan virus (including malicious file and malware).
 
@@ -32,26 +33,48 @@ Some of the communities have publicly published unofficial ClamAV and/or YARA as
 
 This does not provide any guarantee that carefully hidden objects will be scanned. Strong endpoint security, access, and code review policies and practices are the most effective way to ensure that malicious files and/or codes are not introduced. False positives maybe also will be happened.
 
-## 🔰 Begin
+## 🎯 Target
 
-### GitHub Actions
+- GitHub Actions Runner
+  > **🛡️ Require Permission**
+  >
+  > *N/A*
 
-- **Target Version:** >= v2.314.0, &:
-  - Docker
-- **Require Permission:** *N/A*
+  > **💽 Require Software**
+  >
+  > - Docker
 
-```yml
-jobs:
-  job_id:
-    runs-on: "ubuntu-________"
-    steps:
-      - uses: "hugoalh/scan-virus-ghaction@<Tag>"
-```
+## 🔰 Usage
+
+### Composite Action
+
+1. Import at the metadata (`action.yml`):
+    ```yml
+    runs:
+      using: "composite"
+      steps:
+        - uses: "hugoalh/scan-virus-ghaction@<Tag>"
+    ```
+
+### Workflow
+
+1. Import at the workflow (`.github/workflows/<WorkflowName>.yml`):
+    ```yml
+    jobs:
+      job_id:
+        runs-on: "ubuntu-________"
+        steps:
+          - uses: "hugoalh/scan-virus-ghaction@<Tag>"
+    ```
 
 ## 🧩 Input
 
 > [!NOTE]
 > All of the inputs are optional; Use this action without any input will default to scan with the ClamAV official assets.
+
+> | **Legend** | **Description** |
+> |:-:|:--|
+> | 🔐 | Should be an encrypted secret. |
 
 ### `clamav_enable`
 
@@ -280,7 +303,7 @@ Due to the limitations, this feature is only available when these conditions are
 
 ### `token`
 
-**🔒** `<string = ${{github.token}}>` GitHub token, require for upload the [SARIF report][sarif-github] to the current repository.
+**🔐** `<string = ${{github.token}}>` GitHub token, require for upload the [SARIF report][sarif-github] to the current repository.
 
 ## 🧩 Output
 

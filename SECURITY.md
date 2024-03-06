@@ -15,7 +15,7 @@
 | v0.30.X | 🟤 | *Unknown* | *N/A* | *Unknown* | >= v2.314.0 | Latest Release |
 | v0.20.X | 🔵 | 2023-10-21 | *N/A* | *Unknown* | >= v2.308.0 | Latest Release |
 
-> **ℹ️ Notice:**
+> **ℹ️ Note**
 >
 > - The date format is according to ISO 8601 standard.
 > - Values in italic format are subject to change.

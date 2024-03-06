@@ -12,8 +12,7 @@ body:
       description: |-
         What the bug is? Add images and/or videos to help for explain this bug if needed.
 
-        > **ℹ️ Notice:**
-        >
+        > [!NOTE]
         > - Should not blur anything in the images and/or videos, except personal secrets.
         > - For external images and/or videos, please ensure we are able to view those.
       placeholder: |-
@@ -27,8 +26,7 @@ body:
       description: |-
         Is this bug reproducible? If reproducible, please show the required steps by list, images, and/or videos!
 
-        > **ℹ️ Notice:**
-        >
+        > [!NOTE]
         > - Should not blur anything in the images and/or videos, except personal secrets.
         > - For external images and/or videos, please ensure we are able to view those.
       placeholder: |-
@@ -55,10 +53,9 @@ body:
       description: |-
         Which versions are affected by this bug?
 
-        > **ℹ️ Notice:**
-        >
+        > [!NOTE]
         > - Accept versions range.
-        > - Versions must be listed as supported in the Security Policy (file: `SECURITY.md`).
+        > - Versions must be listed as supported in the Security Policy (file `SECURITY.md`).
       placeholder: |-
         1.2.3
     validations:
@@ -80,8 +77,7 @@ body:
         - **Variables:** Environment variables.
           > NO_COLOR=1 / ...
 
-        > **ℹ️ Notice:**
-        >
+        > [!NOTE]
         > - Accept multiple execution environments.
         > - All of the properties are optional.
         > - It is recommended to provide this information for reproducible steps.

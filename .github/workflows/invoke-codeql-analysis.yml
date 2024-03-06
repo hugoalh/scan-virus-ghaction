@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "CodeQL Analysis"
+name: "Invoke CodeQL Analysis"
 on:
   push:
     branches:
@@ -17,6 +17,7 @@ jobs:
   main:
     name: "Main"
     permissions:
+      actions: "read"
       contents: "read"
       security-events: "write"
-    uses: "hugoalh/hugoalh/.github/workflows/call-codeql-analysis-0.yml@main"
+    uses: "hugoalh/hugoalh/.github/workflows/call-invoke-codeql-analysis-0.yml@main"
